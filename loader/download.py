@@ -3,11 +3,15 @@ import time
 import argparse
 import subprocess
 import pandas as pd
+from pathlib import Path
 import concurrent.futures
 
 
 def download(link, cwd="../../data/train"):
-    command = "youtube-dl {} -f 160 --output {}.mp4"
+    command = "youtube-dl {} --output {}.mp4 -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'"
+    path = os.path.join(cwd, link + ".mp4")
+    if os.path.exists(path) and os.path.isfile(path):
+        return
     p = subprocess.Popen(command.format(link, link[-11:]), shell=True, stdout=subprocess.PIPE, cwd=cwd).communicate()
 
 
@@ -17,7 +21,11 @@ def crop(path, start, end):
     start_minute, start_second = int(start // 60), int(start % 60)
     end_minute, end_second = int(end // 60), int(end % 60)
 
-    command = command.format(path + ".mp4", f"{start_minute}:{start_second}", f"{end_minute}:{end_second}", path + "_cropped.mp4")
+    parent = path.parents[0]
+    name = path.stem
+    new_filepath = os.path.join(parent, name + "_cropped.mp4")
+
+    command = command.format(path.as_posix(), f"{start_minute}:{start_second}", f"{end_minute}:{end_second}", new_filepath)
 
     p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).communicate()
 
@@ -28,13 +36,13 @@ def save_video(link, path, start, end):
 
 
 def main(args):
-    train_df = pd.read_csv(args.train_path)
-    links = train_df.iloc[:, 0][:2]
-    start_times = train_df.iloc[:, 1][:2]
-    end_times = train_df.iloc[:, 2][:2]
+    df = pd.read_csv(args.path)
+    links = df.iloc[:, 0][:2]
+    start_times = df.iloc[:, 1][:2]
+    end_times = df.iloc[:, 2][:2]
     
     yt_links = ["https://youtube.com/watch\?v\="+l for l in links]
-    paths = [os.path.join(args.vid_dir, f) for f in links]
+    paths = [Path(os.path.join(args.vid_dir, f + ".mp4")) for f in links]
 
     link_path = zip(yt_links, paths, start_times, end_times)
     with concurrent.futures.ThreadPoolExecutor(args.jobs) as executor:
@@ -47,8 +55,8 @@ def main(args):
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Download parameters")
     parse.add_argument("--jobs", type=int, default=2)
-    parse.add_argument("--train-path", type=str, default="../../data/avspeech_train.csv")
-    parse.add_argument("--vid-dir", type=str, default="../../data/train")
+    parse.add_argument("--path", type=str, default="../../data/audio_visual/avspeech_train.csv")
+    parse.add_argument("--vid-dir", type=str, default="../../data/train/")
     args = parse.parse_args()
     main(args)
     
