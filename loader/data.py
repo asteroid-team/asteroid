@@ -1,35 +1,74 @@
 import os
 import cv2
 import librosa
+import numpy as np
 from pathlib import Path
 
+from typing import Callable, Tuple, List
 
 class Signal:
     '''
         This class holds the video frames and the audio signal.
-
     '''
 
-    def __init__(self, path_to_video, audio_ext=".mp3", sr=44_100):
-       self.video_path = Path(path_to_video)
+    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=44_100):
+        self.video_path = video_path
+        self.audio_path = audio_path
+        self._load(sr=sr)
+        self._convert_video()
 
-       vid_dir = self.video_path.parents[0]
-       video_name = self.video_path.stem
+    def _load(self, sr: int):
+        self.audio, sr = librosa.load(self.audio_path, sr=sr)
+        self.video = cv2.VideoCapture(self.video_path)
 
-       self.audio_path = Path(os.path.join(vid_dir, "audio", video_name + audio_ext))
+    def augment_audio(self, augmenter, *args, **kwargs):
+        '''
+            Change the audio via the augmenter method.
+        '''
+        self.audio = augmenter(self.audio, *args, **kwargs)
 
-       self._load(sr=sr)
+    def augment_video(self, augmenter: Callable, *args, **kwargs):
+        '''
+            Change the video via the augmenter method.
+        '''
+        self.video = augmenter(self.video, *args, **kwargs)
 
+    def _convert_video(self):
+        frame_count = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
+        frame_width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(self.video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    def _load(self, sr):
-        self.audio, sr = librosa.load(self.audio_path.as_posix(), sr=sr)
-        cap = cv2.VideoCapture(self.video_path.as_posix())
+        self.buffer_video = np.empty((frame_count, frame_height, frame_width, 3), np.dtype('uint8'))
+
+        frame = 0
+        stop = True
+
+        while (frame < frame_count  and not stop):
+            stop, self.buffer_video[fc] = cap.read()
+            frame += 1
+
+        self.video.release()
+    
+    def get_video(self):
+        return self.buffer_video
+
+    def get_audio(self):
+        return self.audio
+
+    @staticmethod
+    def load_audio(audio_path: str, sr=44_100):
+        if not os.path.exists(audio_path) or not os.path.isfile(audio_path):
+            raise ValueError(f"Path: {audio_path} does not exist")
+        return librosa.load(audio_path, sr=sr)[0]
 
 
 class Augment:
+    '''
+        Format: function_name(main_signal, *args, **kwargs) -> main_signal:
+    '''
     
     @staticmethod
-    def overlay(sig1, sig2, start, end, sr=44_100, w1=0.5, w2=0.5):
+    def overlay(sig1: np.ndarray, sig2: np.ndarray, start: int, end: int, sr=44_100, w1=0.5, w2=0.5):
         '''
             Overlay sig2 on sig1 at [start, end]
         '''
@@ -40,13 +79,17 @@ class Augment:
         len1 = len(sig1)
         len2 = len(sig2)
 
+        #Take the weighted sum of the signal
         sig1[start: start + end] = (w1 * sig1[start: start + end] + w2 * sig2).astype(sig1.dtype)
         return sig1
 
     @staticmethod
-    def combine(*signals, weights=None):
-        if len(signals) == 0:
-            return None
+    def combine(main_signal, *signals, weights=None):
+        '''
+            Combine different signals according to their weight.
+            Signal length should be the same.
+        '''
+        signals = [main_signal, *signals]
 
         total_signals = len(signals)
         
@@ -56,6 +99,7 @@ class Augment:
         combined_signal = np.zeros((signals[0].shape[0], 1), dtype=np.float32)
         weight = 0
         
+        #Running Weighted Average Mean
         for i, w in enumerate(weights):
             combined_signal += signals[i] * w
             weight += w
@@ -63,7 +107,7 @@ class Augment:
         return combined_signal
 
     @staticmethod
-    def align(main_signal, all_signals, all_alignments, sr=44_100):
+    def align(main_signal: np.ndarray, all_signals: np.ndarray, all_alignments: List[Tuple[int, int]] , sr=44_100):
         '''
             Align signals of different length (smaller) to main_signal.
             Alignments are tuples containing start and end points wrt main_signal.
@@ -82,8 +126,8 @@ class Augment:
             signal = np.concatenate((prefix, signal, suffix), axis=0)
 
             all_signals[i] = signal
+        return main_signal
             
 
-
 if __name__ == "__main__":
-    signal = Signal("../../data/train/AvWWVOgaMlk_cropped.mp4")
+    signal = Signal("../../data/train/AvWWVOgaMlk_cropped.mp4", "../../data/train/audio/AvWWVOgaMlk_cropped.mp3")

@@ -45,7 +45,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2):
         mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx}.mp3")
         audio_command = AUDIO_MIX_COMMAND_PREFIX + audio_mix_input + audio_mix_command_suffix + mixed_audio_name
         process = subprocess.Popen(audio_command, shell=True, stdout=subprocess.PIPE).communicate()
-        mixed_audio.append(os.path.join(MIXED_AUDIO_DIR, mixed_audio_name))
+        mixed_audio.append(mixed_audio_name)
     
     combinations = {}
     for i in range(input_audio_size):
