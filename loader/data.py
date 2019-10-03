@@ -41,12 +41,11 @@ class Signal:
         self.buffer_video = np.empty((frame_count, frame_height, frame_width, 3), np.dtype('uint8'))
 
         frame = 0
-        stop = True
+        ret = True
 
-        while (frame < frame_count  and not stop):
-            stop, self.buffer_video[fc] = cap.read()
+        while (frame < frame_count  and ret):
+            ret, self.buffer_video[frame] = self.video.read()
             frame += 1
-
         self.video.release()
     
     def get_video(self):
