@@ -11,7 +11,7 @@ class Signal:
         This class holds the video frames and the audio signal.
     '''
 
-    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=44_100):
+    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000):
         self.video_path = video_path
         self.audio_path = audio_path
         self._load(sr=sr)
@@ -55,7 +55,7 @@ class Signal:
         return self.audio
 
     @staticmethod
-    def load_audio(audio_path: str, sr=44_100):
+    def load_audio(audio_path: str, sr=16_000):
         if not os.path.exists(audio_path) or not os.path.isfile(audio_path):
             raise ValueError(f"Path: {audio_path} does not exist")
         return librosa.load(audio_path, sr=sr)[0]
@@ -67,7 +67,7 @@ class Augment:
     '''
     
     @staticmethod
-    def overlay(sig1: np.ndarray, sig2: np.ndarray, start: int, end: int, sr=44_100, w1=0.5, w2=0.5):
+    def overlay(sig1: np.ndarray, sig2: np.ndarray, start: int, end: int, sr=16_000, w1=0.5, w2=0.5):
         '''
             Overlay sig2 on sig1 at [start, end]
         '''
@@ -106,7 +106,7 @@ class Augment:
         return combined_signal
 
     @staticmethod
-    def align(main_signal: np.ndarray, all_signals: np.ndarray, all_alignments: List[Tuple[int, int]] , sr=44_100):
+    def align(main_signal: np.ndarray, all_signals: np.ndarray, all_alignments: List[Tuple[int, int]] , sr=16_000):
         '''
             Align signals of different length (smaller) to main_signal.
             Alignments are tuples containing start and end points wrt main_signal.
