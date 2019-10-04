@@ -14,9 +14,7 @@ def extract(path):
     audio_dir = args.aud_dir
     audio_path = os.path.join(dir_name, audio_dir, name)
 
-    command = f"echo yes | ffmpeg -i {path.as_posix()} -f {args.audio_extension} -ab 128000 -vn -ar {args.sampling_rate} -ac {args.audio_channel} - | sox -t {args.audio_extension} - -r 16000 -c 1 -b 8 {audio_path}.{args.audio_extension}"
-    #command = command.format(path.as_posix(), args.audio_extension, args.sampling_rate, args.audio_channel, audio_path)
-    print(command)
+    command = f"ffmpeg -y -i {path.as_posix()} -f {args.audio_extension} -ab 64000 -vn -ar {args.sampling_rate} -ac {args.audio_channel} - | sox -t {args.audio_extension} - -r 16000 -c 1 -b 8 {audio_path}.{args.audio_extension} trim 0 00:{args.duration:02d}"
 
     p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).communicate()
 
@@ -41,5 +39,6 @@ if __name__ == "__main__":
     parse.add_argument("--sampling-rate", type=int, default=16_000)
     parse.add_argument("--audio-channel", type=int, default=2)
     parse.add_argument("--audio-extension", type=str, default="wav")
+    parse.add_argument("--duration", type=int, default=3)
     args = parse.parse_args()
     main(args)

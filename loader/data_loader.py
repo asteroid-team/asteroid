@@ -3,6 +3,7 @@ import torch
 import pandas as pd
 from data import Signal
 from pathlib import Path
+from audio_feature_generator import convert_to_spectrogram
 
 
 class AVDataset(torch.utils.data.Dataset):
@@ -42,10 +43,13 @@ class AVDataset(torch.utils.data.Dataset):
         video_tensors = []
 
         for i in range(self.input_audio_size):
-            audio_tensors.append(torch.from_numpy(all_signals[i].get_audio()))
+            spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
+            audio_tensors.append(torch.from_numpy(spectrogram))
+
+            #TODO: Convert raw video to face embedding
             video_tensors.append(torch.from_numpy(all_signals[i].get_video()))
 
-        mixed_signal_tensor = torch.Tensor(mixed_signal)
+        mixed_signal_tensor = torch.Tensor(convert_to_spectrogram(mixed_signal))
 
         return audio_tensors, video_tensors, mixed_signal_tensor
 

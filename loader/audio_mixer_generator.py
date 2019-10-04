@@ -11,13 +11,13 @@ import pandas as pd
 from pathlib import Path
 
 
-AUDIO_MIX_COMMAND_PREFIX = "echo yes | ffmpeg "
+AUDIO_MIX_COMMAND_PREFIX = "ffmpeg -y -t 00:00:03 "
 AUDIO_DIR = "../../data/train/audio"
 MIXED_AUDIO_DIR = "../../data/train/mixed"
 VIDEO_DIR = "../../data/train"
 
 
-def audio_mixer(dataset_size: int, input_audio_size=2):
+def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv"):
     audio_mix_command_suffix = f"-filter_complex amix=inputs={input_audio_size}:duration=longest "
     audio_files = glob.glob(os.path.join(AUDIO_DIR, "*"))
     total_audio_files = len(audio_files)
@@ -35,14 +35,14 @@ def audio_mixer(dataset_size: int, input_audio_size=2):
     for indx, audio_comb in enumerate(audio_combinations):
         audio_inputs.append(audio_comb)
         #Convert audio file path to corresponding video path
-        video_inputs.append(tuple(os.path.join(VIDEO_DIR, os.path.splitext(os.path.basename(f))[0]+".mp4")
+        video_inputs.append(tuple(os.path.join(VIDEO_DIR, os.path.splitext(os.path.basename(f))[0]+video_ext)
                                     for f in audio_comb))
 
         audio_mix_input = ""
         for audio in audio_comb:
             audio_mix_input += f"-i {audio} "
         
-        mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx}.mp3")
+        mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx}{audio_ext}")
         audio_command = AUDIO_MIX_COMMAND_PREFIX + audio_mix_input + audio_mix_command_suffix + mixed_audio_name
         process = subprocess.Popen(audio_command, shell=True, stdout=subprocess.PIPE).communicate()
         mixed_audio.append(mixed_audio_name)
@@ -63,7 +63,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2):
 
     columns = [f"video_{i+1}" for i in range(input_audio_size)] + [f"audio_{i+1}" for i in range(input_audio_size)] + ["mixed_audio"]
     df = pd.DataFrame(combinations).reindex(columns=columns)
-    df.to_csv("temp.csv", index=False)
+    df.to_csv(file_name, index=False)
 
 
 if __name__ == "__main__":
