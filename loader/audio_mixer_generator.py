@@ -11,14 +11,26 @@ import pandas as pd
 from pathlib import Path
 
 
-AUDIO_MIX_COMMAND_PREFIX = "ffmpeg -y -t 00:00:03 "
+AUDIO_MIX_COMMAND_PREFIX = "ffmpeg -y -t 00:00:03 -ac 1 "
 AUDIO_DIR = "../../data/train/audio"
 MIXED_AUDIO_DIR = "../../data/train/mixed"
 VIDEO_DIR = "../../data/train"
+AUDIO_SET_DIR = "./../../data/audio_set/audio"
+
+def sample_audio_set():
+    audio_files = glob.glob(os.path.join(AUDIO_SET_DIR, "*"))
+    print(audio_files)
+    total_files = len(audio_files)
+
+    total_choices = int(random.gauss(mu=3, sigma=2))
+    choices = list(range(total_files))
+    random.shuffle(choices)
+
+    return [audio_files[i] for i in choices[:total_choices]]
 
 
-def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv"):
-    audio_mix_command_suffix = f"-filter_complex amix=inputs={input_audio_size}:duration=longest "
+def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv", audio_set=True):
+    audio_mix_command_suffix = "-filter_complex amix=inputs={}:duration=longest "
     audio_files = glob.glob(os.path.join(AUDIO_DIR, "*"))
     total_audio_files = len(audio_files)
     
@@ -33,6 +45,10 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
     mixed_audio = []
     
     for indx, audio_comb in enumerate(audio_combinations):
+        if audio_set:
+            noise_input = sample_audio_set()
+            print(noise_input)
+            audio_comb = (*audio_comb, *noise_input)
         audio_inputs.append(audio_comb)
         #Convert audio file path to corresponding video path
         video_inputs.append(tuple(os.path.join(VIDEO_DIR, os.path.splitext(os.path.basename(f))[0]+video_ext)
@@ -43,7 +59,8 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
             audio_mix_input += f"-i {audio} "
         
         mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx}{audio_ext}")
-        audio_command = AUDIO_MIX_COMMAND_PREFIX + audio_mix_input + audio_mix_command_suffix + mixed_audio_name
+        audio_command = AUDIO_MIX_COMMAND_PREFIX + audio_mix_input + audio_mix_command_suffix.format(len(audio_comb)) + mixed_audio_name
+        print(audio_command)
         process = subprocess.Popen(audio_command, shell=True, stdout=subprocess.PIPE).communicate()
         mixed_audio.append(mixed_audio_name)
     
