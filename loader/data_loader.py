@@ -49,8 +49,16 @@ class AVDataset(torch.utils.data.Dataset):
             #TODO: Convert raw video to face embedding
             video_tensors.append(torch.from_numpy(all_signals[i].get_video()))
 
-        mixed_signal_tensor = torch.Tensor(convert_to_spectrogram(mixed_signal))
+	    # video tensors are expected to be (75,1,1024) (h,w,c)
+        # list of video tensors where len(list) == num_person
+        # so transpose to be of form video_input = list of video tensors (1024,75,1)
+        # we will do
+        # for i in range(num_person):
+        #   slice out each one , video_input[i] (because this will be of (1024,75,1))
 
+        mixed_signal_tensor = torch.Tensor(convert_to_spectrogram(mixed_signal))  #shape  (257,298,2)
+	    mixed_signal_tensor = torch.transpose(mixed_signal_tensor,0,2) #shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257	
+	
         return audio_tensors, video_tensors, mixed_signal_tensor
 
 
