@@ -44,7 +44,9 @@ class Signal:
         ret = True
 
         while (frame < frame_count  and ret):
-            ret, self.buffer_video[frame] = self.video.read()
+            ret, f = self.video.read()
+            self.buffer_video[frame] = cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
+
             frame += 1
         self.video.release()
     
@@ -67,7 +69,7 @@ class Augment:
     '''
     
     @staticmethod
-    def overlay(sig1: np.ndarray, sig2: np.ndarray, start: int, end: int, sr=16_000, w1=0.5, w2=0.5):
+    def overlay(sig1: np.ndarray, sig2: np.ndarray, start: int, end: int, sr=44_100, w1=0.5, w2=0.5):
         '''
             Overlay sig2 on sig1 at [start, end]
         '''
@@ -106,7 +108,7 @@ class Augment:
         return combined_signal
 
     @staticmethod
-    def align(main_signal: np.ndarray, all_signals: np.ndarray, all_alignments: List[Tuple[int, int]] , sr=16_000):
+    def align(main_signal: np.ndarray, all_signals: np.ndarray, all_alignments: List[Tuple[int, int]] , sr=44_100):
         '''
             Align signals of different length (smaller) to main_signal.
             Alignments are tuples containing start and end points wrt main_signal.
