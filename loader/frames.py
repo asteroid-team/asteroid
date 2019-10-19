@@ -4,9 +4,13 @@ import cv2
 import torch
 import numpy as np
 
-def input_face_embeddings(frames, is_path=False):
-    mtcnn = MTCNN(keep_all=True)
-    resnet = InceptionResnetV1(pretrained='vggface2').eval()
+def input_face_embeddings(frames, is_path=False, use_cuda=True):
+    if use_cuda:
+        device = torch.device("cuda:0")
+    else:
+        device = torch.device("cpu")
+    mtcnn = MTCNN(keep_all=True, device=device)
+    resnet = InceptionResnetV1(pretrained='vggface2').eval().to(device)
     result = []
     for f in frames:
         embeddings = []
@@ -18,10 +22,10 @@ def input_face_embeddings(frames, is_path=False):
         if cropped_tensors is None:
             #Apparently trimmed video has few frames without any face -_-
             #Hence, to maintain 75 frames appending zeros...
-            result.append(torch.zeros((1, 512)))
+            result.append(torch.zeros((1, 512)).to(device))
             continue
         for face in cropped_tensors:
-            emb = resnet(face.unsqueeze(0))
+            emb = resnet(face.unsqueeze(0).to(device))
             embeddings.append(emb)
         #Training requires one face per photo, during inference face will be selected
         #according to the bounding boxes
