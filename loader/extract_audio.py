@@ -20,7 +20,7 @@ def extract(path):
 
 
 def main(args):
-    file_names = [Path(os.path.join(args.vid_dir, i)) for i in os.listdir(args.path) if i.endswith("_cropped.mp4")]
+    file_names = [Path(os.path.join(args.vid_dir, i)) for i in os.listdir(args.path) if i.endswith("_final.mp4")]
     extract(file_names[0])
 
     with concurrent.futures.ThreadPoolExecutor(args.jobs) as executor:
