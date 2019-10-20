@@ -1,15 +1,19 @@
+import gc
 import os
 import torch
+import numpy as np
 import pandas as pd
 from data import Signal
 from pathlib import Path
+from memory_profiler import profile
 from frames import input_face_embeddings
+from facenet_pytorch import MTCNN, InceptionResnetV1
 from audio_feature_generator import convert_to_spectrogram
 
 class AVDataset(torch.utils.data.Dataset):
     
 
-    def __init__(self, dataset_df_path: Path, video_base_dir: Path, input_df_path: Path, input_audio_size=2, use_cuda=True):
+    def __init__(self, dataset_df_path: Path, video_base_dir: Path, input_df_path: Path, input_audio_size=2, use_cuda=False):
         self.input_audio_size = input_audio_size
 
         self.dataset_df = pd.read_csv(dataset_df_path.as_posix())
@@ -25,10 +29,21 @@ class AVDataset(torch.utils.data.Dataset):
         self.input_df = pd.read_csv(input_df_path.as_posix())
 
         self.use_cuda = use_cuda
+        if self.use_cuda:
+            self.device = torch.device("cuda:0")
+        else:
+            self.device = torch.device("cpu")
+    
+        self.mtcnn = MTCNN(keep_all=True, device=self.device).eval()
+        self.resnet = InceptionResnetV1(pretrained="vggface2").eval().to(self.device)
+
+        print(f"MTCNN has {sum(np.prod(i.shape) for i in self.mtcnn.parameters())} parameters")
+        print(f"RESNET has {sum(np.prod(i.shape) for i in self.resnet.parameters())} parameters")
 
     def __len__(self):
         return len(self.input_df)
 
+    @profile
     def __getitem__(self, idx):
         row = self.input_df.iloc[idx, :]
         all_signals = []
@@ -49,8 +64,10 @@ class AVDataset(torch.utils.data.Dataset):
             audio_tensors.append(torch.from_numpy(spectrogram))
             raw_frames = all_signals[i].get_video()
             #NOTE: use_cuda = True, only if VRAM ~ 7+GB, if RAM < 8GB it will not work...
-            embeddings = input_face_embeddings(raw_frames, use_cuda=False)
-            video_tensors.append(torch.stack(embeddings))
+            embeddings = input_face_embeddings(raw_frames, is_path=False, mtcnn=self.mtcnn, resnet=self.resnet, device=self.device)
+            del raw_frames
+            print(gc.collect())
+            video_tensors.append(embeddings)
 
         # video tensors are expected to be (75,1,1024) (h,w,c)
         # list of video tensors where len(list) == num_person

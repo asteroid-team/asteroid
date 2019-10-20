@@ -1,39 +1,38 @@
-from facenet_pytorch import MTCNN, InceptionResnetV1
 from PIL import Image
 import cv2
 import torch
 import numpy as np
+from facenet_pytorch import MTCNN, InceptionResnetV1
+from memory_profiler import profile
 
-def input_face_embeddings(frames, is_path=False, use_cuda=True):
-    if use_cuda:
-        device = torch.device("cuda:0")
-    else:
-        device = torch.device("cpu")
-    mtcnn = MTCNN(keep_all=True, device=device)
-    resnet = InceptionResnetV1(pretrained='vggface2').eval().to(device)
-    result = []
+@profile
+def input_face_embeddings(frames, is_path, mtcnn, resnet, device):
+    result_cropped_tensors = []
     for f in frames:
-        embeddings = []
         if is_path:
             frame = Image.open(f)
         else:
             frame = Image.fromarray(f.astype("uint8"))
         cropped_tensors = mtcnn(frame)
         if cropped_tensors is None:
-            #Apparently trimmed video has few frames without any face -_-
-            #Hence, to maintain 75 frames appending zeros...
-            result.append(torch.zeros((1, 512)).to(device))
-            continue
-        for face in cropped_tensors:
-            emb = resnet(face.unsqueeze(0).to(device))
-            embeddings.append(emb)
-        #Training requires one face per photo, during inference face will be selected
-        #according to the bounding boxes
-        result.append(embeddings[0])
-    return result
+            cropped_tensors = torch.zeros((3, 160, 160)).to(device)
+        elif cropped_tensors.shape[0] == 1:
+            cropped_tensors = cropped_tensors.squeeze(0).to(device)
+        else:
+            #Pick a face here
+            cropped_tensors = cropped_tensors[0].to(device)
+        result_cropped_tensors.append(cropped_tensors)
+    del frames
+    result_cropped_tensors = torch.stack(result_cropped_tensors)
+    print(result_cropped_tensors.shape)
+    emb = resnet(result_cropped_tensors.to(device))
+    return emb
 
 
 if __name__ == '__main__':
-    res = input_face_embeddings(["a.jpg","b.jpg"], True)
-    print(res[0][0].shape) # 512D
+    mtcnn = MTCNN(keep_all=True).eval()
+    resnet = InceptionResnetV1(pretrained="vggface2").eval()
+    device = torch.device("cpu")
+    res = input_face_embeddings(["a.jpg","b.jpg"], True, mtcnn, resnet, device)
+    print(res.shape) # 512D
     print("Passed")
