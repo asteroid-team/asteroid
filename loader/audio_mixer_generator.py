@@ -18,6 +18,9 @@ VIDEO_DIR = "../../data/train"
 AUDIO_SET_DIR = "./../../data/audio_set/audio"
 
 def sample_audio_set():
+    """
+        sample random audio files as a noise from audio set dataset
+    """
     audio_files = glob.glob(os.path.join(AUDIO_SET_DIR, "*"))
     print(audio_files)
     total_files = len(audio_files)
@@ -29,7 +32,18 @@ def sample_audio_set():
     return [audio_files[i] for i in choices[:total_choices]]
 
 
-def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv", audio_set=True):
+def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv", audio_set=True) -> None:
+    """
+        generate the combination dataframe used in data_loader.py
+
+        Args:
+            dataset_size: restrict total possible combinations
+            input_audio_size: input size
+            video_ext: extension of video
+            audio_ext: extension of audio
+            file_name: file name of combination dataframe to save
+            audio_set: use audio set dataset
+    """
     audio_mix_command_suffix = "-filter_complex amix=inputs={}:duration=longest "
     audio_files = glob.glob(os.path.join(AUDIO_DIR, "*"))
     total_audio_files = len(audio_files)

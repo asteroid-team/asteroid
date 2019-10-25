@@ -21,7 +21,7 @@ class Signal:
         self.audio, sr = librosa.load(self.audio_path, sr=sr)
         self.video = cv2.VideoCapture(self.video_path)
 
-    def augment_audio(self, augmenter, *args, **kwargs):
+    def augment_audio(self, augmenter: Callable, *args, **kwargs):
         '''
             Change the audio via the augmenter method.
         '''
