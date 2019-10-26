@@ -10,14 +10,18 @@ import torch.nn as nn
 from .enc_dec import EncoderDecoder
 
 
-class SincParamFB(EncoderDecoder):
+class ParamSincFB(EncoderDecoder):
     """ Extension of the parameterized filterbank from [1] proposed in [2].
     # Arguments
-        n_filters: Positive int. Number of filters.
+        n_filters: Positive int. Number of filters. Half of `n_filters`
+            (the real parts) will have parameters, the other half will
+            correspond to the imaginary parts.
+            `n_filters` should be even.
         kernel_size: Positive int. Length of the filters.
         stride: Positive int. Stride of the convolution.
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
-            an encoder of a decoder.
+            an encoder or a decoder.
+        sample_rate: int. The sample rate (used for initialization).
         min_low_hz: Positive int. Lowest low frequency allowed (Hz).
         min_band_hz: Positive int. Lowest band frequency allowed (Hz).
     # References
@@ -29,7 +33,7 @@ class SincParamFB(EncoderDecoder):
     """
     def __init__(self, n_filters, kernel_size, stride, enc_or_dec='encoder',
                  sample_rate=16000, min_low_hz=50, min_band_hz=50):
-        super(SincParamFB, self).__init__(stride, enc_or_dec=enc_or_dec)
+        super(ParamSincFB, self).__init__(stride, enc_or_dec=enc_or_dec)
         self.n_filters = n_filters
         if kernel_size % 2 == 0:
             print('Received kernel_size={}, force '.format(kernel_size) +
@@ -46,6 +50,9 @@ class SincParamFB(EncoderDecoder):
                           self.sample_rate)  # Half time vector
         self.register_buffer('window_', torch.Tensor(window_))
         self.register_buffer('n_', n_)
+        if n_filters % 2 != 0:
+            UserWarning('If the number of filters `n_filters` is odd, the '
+                        'output size of the layer will be `n_filters - 1`.')
 
     def _initialize_filters(self):
         """ Filter Initialization along the Mel scale"""
