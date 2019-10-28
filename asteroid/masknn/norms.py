@@ -68,3 +68,19 @@ class CumLN(_LayerNorm):
 gLN = GlobLN
 cLN = ChanLN
 cgLN = CumLN
+
+
+def get(identifier):
+    if identifier is None:
+        return None
+    elif callable(identifier):
+        return identifier
+    elif isinstance(identifier, str):
+        cls = globals().get(identifier)
+        if cls is None:
+            raise ValueError('Could not interpret normalization identifier: ' +
+                             str(identifier))
+        return cls
+    else:
+        raise ValueError('Could not interpret normalization identifier: ' +
+                         str(identifier))
