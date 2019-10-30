@@ -50,6 +50,18 @@ class PITLossContainer(object):
                                                    min_loss_idx)
             return mean_loss, reordered_est_sources
 
+    def get_infos_subdict(self, infos):
+        """
+        Get sub-dictionnary from `infos` containing only the key-value pairs
+        accepted by the loss function `loss_func`.
+        Args:
+            infos: dict. Additional information for loss computation.
+        Returns:
+            sub-dict of infos accepted by `loss_func`.
+        """
+        self.get_loss_func_args(infos)
+        return {key: infos[key] for key in self.loss_kwargs}
+
     def get_loss_func_args(self, infos):
         """
         Get the list of accepted keyword arguments by `loss_func` from `infos`.
@@ -67,18 +79,6 @@ class PITLossContainer(object):
             print('\tInput keys in infos : ', list(infos.keys()))
             print('\tKeys which will be passed to the loss : ',
                   self.loss_kwargs)
-
-    def get_infos_subdict(self, infos):
-        """
-        Get sub-dictionnary from `infos` containing only the key-value pairs
-        accepted by the loss function `loss_func`.
-        Args:
-            infos: dict. Additional information for loss computation.
-        Returns:
-            sub-dict of infos accepted by `loss_func`.
-        """
-        self.get_loss_func_args(infos)
-        return {key: infos[key] for key in self.loss_kwargs}
 
 
 def pairwise_neg_sisdr(source, est_source, scale_invariant=True):
