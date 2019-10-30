@@ -1,3 +1,8 @@
+"""
+NN blocks for separators.
+@author : Manuel Pariente, Inria-Nancy
+"""
+
 import torch
 from torch import nn
 from . import norms

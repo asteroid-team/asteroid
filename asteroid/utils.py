@@ -1,3 +1,7 @@
+"""
+Package-level utils.
+@author : Manuel Pariente, Inria-Nancy
+"""
 import inspect
 
 
