@@ -64,10 +64,11 @@ class AVDataset(torch.utils.data.Dataset):
         self.resnet = InceptionResnetV1(pretrained="vggface2").eval()
 
         if self.face_embed_cuda:
-            self.mtcnn = self.mtcnn.cuda()
-            self.resnet = self.resnet.cuda()
+            device = torch.device("cuda:0")
+            self.mtcnn = self.mtcnn.to(device)
+            self.resnet = self.resnet.to(device)
 
-            self.mtcnn.device = torch.device("cuda:0")
+            self.mtcnn.device = device
 
         if self.use_half:
             self.resnet = self.resnet.half()
@@ -110,10 +111,8 @@ class AVDataset(torch.utils.data.Dataset):
             
             #NOTE: use_cuda = True, only if VRAM ~ 7+GB, if RAM < 8GB it will not work...
             #run the detector and embedder on raw frames
-            embeddings = input_face_embeddings(raw_frames, is_path=False,
-            mtcnn=self.mtcnn, resnet=self.resnet,
-            face_embed_cuda=self.face_embed_cuda, use_half=self.use_half)
-
+            embeddings = input_face_embeddings(raw_frames, is_path=False, mtcnn=self.mtcnn, resnet=self.resnet,
+                                               face_embed_cuda=self.face_embed_cuda, use_half=self.use_half)
             #clean
             del raw_frames
             video_tensors.append(embeddings)
@@ -128,10 +127,10 @@ class AVDataset(torch.utils.data.Dataset):
         mixed_signal_tensor = torch.Tensor(convert_to_spectrogram(mixed_signal))  #shape  (257,298,2)
         mixed_signal_tensor = torch.transpose(mixed_signal_tensor,0,2) #shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257	
 
-        if self.use_cuda:
-            audio_tensors = [a.cuda() for a in audio_tensors]
-            video_tensors = [a.cuda() for a in video_tensors]
-            mixed_signal_tensor = mixed_signal_tensor.cuda()
+        audio_tensors = [a.to(self.device) for a in audio_tensors]
+        video_tensors = [a.to(self.device) for a in video_tensors]
+        mixed_signal_tensor = mixed_signal_tensor.to(self.device)
+
         return audio_tensors, video_tensors, mixed_signal_tensor
 
 
