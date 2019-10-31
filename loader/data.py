@@ -11,9 +11,10 @@ class Signal:
         This class holds the video frames and the audio signal.
     '''
 
-    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000):
+    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000, video_max_length=75):
         self.video_path = video_path
         self.audio_path = audio_path
+        self.video_max_length = video_max_length
         self._load(sr=sr)
         self._convert_video()
 
@@ -51,7 +52,9 @@ class Signal:
         self.video.release()
     
     def get_video(self):
-        return self.buffer_video
+        if self.video_max_length is not None:
+            buffer_video = self.buffer_video[:self.video_max_length]
+        return buffer_video
 
     def get_audio(self):
         return self.audio

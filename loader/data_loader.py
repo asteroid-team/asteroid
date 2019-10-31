@@ -108,6 +108,7 @@ class AVDataset(torch.utils.data.Dataset):
 
             #retrieve video frames
             raw_frames = all_signals[i].get_video()
+            print(raw_frames.shape)
             
             #NOTE: use_cuda = True, only if VRAM ~ 7+GB, if RAM < 8GB it will not work...
             #run the detector and embedder on raw frames

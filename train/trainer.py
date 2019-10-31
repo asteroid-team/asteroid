@@ -39,8 +39,13 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                                                            patience=2)
 
     """
-    for audio, video, mixed in train_loader:
+    for _ in range(1):#audio, video, mixed in train_loader:
+        mixed = torch.zeros((1, 2, 298, 257))
+        video = [torch.zeros((1, 1024, 75, 1)), torch.zeros((1, 1024, 75, 1))]
+        audio = [torch.zeros((1, 298, 257, 2)), torch.zeros((1, 298, 257, 2))]
+
         output_audios = model(mixed, video)
+        print(output_audios.shape)
         total_loss = 0
         for i in range(dataset.input_audio_size):
             loss = criterion(output_audios[:, i, ...], audio[i])

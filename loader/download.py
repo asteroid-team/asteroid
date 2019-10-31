@@ -42,9 +42,9 @@ def save_video(link, path, start, end, resolution):
 
 def main(args):
     df = pd.read_csv(args.path)
-    links = df.iloc[:, 0][:2]
-    start_times = df.iloc[:, 1][:2]
-    end_times = df.iloc[:, 2][:2]
+    links = df.iloc[:, 0][:10]
+    start_times = df.iloc[:, 1][:10]
+    end_times = df.iloc[:, 2][:10]
     
     yt_links = ["https://youtube.com/watch\?v\="+l for l in links]
     paths = [Path(os.path.join(args.vid_dir, f + ".mp4")) for f in links]
