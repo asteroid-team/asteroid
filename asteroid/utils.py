@@ -24,7 +24,7 @@ def has_arg(fn, name):
 
 
 def to_cuda(tensors):
-    """ Transfer tensor, dict or list of tensors to GPU.
+    """Transfer tensor, dict or list of tensors to GPU.
     Args:
         tensors: torch.Tensor, dict or list of torch.Tensor.
     Returns:

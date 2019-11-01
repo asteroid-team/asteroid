@@ -8,11 +8,11 @@ from torch.nn import functional as F
 
 
 class EncoderDecoder(nn.Module):
-    """ Base Encoder-Decoder class.
+    """Base Encoder-Decoder class.
     Each subclass has to contain `filters`, either as an attribute or as
     a property.
 
-    # Arguments
+    # Args
         stride: Positive int. Stide of the conv. or transposed conv.
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
             an encoder of a decoder. Based on `enc_or_dec`, the class defines

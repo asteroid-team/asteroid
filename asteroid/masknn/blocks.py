@@ -10,8 +10,7 @@ from ..utils import has_arg
 
 
 class NoLayer(nn.Module):
-    """
-    Class for linear activation layer.
+    """Class for linear activation layer.
     Can be useful when there are optional layers and the interface should be
     the same.
     """
@@ -20,8 +19,8 @@ class NoLayer(nn.Module):
 
 
 class Conv1DBlock(nn.Module):
-    """
-    One dimensional convolutional block, as proposed in [1].
+    """One dimensional convolutional block, as proposed in [1].
+
     Args
         in_chan: int. Number of input channels.
         hid_chan: int. Number of hidden channels in the depth-wise convolution.
@@ -32,6 +31,7 @@ class Conv1DBlock(nn.Module):
         norm_type: string. Type of normalization to use.
             Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm) and
             `cgLN` (cumulative global Layernorm).
+
     References :
     [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking for
     speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
@@ -59,23 +59,24 @@ class Conv1DBlock(nn.Module):
 
 
 class TDConvNet(nn.Module):
+    """ Temporal Convolutional network used in ConvTasnet.
+
+    Args
+        in_chan: int > 0. Number of input filters.
+        out_chan : int > 0. Number of bins in the estimated masks.
+        bn_chan: int > 0. Number of channels after the bottleneck.
+        hid_chan: int > 0. Number of channels in the convolutional blocks.
+        skip_chan: int > 0. Number of channels in the skip connections.
+        kernel_size: int > 0. Kernel size in convolutional blocks.
+        n_blocks: int > 0. Number of convolutional blocks in each repeat.
+        n_repeats: int > 0. Number of repeats.
+        n_src: int > 0. Number of masks to estimate.
+        norm_type: BN, gLN, cLN
+        mask_act: use which non-linear function to generate mask
+    """
     def __init__(self, in_chan, out_chan, bn_chan, hid_chan, skip_chan,
                  kernel_size, n_blocks, n_repeats, n_src, norm_type="gLN",
                  mask_act='relu'):
-        """
-        Args
-            in_chan: int > 0. Number of input filters.
-            out_chan : int > 0. Number of bins in the estimated masks.
-            bn_chan: int > 0. Number of channels after the bottleneck.
-            hid_chan: int > 0. Number of channels in the convolutional blocks.
-            skip_chan: int > 0. Number of channels in the skip connections.
-            kernel_size: int > 0. Kernel size in convolutional blocks.
-            n_blocks: int > 0. Number of convolutional blocks in each repeat.
-            n_repeats: int > 0. Number of repeats.
-            n_src: int > 0. Number of masks to estimate.
-            norm_type: BN, gLN, cLN
-            mask_act: use which non-linear function to generate mask
-        """
         super(TDConvNet, self).__init__()
         self.in_chan = in_chan
         self.out_chan = out_chan
@@ -116,7 +117,7 @@ class TDConvNet(nn.Module):
         """
         Args:
             mixture_w: torch.Tensor of shape [batch, n_filters, n_frames]
-        returns:
+        Returns:
             est_mask: torch.Tensor of shape [batch, n_src, n_filters, n_frames]
         """
         batch, n_filters, n_frames = mixture_w.size()

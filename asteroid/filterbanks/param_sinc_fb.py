@@ -11,8 +11,9 @@ from .enc_dec import EncoderDecoder
 
 
 class ParamSincFB(EncoderDecoder):
-    """ Extension of the parameterized filterbank from [1] proposed in [2].
-    # Arguments
+    """Extension of the parameterized filterbank from [1] proposed in [2].
+
+    # Args
         n_filters: Positive int. Number of filters. Half of `n_filters`
             (the real parts) will have parameters, the other half will
             correspond to the imaginary parts.
@@ -24,6 +25,7 @@ class ParamSincFB(EncoderDecoder):
         sample_rate: int. The sample rate (used for initialization).
         min_low_hz: Positive int. Lowest low frequency allowed (Hz).
         min_band_hz: Positive int. Lowest band frequency allowed (Hz).
+
     # References
         [1] : "Speaker Recognition from raw waveform with SincNet". SLT 2018.
         Mirco Ravanelli, Yoshua Bengio.  https://arxiv.org/abs/1808.00158

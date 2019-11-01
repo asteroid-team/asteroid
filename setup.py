@@ -5,5 +5,9 @@ setup(
     version='0.0.1',
     description='Source separation on steroids',
     author='Manuel Pariente',
-    author_email='manuel.pariente@loria.fr'
+    author_email='manuel.pariente@loria.fr',
+    license='MIT',
+    install_requires=['numpy',
+                      'torch',
+                      'soundfile']
 )

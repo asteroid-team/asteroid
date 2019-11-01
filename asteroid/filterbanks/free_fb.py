@@ -9,13 +9,15 @@ from .enc_dec import EncoderDecoder
 
 
 class FreeFB(EncoderDecoder):
-    """ Free filterbank without any constraints. Equivalent to nn.Conv1d.
-    # Arguments
+    """Free filterbank without any constraints. Equivalent to nn.Conv1d.
+
+    # Args
         n_filters: Positive int. Number of filters.
         kernel_size: Positive int. Length of the filters.
         stride: Positive int. Stride of the convolution.
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
             an encoder or a decoder.
+
     # References
         [1] : "Filterbank design for end-to-end speech separation".
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,

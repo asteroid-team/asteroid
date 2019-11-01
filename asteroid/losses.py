@@ -11,8 +11,8 @@ EPS = 1e-8
 
 
 class PITLossContainer(object):
-    """
-    Permutation invariant loss container. The loss function
+    """Permutation invariant loss container. The loss function
+
     Args:
         loss_func: function. The loss function to compute after the forward.
             The loss function is expected to output the pairwise losses
@@ -25,9 +25,9 @@ class PITLossContainer(object):
         self.loss_kwargs = None
 
     def compute(self, targets, est_targets, infos=None, return_est=False):
-        """
-        Compute the minimum loss to be back-propagated. Optionnaly return the
+        """Compute the minimum loss to be back-propagated. Optionnaly return the
         reordered estimates.
+
         Args:
             targets: torch.Tensor. Training targets.
             est_targets: torch.Tensor. Targets estimated by the network.
@@ -51,11 +51,12 @@ class PITLossContainer(object):
             return mean_loss, reordered_est_sources
 
     def get_infos_subdict(self, infos):
-        """
-        Get sub-dictionnary from `infos` containing only the key-value pairs
+        """Get sub-dictionnary from `infos` containing only the key-value pairs
         accepted by the loss function `loss_func`.
+
         Args:
             infos: dict. Additional information for loss computation.
+
         Returns:
             sub-dict of infos accepted by `loss_func`.
         """
@@ -63,11 +64,12 @@ class PITLossContainer(object):
         return {key: infos[key] for key in self.loss_kwargs}
 
     def get_loss_func_args(self, infos):
-        """
-        Get the list of accepted keyword arguments by `loss_func` from `infos`.
+        """Get the list of accepted kwargs by `loss_func` from `infos`.
         Assumes that `infos` will have the same keys from one call to another.
+
         Args:
             infos: dict. Additional information for loss computation.
+
         Returns:
             List of accepted keyword arguments by `loss_func` from `infos`.
         """
@@ -83,12 +85,14 @@ class PITLossContainer(object):
 
 def pairwise_neg_sisdr(source, est_source, scale_invariant=True):
     """Calculate pair-wise negative SI-SDR.
+
     Args:
         source: torch.Tensor of shape [batch, n_src, time]. The target sources.
         est_source: torch.Tensor of shape [batch, n_src, time]. Estimates
             of the target sources.
         scale_invariant: Boolen. Whether to rescale the estimated sources to
             the targets.
+
     Returns:
         torch.Tensor of shape [batch, n_src, n_src]. Pair-wise losses.
     """
@@ -121,11 +125,12 @@ def pairwise_neg_sisdr(source, est_source, scale_invariant=True):
 
 
 def find_best_perm(pair_wise_losses, n_src):
-    """
-    Find the best permutation, given the pair wise losses.
+    """Find the best permutation, given the pair wise losses.
+
     Args:
         pair_wise_losses: torch.Tensor. Pair-wise losses [batch, n_src, n_src]
         n_src: int > 0. Number of sources.
+
     Returns:
         - torch.Tensor (batch,). The loss corresponding to the best permutation.
         - torch.LongTensor. The indexes of the best permutations.
@@ -145,11 +150,13 @@ def find_best_perm(pair_wise_losses, n_src):
 
 
 def reorder_source(source, n_src, min_loss_idx):
-    """
+    """ Reorder sources according to the best permutation.
+
     Args:
         source: torch.Tensor. shape [batch, n_src, time]
         n_src: int > 0. Number of sources.
         min_loss_idx: torch.LongTensor. shape [batch], each item is in [0, C!)
+
     Returns:
         reordered_sources: [batch, n_src, time]
     """

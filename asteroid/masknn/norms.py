@@ -9,16 +9,18 @@ EPS = 1e-8
 
 
 class _LayerNorm(nn.Module):
-    """ Layer Normalization base class. """
+    """Layer Normalization base class."""
     def __init__(self, channel_size):
         super(_LayerNorm, self).__init__()
         self.channel_size = channel_size
-        self.gamma = nn.Parameter(torch.ones(1, channel_size, 1))
-        self.beta = nn.Parameter(torch.zeros(1, channel_size, 1))
+        self.gamma = nn.Parameter(torch.ones(1, channel_size, 1),
+                                  requires_grad=True)
+        self.beta = nn.Parameter(torch.zeros(1, channel_size, 1),
+                                 requires_grad=True)
 
 
 class GlobLN(_LayerNorm):
-    """Global Layer Normalization (globLN)"""
+    """Global Layer Normalization (globLN)."""
     def forward(self, x):
         """
         Args:
@@ -32,7 +34,7 @@ class GlobLN(_LayerNorm):
 
 
 class ChanLN(_LayerNorm):
-    """Channel-wise Layer Normalization (chanLN)"""
+    """Channel-wise Layer Normalization (chanLN)."""
     def forward(self, x):
         """
         Args:
@@ -46,7 +48,7 @@ class ChanLN(_LayerNorm):
 
 
 class CumLN(_LayerNorm):
-    """ Cumulative Global layer normalization. (cumLN)"""
+    """Cumulative Global layer normalization(cumLN)."""
     def forward(self, x):
         """
         Args:

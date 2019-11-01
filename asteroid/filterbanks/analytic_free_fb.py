@@ -9,9 +9,10 @@ from .enc_dec import EncoderDecoder
 
 
 class AnalyticFreeFB(EncoderDecoder):
-    """ Free analytic (fully learned with analycity constraints) filterbank
+    """Free analytic (fully learned with analycity constraints) filterbank
         proposed in [1].
-    # Arguments
+
+    # Args
         n_filters: Positive int. Number of filters. Half of `n_filters` will
             have parameters, the other half will be the hilbert transforms.
             `n_filters` should be even.
@@ -19,6 +20,7 @@ class AnalyticFreeFB(EncoderDecoder):
         stride: Positive int. Stride of the convolution.
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
             an encoder or a decoder.
+
     # References
         [1] : "Filterbank design for end-to-end speech separation".
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
@@ -30,7 +32,8 @@ class AnalyticFreeFB(EncoderDecoder):
         self.n_filters = n_filters
         self.kernel_size = kernel_size
         self.stride = stride
-        self._filters = nn.Parameter(torch.ones(n_filters // 2, 1, kernel_size))
+        self._filters = nn.Parameter(torch.ones(n_filters // 2, 1, kernel_size),
+                                     requires_grad=True)
         if n_filters % 2 != 0:
             UserWarning('If the number of filters `n_filters` is odd, the '
                         'output size of the layer will be `n_filters - 1`.')

@@ -25,8 +25,9 @@ zeros in them. This is not efficient, the filters should be truncated.
 class STFTFB(EncoderDecoder):
     def __init__(self, n_filters, kernel_size, stride, enc_or_dec='enc',
                  **kwargs):
-        """ STFT filterbank.
-        # Arguments
+        """STFT filterbank.
+
+        # Args
             n_filters: Positive int. Number of filters. Determines the length
                 of the STFT filters before windowing.
             kernel_size: Positive int. Length of the filters (i.e the window).
@@ -53,7 +54,7 @@ class STFTFB(EncoderDecoder):
         rpad = int(n_filters - kernel_size - lpad)
         self.window = np.concatenate(np.zeros((lpad,)), win, np.zeros((rpad,)))
 
-        filters = torch.Tensor(filters * self.window).unsqueeze(1)
+        filters = torch.from_numpy(filters * self.window).unsqueeze(1)
         self.register_buffer('_filters', filters)
 
     @property

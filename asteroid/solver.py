@@ -41,8 +41,8 @@ class Solver(object):
         self.model_path = args.model_path
         # Monitoring
         self.print_freq = args.print_freq
-        self.tr_loss = torch.Tensor(self.epochs)
-        self.cv_loss = torch.Tensor(self.epochs)
+        self.tr_loss = torch.as_tensor(self.epochs)
+        self.cv_loss = torch.as_tensor(self.epochs)
         self.ep_half_lr = []
         self.best_val_loss = float("inf")
         self.val_no_impv = 0
@@ -71,8 +71,8 @@ class Solver(object):
             tr_avg_loss = self._run_one_epoch(epoch)
             print('-' * 85)
             print('Train Summary | End of Epoch {0} | Time {1:.2f}s | '
-                  'Train Loss {2:.3f}'.format(
-                epoch + 1, time.time() - start, tr_avg_loss))
+                  'Train Loss {2:.3f}'.format(epoch + 1, time.time() - start,
+                                              tr_avg_loss))
             print('-' * 85)
             if self.checkpoint:
                 file_path = os.path.join(self.save_folder,
@@ -146,11 +146,10 @@ class Solver(object):
             total_loss += loss.item()
 
             if i % self.print_freq == 0:
-                print('Epoch {0} | Iter {1} | Average Loss {2:.3f} | '
-                      'Current Loss {3:.6f} | {4:.1f} ms/batch'.format(
-                    epoch + 1, i + 1, total_loss / (i + 1),
-                    loss.item(), 1000 * (time.time() - start) / (i + 1)),
-                    flush=True)
+                print('Epoch {0} | Iter {1} | Average Loss {2:.3f} | Current'
+                      ' Loss {3:.6f} | {4:.1f} ms/batch '
+                      ''.format(epoch+1, i+1, total_loss/(i+1), loss.item(),
+                                1000*(time.time()-start)/(i+1)), flush=True)
         return total_loss / (i + 1)
 
     def save_model(self, file, epoch):
@@ -164,9 +163,9 @@ class Solver(object):
 
     @staticmethod
     def multiply_learning_rate(optimizer, multiplier):
-        """
-        Multiplies the learning rate of an optimizer by a given number.
+        """Multiplies the learning rate of an optimizer by a given number.
         This is done inplace, so it does not return anything.
+
         Args:
             optimizer: torch.optim.Optimizer. The optimizer to be changed.
             multiplier: float > 0. Learning rate multiplier
