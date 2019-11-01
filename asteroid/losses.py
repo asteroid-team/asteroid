@@ -2,6 +2,7 @@
 Package-level utils.
 @author : Manuel Pariente, Inria-Nancy
 Modified and extended from github.com/kaituoxu/Conv-TasNet/
+MIT Copyright (c) 2018 Kaituo XU
 """
 
 from itertools import permutations
