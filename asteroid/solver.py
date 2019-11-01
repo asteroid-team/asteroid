@@ -122,7 +122,7 @@ class Solver(object):
                 inputs, targets, infos = data
             else:
                 raise ValueError('Expected DataLoader output to have '
-                                 '2 or 3    elements. Received '
+                                 '2 or 3 elements. Received '
                                  '{} elements'.format(len(data)))
             if self.use_cuda:
                 inputs, targets, infos = to_cuda([inputs, targets, infos])
