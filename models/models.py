@@ -120,8 +120,9 @@ class Video_Model(nn.Module):
         
     def forward(self,input_video):
         # input video will be (512,75,1)
-        
-        input_video = torch.transpose(input_video,1,3) # (1,75,512)
+        if len(input_video.shape) == 3:
+            input_video = input_video.unsqueeze(1)
+        #input_video = torch.transpose(input_video,1,3) # (1,75,512)
         #print (input_video.shape)
         input_video = self.linear_for_512_to_1024(input_video) # (1,75,1024)
         
