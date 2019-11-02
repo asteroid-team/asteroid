@@ -14,7 +14,8 @@ class AVDataset(torch.utils.data.Dataset):
     
 
     def __init__(self, dataset_df_path: Path, video_base_dir: Path, input_df_path: Path,
-                input_audio_size=2, use_cuda=False, face_embed_cuda=True, use_half=True):
+                input_audio_size=2, use_cuda=False, face_embed_cuda=True, use_half=True,
+                all_embed_saved=True):
         """
             
             Args:
@@ -25,21 +26,23 @@ class AVDataset(torch.utils.data.Dataset):
                 use_cuda: cuda for the dataset
                 face_embed_cuda: cuda for pre-trained models
                 use_half: use_half precision for pre-trained models
+                all_embed_saved: true, if all embeddings are saved, so no
+                                 need to load resnet/mtcnn
         """
         self.input_audio_size = input_audio_size
 
-        self.dataset_df = pd.read_csv(dataset_df_path.as_posix())
-        self.file_names = self.dataset_df.iloc[:, 0]
-        
-        #All cropped, pre-processed videos
-        self.file_names = [os.path.join(video_base_dir.as_posix(), f + "_final.mp4") 
-                        for f in self.file_names]
+        #self.dataset_df = pd.read_csv(dataset_df_path.as_posix())
+        #self.file_names = self.dataset_df.iloc[:, 0]
+        #
+        ##All cropped, pre-processed videos
+        #self.file_names = [os.path.join(video_base_dir.as_posix(), f + "_final.mp4") 
+        #                for f in self.file_names]
 
-        self.start_times = self.dataset_df.iloc[:, 1]
-        self.end_times = self.dataset_df.iloc[:, 2]
+        #self.start_times = self.dataset_df.iloc[:, 1]
+        #self.end_times = self.dataset_df.iloc[:, 2]
 
-        self.face_x = self.dataset_df.iloc[:, 3]
-        self.face_y = self.dataset_df.iloc[:, 4]
+        #self.face_x = self.dataset_df.iloc[:, 3]
+        #self.face_y = self.dataset_df.iloc[:, 4]
 
         #NOTE: All the above information is not being used anywhere right now.
 
@@ -60,23 +63,24 @@ class AVDataset(torch.utils.data.Dataset):
         self.use_half = use_half
 
         #Load pre-trained face processing models
-        self.mtcnn = MTCNN(keep_all=True).eval()
-        self.resnet = InceptionResnetV1(pretrained="vggface2").eval()
+        if not all_embed_saved:
+            self.mtcnn = MTCNN(keep_all=True).eval()
+            self.resnet = InceptionResnetV1(pretrained="vggface2").eval()
 
-        if self.face_embed_cuda:
-            device = torch.device("cuda:0")
-            self.mtcnn = self.mtcnn.to(device)
-            self.resnet = self.resnet.to(device)
+            if self.face_embed_cuda:
+                device = torch.device("cuda:0")
+                self.mtcnn = self.mtcnn.to(device)
+                self.resnet = self.resnet.to(device)
 
-            self.mtcnn.device = device
+                self.mtcnn.device = device
 
-        if self.use_half:
-            self.resnet = self.resnet.half()
-            #mtcnn doesn't support half precision inputs...
+            if self.use_half:
+                self.resnet = self.resnet.half()
+                #mtcnn doesn't support half precision inputs...
 
 
-        print(f"MTCNN has {sum(np.prod(i.shape) for i in self.mtcnn.parameters())} parameters")
-        print(f"RESNET has {sum(np.prod(i.shape) for i in self.resnet.parameters())} parameters")
+            print(f"MTCNN has {sum(np.prod(i.shape) for i in self.mtcnn.parameters())} parameters")
+            print(f"RESNET has {sum(np.prod(i.shape) for i in self.resnet.parameters())} parameters")
 
     def __len__(self):
         return len(self.input_df)

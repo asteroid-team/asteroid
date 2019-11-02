@@ -1,11 +1,14 @@
 import torch
+import psutil
 import collections
 from catalyst.dl import utils
 from config import ParamConfig
+from memory_profiler import profile
 from catalyst.dl.runner import SupervisedRunner
 from catalyst.dl.callbacks import EarlyStoppingCallback
 
 
+@profile
 def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
           optimizer: torch.optim.Optimizer, criterion: torch.nn.Module,
           config: ParamConfig, validate: bool=False,
@@ -39,10 +42,6 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                                                            patience=2)
 
     for audio, video, mixed in train_loader:
-        mixed = torch.zeros((1, 2, 298, 257))
-        video = [torch.zeros((1, 1024, 75, 1)), torch.zeros((1, 1024, 75, 1))]
-        audio = [torch.zeros((1, 298, 257, 2)), torch.zeros((1, 298, 257, 2))]
-
         output_audios = model(mixed, video)
         print(output_audios.shape)
         total_loss = 0

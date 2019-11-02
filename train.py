@@ -8,21 +8,25 @@ from pathlib import Path
 from trainer import train
 from config import ParamConfig
 from data_loader import AVDataset
+from memory_profiler import profile
 from argparse import ArgumentParser
 from models import Audio_Visual_Fusion as AVFusion
 
-
+@profile
 def main(args):
     config = ParamConfig(args.bs, args.epochs, args.workers, args.cuda, args.use_half)
     dataset = AVDataset(args.dataset_path, args.video_dir,
                         args.input_df_path, args.input_audio_size, args.cuda)
     model = AVFusion(num_person=args.input_audio_size)
+
+    if args.use_half:
+        model = model.half()
+
     if args.cuda:
         device = torch.device("cuda:0")
         model = model.to(device)
 
-    if args.use_half:
-        model = model.half()
+    print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters())}")
 
     optimizer = torch.optim.Adam(model.parameters())
     criterion = torch.nn.MSELoss(reduction="mean")
