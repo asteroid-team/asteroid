@@ -42,13 +42,12 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                                                            patience=2)
 
     for audio, video, mixed in train_loader:
+        optimizer.zero_grad()
         output_audios = model(mixed, video)
-        print(output_audios.shape)
-        total_loss = 0
-        for i in range(dataset.input_audio_size):
-            loss = criterion(output_audios[:, i, ...], audio[i])
-            total_loss += 0
-        print(total_loss)
+        total_loss = criterion(output_audios, audio)
+        total_loss.backward()
+        optimizer.step()
+        print(total_loss.item())
     """
     runner = SupervisedRunner()
     runner.train(model=model, criterion=criterion,
