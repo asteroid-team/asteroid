@@ -38,8 +38,7 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5,
                                                            patience=2)
 
-    """
-    for _ in range(1):#audio, video, mixed in train_loader:
+    for audio, video, mixed in train_loader:
         mixed = torch.zeros((1, 2, 298, 257))
         video = [torch.zeros((1, 1024, 75, 1)), torch.zeros((1, 1024, 75, 1))]
         audio = [torch.zeros((1, 298, 257, 2)), torch.zeros((1, 298, 257, 2))]
@@ -61,3 +60,4 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                  )
 
     utils.plot_metrics(logdir=logdir, metrics=["loss", "_base/lr"])
+    """

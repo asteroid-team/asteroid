@@ -81,7 +81,6 @@ class AVDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.input_df)
 
-    @profile
     def __getitem__(self, idx):
         row = self.input_df.iloc[idx, :]
         all_signals = []
@@ -106,6 +105,12 @@ class AVDataset(torch.utils.data.Dataset):
             #convert to tensor
             audio_tensors.append(torch.from_numpy(spectrogram))
 
+            #check if the embedding is saved
+            if all_signals[i].embed_is_saved():
+                embeddings = torch.from_numpy(all_signals[i].get_embed())
+                video_tensors.append(embeddings)
+                continue
+
             #retrieve video frames
             raw_frames = all_signals[i].get_video()
             print(raw_frames.shape)
@@ -116,6 +121,9 @@ class AVDataset(torch.utils.data.Dataset):
                                                face_embed_cuda=self.face_embed_cuda, use_half=self.use_half)
             #clean
             del raw_frames
+
+            #save embeddings if not saved
+            np.save(all_signals[i].embed_path, embeddings.cpu().numpy())
             video_tensors.append(embeddings)
 
         # video tensors are expected to be (75,1,1024) (h,w,c)

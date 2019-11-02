@@ -6,21 +6,30 @@ from pathlib import Path
 
 from typing import Callable, Tuple, List
 
+
+EMBED_DIR = Path("../data/train/embed/")
+
 class Signal:
     '''
         This class holds the video frames and the audio signal.
     '''
 
     def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000, video_max_length=75):
-        self.video_path = video_path
-        self.audio_path = audio_path
+        self.video_path = Path(video_path)
+        self.audio_path = Path(audio_path)
         self.video_max_length = video_max_length
+
+        self.embed_path = None
+        self.embed_saved = False
+        self.embed = None
+
         self._load(sr=sr)
         self._convert_video()
+        self._check_video_embed()
 
     def _load(self, sr: int):
-        self.audio, sr = librosa.load(self.audio_path, sr=sr)
-        self.video = cv2.VideoCapture(self.video_path)
+        self.audio, sr = librosa.load(self.audio_path.as_posix(), sr=sr)
+        self.video = cv2.VideoCapture(self.video_path.as_posix())
 
     def augment_audio(self, augmenter: Callable, *args, **kwargs):
         '''
@@ -50,6 +59,24 @@ class Signal:
 
             frame += 1
         self.video.release()
+
+    def _check_video_embed(self, embed_ext=".npy"):
+        video_name_stem = self.video_path.stem
+        embed_dir = EMBED_DIR
+        if not embed_dir.is_dir():
+            embed_dir = Path("..", *EMBED_DIR.parts)
+        if not embed_dir.is_dir():
+            print("use this file from src/ or src/loader")
+        self.embed_path = Path(embed_dir, video_name_stem + embed_ext)
+        if self.embed_path.is_file():
+            self.embed_saved = True
+            self.embed = np.load(self.embed_path.as_posix())
+
+    def embed_is_saved(self):
+        return self.embed_saved
+
+    def get_embed(self):
+        return self.embed
     
     def get_video(self):
         if self.video_max_length is not None:

@@ -32,7 +32,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--bs", default=2, type=int, help="batch size of dataset")
+    parser.add_argument("--bs", default=8, type=int, help="batch size of dataset")
     parser.add_argument("--epochs", default=10, type=int, help="max epochs to train")
     parser.add_argument("--cuda", default=False, type=bool, help="cuda for training")
     parser.add_argument("--workers", default=0, type=int, help="total workers for dataset")
