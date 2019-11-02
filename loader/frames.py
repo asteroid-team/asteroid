@@ -39,7 +39,10 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
             frame = Image.open(f)
         else:
             frame = Image.fromarray(f.astype("uint8"))
-        cropped_tensors = mtcnn(frame)
+
+        with torch.no_grad():
+            cropped_tensors = mtcnn(frame)
+
         if cropped_tensors is None:
             #Face not detected, for some reason
             cropped_tensors = torch.zeros((3, 160, 160)).to(device)
@@ -49,7 +52,9 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
         else:
             #Pick a face here
             cropped_tensors = cropped_tensors[0].to(device)
+
         result_cropped_tensors.append(cropped_tensors)
+
     del frames
     #Stack all frames
     result_cropped_tensors = torch.stack(result_cropped_tensors)
@@ -57,7 +62,9 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
     result_cropped_tensors = result_cropped_tensors.to(device)
     if use_half:
         result_cropped_tensors = result_cropped_tensors.half()
-    emb = resnet(result_cropped_tensors)
+
+    with torch.no_grad():
+        emb = resnet(result_cropped_tensors)
     if use_half:
         emb = emb.float()
     return emb
