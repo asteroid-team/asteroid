@@ -139,8 +139,10 @@ class AVDataset(torch.utils.data.Dataset):
 
         mixed_signal_tensor = torch.Tensor(convert_to_spectrogram(mixed_signal))  #shape  (257,298,2)
         mixed_signal_tensor = torch.transpose(mixed_signal_tensor,0,2) #shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257	
+        audio_tensors = [i.transpose(0, 2) for i in audio_tensors]
+        audio_tensors = torch.stack(audio_tensors)
+        audio_tensors = audio_tensors.permute(1, 2, 3, 0).to(self.device)
 
-        audio_tensors = [a.to(self.device) for a in audio_tensors]
         video_tensors = [a.to(self.device) for a in video_tensors]
         mixed_signal_tensor = mixed_signal_tensor.to(self.device)
 
