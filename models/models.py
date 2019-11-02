@@ -97,6 +97,7 @@ class Video_Model(nn.Module):
         super(Video_Model, self).__init__()
         
         #video model layers , name of layers as per table 2 given in paper.
+        self.linear_for_512_to_1024 = nn.Linear(512,1024)
         
         self.conv1 = nn.Conv2d(1024,256,kernel_size = (7,1),padding = self.get_padding((7,1),(1,1)), dilation = (1,1))
       
@@ -119,8 +120,15 @@ class Video_Model(nn.Module):
         return padding
         
     def forward(self,input_video):
-        # input audio will be (1024,75,1)
+        # input video will be (512,75,1)
         
+        input_video = torch.transpose(input_video,1,3) # (1,75,512)
+        #print (input_video.shape)
+        input_video = self.linear_for_512_to_1024(input_video) # (1,75,1024)
+        
+        input_video = torch.transpose(input_video,1,3) # (1024,75,1)
+        
+
         output_layer = F.relu(self.batch_norm1(self.conv1(input_video)))
         #print (output_layer.shape)
         output_layer = F.relu(self.batch_norm1(self.conv2(output_layer)))
@@ -163,7 +171,7 @@ class Audio_Visual_Fusion(nn.Module):
     
     def forward(self,input_audio,input_video):
         # input_audio will be (N,2,298,257)
-        # input_video will be list of size = num_person , so each item of list will be of (N,1024,75,1)
+        # input_video will be list of size = num_person , so each item of list will be of (N,512,75,1)
         audio_out = self.audio_output(input_audio)
         # audio_out will be (N,256,298,1)
         AVFusion = [audio_out]
