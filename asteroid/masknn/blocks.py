@@ -76,7 +76,7 @@ class TDConvNet(nn.Module):
     """
     def __init__(self, in_chan, out_chan, bn_chan, hid_chan, skip_chan,
                  kernel_size, n_blocks, n_repeats, n_src, norm_type="gLN",
-                 mask_act='relu'):
+                 mask_act='ReLU'):
         super(TDConvNet, self).__init__()
         self.in_chan = in_chan
         self.out_chan = out_chan
@@ -96,7 +96,7 @@ class TDConvNet(nn.Module):
         self.TCN = nn.ModuleList()
         for r in range(n_repeats):
             for x in range(n_blocks):
-                padding = (kernel_size - 1) * 2**x
+                padding = (kernel_size - 1) * 2**x // 2
                 self.TCN.append(Conv1DBlock(bn_chan, hid_chan, skip_chan,
                                             kernel_size, padding=padding,
                                             dilation=2**x, norm_type=norm_type))
@@ -110,7 +110,7 @@ class TDConvNet(nn.Module):
             self.output_act = mask_nl_class(dim=1)
         else:
             self.output_act = mask_nl_class()
-        self.BN = nn.Sequential(layer_norm, bottleneck_conv)
+        self.bottleneck = nn.Sequential(layer_norm, bottleneck_conv)
         self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
 
     def forward(self, mixture_w):
@@ -121,7 +121,7 @@ class TDConvNet(nn.Module):
             est_mask: torch.Tensor of shape [batch, n_src, n_filters, n_frames]
         """
         batch, n_filters, n_frames = mixture_w.size()
-        output = self.BN(mixture_w)
+        output = self.bottleneck(mixture_w)
         skip_connection = 0.
         for i in range(len(self.TCN)):
             residual, skip = self.TCN[i](output)

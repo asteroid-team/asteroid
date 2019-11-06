@@ -9,11 +9,11 @@ from torch.nn import functional as F
 
 class EncoderDecoder(nn.Module):
     """Base Encoder-Decoder class.
-    Each subclass has to contain `filters`, either as an attribute or as
-    a property.
+    Each subclass has to implement a `filters` property, and a
+    `get_config` method.
 
     # Args
-        stride: Positive int. Stide of the conv. or transposed conv.
+        stride: Positive int. Stide of the conv or transposed conv. (Hop size).
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
             an encoder of a decoder. Based on `enc_or_dec`, the class defines
             the filterbank call `fb_call` which will be called in the `forward`
@@ -49,3 +49,35 @@ class EncoderDecoder(nn.Module):
 
     def forward(self, *inputs):
         return self.fb_call(*inputs)
+
+    def get_config(self):
+        """ Returns dictionary of arguments to re-instantiate the class."""
+        raise NotImplementedError
+
+    def serialize(self):
+        return {'args': self.get_config(),
+                'state_dict': self.state_dict()}
+
+    @classmethod
+    def from_config(cls, config):
+        """Create class instance from argument dictionary.
+        Args:
+            config: a dictionary containing the arguments to instantiate
+                the class.
+        Returns:
+            A class instance.
+        """
+        return cls(**config)
+
+    @classmethod
+    def load_from_pack(cls, pack):
+        """ Instantiate the class and load the state_dict.
+        Args:
+            pack: a dictionary containing the arguments to instantiate
+                the class and the state_dict to be loaded.
+        Returns:
+            A class instance with loaded state_dict.
+        """
+        model = cls.from_config(pack['args'])
+        model.load_state_dict(pack['state_dict'])
+        return model

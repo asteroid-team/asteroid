@@ -30,7 +30,19 @@ class FreeFB(EncoderDecoder):
         self.kernel_size = kernel_size
         self.stride = stride
         self._filters = nn.Parameter(torch.ones(n_filters, 1, kernel_size))
+        for p in self.parameters():
+            nn.init.xavier_normal_(p)
 
     @property
     def filters(self):
         return self._filters
+
+    def get_config(self):
+        """ Returns dictionary of arguments to re-instantiate the class."""
+        config = {
+            'n_filters': self.n_filters,
+            'kernel_size': self.kernel_size,
+            'stride': self.stride,
+            'enc_or_dec': self.enc_or_dec
+        }
+        return config
