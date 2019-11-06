@@ -3,10 +3,11 @@ NN blocks for separators.
 @author : Manuel Pariente, Inria-Nancy
 """
 
-import torch
 from torch import nn
+
 from . import norms
 from ..utils import has_arg
+from ..sub_module import SubModule
 
 
 class NoLayer(nn.Module):
@@ -58,7 +59,7 @@ class Conv1DBlock(nn.Module):
         return res_out, skip_out
 
 
-class TDConvNet(nn.Module):
+class TDConvNet(SubModule):
     """ Temporal Convolutional network used in ConvTasnet.
 
     Args
