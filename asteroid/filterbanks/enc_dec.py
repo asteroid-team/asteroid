@@ -5,7 +5,7 @@ EncoderDecoder base class.
 
 from torch.nn import functional as F
 
-from ..sub_module import SubModule
+from ..engine.sub_module import SubModule
 
 
 class EncoderDecoder(SubModule):

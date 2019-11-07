@@ -7,7 +7,7 @@ from torch import nn
 
 from . import norms
 from ..utils import has_arg
-from ..sub_module import SubModule, NoLayer
+from ..engine.sub_module import SubModule, NoLayer
 
 
 class Conv1DBlock(nn.Module):

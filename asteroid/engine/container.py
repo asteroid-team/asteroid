@@ -5,7 +5,7 @@ Container for encoding/masking/decoding networks
 
 import torch
 from torch import nn
-from ..sub_module import NoLayer
+from .sub_module import NoLayer
 
 """
 What we want here. 

@@ -7,7 +7,7 @@ MIT Copyright (c) 2018 Kaituo XU
 
 from itertools import permutations
 import torch
-from .utils import has_arg
+from ..utils import has_arg
 EPS = 1e-8
 
 

@@ -9,7 +9,7 @@ import os
 import time
 import torch
 
-from .utils import to_cuda
+from ..utils import to_cuda
 
 
 class Solver(object):
