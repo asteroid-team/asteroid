@@ -39,7 +39,9 @@ class STFTFB(EncoderDecoder):
         win = np.hanning(kernel_size + 1)[:-1]**.5
         lpad = int((n_filters - kernel_size) // 2)
         rpad = int(n_filters - kernel_size - lpad)
-        self.window = np.concatenate(np.zeros((lpad,)), win, np.zeros((rpad,)))
+        # import ipdb; ipdb.set_trace()
+        self.window = np.concatenate([np.zeros((lpad,)), win,
+                                      np.zeros((rpad,))])
 
         filters = np.fft.fft(np.eye(n_filters))
         filters /= (.5 * kernel_size / np.sqrt(stride))
@@ -47,7 +49,7 @@ class STFTFB(EncoderDecoder):
                              np.imag(filters[:self.cutoff, :])])
         filters[0, :] /= np.sqrt(2)
         filters[-1, :] /= np.sqrt(2)
-        filters = torch.from_numpy(filters * self.window).unsqueeze(1)
+        filters = torch.from_numpy(filters * self.window).unsqueeze(1).float()
         self.register_buffer('_filters', filters)
 
     @property

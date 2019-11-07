@@ -46,7 +46,7 @@ class ParamSincFB(EncoderDecoder):
         self.sample_rate = sample_rate
         self.min_low_hz, self.min_band_hz = min_low_hz, min_band_hz
 
-        self.half_kernel = self.kernel_size / 2
+        self.half_kernel = self.kernel_size // 2
         self.cutoff = int(n_filters // 2)
         self.n_feats_out = 2 * self.cutoff
         self._initialize_filters()
@@ -57,7 +57,7 @@ class ParamSincFB(EncoderDecoder):
         window_ = np.hamming(self.kernel_size)[:self.half_kernel]  # Half window
         n_ = 2 * np.pi * (torch.arange(-self.half_kernel, 0.).view(1, -1) /
                           self.sample_rate)  # Half time vector
-        self.register_buffer('window_', torch.from_numpy(window_))
+        self.register_buffer('window_', torch.from_numpy(window_).float())
         self.register_buffer('n_', n_)
 
     def _initialize_filters(self):
@@ -66,7 +66,7 @@ class ParamSincFB(EncoderDecoder):
         high_hz = self.sample_rate / 2 - (self.min_low_hz + self.min_band_hz)
         mel = np.linspace(self.to_mel(low_hz),
                           self.to_mel(high_hz),
-                          self.n_filters // 2 + 1)
+                          self.n_filters // 2 + 1, dtype='float32')
         hz = self.to_hz(mel)
         # filters parameters (out_channels // 2, 1)
         self.low_hz_ = nn.Parameter(torch.from_numpy(hz[:-1]).view(-1, 1))

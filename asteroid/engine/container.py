@@ -39,6 +39,11 @@ class Container(nn.Module):
         est_masks = self.masker(tf_rep)
         masked_tf_reps = self.apply_mask(tf_rep, est_masks)
         output = self.decoder(masked_tf_reps)
+
+        # T changed after conv1d in encoder, fix it here
+        inp_len = x.size(-1)
+        output_len = output.size(-1)
+        output = nn.functional.pad(output, [0, inp_len - output_len])
         return output
 
     def apply_mask(self, x, mask):
