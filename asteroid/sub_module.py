@@ -38,3 +38,35 @@ class SubModule(nn.Module):
         model = cls.from_config(pack['args'])
         model.load_state_dict(pack['state_dict'])
         return model
+
+
+class NoLayer(nn.Module):
+    """Class for linear activation layer.
+    Can be used instead of an encoder to feed features directly to a mask
+    network.
+        Args:
+        input_feats: int. Number of input features to the layer. Optional.
+    """
+
+    def __init__(self, input_feats=None):
+        super(NoLayer, self).__init__()
+        self.input_shape = input_feats
+        self.n_feats_out = input_feats
+
+    def forward(self, x):
+        return x
+
+    def get_config(self):
+        return {'input_feats': self.input_feats}
+
+    def serialize(self):
+        return {'args': self.get_config()}
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
+    @classmethod
+    def load_from_pack(cls, pack):
+        return cls.from_config(pack['args'])
+

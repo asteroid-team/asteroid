@@ -7,16 +7,7 @@ from torch import nn
 
 from . import norms
 from ..utils import has_arg
-from ..sub_module import SubModule
-
-
-class NoLayer(nn.Module):
-    """Class for linear activation layer.
-    Can be useful when there are optional layers and the interface should be
-    the same.
-    """
-    def forward(self, x):
-        return x
+from ..sub_module import SubModule, NoLayer
 
 
 class Conv1DBlock(nn.Module):
@@ -143,7 +134,7 @@ class TDConvNet(SubModule):
             'kernel_size': self.kernel_size,
             'n_blocks': self.n_blocks,
             'n_repeats': self.n_repeats,
-            'n_sources': self.n_sources,
+            'n_src': self.n_src,
             'norm_type': self.norm_type,
             'mask_act': self.mask_act
         }

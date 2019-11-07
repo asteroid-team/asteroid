@@ -26,13 +26,13 @@ class PITLossContainer(object):
         self.loss_kwargs = None
 
     def compute(self, targets, est_targets, infos=None, return_est=False):
-        """Compute the minimum loss to be back-propagated. Optionnaly return the
+        """Compute the minimum loss to be back-propagated. Optionally return the
         reordered estimates.
 
         Args:
             targets: torch.Tensor. Training targets.
             est_targets: torch.Tensor. Targets estimated by the network.
-            infos: dict. Optional dictionnary containing keywork arguments for
+            infos: dict. Optional dictionary containing keyword arguments for
                 the loss computation.
             return_est: Boolean. Whether to return the reordered estimates.
 
@@ -52,7 +52,7 @@ class PITLossContainer(object):
             return mean_loss, reordered_est_sources
 
     def get_infos_subdict(self, infos):
-        """Get sub-dictionnary from `infos` containing only the key-value pairs
+        """Get sub-dictionary from `infos` containing only the key-value pairs
         accepted by the loss function `loss_func`.
 
         Args:
@@ -91,7 +91,7 @@ def pairwise_neg_sisdr(source, est_source, scale_invariant=True):
         source: torch.Tensor of shape [batch, n_src, time]. The target sources.
         est_source: torch.Tensor of shape [batch, n_src, time]. Estimates
             of the target sources.
-        scale_invariant: Boolen. Whether to rescale the estimated sources to
+        scale_invariant: Boolean. Whether to rescale the estimated sources to
             the targets.
 
     Returns:

@@ -123,7 +123,7 @@ class WhamDataset(data.Dataset):
             rand_start = np.random.randint(0, self.mix[idx][1] - self.seg_len)
         # Load mixture
         x, _ = sf.read(self.mix[idx][0], start=rand_start,
-                       stop=rand_start + self.seg_len)
+                       stop=rand_start + self.seg_len, dtype='float32')
         seg_len = torch.as_tensor([len(x)])
         # Load sources
         source_arrays = []
@@ -133,7 +133,7 @@ class WhamDataset(data.Dataset):
                 s = np.zeros((seg_len, ))
             else:
                 s, _ = sf.read(src[idx][0], start=rand_start,
-                               stop=rand_start + self.seg_len)
+                               stop=rand_start + self.seg_len, dtype='float32')
             source_arrays.append(s)
         sources = torch.from_numpy(np.vstack(source_arrays))
         return torch.from_numpy(x), sources, {'seg_len': seg_len}

@@ -42,8 +42,8 @@ class Solver(object):
         self.model_path = args.model_path
         # Monitoring
         self.print_freq = args.print_freq
-        self.tr_loss = torch.as_tensor(self.epochs)
-        self.cv_loss = torch.as_tensor(self.epochs)
+        self.tr_loss = torch.zeros((self.epochs, ))
+        self.cv_loss = torch.zeros((self.epochs, ))
         self.ep_half_lr = []
         self.best_val_loss = float("inf")
         self.val_no_impv = 0
@@ -154,9 +154,7 @@ class Solver(object):
         return total_loss / (i + 1)
 
     def save_model(self, file, epoch):
-        torch.save(self.model.module.serialize(self.model.module,
-                                               self.optimizer,
-                                               epoch + 1,
+        torch.save(self.model.module.serialize(self.optimizer,
                                                tr_loss=self.tr_loss,
                                                cv_loss=self.cv_loss,
                                                half_lr=self.ep_half_lr), file)
