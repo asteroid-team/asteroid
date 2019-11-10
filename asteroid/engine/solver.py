@@ -15,33 +15,33 @@ from ..utils import to_cuda
 class Solver(object):
     """
     Args:
-        data:
+        data: Dictionary {'train_loader': DataLoader, 'val_loader': DataLoader}
         model:
         loss_class:
         optimizer:
-        args:
+        training_conf:
     """
-    def __init__(self, data, model, loss_class, optimizer, args):
+    def __init__(self, data, model, loss_class, optimizer, training_conf):
 
-        self.tr_loader = data['tr_loader']
-        self.cv_loader = data['cv_loader']
+        self.train_loader = data['train_loader']
+        self.val_loader = data['val_loader']
         self.model = model
         self.loss_class = loss_class
         self.optimizer = optimizer
 
         # Training config
-        self.use_cuda = args.use_cuda
-        self.epochs = args.epochs
-        self.half_lr = args.half_lr
-        self.early_stop = args.early_stop
-        self.max_norm = args.max_norm
+        self.use_cuda = training_conf['use_cuda']
+        self.epochs = training_conf['epochs']
+        self.half_lr = training_conf['half_lr']
+        self.early_stop = training_conf['early_stop']
+        self.max_norm = training_conf['max_norm']
         # Save and load model
-        self.save_folder = args.save_folder
-        self.checkpoint = args.checkpoint
-        self.continue_from = args.continue_from
-        self.model_path = args.model_path
+        self.save_folder = training_conf['save_folder']
+        self.checkpoint = training_conf['checkpoint']
+        self.continue_from = training_conf['continue_from']
+        self.model_path = training_conf['model_path']
         # Monitoring
-        self.print_freq = args.print_freq
+        self.print_freq = training_conf['print_freq']
         self.tr_loss = torch.zeros((self.epochs, ))
         self.cv_loss = torch.zeros((self.epochs, ))
         self.ep_half_lr = []
@@ -82,7 +82,7 @@ class Solver(object):
             print('Cross validation...')
             self.model.eval()
             start = time.time()
-            val_loss = self._run_one_epoch(epoch, cross_valid=True)
+            val_loss = self._run_one_epoch(epoch, validation=True)
             print('-' * 85)
             print('Valid Summary | End of Epoch {0} | Time {1:.2f}s | '
                   'Valid Loss {2:.3f}'.format(epoch + 1, time.time() - start,
@@ -111,10 +111,10 @@ class Solver(object):
                 file_path = os.path.join(self.save_folder, self.model_path)
                 self.save_model(file_path, epoch)
 
-    def _run_one_epoch(self, epoch, cross_valid=False):
+    def _run_one_epoch(self, epoch, validation=False):
         start = time.time()
         total_loss = 0
-        data_loader = self.tr_loader if not cross_valid else self.cv_loader
+        data_loader = self.train_loader if not validation else self.val_loader
         for i, (data) in enumerate(data_loader):
             if len(data) == 2:
                 inputs, targets = data
@@ -127,14 +127,14 @@ class Solver(object):
                                  '{} elements'.format(len(data)))
             if self.use_cuda:
                 inputs, targets, infos = to_cuda([inputs, targets, infos])
-            if cross_valid:
+            if validation:
                 with torch.no_grad():
                     est_targets = self.model(inputs)
             else:
                 est_targets = self.model(inputs)
             loss = self.loss_class.compute(targets, est_targets, infos=infos)
 
-            if not cross_valid and not torch.isnan(loss):
+            if not validation and not torch.isnan(loss):
                 self.optimizer.zero_grad()
                 loss.backward()
                 # if isinstance(self.model.module.encoder, AnalyticFreeFB):

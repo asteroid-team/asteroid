@@ -55,30 +55,32 @@ class TDConvNet(SubModule):
 
     Args
         in_chan: int > 0. Number of input filters.
+        n_src: int > 0. Number of masks to estimate.
         out_chan : int > 0. Number of bins in the estimated masks.
+            If None, `out_chan = in_chan`.
+        n_blocks: int > 0. Number of convolutional blocks in each repeat.
+            Defaults to 8
+        n_repeats: int > 0. Number of repeats. Defaults to 3.
         bn_chan: int > 0. Number of channels after the bottleneck.
         hid_chan: int > 0. Number of channels in the convolutional blocks.
         skip_chan: int > 0. Number of channels in the skip connections.
         kernel_size: int > 0. Kernel size in convolutional blocks.
-        n_blocks: int > 0. Number of convolutional blocks in each repeat.
-        n_repeats: int > 0. Number of repeats.
-        n_src: int > 0. Number of masks to estimate.
-        norm_type: BN, gLN, cLN
-        mask_act: use which non-linear function to generate mask
+        norm_type: string. Among [BN, gLN, cLN]
+        mask_act: string. Which non-linear function to generate mask
     """
-    def __init__(self, in_chan, out_chan, bn_chan, hid_chan, skip_chan,
-                 kernel_size, n_blocks, n_repeats, n_src, norm_type="gLN",
-                 mask_act='ReLU'):
+    def __init__(self, in_chan, n_src, out_chan=None, n_blocks=8, n_repeats=3,
+                 bn_chan=128, hid_chan=512, skip_chan=128, kernel_size=3,
+                 norm_type="gLN", mask_act='ReLU'):
         super(TDConvNet, self).__init__()
         self.in_chan = in_chan
-        self.out_chan = out_chan
+        self.n_src = n_src
+        self.out_chan = out_chan if out_chan else in_chan
+        self.n_blocks = n_blocks
+        self.n_repeats = n_repeats
         self.bn_chan = bn_chan
         self.hid_chan = hid_chan
         self.skip_chan = skip_chan
         self.kernel_size = kernel_size
-        self.n_blocks = n_blocks
-        self.n_repeats = n_repeats
-        self.n_src = n_src
         self.norm_type = norm_type
         self.mask_act = mask_act
 

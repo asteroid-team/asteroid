@@ -2,8 +2,9 @@
 Package-level utils.
 @author : Manuel Pariente, Inria-Nancy
 """
-import inspect
 import torch
+import inspect
+import argparse
 
 
 def has_arg(fn, name):
@@ -40,3 +41,50 @@ def to_cuda(tensors):
             tensors[key] = to_cuda(tensors[key])
     else:
         return tensors
+
+
+def prepare_parser_from_dict(dic, parser=None):
+    """ Prepare an argparser from a dictionary.
+
+    Args:
+        dic: Dictionary. Two-level config dictionary with unique
+            bottom-level keys.
+        parser: ArgumentParser instance (optional). If a parser already
+            exists add the keys from the dictionary on the top of it.
+    Returns:
+        argparse.ArgumentParser instance with groups corresponding to the
+        first level keys and arguments corresponding to the second level keys
+        with default values given by the values.
+    """
+    if parser is None:
+        parser = argparse.ArgumentParser()
+    for k in dic.keys():
+        group = parser.add_argument_group(k)
+        for kk in dic[k].keys():
+            group.add_argument('--' + kk, default=dic[k][kk],
+                               type=type(dic[k][kk]))
+    return parser
+
+
+def parse_args_as_dict(parser, return_plain_args=False):
+    """ Post-process `parser.parse_args()` to get a dictionary of
+    dictionary. Top-level keys corresponding to groups and bottom-level
+    keys corresponding to arguments.
+    Args:
+        parser: ArgumentParser instance containing groups
+            Output of `prepare_parser_from_dict`.
+        return_plain_args: Boolean. Whether to return
+            the output or `parser.parse_args()`.
+    Returns:
+        A ditcionary of dictionary containing the arguments.
+        Optionally the direct output `parser.parse_args()`.
+    """
+    args = parser.parse_args()
+    args_dic = {}
+    for group in parser._action_groups:
+        group_dict = {a.dest: getattr(args, a.dest, None)
+                      for a in group._group_actions}
+        args_dic[group.title] = group_dict
+    if return_plain_args:
+        return args_dic, args
+    return args_dic

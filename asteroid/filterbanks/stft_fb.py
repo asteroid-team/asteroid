@@ -39,7 +39,6 @@ class STFTFB(EncoderDecoder):
         win = np.hanning(kernel_size + 1)[:-1]**.5
         lpad = int((n_filters - kernel_size) // 2)
         rpad = int(n_filters - kernel_size - lpad)
-        # import ipdb; ipdb.set_trace()
         self.window = np.concatenate([np.zeros((lpad,)), win,
                                       np.zeros((rpad,))])
 
