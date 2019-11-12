@@ -6,13 +6,16 @@
 # After that, modify `data` and run from stage 2.
 
 sphere_dir=  # Directory containing sphere files
-wav_dir=  # Directory where to save all wav files (Need disk space)
-data_dir=data  # Base directory where drectories containing the *.json files will be created
+wsj0_wav_dir= # Directory where to save wsj0 wav files (Need disk space)
+wham_wav_dir=  # # Directory where to save WHAM wav files (Need disk space)
 
-stage=0
+
+stage=-1
 tag=""
-python_path=
+python_path=python
 id=
+
+data_dir=data  # Local data directory (No disk space needed)
 
 use_cuda=0
 sample_rate=8000
@@ -48,21 +51,21 @@ if [[ $stage -le  -1 ]]; then
 	  . utils/prepare_python_env.sh --install_dir $python_path --asteroid_root ../../..
 	  echo "Miniconda3 install can be found at $python_path"
 	  python_path=${python_path}/miniconda3/bin/python
-	  echo "To use this python version for the next experiments, change"
-	  echo "python_path=$python_path at the beginning of the file"
+	  echo -e "\n To use this python version for the next experiments, change"
+	  echo -e "python_path=$python_path at the beginning of the file \n"
 	fi
 fi
 
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Converting sphere files to wav files"
-  . local/convert_sphere2wav.sh --sphere_dir $sphere_dir --wav_dir $wav_dir
+  . local/convert_sphere2wav.sh --sphere_dir $sphere_dir --wav_dir $wsj0_wav_dir
 fi
 
 
 if [[ $stage -le  1 ]]; then
 	echo "Stage 1: Generating 8k and 16k WHAM dataset"
-  . local/prepare_data.sh --wav_dir $wav_dir # Need outdir
+  . local/prepare_data.sh --wav_dir $wsj0_wav_dir --out_dir $wham_wav_dir --python_path $python_path
 fi
 
 
@@ -74,7 +77,8 @@ if [[ $stage -le  2 ]]; then
 			tmp_dumpdir=data/wav${sr_string}k/$mode
 			echo "Generating json files in $tmp_dumpdir"
 			[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
-      python preprocess_wham.py --wav_dir $wav_dir --data_dir $tmp_dumpdir
+			local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode/
+      $python_path preprocess_wham.py --wav_dir $local_wham_dir --data_dir $tmp_dumpdir
     done
   done
 fi
@@ -91,15 +95,12 @@ uuid=$(uuidgen)
 if [[ -z ${tag} ]]; then
 	tag=${task}_${sr_string}k${mode}_${uuid}
 fi
-
-
 expdir=exp/train_convtasnet_${tag}
-echo $expdir
-
+mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
+echo "Results from the following experiment will be stored in $expdir"
 
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
-  mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
   --train_dir $train_dir \
   --valid_dir $valid_dir \
@@ -117,4 +118,10 @@ if [[ $stage -le 3 ]]; then
   --continue_from "$continue_from" \
   --model_path $model_path \
   --print_freq $print_freq | tee logs/train_${tag}.log
+fi
+
+
+if [[ $stage -le 4 ]]; then
+	echo "Stage 4 : Evaluation"
+	CUDA_VISIBLE_DEVICES=$id $python_path eval.py
 fi
