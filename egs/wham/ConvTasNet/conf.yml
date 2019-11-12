@@ -21,7 +21,7 @@ optim:
 data:
   train_dir: data/2speakers_wham/wav8k/min/tr/
   valid_dir: data/2speakers_wham/wav8k/min/cv/
-  task: mix_clean
+  task: sep_clean
   nondefault_nsrc:
   sample_rate: 8000
   mode: min

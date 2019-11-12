@@ -46,8 +46,6 @@ if __name__ == "__main__":
                         help='Directory path of wham including tr, cv and tt')
     parser.add_argument('--out-dir', type=str, default=None,
                         help='Directory path to put output files')
-    parser.add_argument('--sample-rate', type=int, default=8000,
-                        help='Sample rate of audio file')
     args = parser.parse_args()
     print(args)
     preprocess(args)

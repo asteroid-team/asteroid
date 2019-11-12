@@ -63,8 +63,8 @@ def main(args):
 
     # Pass everything to the solver (expects a dictionary for now)
     solver = Solver(data, model, loss_class, optimizer, args['training'])
-    solver.train()
-
+    # solver.train()
+    return data
 
 if __name__ == '__main__':
     import yaml
@@ -77,4 +77,4 @@ if __name__ == '__main__':
 
     # temp modification, waiting for run.sh
     arg_dic['training'].update(arg_dic['optional arguments'])
-    main(arg_dic)
+    data = main(arg_dic)

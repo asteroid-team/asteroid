@@ -19,19 +19,19 @@ enh_both = {'mixture': 'mix_both',
             'sources': ['mix_clean'],
             'infos': ['noise'],
             'default_nsrc': 1}
-mix_clean = {'mixture': 'mix_both',
+sep_clean = {'mixture': 'mix_both',
              'sources': ['s1', 's2'],
              'infos': [],
              'default_nsrc': 2}
-mix_noisy = {'mixture': 'mix_both',
+sep_noisy = {'mixture': 'mix_both',
              'sources': ['s1', 's2'],
              'infos': ['noise'],
              'default_nsrc': 2}
 
 WHAM_TASKS = {'enhance_single': enh_single,
               'enhance_both': enh_both,
-              'mix_clean': mix_clean,
-              'mix_noisy': mix_noisy}
+              'sep_clean': sep_clean,
+              'sep_noisy': sep_noisy}
 # Aliases.
 WHAM_TASKS['enh_single'] = WHAM_TASKS['enhance_single']
 WHAM_TASKS['enh_both'] = WHAM_TASKS['enhance_both']
@@ -41,12 +41,12 @@ class WhamDataset(data.Dataset):
     """ Dataset class for WHAM source separation and speech enhancement tasks.
     Args:
         json_dir: String, the path to the directory containing the json files.
-        task: String, one of `"enh_single"`, `"enh_both"`, `"mix_clean"` or
-            `"mix_noisy"`.
+        task: String, one of `"enh_single"`, `"enh_both"`, `"sep_clean"` or
+            `"sep_noisy"`.
             `"enh_single"` for single speaker speech enhancement.
             `"enh_both"` for multi speaker speech enhancement.
-            `"mix_clean"` for two-speaker clean source separation.
-            `"mix_noisy"` for two-speaker noisy source separation.
+            `"sep_clean"` for two-speaker clean source separation.
+            `"sep_noisy"` for two-speaker noisy source separation.
         sample_rate: Integer. The sampling rate of the wav files.
         segment: Float. Length of the segments used for training, in seconds.
         nondefault_nsrc: Integer. Number of sources in the training targets.
