@@ -48,7 +48,6 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
         total_loss.backward()
         optimizer.step()
         print(total_loss.item())
-    """
     runner = SupervisedRunner()
     runner.train(model=model, criterion=criterion,
                  optimizer=optimizer, scheduler=scheduler,
@@ -58,4 +57,3 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                  )
 
     utils.plot_metrics(logdir=logdir, metrics=["loss", "_base/lr"])
-    """
