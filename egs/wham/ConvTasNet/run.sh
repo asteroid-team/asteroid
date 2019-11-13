@@ -5,14 +5,14 @@
 # modify `wsj0_wav` to path that put output wav format wsj0, then read and run stage 1 part.
 # After that, modify `data` and run from stage 2.
 
+base=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/
 sphere_dir=  # Directory containing sphere files
-wsj0_wav_dir= # Directory where to save wsj0 wav files (Need disk space)
-wham_wav_dir=  # # Directory where to save WHAM wav files (Need disk space)
-
+wsj0_wav_dir=${base}/DATA/wsj0_wav/ # Directory where to save wsj0 wav files (Need disk space)
+wham_wav_dir=${base}/wham_recipe_results/  # # Directory where to save WHAM wav files (Need disk space)
 
 stage=-1
 tag=""
-python_path=python
+python_path=${base}/asteroid_conda/miniconda3/bin/python
 id=
 
 data_dir=data  # Local data directory (No disk space needed)
@@ -78,7 +78,7 @@ if [[ $stage -le  2 ]]; then
 			echo "Generating json files in $tmp_dumpdir"
 			[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
 			local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode/
-      $python_path preprocess_wham.py --wav_dir $local_wham_dir --data_dir $tmp_dumpdir
+      $python_path local/preprocess_wham.py --in-dir $local_wham_dir --out-dir $tmp_dumpdir
     done
   done
 fi
@@ -91,7 +91,7 @@ train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
 evaluate_dir=$dumpdir/tt
 
-uuid=$(uuidgen)
+uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
 	tag=${task}_${sr_string}k${mode}_${uuid}
 fi
@@ -106,12 +106,11 @@ if [[ $stage -le 3 ]]; then
   --valid_dir $valid_dir \
   --use_cuda $use_cuda \
   --sample_rate $sample_rate \
-  --mask_nonlinear $mask_nonlinear \
+  --mask_act $mask_nonlinear \
   --use_cuda $use_cuda \
   --epochs $epochs \
   --batch_size $batch_size \
   --num_workers $num_workers \
-  --optimizer $optimizer \
   --lr $lr \
   --save_folder ${expdir} \
   --checkpoint $checkpoint \
@@ -119,6 +118,7 @@ if [[ $stage -le 3 ]]; then
   --model_path $model_path \
   --print_freq $print_freq | tee logs/train_${tag}.log
 fi
+#  --optimizer $optimizer \
 
 
 if [[ $stage -le 4 ]]; then
