@@ -70,13 +70,15 @@ def parse_args_as_dict(parser, return_plain_args=False):
     """ Post-process `parser.parse_args()` to get a dictionary of
     dictionary. Top-level keys corresponding to groups and bottom-level
     keys corresponding to arguments.
+    Under `'main_args'`, the arguments which don't belong to a argparse group
+    (i.e main arguments defined before parsing from a dict)can be found.
     Args:
         parser: ArgumentParser instance containing groups
             Output of `prepare_parser_from_dict`.
         return_plain_args: Boolean. Whether to return
             the output or `parser.parse_args()`.
     Returns:
-        A ditcionary of dictionary containing the arguments.
+        A dictionary of dictionary containing the arguments.
         Optionally the direct output `parser.parse_args()`.
     """
     args = parser.parse_args()
@@ -85,6 +87,8 @@ def parse_args_as_dict(parser, return_plain_args=False):
         group_dict = {a.dest: getattr(args, a.dest, None)
                       for a in group._group_actions}
         args_dic[group.title] = group_dict
+    args_dic['main_args'] = args_dic['optional arguments']
+    del args_dic['optional arguments']
     if return_plain_args:
         return args_dic, args
     return args_dic
