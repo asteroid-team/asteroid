@@ -14,8 +14,12 @@ from ..utils import to_cuda
 _defaults = {
     # Training defaults
     'epoch': 1,
+    'min_prct_impv': 0.1,  # In percentage
     'half_lr': True,
+    'half_lr_patience': 3,
+    'lr_multiplier': 0.5,
     'early_stop': True,
+    'early_stop_patience': 8,
     'max_norm': 5.,
     # Model defaults
     'checkpoint': False,
@@ -103,20 +107,25 @@ class Solver(object):
                   'Valid Loss {2:.3f}'.format(epoch + 1, time.time() - start,
                                               val_loss))
             print('-' * 85)
-            if val_loss > 1.001 * self.best_val_loss:  # (under 0.1%, no impv)
+            if val_loss > (1 + 0.001 * self.tr_conf['min_prct_impv']) * \
+                    self.best_val_loss:  # (under x%, no impv)
                 self.val_no_impv += 1
                 self.early_val_no_impv += 1
             else:
                 self.val_no_impv = 0
                 self.early_val_no_impv = 0
             # Adjust learning rate (halving)
-            if self.tr_conf['half_lr'] and self.val_no_impv >= 3:
-                self.multiply_learning_rate(self.optimizer, 0.5)
+            if self.tr_conf['half_lr'] and \
+                    self.val_no_impv >= self.tr_conf['half_lr_patience']:
+                self.multiply_learning_rate(self.optimizer,
+                                            self.tr_conf['lr_multiplier'])
                 self.ep_half_lr.append(epoch)
                 self.val_no_impv = 0
             # Early stopping
-            if self.early_val_no_impv >= 8 and self.tr_conf['early_stop']:
-                print("No improvement for 8 epochs, early stopping.")
+            if self.early_val_no_impv >= self.tr_conf['early_stop_patience'] \
+                    and self.tr_conf['early_stop']:
+                print("No improvement for {} epochs, early "
+                      "stopping.".format(self.tr_conf['early_stop_patience']))
                 break
             # Save the best model
             self.tr_loss[epoch] = tr_avg_loss
