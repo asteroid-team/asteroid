@@ -7,7 +7,7 @@ filterbank:
 masknet:
   n_blocks: 3
   n_repeats: 2
-  mask_act: ReLU
+  mask_act: relu
 # Training config
 training:
   epochs: 100
@@ -18,6 +18,7 @@ training:
   continue_from:
 # Optim config
 optim:
+  optimizer: adam
   lr: 0.001
   weight_decay: 0.
 # Data config
