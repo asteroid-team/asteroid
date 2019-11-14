@@ -66,11 +66,35 @@ class CumLN(_LayerNorm):
         return self.gamma * (x - cum_mean) / (cum_var + EPS).sqrt() + self.beta
 
 
+class LayerNorm2D(nn.Module):
+    """2D Layer Normalization (LN)"""
+    def __init__(self, channel_size):
+        super(LayerNorm2D, self).__init__()
+        self.gamma = nn.Parameter(torch.Tensor(1, channel_size, 1, 1))  # [1, N, 1, 1] 3-d batched tensor
+        self.beta = nn.Parameter(torch.Tensor(1, channel_size,1, 1))  # [1, N, 1, 1]
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        self.gamma.data.fill_(1)
+        self.beta.data.zero_()
+
+    def forward(self, x):
+        """
+        Args:
+            x: [M, N, X, Y], M is batch size, N is channel size, X and Y spatial dimensions
+        Returns:
+            LN_x: [M, N, X, Y]
+        """
+        mean = x.mean(dim=1, keepdim=True).mean(dim=2, keepdim=True).mean(dim=3, keepdim=True)
+        var = (torch.pow(x-mean, 2)).mean(dim=1, keepdim=True).mean(dim=2, keepdim=True).mean(dim=3, keepdim=True)
+        LN_y = self.gamma * (x - mean) / torch.pow(var + EPS, 0.5) + self.beta
+        return LN_y
+
 # Aliases.
 gLN = GlobLN
 cLN = ChanLN
 cgLN = CumLN
-
+LN = LayerNorm2D
 
 def get(identifier):
     if identifier is None:
