@@ -5,9 +5,10 @@ NN blocks for separators.
 
 from torch import nn
 
-from . import norms
+from . import norms, activations
 from ..utils import has_arg
 from ..engine.sub_module import SubModule, NoLayer
+
 
 
 class Conv1DBlock(nn.Module):
@@ -30,9 +31,9 @@ class Conv1DBlock(nn.Module):
     https://arxiv.org/abs/1809.07454
     """
     def __init__(self, in_chan, hid_chan, skip_out_chan, kernel_size, padding,
-                 dilation, norm_type="glN"):
+                 dilation, norm_type="gLN"):
         super(Conv1DBlock, self).__init__()
-        conv_norm = getattr(norms, norm_type)  # norm.get(norm_type)
+        conv_norm = norms.get(norm_type)
         in_conv1d = nn.Conv1d(in_chan, hid_chan, 1)
         depth_conv1d = nn.Conv1d(hid_chan, hid_chan, kernel_size,
                                  padding=padding, dilation=dilation,
@@ -70,7 +71,7 @@ class TDConvNet(SubModule):
     """
     def __init__(self, in_chan, n_src, out_chan=None, n_blocks=8, n_repeats=3,
                  bn_chan=128, hid_chan=512, skip_chan=128, kernel_size=3,
-                 norm_type="gLN", mask_act='ReLU'):
+                 norm_type="gLN", mask_act='relu'):
         super(TDConvNet, self).__init__()
         self.in_chan = in_chan
         self.n_src = n_src
@@ -95,11 +96,9 @@ class TDConvNet(SubModule):
                                             kernel_size, padding=padding,
                                             dilation=2**x, norm_type=norm_type))
         mask_conv = nn.Conv1d(bn_chan, n_src*out_chan, 1)
-        # Get activation function. For softmax, feed the source dimension.
-        if mask_act.lower() == 'linear':
-            mask_nl_class = NoLayer
-        else:
-            mask_nl_class = getattr(nn, mask_act)
+        # Get activation function.
+        mask_nl_class = activations.get(mask_act)
+        # For softmax, feed the source dimension.
         if has_arg(mask_nl_class, 'dim'):
             self.output_act = mask_nl_class(dim=1)
         else:

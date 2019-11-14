@@ -7,7 +7,7 @@ filterbank:
 masknet:
   n_blocks: 3
   n_repeats: 2
-  mask_act: ReLU
+  mask_act: relu
 # Training config
 training:
   epochs: 100
