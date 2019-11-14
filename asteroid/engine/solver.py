@@ -139,15 +139,18 @@ class Solver(object):
         start = time.time()
         total_loss = 0
         data_loader = self.train_loader if not validation else self.val_loader
-        for i, (data) in enumerate(data_loader):
+        idx = None
+        for idx, (data) in enumerate(data_loader):
             loss = self.run_one_batch(data, validation=validation)
             total_loss += loss.item()
-            if i % self.tr_conf['print_freq'] == 0:
+            if idx % self.tr_conf['print_freq'] == 0:
                 print('Epoch {0} | Iter {1} | Average Loss {2:.3f} | Current'
                       ' Loss {3:.6f} | {4:.1f} ms/batch '
-                      ''.format(epoch+1, i+1, total_loss/(i+1), loss.item(),
-                                1000*(time.time()-start)/(i+1)), flush=True)
-        return total_loss / (i + 1)
+                      ''.format(epoch+1, idx+1, total_loss/(idx+1),
+                                loss.item(), 1000*(time.time()-start)/(idx+1)),
+                      flush=True)
+        assert idx is not None, 'No data obtained from DataLoader'
+        return total_loss / (idx + 1)
 
     def run_one_batch(self, data, validation=False):
         """ Run forward backward step for one batch."""
@@ -192,20 +195,17 @@ class Solver(object):
         if not validation and not torch.isnan(loss):
             self.optimizer.zero_grad()
             loss.backward()
-            # if isinstance(self.model.module.encoder, AnalyticFreeFB):
-            #     value_if_nan(self.model.module.encoder.filters.grad)
-            #     value_if_nan(self.model.module.decoder.filters.grad)
             torch.nn.utils.clip_grad_norm_(self.model.parameters(),
                                            self.tr_conf['max_norm'])
             self.optimizer.step()
 
-    def save_model(self, file, epoch):
+    def save_model(self, file_name, epoch):
         torch.save(self.model.module.serialize(self.optimizer,
                                                tr_loss=self.tr_loss,
                                                cv_loss=self.cv_loss,
                                                half_lr=self.ep_half_lr,
-                                               epoch=epoch), file)
-        print('Saving model to {}'.format(file))
+                                               epoch=epoch), file_name)
+        print('Saving model to {}'.format(file_name))
 
     @staticmethod
     def multiply_learning_rate(optimizer, multiplier):
