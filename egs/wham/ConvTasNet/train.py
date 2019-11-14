@@ -8,6 +8,7 @@ from asteroid.filterbanks import FreeFB
 from asteroid.masknn import TDConvNet
 from asteroid.engine.losses import PITLossContainer, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
+from asteroid.engine.optimizers import make_optimizer
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--use_cuda', type=int, default=0,
@@ -45,7 +46,7 @@ def main(conf):
     # Define Loss functions
     loss_class = PITLossContainer(pairwise_neg_sisdr, n_src=train_set.n_src)
     # Define optimizer
-    optimizer = torch.optim.Adam(model.parameters(), **conf['optim'])
+    optimizer = make_optimizer(model.parameters(), **conf['optim'])
 
     # Pass everything to the solver
     solver = Solver(loaders, model, loss_class, optimizer,
