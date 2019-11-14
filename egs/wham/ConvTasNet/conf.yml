@@ -1,11 +1,11 @@
 # Filterbank config
 filterbank:
   n_filters: 512
-  kernel_size: 32
-  stride: 16
+  kernel_size: 16
+  stride: 8
 # Network config
 masknet:
-  n_blocks: 4
+  n_blocks: 3
   n_repeats: 2
   mask_act: ReLU
 # Training config
@@ -14,10 +14,13 @@ training:
   half_lr: yes
   early_stop: yes
   max_norm: 5
-#
+  checkpoint: n
+  continue_from:
+# Optim config
 optim:
   lr: 0.001
   weight_decay: 0.
+# Data config
 data:
   train_dir: data/2speakers_wham/wav8k/min/tr/
   valid_dir: data/2speakers_wham/wav8k/min/cv/
