@@ -30,10 +30,12 @@ class AnalyticFreeFB(EncoderDecoder):
         Antoine Deleforge, Emmanuel Vincent.
     """
     def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
-                 **kwargs):
+                 inp_mode='reim', mask_mode='reim', **kwargs):
         super(AnalyticFreeFB, self).__init__(n_filters, kernel_size,
                                              stride=stride,
-                                             enc_or_dec=enc_or_dec)
+                                             enc_or_dec=enc_or_dec,
+                                             inp_mode=inp_mode,
+                                             mask_mode=mask_mode)
         self.cutoff = int(n_filters // 2)
         self.n_feats_out = 2 * self.cutoff
         if n_filters % 2 != 0:
