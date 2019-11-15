@@ -6,28 +6,6 @@ Masker inputs and output masks
 import torch
 
 
-class InputFeeder:
-    """ Transforms a complex input according to `input_mode`.
-    Args:
-        input_mode: string
-    """
-    def __init__(self, input_mode='reim'):
-        self.input_mode = input_mode
-        self.func, self.in_chan_mul = _inputs.get(input_mode)
-
-    def feed_inputs(self, tf_rep, dim=1):
-        return self.func(tf_rep, dim=dim)
-
-
-class FBMasker:
-    def __init__(self, masking_mode='reim'):
-        self.masking_mode = masking_mode
-        self.func, self.out_chan_mul = _masks.get(masking_mode)
-
-    def apply_mask(self, tf_rep, dim=1):
-        return self.func(tf_rep, dim=dim)
-
-
 def mul_c(inp, other, dim=1):
     """
     Complex multiplication for tensors with real and imaginary parts
