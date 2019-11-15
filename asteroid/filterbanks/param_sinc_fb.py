@@ -7,6 +7,7 @@ Inspired from https://github.com/mravanelli/SincNet
 import numpy as np
 import torch
 import torch.nn as nn
+import warnings
 from .enc_dec import EncoderDecoder
 
 
@@ -20,6 +21,7 @@ class ParamSincFB(EncoderDecoder):
             `n_filters` should be even.
         kernel_size: Positive int. Length of the filters.
         stride: Positive int. Stride of the convolution.
+            If None (default), set to `kernel_size // 2`.
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
             an encoder or a decoder.
         sample_rate: int. The sample rate (used for initialization).
@@ -33,16 +35,14 @@ class ParamSincFB(EncoderDecoder):
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.
     """
-    def __init__(self, n_filters, kernel_size, stride, enc_or_dec='encoder',
+    def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
                  sample_rate=16000, min_low_hz=50, min_band_hz=50):
-        super(ParamSincFB, self).__init__(stride, enc_or_dec=enc_or_dec)
-        self.n_filters = n_filters
         if kernel_size % 2 == 0:
             print('Received kernel_size={}, force '.format(kernel_size) +
                   'kernel_size={} so filters are odd'.format(kernel_size+1))
             kernel_size += 1
-        self.kernel_size = kernel_size
-        self.stride = stride
+        super(ParamSincFB, self).__init__(n_filters, kernel_size, stride=stride,
+                                          enc_or_dec=enc_or_dec)
         self.sample_rate = sample_rate
         self.min_low_hz, self.min_band_hz = min_low_hz, min_band_hz
 
@@ -51,8 +51,8 @@ class ParamSincFB(EncoderDecoder):
         self.n_feats_out = 2 * self.cutoff
         self._initialize_filters()
         if n_filters % 2 != 0:
-            UserWarning('If the number of filters `n_filters` is odd, the '
-                        'output size of the layer will be `n_filters - 1`.')
+            warnings.warn('If the number of filters `n_filters` is odd, the '
+                          'output size of the layer will be `n_filters - 1`.')
 
         window_ = np.hamming(self.kernel_size)[:self.half_kernel]  # Half window
         n_ = 2 * np.pi * (torch.arange(-self.half_kernel, 0.).view(1, -1) /
@@ -113,12 +113,10 @@ class ParamSincFB(EncoderDecoder):
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class."""
         config = {
-            'n_filters': self.n_filters,
-            'kernel_size': self.kernel_size,
-            'stride': self.stride,
-            'enc_or_dec': self.enc_or_dec,
             'sample_rate': self.sample_rate,
             'min_low_hz': self.min_low_hz,
             'min_band_hz': self.min_band_hz
         }
-        return config
+        base_config = super(ParamSincFB, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+

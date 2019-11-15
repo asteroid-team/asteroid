@@ -14,16 +14,23 @@ class EncoderDecoder(SubModule):
     `get_config` method.
 
     # Args
+        n_filters: Positive int. Number of filters.
+        kernel_size: Positive int. Length of the filters.
         stride: Positive int. Stide of the conv or transposed conv. (Hop size).
+            If None (default), set to `kernel_size // 2`.
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
             an encoder of a decoder. Based on `enc_or_dec`, the class defines
             the filterbank call `fb_call` which will be called in the `forward`
             so that `forward` can be overwritten in child classes.
     """
-    def __init__(self, stride, enc_or_dec='encoder'):
+    def __init__(self, n_filters, kernel_size, stride=None,
+                 enc_or_dec='encoder'):
         super(EncoderDecoder, self).__init__()
-        self.stride = stride
+        self.n_filters = n_filters
+        self.kernel_size = kernel_size
+        self.stride = stride if stride else self.kernel_size // 2
         self.enc_or_dec = enc_or_dec
+
         if enc_or_dec in ['enc', 'encoder']:
             self.fb_call = self.encode  # Filterbank call
         elif enc_or_dec in ['dec', 'decoder']:
@@ -52,4 +59,11 @@ class EncoderDecoder(SubModule):
         return self.fb_call(*inputs)
 
     def get_config(self):
-        raise NotImplementedError
+        """ Returns dictionary of arguments to re-instantiate the class."""
+        config = {
+            'n_filters': self.n_filters,
+            'kernel_size': self.kernel_size,
+            'stride': self.stride,
+            'enc_or_dec': self.enc_or_dec
+        }
+        return config
