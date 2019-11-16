@@ -15,7 +15,7 @@ training:
   early_stop: yes
   max_norm: 5
   checkpoint: n
-  continue_from:
+  continue_from: ''
 # Optim config
 optim:
   optimizer: adam

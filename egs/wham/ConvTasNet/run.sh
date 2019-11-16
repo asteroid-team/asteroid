@@ -10,31 +10,32 @@ sphere_dir=  # Directory containing sphere files
 wsj0_wav_dir=${base}/DATA/wsj0_wav/ # Directory where to save wsj0 wav files (Need disk space)
 wham_wav_dir=${base}/wham_recipe_results/  # # Directory where to save WHAM wav files (Need disk space)
 
+
 stage=-1
 tag=""
 python_path=${base}/asteroid_conda/miniconda3/bin/python
 id=
 
+
 data_dir=data  # Local data directory (No disk space needed)
-
 use_cuda=0
-sample_rate=8000
-mask_nonlinear=relu
-batch_size=3
-num_workers=3
-optimizer=adam
-lr=0.001
-checkpoint=0
-epochs=100
-continue_from=
-model_path=final.pth.tar
-print_freq=1000
-
-
 task=sep_clean
 sample_rate=8000
 mode=min
 nondefault_src=
+
+batch_size=3
+num_workers=3
+#optimizer=adam
+lr=0.001
+epochs=100
+continue_from=
+model_name=final.pth
+
+n_blocks=4
+n_repeats=2
+mask_nonlinear=relu
+
 
 
 . utils/parse_options.sh || exit 1;
@@ -78,7 +79,7 @@ if [[ $stage -le  2 ]]; then
 			echo "Generating json files in $tmp_dumpdir"
 			[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
 			local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode/
-      $python_path local/preprocess_wham.py --in-dir $local_wham_dir --out-dir $tmp_dumpdir
+      $python_path local/preprocess_wham.py --in_dir $local_wham_dir --out_dir $tmp_dumpdir
     done
   done
 fi
@@ -99,26 +100,26 @@ expdir=exp/train_convtasnet_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
+
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
   --train_dir $train_dir \
   --valid_dir $valid_dir \
+  --task $task \
   --use_cuda $use_cuda \
   --sample_rate $sample_rate \
-  --mask_act $mask_nonlinear \
   --use_cuda $use_cuda \
+  --lr $lr \
   --epochs $epochs \
   --batch_size $batch_size \
   --num_workers $num_workers \
-  --lr $lr \
-  --save_folder ${expdir} \
-  --checkpoint $checkpoint \
+  --mask_act $mask_nonlinear \
+  --n_blocks $n_blocks \
+  --n_repeats $n_repeats \
   --continue_from "$continue_from" \
-  --model_path $model_path \
-  --print_freq $print_freq | tee logs/train_${tag}.log
+  --model_path ${expdir}/$model_name | tee logs/train_${tag}.log
 fi
-#  --optimizer $optimizer \
 
 
 if [[ $stage -le 4 ]]; then
