@@ -15,24 +15,23 @@ zeros in them. This is not efficient, the filters should be truncated.
 
 
 class STFTFB(EncoderDecoder):
-    def __init__(self, n_filters, kernel_size, stride, enc_or_dec='enc',
-                 **kwargs):
-        """STFT filterbank.
+    """STFT filterbank.
 
-        # Args
-            n_filters: Positive int. Number of filters. Determines the length
-                of the STFT filters before windowing.
-            kernel_size: Positive int. Length of the filters (i.e the window).
-            stride: Positive int. Stride of the convolution (hop size).
-            enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used
-                as an encoder or a decoder.
-        """
-        super(STFTFB, self).__init__(stride, enc_or_dec=enc_or_dec)
+    # Args
+        n_filters: Positive int. Number of filters. Determines the length
+            of the STFT filters before windowing.
+        kernel_size: Positive int. Length of the filters (i.e the window).
+        stride: Positive int. Stride of the convolution (hop size).
+            If None (default), set to `kernel_size // 2`.
+        enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used
+            as an encoder or a decoder.
+    """
+    def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
+                 inp_mode='reim', mask_mode='reim', **kwargs):
+        super(STFTFB, self).__init__(n_filters, kernel_size, stride=stride,
+                                     enc_or_dec=enc_or_dec, inp_mode=inp_mode,
+                                     mask_mode=mask_mode)
         assert n_filters >= kernel_size
-        self.n_filters = n_filters
-        self.kernel_size = kernel_size
-        self.stride = stride
-
         self.cutoff = int(n_filters/2 + 1)
         self.n_feats_out = 2 * self.cutoff
 
@@ -54,13 +53,3 @@ class STFTFB(EncoderDecoder):
     @property
     def filters(self):
         return self._filters
-
-    def get_config(self):
-        """ Returns dictionary of arguments to re-instantiate the class."""
-        config = {
-            'n_filters': self.n_filters,
-            'kernel_size': self.kernel_size,
-            'stride': self.stride,
-            'enc_or_dec': self.enc_or_dec
-        }
-        return config

@@ -6,6 +6,7 @@ Analytic free filterbank.
 import torch
 import torch.nn as nn
 import numpy as np
+import warnings
 from .enc_dec import EncoderDecoder
 
 
@@ -19,6 +20,7 @@ class AnalyticFreeFB(EncoderDecoder):
             `n_filters` should be even.
         kernel_size: Positive int. Length of the filters.
         stride: Positive int. Stride of the convolution.
+            If None (default), set to `kernel_size // 2`.
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
             an encoder or a decoder.
 
@@ -27,17 +29,18 @@ class AnalyticFreeFB(EncoderDecoder):
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.
     """
-    def __init__(self, n_filters, kernel_size, stride, enc_or_dec='encoder',
-                 **kwargs):
-        super(AnalyticFreeFB, self).__init__(stride, enc_or_dec=enc_or_dec)
-        self.n_filters = n_filters
-        self.kernel_size = kernel_size
-        self.stride = stride
+    def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
+                 inp_mode='reim', mask_mode='reim', **kwargs):
+        super(AnalyticFreeFB, self).__init__(n_filters, kernel_size,
+                                             stride=stride,
+                                             enc_or_dec=enc_or_dec,
+                                             inp_mode=inp_mode,
+                                             mask_mode=mask_mode)
         self.cutoff = int(n_filters // 2)
         self.n_feats_out = 2 * self.cutoff
         if n_filters % 2 != 0:
-            UserWarning('If the number of filters `n_filters` is odd, the '
-                        'output size of the layer will be `n_filters - 1`.')
+            warnings.warn('If the number of filters `n_filters` is odd, the' +
+                          'output size of the layer will be `n_filters - 1`.')
 
         self._filters = nn.Parameter(torch.ones(n_filters // 2, 1, kernel_size),
                                      requires_grad=True)
@@ -52,12 +55,4 @@ class AnalyticFreeFB(EncoderDecoder):
                             signal_sizes=(self.kernel_size, ))
         return torch.cat([self._filters, hft_f], dim=0)
 
-    def get_config(self):
-        """ Returns dictionary of arguments to re-instantiate the class."""
-        config = {
-            'n_filters': self.n_filters,
-            'kernel_size': self.kernel_size,
-            'stride': self.stride,
-            'enc_or_dec': self.enc_or_dec
-        }
-        return config
+

@@ -15,6 +15,7 @@ class FreeFB(EncoderDecoder):
         n_filters: Positive int. Number of filters.
         kernel_size: Positive int. Length of the filters.
         stride: Positive int. Stride of the convolution.
+            If None (default), set to `kernel_size // 2`.
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
             an encoder or a decoder.
 
@@ -23,12 +24,10 @@ class FreeFB(EncoderDecoder):
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.
     """
-    def __init__(self, n_filters, kernel_size, stride, enc_or_dec='encoder',
+    def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
                  **kwargs):
-        super(FreeFB, self).__init__(stride, enc_or_dec=enc_or_dec)
-        self.n_filters = n_filters
-        self.kernel_size = kernel_size
-        self.stride = stride
+        super(FreeFB, self).__init__(n_filters, kernel_size, stride=stride,
+                                     enc_or_dec=enc_or_dec)
         self.n_feats_out = n_filters
 
         self._filters = nn.Parameter(torch.ones(n_filters, 1, kernel_size))
@@ -39,12 +38,3 @@ class FreeFB(EncoderDecoder):
     def filters(self):
         return self._filters
 
-    def get_config(self):
-        """ Returns dictionary of arguments to re-instantiate the class."""
-        config = {
-            'n_filters': self.n_filters,
-            'kernel_size': self.kernel_size,
-            'stride': self.stride,
-            'enc_or_dec': self.enc_or_dec
-        }
-        return config
