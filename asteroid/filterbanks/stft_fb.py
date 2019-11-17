@@ -4,7 +4,7 @@ Free filterbank.
 """
 import torch
 import numpy as np
-from .enc_dec import EncoderDecoder
+from .enc_dec import Filterbank
 
 """
 Notes:
@@ -14,7 +14,7 @@ zeros in them. This is not efficient, the filters should be truncated.
 """
 
 
-class STFTFB(EncoderDecoder):
+class STFTFB(Filterbank):
     """STFT filterbank.
 
     # Args
@@ -26,11 +26,8 @@ class STFTFB(EncoderDecoder):
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used
             as an encoder or a decoder.
     """
-    def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
-                 inp_mode='reim', mask_mode='reim', **kwargs):
-        super(STFTFB, self).__init__(n_filters, kernel_size, stride=stride,
-                                     enc_or_dec=enc_or_dec, inp_mode=inp_mode,
-                                     mask_mode=mask_mode)
+    def __init__(self, n_filters, kernel_size, stride=None, **kwargs):
+        super(STFTFB, self).__init__(n_filters, kernel_size, stride=stride)
         assert n_filters >= kernel_size
         self.cutoff = int(n_filters/2 + 1)
         self.n_feats_out = 2 * self.cutoff

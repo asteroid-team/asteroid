@@ -7,10 +7,10 @@ import torch
 import torch.nn as nn
 import numpy as np
 import warnings
-from .enc_dec import EncoderDecoder
+from .enc_dec import Filterbank
 
 
-class AnalyticFreeFB(EncoderDecoder):
+class AnalyticFreeFB(Filterbank):
     """Free analytic (fully learned with analycity constraints) filterbank
         proposed in [1].
 
@@ -29,13 +29,9 @@ class AnalyticFreeFB(EncoderDecoder):
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.
     """
-    def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
-                 inp_mode='reim', mask_mode='reim', **kwargs):
+    def __init__(self, n_filters, kernel_size, stride=None, **kwargs):
         super(AnalyticFreeFB, self).__init__(n_filters, kernel_size,
-                                             stride=stride,
-                                             enc_or_dec=enc_or_dec,
-                                             inp_mode=inp_mode,
-                                             mask_mode=mask_mode)
+                                             stride=stride)
         self.cutoff = int(n_filters // 2)
         self.n_feats_out = 2 * self.cutoff
         if n_filters % 2 != 0:
@@ -54,5 +50,3 @@ class AnalyticFreeFB(EncoderDecoder):
         hft_f = torch.irfft(hft_f, 1, normalized=True,
                             signal_sizes=(self.kernel_size, ))
         return torch.cat([self._filters, hft_f], dim=0)
-
-
