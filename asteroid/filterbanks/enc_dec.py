@@ -41,13 +41,53 @@ class Filterbank(SubModule):
         return config
 
 
-class Encoder(SubModule):
+class _EncDec(SubModule):
+    """ Base private class for Encoder and Decoder.
+    Common parameters and methods.
+    Args:
+        filterbank: (subclass of) Filterbank instance. The filterbank to
+            use as an encoder or a decoder.
+        is_pinv: Bool. Whether to be the pseudo inverse of filterbank.
+    """
+    def __init__(self, filterbank, is_pinv=False):
+        super(_EncDec, self).__init__()
+        self.filterbank = filterbank
+        self.filters = self.filterbank.filters
+        self.stride = self.filterbank.stride
+        self.is_pinv = is_pinv
+
+    @classmethod
+    def pinv_of(cls, filterbank):
+        return cls(filterbank, is_pinv=True)
+
+    @staticmethod
+    def compute_filter_pinv(filters):
+        """ Computes pseudo inverse filterbank of given filters."""
+        shape = filters.shape
+        return torch.pinverse(filters.squeeze()).transpose(-1, -2).view(shape)
+
+    def get_filters(self):
+        """ Returns filters or pinv filters depending on `is_pinv` attribute """
+        if self.is_pinv:
+            return self.compute_filter_pinv(self.filters)
+        else:
+            return self.filters
+
+    def get_config(self):
+        """ Returns dictionary of arguments to re-instantiate the class."""
+        config = {'is_pinv': self.is_pinv}
+        base_config = self.filterbank.get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
+
+class Encoder(_EncDec):
     """ Encoder class. Add encoding methods to Filterbank classes.
     Not intended to be subclassed.
 
     Args:
         filterbank: (subclass of) Filterbank instance. The filterbank to use
             as an encoder.
+        is_pinv: Bool. Whether to be the pseudo inverse of filterbank.
         inp_mode: String. One of [`'reim'`, `'mag'`, `'cat'`]. Controls
             `post_processing_inputs` method which can be applied after
             the forward.
@@ -69,21 +109,19 @@ class Encoder(SubModule):
                 input and the mask are point-wise multiplied in the complex
                 sense.
     """
-    def __init__(self, filterbank, inp_mode='reim', mask_mode='reim'):
-        super(Encoder, self).__init__()
+    def __init__(self, filterbank, inp_mode='reim', mask_mode='reim',
+                 is_pinv=False):
+        super(Encoder, self).__init__(filterbank, is_pinv=is_pinv)
         self.inp_mode = inp_mode
         self.mask_mode = mask_mode
-
-        self.filterbank = filterbank
-        self.filters = self.filterbank.filters
-        self.stride = self.filterbank.stride
 
         self.inp_func, self.in_chan_mul = _inputs[self.inp_mode]
         self.mask_func, self.out_chan_mul = _masks[self.mask_mode]
 
     def forward(self, waveform):
         """ Convolve 1D torch.Tensor with filterbank."""
-        return F.conv1d(waveform, self.filters, stride=self.stride)
+        filters = self.get_filters()
+        return F.conv1d(waveform, filters, stride=self.stride)
 
     def post_process_inputs(self, x):
         """ Computes real or complex representation from `forward` output."""
@@ -99,44 +137,18 @@ class Encoder(SubModule):
             'inp_mode': self.inp_mode,
             'mask_mode': self.mask_mode
         }
-        base_config = self.filterbank.get_config()
+        base_config = super(Encoder, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class Decoder(SubModule):
+class Decoder(_EncDec):
     """Decoder class. Add decoding methods to Filterbank classes.
     Not intended to be subclassed.
     Args:
         filterbank: (subclass of) Filterbank instance. The filterbank to use
             as an decoder.
+        is_pinv: Bool. Whether to be the pseudo inverse of filterbank.
     """
-    def __init__(self, filterbank):
-        super(Decoder, self).__init__()
-
-        self.filterbank = filterbank
-        self.filters = self.filterbank.filters
-        self.stride = self.filterbank.stride
-
-        self.is_pinv = False
-
-    @classmethod
-    def pinv_of(cls, filterbank):
-        instance = cls(filterbank)
-        instance.is_pinv = True
-        return instance
-
-    @staticmethod
-    def compute_filter_pinv(filters):
-        """ Computes the pseudo inverse filterbank of given filters."""
-        shape = filters.shape
-        return torch.pinverse(filters.squeeze()).transpose(-1, -2).view(shape)
-
-    def get_filters(self):
-        if self.is_pinv:
-            return self.compute_filter_pinv(self.filters)
-        else:
-            return self.filters
-
     def forward(self, spec):
         """
         Applies transposed convolution to a TF representation. This is
@@ -156,9 +168,6 @@ class Decoder(SubModule):
             out = F.conv_transpose1d(spec.view(batch * n_src, chan, spec_len),
                                      filters, stride=self.stride)
             return out.view(batch, n_src, -1)
-
-    def get_config(self):
-        return self.filterbank.get_config()
 
 
 class NoEncoder(SubModule):
