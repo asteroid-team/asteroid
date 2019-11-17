@@ -42,7 +42,7 @@ class STFTFB(EncoderDecoder):
                                       np.zeros((rpad,))])
 
         filters = np.fft.fft(np.eye(n_filters))
-        filters /= (.5 * kernel_size / np.sqrt(stride))
+        filters /= (.5 * kernel_size / np.sqrt(self.stride))
         filters = np.vstack([np.real(filters[:self.cutoff, :]),
                              np.imag(filters[:self.cutoff, :])])
         filters[0, :] /= np.sqrt(2)
