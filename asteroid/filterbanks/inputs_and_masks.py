@@ -1,6 +1,9 @@
 """
 Masker inputs and output masks
 @author : Manuel Pariente, Inria-Nancy
+Reference [1] : "Filterbank design for end-to-end speech separation".
+                Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
+                Antoine Deleforge, Emmanuel Vincent.
 """
 
 import torch
@@ -50,16 +53,6 @@ def take_cat(x, dim=1):
     return torch.cat([take_mag(x, dim=dim), x], dim=dim)
 
 
-_inputs = {
-    'reim': (take_reim, 1),
-    'mag': (take_mag, 1/2),
-    'cat': (take_cat, 1 + 1/2)
-}
-_inputs['real'] = _inputs['reim']
-_inputs['mod'] = _inputs['mag']
-_inputs['concat'] = _inputs['cat']
-
-
 def apply_real_mask(tf_rep, mask, dim=1):
     """
     Applies a real mask to a real representation.
@@ -107,6 +100,15 @@ def apply_complex_mask(tf_rep, mask, dim=1):
         torch.Tensor, `tf_rep` multiplied by the `mask` in the complex sense.
     """
     return mul_c(tf_rep, mask, dim=dim)
+
+_inputs = {
+    'reim': (take_reim, 1),
+    'mag': (take_mag, 1/2),
+    'cat': (take_cat, 1 + 1/2)
+}
+_inputs['real'] = _inputs['reim']
+_inputs['mod'] = _inputs['mag']
+_inputs['concat'] = _inputs['cat']
 
 
 _masks = {
