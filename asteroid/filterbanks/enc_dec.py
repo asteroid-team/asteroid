@@ -3,6 +3,7 @@ Base classes for filterbanks, encoders and decoders.
 @author : Manuel Pariente, Inria-Nancy
 """
 
+import torch
 from torch.nn import functional as F
 
 from ..engine.sub_module import SubModule
@@ -116,6 +117,26 @@ class Decoder(SubModule):
         self.filters = self.filterbank.filters
         self.stride = self.filterbank.stride
 
+        self.is_pinv = False
+
+    @classmethod
+    def pinv_of(cls, filterbank):
+        instance = cls(filterbank)
+        instance.is_pinv = True
+        return instance
+
+    @staticmethod
+    def compute_filter_pinv(filters):
+        """ Computes the pseudo inverse filterbank of given filters."""
+        shape = filters.shape
+        return torch.pinverse(filters.squeeze()).transpose(-1, -2).view(shape)
+
+    def get_filters(self):
+        if self.is_pinv:
+            return self.compute_filter_pinv(self.filters)
+        else:
+            return self.filters
+
     def forward(self, spec):
         """
         Applies transposed convolution to a TF representation. This is
@@ -126,12 +147,14 @@ class Decoder(SubModule):
         Returns:
             torch.Tensor, the corresponding time domain signal.
         """
+        filters = self.get_filters()
+
         if len(spec.shape) == 3:
-            return F.conv_transpose1d(spec, self.filters, stride=self.stride)
+            return F.conv_transpose1d(spec, filters, stride=self.stride)
         elif len(spec.shape) == 4:
             batch, n_src, chan, spec_len = spec.shape
             out = F.conv_transpose1d(spec.view(batch * n_src, chan, spec_len),
-                                     self.filters, stride=self.stride)
+                                     filters, stride=self.stride)
             return out.view(batch, n_src, -1)
 
     def get_config(self):
