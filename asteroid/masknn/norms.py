@@ -13,38 +13,44 @@ class _LayerNorm(nn.Module):
     def __init__(self, channel_size):
         super(_LayerNorm, self).__init__()
         self.channel_size = channel_size
-        self.gamma = nn.Parameter(torch.ones(1, channel_size, 1),
+        self.gamma = nn.Parameter(torch.ones(channel_size),
                                   requires_grad=True)
-        self.beta = nn.Parameter(torch.zeros(1, channel_size, 1),
+        self.beta = nn.Parameter(torch.zeros(channel_size),
                                  requires_grad=True)
+
+    def apply_gain_and_bias(self, normed_x):
+        """ Assumes input of size [batch, chanel, *]. """
+        return (self.gamma * normed_x.transpose(1, -1) +
+                self.beta).transpose(1, -1)
 
 
 class GlobLN(_LayerNorm):
     """Global Layer Normalization (globLN)."""
     def forward(self, x):
-        """
+        """ Works for any input size > 2D.
         Args:
-            x: [batch, chan, spec_len]
+            x: [batch, chan, *]
         Returns:
-            gLN_x: [batch, chan, spec_len]
+            gLN_x: [batch, chan, *]
         """
-        mean = x.mean(dim=[1, 2], keepdim=True)
-        var = torch.pow(x - mean, 2).mean(dim=[1, 2], keepdim=True)
-        return self.gamma * (x - mean) / (var + EPS).sqrt() + self.beta
+        dims = list(range(1, len(x.shape)))
+        mean = x.mean(dim=dims, keepdim=True)
+        var = torch.pow(x - mean, 2).mean(dim=dims, keepdim=True)
+        return self.apply_gain_and_bias((x - mean) / (var + EPS).sqrt())
 
 
 class ChanLN(_LayerNorm):
     """Channel-wise Layer Normalization (chanLN)."""
     def forward(self, x):
-        """
+        """ Works for any input size > 2D.
         Args:
-            x: [batch, chan, spec_len]
+            x: [batch, chan, *]
         Returns:
-            chanLN_x: [batch, chan, spec_len]
+            chanLN_x: [batch, chan, *]
         """
         mean = torch.mean(x, dim=1, keepdim=True)
         var = torch.var(x, dim=1, keepdim=True, unbiased=False)
-        return self.gamma * (x - mean) / (var + EPS).sqrt() + self.beta
+        return self.apply_gain_and_bias((x - mean) / (var + EPS).sqrt())
 
 
 class CumLN(_LayerNorm):
