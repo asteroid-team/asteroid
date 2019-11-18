@@ -56,10 +56,6 @@ class _EncDec(SubModule):
         self.stride = self.filterbank.stride
         self.is_pinv = is_pinv
 
-    @classmethod
-    def pinv_of(cls, filterbank):
-        return cls(filterbank, is_pinv=True)
-
     @staticmethod
     def compute_filter_pinv(filters):
         """ Computes pseudo inverse filterbank of given filters."""
@@ -118,6 +114,14 @@ class Encoder(_EncDec):
         self.inp_func, self.in_chan_mul = _inputs[self.inp_mode]
         self.mask_func, self.out_chan_mul = _masks[self.mask_mode]
 
+    @classmethod
+    def pinv_of(cls, filterbank, **kwargs):
+        """ Returns an Encoder, pseudo inverse of a filterbank or Decoder."""
+        if isinstance(filterbank, Filterbank):
+            return cls(filterbank, is_pinv=True, **kwargs)
+        elif isinstance(filterbank, Decoder):
+            return cls(filterbank.filterbank, is_pinv=True, **kwargs)
+
     def forward(self, waveform):
         """ Convolve 1D torch.Tensor with filterbank."""
         filters = self.get_filters()
@@ -149,6 +153,14 @@ class Decoder(_EncDec):
             as an decoder.
         is_pinv: Bool. Whether to be the pseudo inverse of filterbank.
     """
+    @classmethod
+    def pinv_of(cls, filterbank):
+        """ Returns an Decoder, pseudo inverse of a filterbank or Encoder."""
+        if isinstance(filterbank, Filterbank):
+            return cls(filterbank, is_pinv=True)
+        elif isinstance(filterbank, Encoder):
+            return cls(filterbank.filterbank, is_pinv=True)
+
     def forward(self, spec):
         """
         Applies transposed convolution to a TF representation. This is

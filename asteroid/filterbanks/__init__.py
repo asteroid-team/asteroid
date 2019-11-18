@@ -5,7 +5,8 @@ from .stft_fb import STFTFB
 from .enc_dec import Encoder, Decoder, NoEncoder
 
 
-def make_enc_dec(fb_name='free', mask_mode='reim', inp_mode='reim', **kwargs):
+def make_enc_dec(fb_name='free', mask_mode='reim', inp_mode='reim',
+                 who_is_pinv=None, **kwargs):
     """
     Creates congruent encoder and decoder from the same filterbank family.
     Args:
@@ -32,17 +33,31 @@ def make_enc_dec(fb_name='free', mask_mode='reim', inp_mode='reim', **kwargs):
             - `'comp'` or `'complex'` corresponds to a complex mask : the
                 input and the mask are point-wise multiplied in the complex
                 sense.
+        who_is_pinv: None or String. If None, no pseudo-inverse filters will be
+            used. If string, among `'encoder'`, `'decoder'`, decides which of
+            `Encoder` or `Decoder` will be the pseudo inverse of the other one.
         **kwargs: Arguments which will be passed to the filterbank class.
             Usual argument include `n_filters`, `kernel_size` and `stride` but
             this will depend on the filterbank family.
     Returns:
         Encoder instance, Decoder instance.
     """
-    fb = get(fb_name)(**kwargs)
-    enc = Encoder(fb, mask_mode=mask_mode, inp_mode=inp_mode)
-    # Filters between encoder and decoder should not be shared.
-    fb = get(fb_name)(**kwargs)
-    dec = Decoder(fb)
+    if who_is_pinv in ['dec', 'decoder']:
+        fb = get(fb_name)(**kwargs)
+        enc = Encoder(fb, mask_mode=mask_mode, inp_mode=inp_mode)
+        # Decoder filterbank is pseudo inverse of encoder filterbank.
+        dec = Decoder.pinv_of(fb)
+    elif who_is_pinv in ['enc', 'encoder']:
+        fb = get(fb_name)(**kwargs)
+        dec = Decoder(fb)
+        # Encoder filterbank is pseudo inverse of decoder filterbank.
+        enc = Encoder.pinv_of(fb, mask_mode=mask_mode, inp_mode=inp_mode)
+    else:
+        fb = get(fb_name)(**kwargs)
+        enc = Encoder(fb, mask_mode=mask_mode, inp_mode=inp_mode)
+        # Filters between encoder and decoder should not be shared.
+        fb = get(fb_name)(**kwargs)
+        dec = Decoder(fb)
     return enc, dec
 
 
