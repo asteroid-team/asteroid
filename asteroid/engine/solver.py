@@ -198,6 +198,8 @@ class Solver(object):
             torch.nn.utils.clip_grad_norm_(self.model.parameters(),
                                            self.tr_conf['max_norm'])
             self.optimizer.step()
+        elif torch.isnan(loss):
+            print('Got NaN loss, skip this batch.', flush=True)
 
     def save_model(self, file_name, epoch):
         torch.save(self.model.module.serialize(self.optimizer,

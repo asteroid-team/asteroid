@@ -1,8 +1,11 @@
 # Filterbank config
 filterbank:
+
   n_filters: 512
   kernel_size: 16
   stride: 8
+  inp_mode: reim
+  mask_mode: reim
 # Network config
 masknet:
   n_blocks: 3
@@ -15,7 +18,7 @@ training:
   early_stop: yes
   max_norm: 5
   checkpoint: n
-  continue_from: ''
+  continue_from:
 # Optim config
 optim:
   optimizer: adam
