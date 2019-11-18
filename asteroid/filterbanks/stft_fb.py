@@ -1,5 +1,5 @@
 """
-Free filterbank.
+STFT filterbank i.e DFT filters
 @author : Manuel Pariente, Inria-Nancy
 """
 import torch
@@ -33,13 +33,14 @@ class STFTFB(Filterbank):
         self.n_feats_out = 2 * self.cutoff
 
         win = np.hanning(kernel_size + 1)[:-1]**.5
+
         lpad = int((n_filters - kernel_size) // 2)
         rpad = int(n_filters - kernel_size - lpad)
         self.window = np.concatenate([np.zeros((lpad,)), win,
                                       np.zeros((rpad,))])
 
         filters = np.fft.fft(np.eye(n_filters))
-        filters /= (.5 * kernel_size / np.sqrt(self.stride))
+        filters /= (.5 * np.sqrt(kernel_size * n_filters / self.stride))
         filters = np.vstack([np.real(filters[:self.cutoff, :]),
                              np.imag(filters[:self.cutoff, :])])
         filters[0, :] /= np.sqrt(2)
