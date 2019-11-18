@@ -277,9 +277,7 @@ class DPRNN(SubModule):
             net += [DPRNNBlock(bn_chan, hid_size, norm_type, bidirectional, rnn_type, num_layers, dropout)]
         self.net = nn.Sequential(*net)
 
-        # TODO Luo's code uses Conv2D in TAC not clear in [1] if it is also used Conv2D.
-        # This version with Conv1D however has been able to reach same results as in [1].
-        mask_conv = nn.Conv1d(bn_chan, n_src*out_chan, 1)
+        mask_conv = nn.Conv2d(bn_chan, n_src*out_chan, 1)
         self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
 
         # Get activation function. For softmax, feed the source dimension.
@@ -306,14 +304,15 @@ class DPRNN(SubModule):
         S = output.size(-1)
         output = output.reshape(batch, self.bn_chan, self.chunk_size, S) # [batch x bn_chan x chunk_size x n_chunks]
         output = self.net(output) # apply stacked DPRNN Blocks sequentially
+        output = self.mask_net(output) # apply mask
+        output = output.reshape(batch * self.n_src, n_filters, self.chunk_size, S)
         # overlap and add: [batch x bn_chan x chunk_size x n_chunks] -> [batch x bn_chan x n_frames]
         output = fold(output.reshape(batch, self.bn_chan * self.chunk_size, S),
                                  (n_frames, 1), kernel_size=(self.chunk_size, 1),
                                  padding=(self.chunk_size, 0),
                                  stride=(self.hop_size, 1))
         output = output.squeeze(-1) / (self.K / self.P) # normalization
-        score = self.mask_net(output)
-        score = score.view(batch, self.n_src, self.out_chan, n_frames)
+        score = output.view(batch, self.n_src, self.out_chan, n_frames)
         est_mask = self.output_act(score)
         return est_mask
 
