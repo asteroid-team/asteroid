@@ -5,7 +5,7 @@ from .stft_fb import STFTFB
 from .enc_dec import Encoder, Decoder, NoEncoder
 
 
-def make_enc_dec(fb_name='free', mask_mode='reim', inp_mode='reim',
+def make_enc_dec(fb_name, mask_mode='reim', inp_mode='reim',
                  who_is_pinv=None, **kwargs):
     """
     Creates congruent encoder and decoder from the same filterbank family.
