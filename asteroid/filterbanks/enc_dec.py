@@ -210,6 +210,10 @@ class NoEncoder(SubModule):
             - `'comp'` or `'complex'` corresponds to a complex mask : the
                 input and the mask are point-wise multiplied in the complex
                 sense.
+    By default :
+     - The forward returns the input.
+     - The input post-processing is the identity.
+     - The mask is applied to the input features.
     """
     def __init__(self, inp_mode='reim', mask_mode='reim'):
 
