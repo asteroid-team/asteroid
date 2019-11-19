@@ -182,7 +182,8 @@ class DPRNNBlock(nn.Module):
         in_chan: int. Number of input channels.
         hid_size: int. Number of hidden neurons in the RNNs.
         norm_type: string. Type of normalization to use.
-            Among `LN` (2D Layernorm).
+            Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm) and
+            `cgLN` (cumulative global Layernorm).
         bidirectional: bool. True for bidirectional Inter-Chunk RNN.
         rnn_type: string. Type of RNN used.
             Choose between 'RNN', 'LSTM' and 'GRU'.
@@ -194,7 +195,7 @@ class DPRNNBlock(nn.Module):
         Luo, Yi, Zhuo Chen, and Takuya Yoshioka.
         https://arxiv.org/abs/1910.06379
     """
-    def __init__(self, in_chan, hid_size, norm_type="LN",
+    def __init__(self, in_chan, hid_size, norm_type="gLN",
                  bidirectional=True, rnn_type="LSTM", num_layers=1, dropout=0):
         super(DPRNNBlock, self).__init__()
         self.intra_RNN=SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True)
@@ -322,7 +323,7 @@ class DPRNN(SubModule):
             'out_chan': self.out_chan,
             'bn_chan': self.bn_chan,
             'hid_size': self.hid_size,
-            'chunk_size': self.kernel_size,
+            'chunk_size': self.chunk_size,
             'hop_size': self.hop_size,
             'n_repeats': self.n_repeats,
             'n_src': self.n_src,
