@@ -88,6 +88,7 @@ class TDConvNet(SubModule):
 
         layer_norm = norms.get(norm_type)(in_chan)
         bottleneck_conv = nn.Conv1d(in_chan, bn_chan, 1)
+        self.bottleneck = nn.Sequential(layer_norm, bottleneck_conv)
         # Succession of Conv1DBlock with exponentially increasing dilation.
         self.TCN = nn.ModuleList()
         for r in range(n_repeats):
@@ -97,6 +98,7 @@ class TDConvNet(SubModule):
                                             kernel_size, padding=padding,
                                             dilation=2**x, norm_type=norm_type))
         mask_conv = nn.Conv1d(bn_chan, n_src*out_chan, 1)
+        self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
         # For softmax, feed the source dimension.
@@ -104,8 +106,6 @@ class TDConvNet(SubModule):
             self.output_act = mask_nl_class(dim=1)
         else:
             self.output_act = mask_nl_class()
-        self.bottleneck = nn.Sequential(layer_norm, bottleneck_conv)
-        self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
 
     def forward(self, mixture_w):
         """
@@ -198,14 +198,13 @@ class DPRNNBlock(nn.Module):
     def __init__(self, in_chan, hid_size, norm_type="gLN",
                  bidirectional=True, rnn_type="LSTM", num_layers=1, dropout=0):
         super(DPRNNBlock, self).__init__()
-        self.intra_RNN=SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True)
+        self.intra_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True)
         self.intra_linear = nn.Linear(hid_size *2, in_chan) # linear projection layer (always bi-directional)
-        self.intra_norm=norms.get(norm_type)(in_chan)
-        self.inter_RNN=SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=bidirectional)
+        self.intra_norm = norms.get(norm_type)(in_chan)
+        self.inter_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=bidirectional)
         num_direction = int(bidirectional) + 1
         self.inter_linear = nn.Linear(hid_size * num_direction, in_chan)
         self.inter_norm = norms.get(norm_type)(in_chan)
-
 
     def forward(self, x):
         # x is [batch, num_features, chunk_size, num_chunks]
@@ -233,12 +232,14 @@ class DPRNN(SubModule):
         in_chan: int > 0. Number of input filters.
         out_chan : int > 0. Number of bins in the estimated masks.
         bn_chan: int > 0. Number of channels after the bottleneck.
-        hid_size: int > 0. Number of neurons in the RNNs.
-        kernel_size: int > 0. Kernel size in convolutional blocks.
-        n_blocks: int > 0. Number of convolutional blocks in each repeat.
+        hid_size: int > 0. Number of neurons in the RNNs cell state.
+        chunk_size: int > 0. window size of overlap and add processing.
+        hop_size: int > 0. hop size (stride) of overlap and add processing.
         n_repeats: int > 0. Number of repeats.
         n_src: int > 0. Number of masks to estimate.
-        norm_type: string. Among [BN, gLN, cLN]
+        norm_type: string. Type of normalization to use.
+            Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm) and
+            `cgLN` (cumulative global Layernorm).
         mask_act: string. Which non-linear function to generate mask.
         bidirectional: bool: True for bidirectional Inter-Chunk RNN (Intra-Chunk is always bidirectional).
         rnn_type: string. Type of RNN used. Choose between 'RNN', 'LSTM' and 'GRU'.
@@ -267,7 +268,7 @@ class DPRNN(SubModule):
         self.bidirectional = bidirectional
         self.rnn_type = rnn_type
         self.num_layers = num_layers
-        self.dropout=dropout
+        self.dropout = dropout
 
         layer_norm = norms.get('cLN')(in_chan)
         bottleneck_conv = nn.Conv1d(in_chan, bn_chan, 1)
@@ -281,11 +282,9 @@ class DPRNN(SubModule):
         mask_conv = nn.Conv2d(bn_chan, n_src*out_chan, 1)
         self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
 
-        # Get activation function. For softmax, feed the source dimension.
-        if mask_act.lower() == 'linear':
-            mask_nl_class = NoLayer
-        else:
-            mask_nl_class = getattr(nn, mask_act)
+        # Get activation function.
+        mask_nl_class = activations.get(mask_act)
+        # For softmax, feed the source dimension.
         if has_arg(mask_nl_class, 'dim'):
             self.output_act = mask_nl_class(dim=1)
         else:
