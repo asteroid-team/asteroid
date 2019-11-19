@@ -22,7 +22,7 @@ class Container(nn.Module):
     def __init__(self, encoder=None, masker=None, decoder=None):
         super(Container, self).__init__()
         self.encoder = encoder if encoder is not None else NoEncoder()
-        self.masker = masker if masker is not None else NoLayer()
+        self.masker = masker
         self.decoder = decoder if decoder is not None else NoLayer()
 
     def forward(self, x):
@@ -32,11 +32,14 @@ class Container(nn.Module):
         tf_rep = self.encoder(x)
         # Post process TF representation (take magnitude or keep [Re, Im] etc)
         masker_input = self.encoder.post_process_inputs(tf_rep)
-        # Estimate masks (Size [batch, n_scr, bins, time])
-        est_masks = self.masker(masker_input)
-        # Apply mask to TF representation
-        masked_tf_reps = self.encoder.apply_mask(tf_rep.unsqueeze(1),
-                                                 est_masks, dim=2)
+        if self.masker:
+            # Estimate masks (Size [batch, n_scr, bins, time])
+            est_masks = self.masker(masker_input)
+            # Apply mask to TF representation
+            masked_tf_reps = self.encoder.apply_mask(tf_rep.unsqueeze(1),
+                                                     est_masks, dim=2)
+        else:
+            masked_tf_reps = masker_input
         # Map back TF representation to time domain
         output = self.decoder(masked_tf_reps)
         # Pad back the waveform to the input length
@@ -93,9 +96,13 @@ class Container(nn.Module):
         and decoder classes and their state_dict
 
         """
-        self.load_encoder(pack)
-        self.load_masker(pack)
-        self.load_decoder(pack)
+        if 'model' in pack.keys():
+            model_pack = pack['model']
+        else:
+            model_pack = pack
+        self.load_encoder(model_pack)
+        self.load_masker(model_pack)
+        self.load_decoder(model_pack)
         # If some checks are performed in self.__init__, the first instance
         # didn't trigger them for sure, we might want to reinstantiate the
         # self with the right components
