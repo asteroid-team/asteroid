@@ -142,6 +142,7 @@ class TDConvNet(SubModule):
         }
         return config
 
+
 class SingleRNN(nn.Module):
     """
     From https://github.com/yluo42/TAC/blob/master/utility/models.py
@@ -164,19 +165,13 @@ class SingleRNN(nn.Module):
         self.rnn_type = rnn_type
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.num_direction = int(bidirectional) + 1
-
         self.rnn = getattr(nn, rnn_type)(input_size, hidden_size, num_layers=n_layers,
                                              dropout=dropout, batch_first=True, bidirectional=bool(bidirectional))
-
-        # linear projection layer
-        self.proj = nn.Linear(hidden_size * self.num_direction, input_size)
 
     def forward(self, input):
         # input shape: batch, seq, dim
         output = input
         rnn_output, _ = self.rnn(output)
-        rnn_output = self.proj(rnn_output)
         return rnn_output
 
 
@@ -203,8 +198,11 @@ class DPRNNBlock(nn.Module):
                  bidirectional=True, rnn_type="LSTM", num_layers=1, dropout=0):
         super(DPRNNBlock, self).__init__()
         self.intra_RNN=SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True)
+        self.intra_linear = nn.Linear(hid_size *2, in_chan) # linear projection layer (always bi-directional)
         self.intra_norm=norms.get(norm_type)(in_chan)
         self.inter_RNN=SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=bidirectional)
+        num_direction = int(bidirectional) + 1
+        self.inter_linear = nn.Linear(hid_size * num_direction, in_chan)
         self.inter_norm = norms.get(norm_type)(in_chan)
 
 
@@ -215,12 +213,14 @@ class DPRNNBlock(nn.Module):
         # intra-chunk processing
         x = x.transpose(1, -1).reshape(B * L, K, N)
         x = self.intra_RNN(x)
+        x = self.intra_linear(x)
         x = x.reshape(B, L, K, N).transpose(1, -1)
         x = self.intra_norm(x)
         output = output + x
         # inter-chunk processing
         output = output.transpose(1, 2).transpose(2, -1).reshape(B * K, L, N)
         output = self.inter_RNN(output)
+        output = self.inter_linear(output)
         output = output.reshape(B, K, L, N).transpose(1, -1).transpose(2, -1)
         output = self.inter_norm(output)
         return output + x
@@ -250,7 +250,7 @@ class DPRNN(SubModule):
         https://arxiv.org/abs/1910.06379
     """
     def __init__(self, in_chan, out_chan, bn_chan, hid_size,
-                 chunk_size, hop_size, n_repeats, n_src, norm_type="LN",
+                 chunk_size, hop_size, n_repeats, n_src, norm_type="gLN",
                  mask_act='sigmoid', bidirectional=True, rnn_type="LSTM", num_layers=1, dropout=0):
         super(DPRNN, self).__init__()
         self.in_chan = in_chan
@@ -268,7 +268,7 @@ class DPRNN(SubModule):
         self.num_layers = num_layers
         self.dropout=dropout
 
-        layer_norm = norms.get(norm_type)(in_chan)
+        layer_norm = norms.get('cLN')(in_chan)
         bottleneck_conv = nn.Conv1d(in_chan, bn_chan, 1)
         self.bottleneck = nn.Sequential(layer_norm, bottleneck_conv)
 
@@ -311,7 +311,7 @@ class DPRNN(SubModule):
                                  (n_frames, 1), kernel_size=(self.chunk_size, 1),
                                  padding=(self.chunk_size, 0),
                                  stride=(self.hop_size, 1))
-        output = output.squeeze(-1) / (self.K / self.P) # normalization
+        output = output.squeeze(-1) / (self.chunk_size / self.hop_size) # normalization
         score = output.view(batch, self.n_src, self.out_chan, n_frames)
         est_mask = self.output_act(score)
         return est_mask
