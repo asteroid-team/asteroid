@@ -6,6 +6,7 @@ Container for encoding/masking/decoding networks
 import torch
 from torch import nn
 from .sub_module import NoLayer
+from ..filterbanks import NoEncoder
 
 
 class Container(nn.Module):
@@ -20,44 +21,33 @@ class Container(nn.Module):
     """
     def __init__(self, encoder=None, masker=None, decoder=None):
         super(Container, self).__init__()
-        self.encoder = encoder if encoder is not None else NoLayer()
-        self.masker = masker if masker is not None else NoLayer()
+        self.encoder = encoder if encoder is not None else NoEncoder()
+        self.masker = masker
         self.decoder = decoder if decoder is not None else NoLayer()
 
     def forward(self, x):
         if len(x.shape) == 2:
             x = x.unsqueeze(1)
+        # Encode the waveform
         tf_rep = self.encoder(x)
-
-        # NoLayer doesn't have post_process_inputs so this will break if
-        # encoder is None. Same for apply_mask in the next lines.
-        # We could use defaults in self.__init__ or in NoLayer.
-        # Try to think about better design for flexible forward without to
-        # much code from the user.
-        # And, importantly, we don't loose the serialize possibility..
+        # Post process TF representation (take magnitude or keep [Re, Im] etc)
         masker_input = self.encoder.post_process_inputs(tf_rep)
-        # est_masks : [batch, n_scr, bins, time]
-        est_masks = self.masker(masker_input)
-
-        # The apply_mask method should also belong to the encoder as the
-        # mask is applied to its output, the decoder's dimensions can be
-        # deduced by it but the decoder doesnt dictate the masking mode.
-        masked_tf_reps = self.encoder.apply_mask(tf_rep.unsqueeze(1),
-                                                 est_masks, dim=2)
+        if self.masker:
+            # Estimate masks (Size [batch, n_scr, bins, time])
+            est_masks = self.masker(masker_input)
+            # Apply mask to TF representation
+            masked_tf_reps = self.encoder.apply_mask(tf_rep.unsqueeze(1),
+                                                     est_masks, dim=2)
+        else:
+            masked_tf_reps = masker_input
+        # Map back TF representation to time domain
         output = self.decoder(masked_tf_reps)
-
-        # This is desirable only for waveform models, or where the input output
-        # are the same type of representation.
+        # Pad back the waveform to the input length
         output = self.pad_output_to_inp(output, x)
         return output
 
-    def apply_mask(self, x, mask):
-        # To be removed most probably.
-        if len(x.shape) == 3:
-            x = x.unsqueeze(1)
-        return x * mask
-
     def pad_output_to_inp(self, output, inp):
+        """ Pad first argument to have same size as second argument"""
         inp_len = inp.size(-1)
         output_len = output.size(-1)
         return nn.functional.pad(output, [0, inp_len - output_len])
@@ -106,10 +96,14 @@ class Container(nn.Module):
         and decoder classes and their state_dict
 
         """
-        self.load_encoder(pack)
-        self.load_masker(pack)
-        self.load_decoder(pack)
-        # If some checks are performed in self.__init__, the first instiation
+        if 'model' in pack.keys():
+            model_pack = pack['model']
+        else:
+            model_pack = pack
+        self.load_encoder(model_pack)
+        self.load_masker(model_pack)
+        self.load_decoder(model_pack)
+        # If some checks are performed in self.__init__, the first instance
         # didn't trigger them for sure, we might want to reinstantiate the
         # self with the right components
         # otherwise, making a class method would probably work better.

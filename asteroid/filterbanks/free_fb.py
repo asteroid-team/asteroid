@@ -5,10 +5,10 @@ Free filterbank.
 
 import torch
 import torch.nn as nn
-from .enc_dec import EncoderDecoder
+from .enc_dec import Filterbank
 
 
-class FreeFB(EncoderDecoder):
+class FreeFB(Filterbank):
     """Free filterbank without any constraints. Equivalent to nn.Conv1d.
 
     # Args
@@ -24,10 +24,8 @@ class FreeFB(EncoderDecoder):
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.
     """
-    def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
-                 **kwargs):
-        super(FreeFB, self).__init__(n_filters, kernel_size, stride=stride,
-                                     enc_or_dec=enc_or_dec)
+    def __init__(self, n_filters, kernel_size, stride=None, **kwargs):
+        super(FreeFB, self).__init__(n_filters, kernel_size, stride=stride)
         self.n_feats_out = n_filters
 
         self._filters = nn.Parameter(torch.ones(n_filters, 1, kernel_size))

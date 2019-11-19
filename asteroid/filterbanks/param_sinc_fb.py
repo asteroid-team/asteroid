@@ -8,10 +8,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 import warnings
-from .enc_dec import EncoderDecoder
+from .enc_dec import Filterbank
 
 
-class ParamSincFB(EncoderDecoder):
+class ParamSincFB(Filterbank):
     """Extension of the parameterized filterbank from [1] proposed in [2].
 
     # Args
@@ -35,17 +35,13 @@ class ParamSincFB(EncoderDecoder):
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.
     """
-    def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
-                 sample_rate=16000, min_low_hz=50, min_band_hz=50,
-                 inp_mode='reim', mask_mode='reim'):
+    def __init__(self, n_filters, kernel_size, stride=None,
+                 sample_rate=16000, min_low_hz=50, min_band_hz=50):
+        super(ParamSincFB, self).__init__(n_filters, kernel_size, stride=stride)
         if kernel_size % 2 == 0:
             print('Received kernel_size={}, force '.format(kernel_size) +
                   'kernel_size={} so filters are odd'.format(kernel_size+1))
             kernel_size += 1
-        super(ParamSincFB, self).__init__(n_filters, kernel_size, stride=stride,
-                                          enc_or_dec=enc_or_dec,
-                                          inp_mode=inp_mode,
-                                          mask_mode=mask_mode)
         self.sample_rate = sample_rate
         self.min_low_hz, self.min_band_hz = min_low_hz, min_band_hz
 

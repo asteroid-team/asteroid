@@ -1,20 +1,13 @@
 """
-Free filterbank.
+STFT filterbank i.e DFT filters
 @author : Manuel Pariente, Inria-Nancy
 """
 import torch
 import numpy as np
-from .enc_dec import EncoderDecoder
-
-"""
-Notes:
-- We need to add the flexibility of choosing the window. 
-- For large number of filters (overcomplete STFT), the filters have a lot of 
-zeros in them. This is not efficient, the filters should be truncated.
-"""
+from .enc_dec import Filterbank
 
 
-class STFTFB(EncoderDecoder):
+class STFTFB(Filterbank):
     """STFT filterbank.
 
     # Args
@@ -23,28 +16,36 @@ class STFTFB(EncoderDecoder):
         kernel_size: Positive int. Length of the filters (i.e the window).
         stride: Positive int. Stride of the convolution (hop size).
             If None (default), set to `kernel_size // 2`.
+        window: None or numpy array. If None, defaults to
+            `np.sqrt(np.hanning())`.
         enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used
             as an encoder or a decoder.
     """
-    def __init__(self, n_filters, kernel_size, stride=None, enc_or_dec='enc',
-                 inp_mode='reim', mask_mode='reim', **kwargs):
-        super(STFTFB, self).__init__(n_filters, kernel_size, stride=stride,
-                                     enc_or_dec=enc_or_dec, inp_mode=inp_mode,
-                                     mask_mode=mask_mode)
+    def __init__(self, n_filters, kernel_size, stride=None, window=None,
+                 **kwargs):
+        super(STFTFB, self).__init__(n_filters, kernel_size, stride=stride)
         assert n_filters >= kernel_size
         self.cutoff = int(n_filters/2 + 1)
         self.n_feats_out = 2 * self.cutoff
 
-        win = np.hanning(kernel_size + 1)[:-1]**.5
+        if window is None:
+            self.window = np.hanning(kernel_size + 1)[:-1]**.5
+        else:
+            ws = window.size
+            if not (ws == kernel_size or ws == n_filters):
+                raise AssertionError('Expected window of size {} or {} '
+                                     'Received window of size {} instead.'
+                                     ''.format(n_filters, kernel_size, ws))
+            self.window = window
+        # Create and normalize DFT filters (can be overcomplete)
+        filters = np.fft.fft(np.eye(n_filters))
+        filters /= (.5 * np.sqrt(kernel_size * n_filters / self.stride))
+        # Keep only the windowed centered part to save computation.
         lpad = int((n_filters - kernel_size) // 2)
         rpad = int(n_filters - kernel_size - lpad)
-        self.window = np.concatenate([np.zeros((lpad,)), win,
-                                      np.zeros((rpad,))])
-
-        filters = np.fft.fft(np.eye(n_filters))
-        filters /= (.5 * kernel_size / np.sqrt(self.stride))
-        filters = np.vstack([np.real(filters[:self.cutoff, :]),
-                             np.imag(filters[:self.cutoff, :])])
+        indexes = list(range(lpad, n_filters - rpad))
+        filters = np.vstack([np.real(filters[:self.cutoff, indexes]),
+                             np.imag(filters[:self.cutoff, indexes])])
         filters[0, :] /= np.sqrt(2)
         filters[-1, :] /= np.sqrt(2)
         filters = torch.from_numpy(filters * self.window).unsqueeze(1).float()

@@ -31,7 +31,7 @@ to reproduce published papers.
 
 ## Filterbanks
 Analysis-synthesis
-* [ ] STFT (integrated, but not satisfied yet)
+* [x] STFT (See unit tests)
 * [x] Free e.g fully learned ([Luo et al.](https://arxiv.org/abs/1711.00541))
 * [x] Analytic free e.g fully learned under analycity constraint ([Pariente et al.](https://128.84.21.199/abs/1910.10400))
 * [x] Parametrized Sinc ([Pariente et al.](https://128.84.21.199/abs/1910.10400))
