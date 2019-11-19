@@ -43,8 +43,9 @@ class STFTFB(Filterbank):
         # Keep only the windowed centered part to save computation.
         lpad = int((n_filters - kernel_size) // 2)
         rpad = int(n_filters - kernel_size - lpad)
-        filters = np.vstack([np.real(filters[:self.cutoff, lpad: -rpad]),
-                             np.imag(filters[:self.cutoff, lpad: -rpad])])
+        indexes = list(range(lpad, n_filters - rpad))
+        filters = np.vstack([np.real(filters[:self.cutoff, indexes]),
+                             np.imag(filters[:self.cutoff, indexes])])
         filters[0, :] /= np.sqrt(2)
         filters[-1, :] /= np.sqrt(2)
         filters = torch.from_numpy(filters * self.window).unsqueeze(1).float()
