@@ -12,7 +12,8 @@ def make_enc_dec(fb_name, mask_mode='reim', inp_mode='reim',
     Args:
         fb_name: String or className. Filterbank family from which to make
             encoder and decoder. Among [`'free'`, `'analytic_free'`,
-            `'param_sinc'`, `'stft'`] and many more to come.
+            `'param_sinc'`, `'stft'`] and many more to come. ClassName such
+            as `FreeFB` and such.
         inp_mode: String. One of [`'reim'`, `'mag'`, `'cat'`]. Controls
             `post_processing_inputs` method which can be applied after
             the forward.
@@ -42,21 +43,29 @@ def make_enc_dec(fb_name, mask_mode='reim', inp_mode='reim',
     Returns:
         Encoder instance, Decoder instance.
     """
+    # Handles class names as strings or as classes.
+    if isinstance(fb_name, str):
+        fb_class = get(fb_name)
+    elif isinstance(fb_name, type):
+        fb_class = fb_name
+    else:
+        raise ValueError('Could not interpret : ' + str(fb_name))
+
     if who_is_pinv in ['dec', 'decoder']:
-        fb = get(fb_name)(**kwargs)
+        fb = fb_class(**kwargs)
         enc = Encoder(fb, mask_mode=mask_mode, inp_mode=inp_mode)
         # Decoder filterbank is pseudo inverse of encoder filterbank.
         dec = Decoder.pinv_of(fb)
     elif who_is_pinv in ['enc', 'encoder']:
-        fb = get(fb_name)(**kwargs)
+        fb = fb_class(**kwargs)
         dec = Decoder(fb)
         # Encoder filterbank is pseudo inverse of decoder filterbank.
         enc = Encoder.pinv_of(fb, mask_mode=mask_mode, inp_mode=inp_mode)
     else:
-        fb = get(fb_name)(**kwargs)
+        fb = fb_class(**kwargs)
         enc = Encoder(fb, mask_mode=mask_mode, inp_mode=inp_mode)
         # Filters between encoder and decoder should not be shared.
-        fb = get(fb_name)(**kwargs)
+        fb = fb_class(**kwargs)
         dec = Decoder(fb)
     return enc, dec
 
