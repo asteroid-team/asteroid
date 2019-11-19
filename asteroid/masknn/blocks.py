@@ -8,8 +8,7 @@ from torch.nn.functional import fold, unfold
 
 from . import norms, activations
 from ..utils import has_arg
-from ..engine.sub_module import SubModule, NoLayer
-
+from ..engine.sub_module import SubModule
 
 
 class Conv1DBlock(nn.Module):
@@ -46,6 +45,7 @@ class Conv1DBlock(nn.Module):
         self.skip_conv = nn.Conv1d(hid_chan, skip_out_chan, 1)
 
     def forward(self, x):
+        """ Input shape [batch, feats, seq]"""
         shared_out = self.shared_block(x)
         res_out = self.res_conv(shared_out)
         skip_out = self.skip_conv(shared_out)
@@ -146,31 +146,36 @@ class TDConvNet(SubModule):
 class SingleRNN(nn.Module):
     """
     From https://github.com/yluo42/TAC/blob/master/utility/models.py
-    Container module for a single RNN layer.
+    Container module for a RNN block.
 
     args:
-        rnn_type: string, select from 'RNN', 'LSTM', 'GRU'.
-        input_size: int, dimension of the input feature. The input should have shape
-                    (batch, seq_len, input_size).
+        rnn_type: string, select from `'RNN'`, `'LSTM'`, `'GRU'`. Can
+            also be passed in lowercase letters.
+        input_size: int, dimension of the input feature. The input should have
+            shape (batch, seq_len, input_size).
         hidden_size: int, dimension of the hidden state.
         dropout: float, dropout ratio. Default is 0.
-        n_layers: int > 0. number of layers used in RNN.
-        bidirectional: bool, whether the RNN layers are bidirectional. Default is False.
+        n_layers: int > 0. Number of layers used in RNN. Default is 1.
+        bidirectional: bool, whether the RNN layers are bidirectional.
+            Default is False.
     """
 
-    def __init__(self, rnn_type, input_size, hidden_size, n_layers=1, dropout=0, bidirectional=False):
+    def __init__(self, rnn_type, input_size, hidden_size, n_layers=1,
+                 dropout=0, bidirectional=False):
         super(SingleRNN, self).__init__()
-
-        assert rnn_type in ["RNN", "LSTM", "GRU"]
-        self.rnn_type = rnn_type
+        assert rnn_type.upper() in ["RNN", "LSTM", "GRU"]
+        self.rnn_type = rnn_type.upper()
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.rnn = getattr(nn, rnn_type)(input_size, hidden_size, num_layers=n_layers,
-                                             dropout=dropout, batch_first=True, bidirectional=bool(bidirectional))
+        self.rnn = getattr(nn, rnn_type)(input_size, hidden_size,
+                                         num_layers=n_layers,
+                                         dropout=dropout,
+                                         batch_first=True,
+                                         bidirectional=bool(bidirectional))
 
-    def forward(self, input):
-        # input shape: batch, seq, dim
-        output = input
+    def forward(self, inp):
+        """ Input shape [batch, seq, feats] """
+        output = inp
         rnn_output, _ = self.rnn(output)
         return rnn_output
 
@@ -182,8 +187,7 @@ class DPRNNBlock(nn.Module):
         in_chan: int. Number of input channels.
         hid_size: int. Number of hidden neurons in the RNNs.
         norm_type: string. Type of normalization to use.
-            Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm) and
-            `cgLN` (cumulative global Layernorm).
+            Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm).
         bidirectional: bool. True for bidirectional Inter-Chunk RNN.
         rnn_type: string. Type of RNN used.
             Choose between 'RNN', 'LSTM' and 'GRU'.
@@ -191,33 +195,37 @@ class DPRNNBlock(nn.Module):
         dropout: int in (0,1).
 
     References :
-        [1] : "Dual-path RNN: efficient long sequence modeling for time-domain single-channel speech separation",
-        Luo, Yi, Zhuo Chen, and Takuya Yoshioka.
-        https://arxiv.org/abs/1910.06379
+        [1] : "Dual-path RNN: efficient long sequence modeling for
+            time-domain single-channel speech separation", Yi Luo, Zhuo Chen
+            and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
-    def __init__(self, in_chan, hid_size, norm_type="gLN",
-                 bidirectional=True, rnn_type="LSTM", num_layers=1, dropout=0):
+    def __init__(self, in_chan, hid_size, norm_type="gLN", bidirectional=True,
+                 rnn_type="LSTM", num_layers=1, dropout=0):
         super(DPRNNBlock, self).__init__()
-        self.intra_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True)
-        self.intra_linear = nn.Linear(hid_size *2, in_chan) # linear projection layer (always bi-directional)
+        # IntraRNN and linear projection layer (always bi-directional)
+        self.intra_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers,
+                                   dropout=dropout, bidirectional=True)
+        self.intra_linear = nn.Linear(hid_size * 2, in_chan)
         self.intra_norm = norms.get(norm_type)(in_chan)
-        self.inter_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=bidirectional)
+        # InterRNN block and linear projection layer (uni or bi-directional)
+        self.inter_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers,
+                                   dropout=dropout, bidirectional=bidirectional)
         num_direction = int(bidirectional) + 1
         self.inter_linear = nn.Linear(hid_size * num_direction, in_chan)
         self.inter_norm = norms.get(norm_type)(in_chan)
 
     def forward(self, x):
-        # x is [batch, num_features, chunk_size, num_chunks]
+        """ Input shape : [batch, feats, chunk_size, num_chunks]"""
         B, N, K, L = x.size()
-        output = x # for skip connection
-        # intra-chunk processing
+        output = x  # for skip connection
+        # Intra-chunk processing
         x = x.transpose(1, -1).reshape(B * L, K, N)
         x = self.intra_RNN(x)
         x = self.intra_linear(x)
         x = x.reshape(B, L, K, N).transpose(1, -1)
         x = self.intra_norm(x)
         output = output + x
-        # inter-chunk processing
+        # Inter-chunk processing
         output = output.transpose(1, 2).transpose(2, -1).reshape(B * K, L, N)
         output = self.inter_RNN(output)
         output = self.inter_linear(output)
@@ -227,7 +235,8 @@ class DPRNNBlock(nn.Module):
 
 
 class DPRNN(SubModule):
-    """ Dual-path RNN Network for Single-Channel Source Separation introduced in [1].
+    """ Dual-path RNN Network for Single-Channel Source Separation
+        introduced in [1].
     Args
         in_chan: int > 0. Number of input filters.
         out_chan : int > 0. Number of bins in the estimated masks.
@@ -238,22 +247,24 @@ class DPRNN(SubModule):
         n_repeats: int > 0. Number of repeats.
         n_src: int > 0. Number of masks to estimate.
         norm_type: string. Type of normalization to use.
-            Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm) and
-            `cgLN` (cumulative global Layernorm).
+            Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm).
         mask_act: string. Which non-linear function to generate mask.
-        bidirectional: bool: True for bidirectional Inter-Chunk RNN (Intra-Chunk is always bidirectional).
-        rnn_type: string. Type of RNN used. Choose between 'RNN', 'LSTM' and 'GRU'.
+        bidirectional: bool: True for bidirectional Inter-Chunk RNN
+            (Intra-Chunk is always bidirectional).
+        rnn_type: string. Type of RNN used. Choose between 'RNN',
+            'LSTM' and 'GRU'.
         num_layers: number of layers in each RNN.
         dropout: int in (0,1).
 
     References :
-        [1] : "Dual-path RNN: efficient long sequence modeling for time-domain single-channel speech separation",
-        Luo, Yi, Zhuo Chen, and Takuya Yoshioka.
-        https://arxiv.org/abs/1910.06379
+        [1] : "Dual-path RNN: efficient long sequence modeling for
+            time-domain single-channel speech separation", Yi Luo, Zhuo Chen
+            and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
-    def __init__(self, in_chan, out_chan, bn_chan, hid_size,
-                 chunk_size, hop_size, n_repeats, n_src, norm_type="gLN",
-                 mask_act='sigmoid', bidirectional=True, rnn_type="LSTM", num_layers=1, dropout=0):
+    def __init__(self, in_chan, out_chan, bn_chan, hid_size, chunk_size,
+                 hop_size, n_repeats, n_src, norm_type="gLN",
+                 mask_act='sigmoid', bidirectional=True, rnn_type="LSTM",
+                 num_layers=1, dropout=0):
         super(DPRNN, self).__init__()
         self.in_chan = in_chan
         self.out_chan = out_chan
@@ -270,13 +281,15 @@ class DPRNN(SubModule):
         self.num_layers = num_layers
         self.dropout = dropout
 
-        layer_norm = norms.get('cLN')(in_chan)
+        layer_norm = norms.get(norm_type)(in_chan)
         bottleneck_conv = nn.Conv1d(in_chan, bn_chan, 1)
         self.bottleneck = nn.Sequential(layer_norm, bottleneck_conv)
 
-        net = [] # Succession of DPRNNBlocks.
+        # Succession of DPRNNBlocks.
+        net = []
         for x in range(self.n_repeats):
-            net += [DPRNNBlock(bn_chan, hid_size, norm_type, bidirectional, rnn_type, num_layers, dropout)]
+            net += [DPRNNBlock(bn_chan, hid_size, norm_type, bidirectional,
+                               rnn_type, num_layers, dropout)]
         self.net = nn.Sequential(*net)
 
         mask_conv = nn.Conv2d(bn_chan, n_src*out_chan, 1)
@@ -298,20 +311,25 @@ class DPRNN(SubModule):
             est_mask: torch.Tensor of shape [batch, n_src, n_filters, n_frames]
         """
         batch, n_filters, n_frames = mixture_w.size()
-        output = self.bottleneck(mixture_w) # [batch x bn_chan x n_frames]
-        output = unfold(output.unsqueeze(-1), kernel_size=(self.chunk_size, 1), padding=(self.chunk_size, 0),
-                        stride=(self.hop_size, 1))
-        S = output.size(-1)
-        output = output.reshape(batch, self.bn_chan, self.chunk_size, S) # [batch x bn_chan x chunk_size x n_chunks]
-        output = self.net(output) # apply stacked DPRNN Blocks sequentially
-        output = self.mask_net(output) # apply mask
-        output = output.reshape(batch * self.n_src, n_filters, self.chunk_size, S)
-        # overlap and add: [batch x bn_chan x chunk_size x n_chunks] -> [batch x bn_chan x n_frames]
-        output = fold(output.reshape(batch, self.bn_chan * self.chunk_size, S),
-                                 (n_frames, 1), kernel_size=(self.chunk_size, 1),
-                                 padding=(self.chunk_size, 0),
-                                 stride=(self.hop_size, 1))
-        output = output.squeeze(-1) / (self.chunk_size / self.hop_size) # normalization
+        output = self.bottleneck(mixture_w)  # [batch, bn_chan, n_frames]
+        output = unfold(output.unsqueeze(-1), kernel_size=(self.chunk_size, 1),
+                        padding=(self.chunk_size, 0), stride=(self.hop_size, 1))
+        n_chunks = output.size(-1)
+        output = output.reshape(batch, self.bn_chan, self.chunk_size, n_chunks)
+        # Apply stacked DPRNN Blocks sequentially
+        output = self.net(output)
+        output = self.mask_net(output)
+        output = output.reshape(batch * self.n_src, n_filters, self.chunk_size,
+                                n_chunks)
+        # Overlap and add:
+        # [batch, bn_chan, chunk_size, n_chunks] -> [batch, bn_chan, n_frames]
+        to_unfold = self.bn_chan * self.chunk_size
+        output = fold(output.reshape(batch, to_unfold, n_chunks),
+                      (n_frames, 1), kernel_size=(self.chunk_size, 1),
+                      padding=(self.chunk_size, 0),
+                      stride=(self.hop_size, 1))
+        # Normalization
+        output = output.squeeze(-1) / (self.chunk_size / self.hop_size)
         score = output.view(batch, self.n_src, self.out_chan, n_frames)
         est_mask = self.output_act(score)
         return est_mask
