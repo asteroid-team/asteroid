@@ -56,13 +56,46 @@ def prepare_parser_from_dict(dic, parser=None):
         first level keys and arguments corresponding to the second level keys
         with default values given by the values.
     """
+    def str_int_float(value):
+        """ Type to convert strings to int and float (in this order). """
+        if isint(value):
+            return int(value)
+        elif isfloat(value):
+            return float(value)
+        elif isinstance(value, str):
+            return value
+        else:
+            raise argparse.ArgumentTypeError('String expected.')
+
+    def str2bool(value):
+        """ Type to convert strings to Boolean"""
+        if isinstance(value, bool):
+            return value
+        if value.lower() in ('yes', 'true', 'y', '1'):
+            return True
+        elif value.lower() in ('no', 'false', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')
+
+    def standardized_entry_type(value):
+        """ If the default value is None, replace NoneType by str_int_float.
+            If the default value is boolean, look for boolean strings."""
+        if value is None:
+            return str_int_float
+        elif isinstance(value, bool):
+            return str2bool
+        else:
+            return type(value)
+
     if parser is None:
         parser = argparse.ArgumentParser()
     for k in dic.keys():
         group = parser.add_argument_group(k)
         for kk in dic[k].keys():
+            entry_type = standardized_entry_type(dic[k][kk])
             group.add_argument('--' + kk, default=dic[k][kk],
-                               type=type(dic[k][kk]))
+                               type=entry_type)
     return parser
 
 
@@ -92,3 +125,21 @@ def parse_args_as_dict(parser, return_plain_args=False):
     if return_plain_args:
         return args_dic, args
     return args_dic
+
+
+def isfloat(value):
+    """ Does string value contain a float ? """
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
+def isint(value):
+    """ Does string value contain an integer ? """
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
