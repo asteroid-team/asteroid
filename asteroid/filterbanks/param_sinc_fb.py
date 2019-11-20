@@ -1,7 +1,10 @@
 """
 Sinc-based parameterized filterbank.
 @author : Manuel Pariente, Inria-Nancy
-Inspired from https://github.com/mravanelli/SincNet
+
+Modified and extended from from https://github.com/mravanelli/SincNet
+Copyright (c) 2019 Mirco Ravanelli
+See also https://github.com/mravanelli/SincNet/blob/master/LICENSE
 """
 
 import numpy as np

@@ -144,11 +144,12 @@ class TDConvNet(SubModule):
 
 
 class SingleRNN(nn.Module):
-    """
-    From https://github.com/yluo42/TAC/blob/master/utility/models.py
-    Container module for a RNN block.
+    """ Module for a RNN block.
 
-    args:
+    Inspired from github.com/yluo42/TAC/blob/master/utility/models.py
+    Licensed under CC BY-NC-SA 3.0 US.
+
+    Args:
         rnn_type: string, select from `'RNN'`, `'LSTM'`, `'GRU'`. Can
             also be passed in lowercase letters.
         input_size: int, dimension of the input feature. The input should have
