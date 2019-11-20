@@ -37,11 +37,11 @@ class ParamSincFB(Filterbank):
     """
     def __init__(self, n_filters, kernel_size, stride=None,
                  sample_rate=16000, min_low_hz=50, min_band_hz=50):
-        super(ParamSincFB, self).__init__(n_filters, kernel_size, stride=stride)
         if kernel_size % 2 == 0:
             print('Received kernel_size={}, force '.format(kernel_size) +
                   'kernel_size={} so filters are odd'.format(kernel_size+1))
             kernel_size += 1
+        super(ParamSincFB, self).__init__(n_filters, kernel_size, stride=stride)
         self.sample_rate = sample_rate
         self.min_low_hz, self.min_band_hz = min_low_hz, min_band_hz
 
