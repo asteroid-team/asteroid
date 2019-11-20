@@ -32,7 +32,7 @@ def sample_audio_set():
     return [audio_files[i] for i in choices[:total_choices]]
 
 
-def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv", audio_set=True) -> None:
+def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv", audio_set=False) -> None:
     """
         generate the combination dataframe used in data_loader.py
 

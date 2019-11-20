@@ -14,8 +14,8 @@ class AVDataset(torch.utils.data.Dataset):
     
 
     def __init__(self, dataset_df_path: Path, video_base_dir: Path, input_df_path: Path,
-                input_audio_size=2, use_cuda=False, face_embed_cuda=True, use_half=True,
-                all_embed_saved=True):
+                input_audio_size=2, use_cuda=False, face_embed_cuda=False, use_half=False,
+                all_embed_saved=False):
         """
             
             Args:
