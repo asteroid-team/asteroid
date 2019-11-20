@@ -5,7 +5,7 @@ import collections
 from memory_profiler import profile
 
 from config import ParamConfig
-from callbacks import SNRCallback
+from callbacks import SNRCallback, SaveAudioCallback
 
 from catalyst.dl import utils
 from catalyst.dl.runner import SupervisedRunner
@@ -53,8 +53,7 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                  optimizer=optimizer, scheduler=scheduler,
                  loaders={"train": loaders["train"]}, logdir=logdir, verbose=True,
                  num_epochs=config.epochs,
-                 callbacks=[EarlyStoppingCallback(patience=2, min_delta=1e-2),
-                            SNRCallback()]
+                 callbacks=[SNRCallback(), SaveAudioCallback()]
                  )
 
-    utils.plot_metrics(logdir=logdir, metrics=["loss", "_base/lr"])
+    #utils.plot_metrics(logdir=logdir, metrics=["loss", "_base/lr"])

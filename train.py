@@ -28,7 +28,7 @@ def main(args):
 
     print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters())}")
 
-    optimizer = torch.optim.Adam(model.parameters())
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     criterion = torch.nn.MSELoss(reduction="mean")
 
     train(model, dataset, optimizer, criterion, config)
@@ -45,6 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--video-dir", default=Path("../data/train"), type=str, help="directory where all videos are stored")
     parser.add_argument("--input-df-path", default=Path("../data/input_df.csv"), type=str, help="path for combinations dataset")
     parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
+    parser.add_argument("--learning-rate", default=3e-5, type=float, help="learning rate for the network")
 
     args = parser.parse_args()
 

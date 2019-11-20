@@ -1,6 +1,50 @@
-from metric_utils import snr
-from catalyst.dl.core import MetricCallback
+import sys
+sys.path.extend(["../loader"])
+from audio_feature_generator import convert_to_wave
 
+import torch
+import numpy as np
+
+from pathlib import Path
+from metric_utils import snr
+from catalyst.dl.core import Callback, MetricCallback, CallbackOrder
+
+
+class SaveAudioCallback(Callback):
+    
+    def __init__(self, directory: Path=Path("/kaggle/working"), output_key="logits"):
+        self.directory = directory
+        self.predictions = []
+        self.output_key = output_key
+        
+        super().__init__(CallbackOrder.External)
+        
+    def batch_spec_to_wave(self, batch_spectrogram, num_person, batch_size):
+        wave = np.zeros((batch_size, 48000, num_person))
+        for n in range(num_person):
+            for b in range(batch_size):
+                wave[b, :, n] = convert_to_wave(batch_spectrogram[b, ..., n].transpose(2, 1, 0))[:48000]
+        return wave
+        
+    def on_batch_end(self, state):
+        with torch.no_grad():
+            self.predictions.append(state.output[self.output_key].detach().numpy())
+    
+    def on_epoch_start(self, state):
+        self.predictions = []
+    
+    def on_epoch_end(self, state):
+    
+        num_person = state.model.num_person
+        batch_size = self.predictions[0].shape[0]
+        
+        waves = np.zeros((len(self.predictions), batch_size, 48000, num_person)) # 3 second audio at 16khz
+        
+        for i, prediction in enumerate(self.predictions):
+            batch_size = prediction.shape[0]
+            waves[i, ...] = self.batch_spec_to_wave(prediction, num_person, batch_size)
+
+        np.save(self.directory / f"{state.epoch_log}.npy", waves)
 
 class SNRCallback(MetricCallback):
     """
@@ -11,7 +55,8 @@ class SNRCallback(MetricCallback):
         self,
         input_key: str = "targets",
         output_key: str = "logits",
-        prefix: str = "snr"
+        prefix: str = "snr",
+        mixed_audio_key: str="input_audio"
     ):
         """
         Args:
@@ -20,6 +65,7 @@ class SNRCallback(MetricCallback):
             output_key (str): output key to use for dice calculation;
                 specifies our y_pred.
         """
+        self.mixed_audio_key = mixed_audio_key
         super().__init__(
             prefix=prefix,
             metric_fn=snr,
@@ -38,7 +84,13 @@ class SNRCallback(MetricCallback):
             output_audio = output_audios[..., n]
             true_audio = true_audios[..., n]
             
+            print(torch.sum(output_audio-true_audio))
+            
+            print(output_audio[0, 0, 0, 0])
+            print('-'*10)
+            print(true_audio[0, 0, 0, 0])
+            
             snr_value = snr(output_audio, true_audio).item()
-            avg_snr += (snr_value - avg_snr) / num_person
+            avg_snr += (snr_value - avg_snr) / (n + 1)
         
         state.metrics.add_batch_value(name=self.prefix, value=avg_snr)
