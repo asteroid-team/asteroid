@@ -1,6 +1,6 @@
 # Filterbank config
 filterbank:
-
+  fb_name: analytic_free
   n_filters: 512
   kernel_size: 16
   stride: 8
@@ -17,7 +17,7 @@ training:
   half_lr: yes
   early_stop: yes
   max_norm: 5
-  checkpoint: n
+  checkpoint: no
   continue_from:
 # Optim config
 optim:

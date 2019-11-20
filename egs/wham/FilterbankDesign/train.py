@@ -36,26 +36,27 @@ def main(conf):
     loaders = {'train_loader': train_loader, 'val_loader': val_loader}
 
     # Define model
-    fb_class = filterbanks.get(conf['main_args']['filterbank_type'])
-    encoder = fb_class(enc_or_dec='encoder', **conf['filterbank'])
-    decoder = fb_class(enc_or_dec='decoder', **conf['filterbank'])
+    # The encoder and decoder can directly be made from the dictionary.
+    encoder, decoder = filterbanks.make_enc_dec(**conf['filterbank'])
 
+    # The input post-processing changes the dimensions of input features to
+    # the mask network. Different type of masks impose different output
+    # dimensions to the mask network's output. We correct for these here.
     nn_in = int(encoder.n_feats_out * encoder.in_chan_mul)
     nn_out = int(encoder.n_feats_out * encoder.out_chan_mul)
-
     masker = TDConvNet(in_chan=nn_in, out_chan=nn_out,
                        n_src=train_set.n_src, **conf['masknet'])
-
+    # The model is defined in Container, which is passed to DataParallel.
     model = nn.DataParallel(Container(encoder, masker, decoder))
     if conf['main_args']['use_cuda']:
         model.cuda()
 
-    # Define Loss functions
+    # Define Loss function : Here we use time domain SI-SDR.
     loss_class = PITLossContainer(pairwise_neg_sisdr, n_src=train_set.n_src)
-    # Define optimizer
+    # Define optimizer : can be instantiate from dictonary as well.
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
 
-    # Pass everything to the solver
+    # Pass everything to the solver and train
     solver = Solver(loaders, model, loss_class, optimizer,
                     model_path=conf['main_args']['model_path'],
                     **conf['training'])
