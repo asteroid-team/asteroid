@@ -53,8 +53,8 @@ class ParamSincFB(Filterbank):
         self.n_feats_out = 2 * self.cutoff
         self._initialize_filters()
         if n_filters % 2 != 0:
-            warnings.warn('If the number of filters `n_filters` is odd, the '
-                          'output size of the layer will be `n_filters - 1`.')
+            print('If the number of filters `n_filters` is odd, the '
+                  'output size of the layer will be `n_filters - 1`.')
 
         window_ = np.hamming(self.kernel_size)[:self.half_kernel]  # Half window
         n_ = 2 * np.pi * (torch.arange(-self.half_kernel, 0.).view(1, -1) /
