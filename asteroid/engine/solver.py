@@ -48,14 +48,14 @@ class Solver(object):
 
     """
     def __init__(self, loaders, model, loss_class, optimizer, model_path,
-                 continue_from=None, **training_conf):
+                  **training_conf):
         self.train_loader = loaders['train_loader']
         self.val_loader = loaders['val_loader']
         self.model = model
         self.loss_class = loss_class
         self.optimizer = optimizer
         self.model_path = model_path
-        self.continue_from = continue_from
+        #self.continue_from = continue_from
         self.tr_conf = dict(_defaults)  # Make a copy of the default values
         self.tr_conf.update(training_conf)
 
@@ -76,11 +76,11 @@ class Solver(object):
             print('Loading checkpoint model '
                   '{}'.format(self.tr_conf['continue_from']))
             pack = torch.load(self.tr_conf['continue_from'])
-            self.model.module.load_state_dict(pack['state_dict'])
-            self.optimizer.load_state_dict(pack['optim_dict'])
+            self.model.module.load_model(pack['model'])
+            self.optimizer.load_state_dict(pack['optimizer']['state_dict'])
             self.start_epoch = int(pack['infos'].get('epoch', 1))
-            self.tr_loss[:self.start_epoch] = pack['tr_loss'][:self.start_epoch]
-            self.cv_loss[:self.start_epoch] = pack['cv_loss'][:self.start_epoch]
+            self.tr_loss[:self.start_epoch] = pack['infos']['tr_loss'][:self.start_epoch]
+            self.cv_loss[:self.start_epoch] = pack['infos']['cv_loss'][:self.start_epoch]
         else:
             self.start_epoch = 0
         os.makedirs(self.save_folder, exist_ok=True)
