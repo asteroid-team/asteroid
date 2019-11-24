@@ -52,7 +52,6 @@ class _EncDec(SubModule):
     def __init__(self, filterbank, is_pinv=False):
         super(_EncDec, self).__init__()
         self.filterbank = filterbank
-        # self.filters = self.filterbank.filters
         self.stride = self.filterbank.stride
         self.is_pinv = is_pinv
 
