@@ -55,7 +55,6 @@ class Solver(object):
         self.loss_class = loss_class
         self.optimizer = optimizer
         self.model_path = model_path
-        #self.continue_from = continue_from
         self.tr_conf = dict(_defaults)  # Make a copy of the default values
         self.tr_conf.update(training_conf)
 

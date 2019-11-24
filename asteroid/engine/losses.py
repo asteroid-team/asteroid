@@ -78,12 +78,15 @@ class PITLossContainer(object):
         """
         # First pass
         if self.loss_kwargs is None:
-            self.loss_kwargs = [key for key in infos.keys() if
-                                has_arg(self.loss_func, key)]
-            print('First pass key filtering:')
-            print('\tInput keys in infos : ', list(infos.keys()))
-            print('\tKeys which will be passed to the loss : ',
-                  self.loss_kwargs)
+            if infos is None:
+                self.loss_kwargs = []
+            else:
+                self.loss_kwargs = [key for key in infos.keys() if
+                                    has_arg(self.loss_func, key)]
+                print('First pass key filtering:')
+                print('\tInput keys in infos : ', list(infos.keys()))
+                print('\tKeys which will be passed to the loss : ',
+                      self.loss_kwargs)
 
 
 def pairwise_neg_sisdr(source, est_source, scale_invariant=True):
