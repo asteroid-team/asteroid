@@ -13,6 +13,8 @@ class Model(nn.Module):
         self.decoder = decoder
 
     def forward(self, x):
+        if len(x.shape) == 2:
+            x = x.unsqueeze(1)
         tf_rep = self.encoder(x)
         est_masks = self.masker(tf_rep)
         masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
@@ -27,16 +29,20 @@ class Model(nn.Module):
 
 
 def make_model_and_optimizer(conf):
-    """ This will be very practical to re-instantiate the model
-    We save the conf in a yaml, json or pickle file and save the state_dict.
-    For eval, load args, call this function and load state_dict.
-    Super simple, no need for structure."""
+    """ Function to define the model and optimizer for a config dictionary.
+    Args:
+        conf: Dictionary containing the output of hierachical argparse.
+    Returns:
+        model, optimizer.
+    The main goal of this function is to make reloading for resuming
+    and evaluation very simple.
+    """
     # Define building blocks for local model
     enc, dec = fb.make_enc_dec('free', **conf['filterbank'])
     masker = TDConvNet(in_chan=enc.filterbank.n_feats_out,
                        out_chan=enc.filterbank.n_feats_out,
                        **conf['masknet'])
-    model = nn.DataParallel(Model(enc, masker, dec))
+    model = Model(enc, masker, dec)
     # Define optimizer of this model
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
     return model, optimizer
