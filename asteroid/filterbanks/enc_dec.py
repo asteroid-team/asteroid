@@ -117,6 +117,7 @@ class Encoder(_EncDec):
 
         self.inp_func, self.in_chan_mul = _inputs[self.inp_mode]
         self.mask_func, self.out_chan_mul = _masks[self.mask_mode]
+        self.n_feats_out = self.filterbank.n_feats_out
 
     @classmethod
     def pinv_of(cls, filterbank, **kwargs):

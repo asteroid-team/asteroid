@@ -64,7 +64,7 @@ def main(conf):
     system = System(model=model, loss_class=loss_class, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
                     config=conf)
-    trainer = pl.Trainer(max_nb_epochs=conf['main_args']['epochs'],
+    trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
                          checkpoint_callback=checkpoint,
                          default_save_path=exp_dir,
                          gpus=conf['main_args']['gpus'],

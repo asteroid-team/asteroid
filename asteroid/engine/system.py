@@ -48,6 +48,7 @@ class System(pl.LightningModule):
         self.val_loader = val_loader
         self.scheduler = scheduler
         self.config = config
+        self.hparams = self.config  # Avoid lightning warning
 
     def forward(self, *args, **kwargs):
         """ Required by PL.
