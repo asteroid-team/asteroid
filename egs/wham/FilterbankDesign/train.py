@@ -1,31 +1,32 @@
-import torch
+import os
 import argparse
 from torch.utils.data import DataLoader
-from torch import nn
-
-from asteroid import Container, Solver
-from asteroid import filterbanks
-from asteroid.masknn import TDConvNet
 from asteroid.engine.losses import PITLossContainer, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
-from asteroid.engine.optimizers import make_optimizer
+from asteroid.engine.system import System
+from model import make_model_and_optimizer
+
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--filterbank_type', default='free')
-parser.add_argument('--use_cuda', type=int, default=0,
-                    help='Whether use GPU')
-parser.add_argument('--model_path', default='exp/tmp/final.pth',
+parser = argparse.ArgumentParser()
+parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
+parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Full path to save best validation model')
 
 
 def main(conf):
+    from asteroid.data.toy_data import WavSet
+    train_set = WavSet(n_ex=1000, n_src=2, ex_len=32000)
+    val_set = WavSet(n_ex=1000, n_src=2, ex_len=32000)
     # Define data pipeline
-    train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
-                            sample_rate=conf['data']['sample_rate'],
-                            nondefault_nsrc=conf['data']['nondefault_nsrc'])
-    val_set = WhamDataset(conf['data']['valid_dir'], conf['data']['task'],
-                          sample_rate=conf['data']['sample_rate'],
-                          nondefault_nsrc=conf['data']['nondefault_nsrc'])
+    # train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
+    #                         sample_rate=conf['data']['sample_rate'],
+    #                         nondefault_nsrc=conf['data']['nondefault_nsrc'])
+    # val_set = WhamDataset(conf['data']['valid_dir'], conf['data']['task'],
+    #                       sample_rate=conf['data']['sample_rate'],
+    #                       nondefault_nsrc=conf['data']['nondefault_nsrc'])
 
     train_loader = DataLoader(train_set, shuffle=True,
                               batch_size=conf['data']['batch_size'],
@@ -33,35 +34,37 @@ def main(conf):
     val_loader = DataLoader(val_set, shuffle=True,
                             batch_size=conf['data']['batch_size'],
                             num_workers=conf['data']['num_workers'])
-    loaders = {'train_loader': train_loader, 'val_loader': val_loader}
+    conf['masknet'].update({'n_src': train_set.n_src})
 
-    # Define model
-    # The encoder and decoder can directly be made from the dictionary.
-    encoder, decoder = filterbanks.make_enc_dec(**conf['filterbank'])
+    # Define model and optimizer in a local function (defined in the recipe).
+    # Two advantages to this : re-instantiating the model and optimizer
+    # for retraining and evaluating is straight-forward.
+    model, optimizer = make_model_and_optimizer(conf)
 
-    # The input post-processing changes the dimensions of input features to
-    # the mask network. Different type of masks impose different output
-    # dimensions to the mask network's output. We correct for these here.
-    nn_in = int(encoder.n_feats_out * encoder.in_chan_mul)
-    nn_out = int(encoder.n_feats_out * encoder.out_chan_mul)
-    masker = TDConvNet(in_chan=nn_in, out_chan=nn_out,
-                       n_src=train_set.n_src, **conf['masknet'])
-    # The model is defined in Container, which is passed to DataParallel.
-    model = nn.DataParallel(Container(encoder, masker, decoder))
-    if conf['main_args']['use_cuda']:
-        model.cuda()
+    # Just after instantiating, save the args. Easy loading in the future.
+    exp_dir = conf['main_args']['exp_dir']
+    os.makedirs(exp_dir, exist_ok=True)
+    conf_path = os.path.join(exp_dir, 'conf.yml')
+    with open(conf_path, 'w') as outfile:
+        yaml.safe_dump(conf, outfile)
 
-    # Define Loss function : Here we use time domain SI-SDR.
+    # Define Loss function.
     loss_class = PITLossContainer(pairwise_neg_sisdr, n_src=train_set.n_src)
-    # Define optimizer : can be instantiate from dictonary as well.
-    optimizer = make_optimizer(model.parameters(), **conf['optim'])
-
-    # Pass everything to the solver and train
-    solver = Solver(loaders, model, loss_class, optimizer,
-                    model_path=conf['main_args']['model_path'],
-                    **conf['training'])
-    # solver.train()
-    solver.run_one_epoch(0, validation=True)
+    # Checkpointing callback can monitor any quantity which is returned by
+    # validation step, defaults to val_loss here (see System).
+    checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
+    checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
+                                 mode='min', save_best_only=False)
+    # New PL version will come the 7th of december / will have save_top_k
+    system = System(model=model, loss_class=loss_class, optimizer=optimizer,
+                    train_loader=train_loader, val_loader=val_loader,
+                    config=conf)
+    trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
+                         checkpoint_callback=checkpoint,
+                         default_save_path=exp_dir,
+                         gpus=conf['main_args']['gpus'],
+                         distributed_backend='dp')
+    trainer.fit(system)
 
 
 if __name__ == '__main__':
