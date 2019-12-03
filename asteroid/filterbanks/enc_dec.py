@@ -4,13 +4,13 @@ Base classes for filterbanks, encoders and decoders.
 """
 
 import torch
+from torch import nn
 from torch.nn import functional as F
 
-from ..engine.sub_module import SubModule
 from . inputs_and_masks import _inputs, _masks
 
 
-class Filterbank(SubModule):
+class Filterbank(nn.Module):
     """Base Filterbank class.
     Each subclass has to implement a `filters` property.
 
@@ -41,7 +41,7 @@ class Filterbank(SubModule):
         return config
 
 
-class _EncDec(SubModule):
+class _EncDec(nn.Module):
     """ Base private class for Encoder and Decoder.
     Common parameters and methods.
     Args:
@@ -186,7 +186,7 @@ class Decoder(_EncDec):
             return out.view(batch, n_src, -1)
 
 
-class NoEncoder(SubModule):
+class NoEncoder(nn.Module):
     """ Class to use for no neural encoder, i.e this is a placeholder for
     precomputed features.
     The features can be complex with real and imaginary parts concatenated

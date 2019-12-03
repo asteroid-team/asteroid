@@ -53,7 +53,6 @@ class System(pl.LightningModule):
         self.val_loader = val_loader
         self.scheduler = scheduler
         self.config = config
-        self.hparams = self.config  # Avoid lightning warning
 
     def forward(self, *args, **kwargs):
         """ Required by PL.
@@ -103,8 +102,6 @@ class System(pl.LightningModule):
             raise ValueError('Expected DataLoader output to have '
                              '2 or 3 elements. Received '
                              '{} elements'.format(len(data)))
-        # if self.use_cuda:
-        #     inputs, targets, infos = to_cuda([inputs, targets, infos])
         return inputs, targets, infos
 
     def training_step(self, batch, batch_nb):
@@ -122,7 +119,8 @@ class System(pl.LightningModule):
         """ How to aggregate outputs of `validation_step` for logging."""
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss}
-        return {'val_loss': avg_loss, 'log': tensorboard_logs}
+        return {'val_loss': avg_loss, 'log': tensorboard_logs,
+                'progress_bar': tensorboard_logs}
 
     def configure_optimizers(self):
         """ Required by pytorch-lightning. """

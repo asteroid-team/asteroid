@@ -8,7 +8,6 @@ from torch.nn.functional import fold, unfold
 
 from . import norms, activations
 from ..utils import has_arg
-from ..engine.sub_module import SubModule
 
 
 class Conv1DBlock(nn.Module):
@@ -52,7 +51,7 @@ class Conv1DBlock(nn.Module):
         return res_out, skip_out
 
 
-class TDConvNet(SubModule):
+class TDConvNet(nn.Module):
     """ Temporal Convolutional network used in ConvTasnet.
 
     Args
@@ -235,7 +234,7 @@ class DPRNNBlock(nn.Module):
         return output + x
 
 
-class DPRNN(SubModule):
+class DPRNN(nn.Module):
     """ Dual-path RNN Network for Single-Channel Source Separation
         introduced in [1].
     Args
