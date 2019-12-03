@@ -1,0 +1,16 @@
+sudo: false
+language: python
+
+notifications:
+    email: false
+
+python:
+    - "3.6"
+    - "3.7"
+
+install:
+    - pip install -e .[tests]
+
+script:
+    - python --version
+    - py.test
