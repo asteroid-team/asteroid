@@ -19,7 +19,7 @@ enh_both = {'mixture': 'mix_both',
             'sources': ['mix_clean'],
             'infos': ['noise'],
             'default_nsrc': 1}
-sep_clean = {'mixture': 'mix_both',
+sep_clean = {'mixture': 'mix_clean',
              'sources': ['s1', 's2'],
              'infos': [],
              'default_nsrc': 2}
