@@ -138,7 +138,7 @@ class System(pl.LightningModule):
         """ How to aggregate outputs of `validation_step` for logging.
 
         Args:
-           outputs (List[dict]): List of validation losses, each with a
+           outputs (list[dict]): List of validation losses, each with a
            ``'val_loss'`` key
 
         Returns:
