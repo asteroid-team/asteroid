@@ -12,3 +12,14 @@ install:
 script:
     - python --version
     - py.test
+    - cd docs
+    - make doc
+    - make html
+
+deploy:
+    provider: pages
+    skip_cleanup: true
+    keep_history: true
+    github_token: $GITHUB_PAGES
+    local_dir: docs/build/html
+
