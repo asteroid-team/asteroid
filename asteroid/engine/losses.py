@@ -1,10 +1,10 @@
 """
-Package-level utils.
-@author : Manuel Pariente, Inria-Nancy
+| Package-level utils.
+| @author : Manuel Pariente, Inria-Nancy
 
-Modified and extended from github.com/kaituoxu/Conv-TasNet/
-MIT Copyright (c) 2018 Kaituo XU
-See also github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE
+| Modified and extended from `<github.com/kaituoxu/Conv-TasNet/>`_
+| MIT Copyright (c) 2018 Kaituo XU
+| See also `<github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`_
 """
 
 from itertools import permutations
@@ -17,10 +17,14 @@ class PITLossContainer(object):
     """Permutation invariant loss container. The loss function
 
     Args:
-        loss_func: function. The loss function to compute after the forward.
+        loss_func (callable): The loss function to compute after the forward.
             The loss function is expected to output the pairwise losses
-            (a torch.Tensor of shape [batch, n_src, n_src]).
-        n_src: int > 0. Number of output sources in the network.
+            (a :class:`torch.Tensor` of shape [batch, n_src, n_src]).
+        n_src (int): Number of output sources in the network.
+
+    Attributes:
+        loss_func (callable)
+        n_src (int)
     """
     def __init__(self, loss_func, n_src):
         self.loss_func = loss_func  # set up retrieving from string as well
@@ -28,15 +32,17 @@ class PITLossContainer(object):
         self.loss_kwargs = None
 
     def compute(self, targets, est_targets, infos=None, return_est=False):
-        """Compute the minimum loss to be back-propagated. Optionally return the
-        reordered estimates.
+        """Compute the minimum loss to be back-propagated.
+
+        Return reordered estimate when `return_est` option is set to ``True``.
 
         Args:
-            targets: torch.Tensor. Training targets.
-            est_targets: torch.Tensor. Targets estimated by the network.
-            infos: dict. Optional dictionary containing keyword arguments for
+            targets (:class:`torch.Tensor`): Training targets.
+            est_targets (:class:`torch.Tensor`): Targets estimated by the
+                network.
+            infos (dict): Optional dictionary containing keyword arguments for
                 the loss computation.
-            return_est: Boolean. Whether to return the reordered estimates.
+            return_est (bool): Whether to return the reordered estimates.
 
         Returns:
             - The loss to be back-propagated.
@@ -48,33 +54,35 @@ class PITLossContainer(object):
         mean_loss = torch.mean(min_loss)
         if not return_est:
             return mean_loss
-        else:
-            reordered_est_sources = reorder_source(est_targets, self.n_src,
-                                                   min_loss_idx)
-            return mean_loss, reordered_est_sources
+        reordered_est_sources = reorder_source(est_targets, self.n_src,
+                                               min_loss_idx)
+        return mean_loss, reordered_est_sources
 
     def get_infos_subdict(self, infos):
-        """Get sub-dictionary from `infos` containing only the key-value pairs
-        accepted by the loss function `loss_func`.
+        """Get a sub-dictionary from `infos`.
+
+        The retrieved sub-dictionaty contains only the key-value pairs
+        accepted by the loss function :attr:`loss_func`.
 
         Args:
-            infos: dict. Additional information for loss computation.
+            infos (dict): Additional information for loss computation.
 
         Returns:
-            sub-dict of infos accepted by `loss_func`.
+            dict: Sub-dict of infos accepted by :attr:`loss_func`.
         """
         self.get_loss_func_args(infos)
         return {key: infos[key] for key in self.loss_kwargs}
 
     def get_loss_func_args(self, infos):
         """Get the list of accepted kwargs by `loss_func` from `infos`.
+
         Assumes that `infos` will have the same keys from one call to another.
 
         Args:
-            infos: dict. Additional information for loss computation.
+            infos (dict): Additional information for loss computation.
 
         Returns:
-            List of accepted keyword arguments by `loss_func` from `infos`.
+            list[str]: Keywords from `infos` accepted by :attr:`loss_func`.
         """
         # First pass
         if self.loss_kwargs is None:
@@ -93,14 +101,16 @@ def pairwise_neg_sisdr(source, est_source, scale_invariant=True):
     """Calculate pair-wise negative SI-SDR.
 
     Args:
-        source: torch.Tensor of shape [batch, n_src, time]. The target sources.
-        est_source: torch.Tensor of shape [batch, n_src, time]. Estimates
-            of the target sources.
-        scale_invariant: Boolean. Whether to rescale the estimated sources to
+        source (:class:`torch.Tensor`): Tensor of shape [batch, n_src, time].
+            The target sources.
+        est_source (:class:`torch.Tensor`): Tensor of shape
+            [batch, n_src, time]. Estimates of the target sources.
+        scale_invariant (bool): Whether to rescale the estimated sources to
             the targets.
 
     Returns:
-        torch.Tensor of shape [batch, n_src, n_src]. Pair-wise losses.
+        :class:`torch.Tensor`:
+            Tensor of shape [batch, n_src, n_src]. Pair-wise losses.
     """
     assert source.size() == est_source.size()
     # if scale_invariant:
@@ -125,21 +135,24 @@ def pairwise_neg_sisdr(source, est_source, scale_invariant=True):
     e_noise = s_estimate - pair_wise_proj
     # [batch, n_src, n_src]
     pair_wise_si_sdr = torch.sum(pair_wise_proj ** 2, dim=3) / (
-                torch.sum(e_noise ** 2, dim=3) + EPS)
+        torch.sum(e_noise ** 2, dim=3) + EPS)
     pair_wise_losses = - 10 * torch.log10(pair_wise_si_sdr + EPS)
     return pair_wise_losses
 
 
 def find_best_perm(pair_wise_losses, n_src):
-    """Find the best permutation, given the pair wise losses.
+    """Find the best permutation, given the pair-wise losses.
 
     Args:
-        pair_wise_losses: torch.Tensor. Pair-wise losses [batch, n_src, n_src]
-        n_src: int > 0. Number of sources.
+        pair_wise_losses (torch.Tensor): Pair-wise losses [batch, n_src, n_src]
+        n_src (int): Number of sources.
 
     Returns:
-        - torch.Tensor (batch,). The loss corresponding to the best permutation.
-        - torch.LongTensor. The indexes of the best permutations.
+        tuple:
+            :class:`torch.Tensor`: The loss corresponding to the best
+            permutation of size (batch,).
+
+            :class:`torch.LongTensor`: The indexes of the best permutations.
     """
     pwl = pair_wise_losses
     perms = pwl.new_tensor(list(permutations(range(n_src))), dtype=torch.long)
@@ -159,12 +172,14 @@ def reorder_source(source, n_src, min_loss_idx):
     """ Reorder sources according to the best permutation.
 
     Args:
-        source: torch.Tensor. shape [batch, n_src, time]
-        n_src: int > 0. Number of sources.
-        min_loss_idx: torch.LongTensor. shape [batch], each item is in [0, C!)
+        source torch.Tensor): Tensor of shape [batch, n_src, time]
+        n_src (int): Number of sources.
+        min_loss_idx (torch.LongTensor): Tensor of shape [batch],
+            each item is in [0, C!)  ``C! == n_src!``?
 
     Returns:
-        reordered_sources: [batch, n_src, time]
+        :class:`torch.Tensor`:
+            Reordered sources of shape [batch, n_src, time]
     """
     perms = source.new_tensor(list(permutations(range(n_src))),
                               dtype=torch.long)
