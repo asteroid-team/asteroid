@@ -10,6 +10,7 @@ Welcome to asteroid's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   apidoc/asteroid
 
 
 Indices and tables
