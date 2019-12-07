@@ -40,6 +40,9 @@ extensions = [
     'sphinx.ext.viewcode',
 ]
 
+# Intersphinx config
+intersphinx_mapping = {'torch': ('https://pytorch.org/docs/master/', None)}
+
 # Napoleon config
 napoleon_include_special_with_doc = True
 napoleon_use_ivar = True
