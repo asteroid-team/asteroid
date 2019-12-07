@@ -41,7 +41,9 @@ extensions = [
 ]
 
 # Intersphinx config
-intersphinx_mapping = {'torch': ('https://pytorch.org/docs/master/', None)}
+intersphinx_mapping = {
+    'torch': ('https://pytorch.org/docs/master/', None),
+}
 
 # Napoleon config
 napoleon_include_special_with_doc = True
