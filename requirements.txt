@@ -3,7 +3,6 @@ matplotlib>=3.0.2
 mir-eval>=0.5
 numpy==1.16.4
 pandas>=0.23.4
-pypesq>=1.0
 pystoi>=0.2.2
 pytest==5.3.1
 scipy>=1.1.0
