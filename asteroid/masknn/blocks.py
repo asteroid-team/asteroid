@@ -1,6 +1,6 @@
 """
-NN blocks for separators.
-@author : Manuel Pariente, Inria-Nancy
+| NN blocks for separators.
+| @author : Manuel Pariente, Inria-Nancy
 """
 
 from torch import nn
@@ -13,21 +13,24 @@ from ..utils import has_arg
 class Conv1DBlock(nn.Module):
     """One dimensional convolutional block, as proposed in [1].
 
-    Args
-        in_chan: int. Number of input channels.
-        hid_chan: int. Number of hidden channels in the depth-wise convolution.
-        skip_out_chan: int. Number of channels in the skip convolution.
-        kernel_size: int. Size of the depth-wise convolutional kernel.
-        padding: int. Padding of the depth-wise convolution.
-        dilation: int. Dilation of the depth-wise convolution.
-        norm_type: string. Type of normalization to use.
-            Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm) and
-            `cgLN` (cumulative global Layernorm).
+    Args:
+        in_chan (int): Number of input channels.
+        hid_chan (int): Number of hidden channels in the depth-wise
+            convolution.
+        skip_out_chan (int): Number of channels in the skip convolution.
+        kernel_size (int): Size of the depth-wise convolutional kernel.
+        padding (int): Padding of the depth-wise convolution.
+        dilation (int): Dilation of the depth-wise convolution.
+        norm_type (str, optional): Type of normalization to use. To choose from
 
-    References :
-    [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking for
-    speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
-    https://arxiv.org/abs/1809.07454
+            -  ``'gLN'``: global Layernorm
+            -  ``'cLN'``: channelwise Layernorm
+            -  ``'cgLN'``: cumulative global Layernorm
+
+    References:
+        [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
+        for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
+        https://arxiv.org/abs/1809.07454
     """
     def __init__(self, in_chan, hid_chan, skip_out_chan, kernel_size, padding,
                  dilation, norm_type="gLN"):
@@ -54,20 +57,22 @@ class Conv1DBlock(nn.Module):
 class TDConvNet(nn.Module):
     """ Temporal Convolutional network used in ConvTasnet.
 
-    Args
-        in_chan: int > 0. Number of input filters.
-        n_src: int > 0. Number of masks to estimate.
-        out_chan : int > 0. Number of bins in the estimated masks.
-            If None, `out_chan = in_chan`.
-        n_blocks: int > 0. Number of convolutional blocks in each repeat.
-            Defaults to 8
-        n_repeats: int > 0. Number of repeats. Defaults to 3.
-        bn_chan: int > 0. Number of channels after the bottleneck.
-        hid_chan: int > 0. Number of channels in the convolutional blocks.
-        skip_chan: int > 0. Number of channels in the skip connections.
-        kernel_size: int > 0. Kernel size in convolutional blocks.
-        norm_type: string. Among [BN, gLN, cLN]
-        mask_act: string. Which non-linear function to generate mask
+    Args:
+        in_chan (int): Number of input filters.
+        n_src (int): Number of masks to estimate.
+        out_chan (int, optional): Number of bins in the estimated masks.
+            If ``None``, `out_chan = in_chan`.
+        n_blocks (int, optional): Number of convolutional blocks in each
+            repeat. Defaults to 8.
+        n_repeats (int, optional): Number of repeats. Defaults to 3.
+        bn_chan (int, optional): Number of channels after the bottleneck.
+        hid_chan (int, optional): Number of channels in the convolutional
+            blocks.
+        skip_chan (int, optional): Number of channels in the skip connections.
+        kernel_size (int, optional): Kernel size in convolutional blocks.
+        norm_type (str, optional): To choose from ``'BN'``, ``'gLN'``,
+            ``'cLN'``.
+        mask_act (str, optional): Which non-linear function to generate mask.
     """
     def __init__(self, in_chan, n_src, out_chan=None, n_blocks=8, n_repeats=3,
                  bn_chan=128, hid_chan=512, skip_chan=128, kernel_size=3,
@@ -108,10 +113,14 @@ class TDConvNet(nn.Module):
 
     def forward(self, mixture_w):
         """
+
         Args:
-            mixture_w: torch.Tensor of shape [batch, n_filters, n_frames]
+            mixture_w (:class:`torch.Tensor`): Tensor of shape
+                [batch, n_filters, n_frames]
+
         Returns:
-            est_mask: torch.Tensor of shape [batch, n_src, n_filters, n_frames]
+            :class:`torch.Tensor`:
+                estimated mask of shape [batch, n_src, n_filters, n_frames]
         """
         batch, n_filters, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)
@@ -145,19 +154,19 @@ class TDConvNet(nn.Module):
 class SingleRNN(nn.Module):
     """ Module for a RNN block.
 
-    Inspired from github.com/yluo42/TAC/blob/master/utility/models.py
+    Inspired from https://github.com/yluo42/TAC/blob/master/utility/models.py
     Licensed under CC BY-NC-SA 3.0 US.
 
     Args:
-        rnn_type: string, select from `'RNN'`, `'LSTM'`, `'GRU'`. Can
+        rnn_type (str): Select from ``'RNN'``, ``'LSTM'``, ``'GRU'``. Can
             also be passed in lowercase letters.
-        input_size: int, dimension of the input feature. The input should have
-            shape (batch, seq_len, input_size).
-        hidden_size: int, dimension of the hidden state.
-        dropout: float, dropout ratio. Default is 0.
-        n_layers: int > 0. Number of layers used in RNN. Default is 1.
-        bidirectional: bool, whether the RNN layers are bidirectional.
-            Default is False.
+        input_size (int): Dimension of the input feature. The input should have
+            shape [batch, seq_len, input_size].
+        hidden_size (int): Dimension of the hidden state.
+        n_layers (int, optional): Number of layers used in RNN. Default is 1.
+        dropout (float, optional): Dropout ratio. Default is 0.
+        bidirectional (bool): Whether the RNN layers are bidirectional.
+            Default is ``False``.
     """
 
     def __init__(self, rnn_type, input_size, hidden_size, n_layers=1,
@@ -181,23 +190,24 @@ class SingleRNN(nn.Module):
 
 
 class DPRNNBlock(nn.Module):
-    """Dual-Path RNN Block as proposed in [1].
+    """ Dual-Path RNN Block as proposed in [1].
 
-    Args
-        in_chan: int. Number of input channels.
-        hid_size: int. Number of hidden neurons in the RNNs.
-        norm_type: string. Type of normalization to use.
-            Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm).
-        bidirectional: bool. True for bidirectional Inter-Chunk RNN.
-        rnn_type: string. Type of RNN used.
-            Choose between 'RNN', 'LSTM' and 'GRU'.
-        num_layers: int>0. Number of layers used in each RNN.
-        dropout: int in (0,1).
+    Args:
+        in_chan (int): Number of input channels.
+        hid_size (int): Number of hidden neurons in the RNNs.
+        norm_type (str, optional): Type of normalization to use. To choose from
+            - ``'gLN'``: global Layernorm
+            - ``'cLN'``: channelwise Layernorm
+        bidirectional (bool, optional): True for bidirectional Inter-Chunk RNN.
+        rnn_type (str, optional): Type of RNN used. Choose from ``'RNN'``,
+            ``'LSTM'`` and ``'GRU'``.
+        num_layers (int, optional): Number of layers used in each RNN.
+        dropout (float, optional): Dropout ratio. Must be in [0, 1].
 
-    References :
-        [1] : "Dual-path RNN: efficient long sequence modeling for
-            time-domain single-channel speech separation", Yi Luo, Zhuo Chen
-            and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
+    References:
+        [1] "Dual-path RNN: efficient long sequence modeling for
+        time-domain single-channel speech separation", Yi Luo, Zhuo Chen
+        and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
     def __init__(self, in_chan, hid_size, norm_type="gLN", bidirectional=True,
                  rnn_type="LSTM", num_layers=1, dropout=0):
@@ -215,7 +225,7 @@ class DPRNNBlock(nn.Module):
         self.inter_norm = norms.get(norm_type)(in_chan)
 
     def forward(self, x):
-        """ Input shape : [batch, feats, chunk_size, num_chunks]"""
+        """ Input shape : [batch, feats, chunk_size, num_chunks] """
         B, N, K, L = x.size()
         output = x  # for skip connection
         # Intra-chunk processing
@@ -236,30 +246,34 @@ class DPRNNBlock(nn.Module):
 
 class DPRNN(nn.Module):
     """ Dual-path RNN Network for Single-Channel Source Separation
-        introduced in [1].
-    Args
-        in_chan: int > 0. Number of input filters.
-        out_chan : int > 0. Number of bins in the estimated masks.
-        bn_chan: int > 0. Number of channels after the bottleneck.
-        hid_size: int > 0. Number of neurons in the RNNs cell state.
-        chunk_size: int > 0. window size of overlap and add processing.
-        hop_size: int > 0. hop size (stride) of overlap and add processing.
-        n_repeats: int > 0. Number of repeats.
-        n_src: int > 0. Number of masks to estimate.
-        norm_type: string. Type of normalization to use.
-            Among `gLN` (global Layernorm), `cLN` (channelwise Layernorm).
-        mask_act: string. Which non-linear function to generate mask.
-        bidirectional: bool: True for bidirectional Inter-Chunk RNN
-            (Intra-Chunk is always bidirectional).
-        rnn_type: string. Type of RNN used. Choose between 'RNN',
-            'LSTM' and 'GRU'.
-        num_layers: number of layers in each RNN.
-        dropout: int in (0,1).
 
-    References :
-        [1] : "Dual-path RNN: efficient long sequence modeling for
-            time-domain single-channel speech separation", Yi Luo, Zhuo Chen
-            and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
+        Method introduced in [1].
+
+    Args:
+        in_chan (int): Number of input filters.
+        out_chan  (int): Number of bins in the estimated masks.
+        bn_chan (int): Number of channels after the bottleneck.
+        hid_size (int): Number of neurons in the RNNs cell state.
+        chunk_size (int): window size of overlap and add processing.
+        hop_size (int): hop size (stride) of overlap and add processing.
+        n_repeats (int): Number of repeats.
+        n_src (int): Number of masks to estimate.
+        norm_type (str, optional): Type of normalization to use. To choose from
+
+            - ``'gLN'``: global Layernorm
+            - ``'cLN'``: channelwise Layernorm
+        mask_act (str, optional): Which non-linear function to generate mask.
+        bidirectional (bool, optional): True for bidirectional Inter-Chunk RNN
+            (Intra-Chunk is always bidirectional).
+        rnn_type (str, optional): Type of RNN used. Choose between ``'RNN'``,
+            ``'LSTM'`` and ``'GRU'``.
+        num_layers (int, optional): Number of layers in each RNN.
+        dropout (float, optional): Dropout ratio, must be in [0,1].
+
+    References:
+        [1] "Dual-path RNN: efficient long sequence modeling for
+        time-domain single-channel speech separation", Yi Luo, Zhuo Chen
+        and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
     def __init__(self, in_chan, out_chan, bn_chan, hid_size, chunk_size,
                  hop_size, n_repeats, n_src, norm_type="gLN",
@@ -306,9 +320,11 @@ class DPRNN(nn.Module):
     def forward(self, mixture_w):
         """
         Args:
-            mixture_w: torch.Tensor of shape [batch, n_filters, n_frames]
+            mixture_w (:class:`torch.Tensor`): Tensor of shape
+                [batch, n_filters, n_frames]
         Returns:
-            est_mask: torch.Tensor of shape [batch, n_src, n_filters, n_frames]
+            :class:`torch.Tensor`
+                estimated mask of shape [batch, n_src, n_filters, n_frames]
         """
         batch, n_filters, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)  # [batch, bn_chan, n_frames]
