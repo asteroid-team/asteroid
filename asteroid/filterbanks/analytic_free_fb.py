@@ -1,6 +1,6 @@
 """
-Analytic free filterbank.
-@author : Manuel Pariente, Inria-Nancy
+| Analytic free filterbank.
+| @author : Manuel Pariente, Inria-Nancy
 """
 
 import torch
@@ -11,20 +11,21 @@ from .enc_dec import Filterbank
 
 
 class AnalyticFreeFB(Filterbank):
-    """Free analytic (fully learned with analycity constraints) filterbank
-        proposed in [1].
+    """ Free analytic (fully learned with analycity constraints) filterbank
 
-    # Args
-        n_filters: Positive int. Number of filters. Half of `n_filters` will
+        For more details, see [1].
+
+    Args:
+        n_filters (int): Number of filters. Half of `n_filters` will
             have parameters, the other half will be the hilbert transforms.
             `n_filters` should be even.
-        kernel_size: Positive int. Length of the filters.
-        stride: Positive int. Stride of the convolution.
-            If None (default), set to `kernel_size // 2`.
-        enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
-            an encoder or a decoder.
+        kernel_size (int): Length of the filters.
+        stride (int, optional): Stride of the convolution.
+            If None (default), set to ``kernel_size // 2``.
+        enc_or_dec (str): ``'enc'`` or ``'dec'``. Controls if filterbank is
+            used as an encoder or a decoder.  ``unused in init?``
 
-    # References
+    References:
         [1] : "Filterbank design for end-to-end speech separation".
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.
