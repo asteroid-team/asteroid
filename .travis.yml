@@ -23,4 +23,5 @@ deploy:
     keep_history: true
     github_token: $GITHUB_PAGES
     local_dir: docs/build/html
-
+    on:
+      all_branches: true
