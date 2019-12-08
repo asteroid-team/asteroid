@@ -16,11 +16,12 @@ script:
     - cd docs
     - make doc
     - make html
+    - touch build/html/.nojekyll  # do not use jekyll to build doc
 
 deploy:
     provider: pages
     skip_cleanup: true
-    keep_history: true
+    keep_history: false
     github_token: $GITHUB_PAGES
     local_dir: docs/build/html
     on:
