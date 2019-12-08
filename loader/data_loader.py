@@ -1,23 +1,20 @@
-import gc
-import os
 import torch
 import numpy as np
 import pandas as pd
 from data import Signal
 from pathlib import Path
-from memory_profiler import profile
 from frames import input_face_embeddings
 from facenet_pytorch import MTCNN, InceptionResnetV1
 from audio_feature_generator import convert_to_spectrogram
 
+
 class AVDataset(torch.utils.data.Dataset):
-    
 
     def __init__(self, dataset_df_path: Path, video_base_dir: Path, input_df_path: Path,
                 input_audio_size=2, use_cuda=False, face_embed_cuda=False, use_half=False,
                 all_embed_saved=False):
         """
-            
+
             Args:
                 dataset_df_path: path for AVSpeech dataset
                 video_base_dir: base directory for all the videos
@@ -46,7 +43,7 @@ class AVDataset(torch.utils.data.Dataset):
 
         #NOTE: All the above information is not being used anywhere right now.
 
-        #Combination dataset stores, mixed audio, `input_audio_size` inputs
+        #Combination dataset stores, mixed audio, input_audio_size inputs
         self.input_df = pd.read_csv(input_df_path.as_posix())
 
         #Use Cuda for dataset
@@ -55,7 +52,7 @@ class AVDataset(torch.utils.data.Dataset):
             self.device = torch.device("cuda:0")
         else:
             self.device = torch.device("cpu")
-   
+
         #Use Cuda for pre-trained face processing
         self.face_embed_cuda = face_embed_cuda
 
@@ -78,7 +75,6 @@ class AVDataset(torch.utils.data.Dataset):
                 self.resnet = self.resnet.half()
                 #mtcnn doesn't support half precision inputs...
 
-
             print(f"MTCNN has {sum(np.prod(i.shape) for i in self.mtcnn.parameters())} parameters")
             print(f"RESNET has {sum(np.prod(i.shape) for i in self.resnet.parameters())} parameters")
 
@@ -88,7 +84,7 @@ class AVDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         row = self.input_df.iloc[idx, :]
         all_signals = []
-        
+
         for i in range(self.input_audio_size):
             #get audio, video path from combination dataframe
             video_path = row[i]
@@ -118,7 +114,7 @@ class AVDataset(torch.utils.data.Dataset):
             #retrieve video frames
             raw_frames = all_signals[i].get_video()
             print(raw_frames.shape)
-            
+
             #NOTE: use_cuda = True, only if VRAM ~ 7+GB, if RAM < 8GB it will not work...
             #run the detector and embedder on raw frames
             embeddings = input_face_embeddings(raw_frames, is_path=False, mtcnn=self.mtcnn, resnet=self.resnet,
@@ -141,10 +137,7 @@ class AVDataset(torch.utils.data.Dataset):
         mixed_signal_tensor = torch.transpose(mixed_signal_tensor,0,2) #shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257	
         audio_tensors = [i.transpose(0, 2) for i in audio_tensors]
         audio_tensors = torch.stack(audio_tensors)
-        audio_tensors = audio_tensors.permute(1, 2, 3, 0).to(self.device)
-
-        video_tensors = [a.to(self.device) for a in video_tensors]
-        mixed_signal_tensor = mixed_signal_tensor.to(self.device)
+        audio_tensors = audio_tensors.permute(1, 2, 3, 0)
 
         return audio_tensors, video_tensors, mixed_signal_tensor
 

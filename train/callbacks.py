@@ -28,7 +28,7 @@ class SaveAudioCallback(Callback):
         
     def on_batch_end(self, state):
         with torch.no_grad():
-            self.predictions.append(state.output[self.output_key].detach().numpy())
+            self.predictions.append(state.output[self.output_key].cpu().detach().numpy())
     
     def on_epoch_start(self, state):
         self.predictions = []
@@ -42,7 +42,7 @@ class SaveAudioCallback(Callback):
         
         for i, prediction in enumerate(self.predictions):
             batch_size = prediction.shape[0]
-            waves[i, ...] = self.batch_spec_to_wave(prediction, num_person, batch_size)
+            waves[i, :batch_size, ...] = self.batch_spec_to_wave(prediction, num_person, batch_size)
 
         np.save(self.directory / f"{state.epoch_log}.npy", waves)
 
@@ -84,7 +84,7 @@ class SNRCallback(MetricCallback):
             output_audio = output_audios[..., n]
             true_audio = true_audios[..., n]
             
-            print(torch.sum(output_audio-true_audio))
+            print(torch.sum((output_audio-true_audio)**2))
             
             print(output_audio[0, 0, 0, 0])
             print('-'*10)
