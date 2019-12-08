@@ -1,6 +1,6 @@
 """
-STFT filterbank i.e DFT filters
-@author : Manuel Pariente, Inria-Nancy
+| STFT filterbank i.e DFT filters
+| @author : Manuel Pariente, Inria-Nancy
 """
 import torch
 import numpy as np
@@ -10,16 +10,16 @@ from .enc_dec import Filterbank
 class STFTFB(Filterbank):
     """STFT filterbank.
 
-    # Args
-        n_filters: Positive int. Number of filters. Determines the length
-            of the STFT filters before windowing.
-        kernel_size: Positive int. Length of the filters (i.e the window).
-        stride: Positive int. Stride of the convolution (hop size).
-            If None (default), set to `kernel_size // 2`.
-        window: None or numpy array. If None, defaults to
-            `np.sqrt(np.hanning())`.
-        enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used
-            as an encoder or a decoder.
+    Args:
+        n_filters (int): Number of filters. Determines the length of the STFT
+            filters before windowing.
+        kernel_size (int): Length of the filters (i.e the window).
+        stride (int, optional): Stride of the convolution (hop size). If None
+            (default), set to ``kernel_size // 2``.
+        window (:class:`numpy.ndarray`, optional): If None, defaults to
+            ``np.sqrt(np.hanning())``.
+        enc_or_dec (str, optional): Either ``'enc'`` or ``'dec'``. Controls if
+            filterbank is used as an encoder or a decoder.
     """
     def __init__(self, n_filters, kernel_size, stride=None, window=None,
                  **kwargs):

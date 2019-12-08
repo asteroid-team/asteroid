@@ -1,10 +1,10 @@
 """
-Sinc-based parameterized filterbank.
-@author : Manuel Pariente, Inria-Nancy
+| Sinc-based parameterized filterbank.
+| @author : Manuel Pariente, Inria-Nancy
 
-Modified and extended from from https://github.com/mravanelli/SincNet
-Copyright (c) 2019 Mirco Ravanelli
-See also https://github.com/mravanelli/SincNet/blob/master/LICENSE
+| Modified and extended from from https://github.com/mravanelli/SincNet
+| Copyright (c) 2019 Mirco Ravanelli
+| See also https://github.com/mravanelli/SincNet/blob/master/LICENSE
 """
 
 import numpy as np
@@ -17,23 +17,31 @@ from .enc_dec import Filterbank
 class ParamSincFB(Filterbank):
     """Extension of the parameterized filterbank from [1] proposed in [2].
 
-    # Args
-        n_filters: Positive int. Number of filters. Half of `n_filters`
-            (the real parts) will have parameters, the other half will
-            correspond to the imaginary parts.
-            `n_filters` should be even.
-        kernel_size: Positive int. Length of the filters.
-        stride: Positive int. Stride of the convolution.
-            If None (default), set to `kernel_size // 2`.
-        enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
-            an encoder or a decoder.
-        sample_rate: int. The sample rate (used for initialization).
-        min_low_hz: Positive int. Lowest low frequency allowed (Hz).
-        min_band_hz: Positive int. Lowest band frequency allowed (Hz).
+    Args:
+        n_filters (int): Number of filters. Half of `n_filters` (the real
+            parts) will have parameters, the other half will correspond to the
+            imaginary parts. `n_filters` should be even.
+        kernel_size (int): Length of the filters.
+        stride (int, optional): Stride of the convolution. If None (default),
+            set to ``kernel_size // 2``.
+        enc_or_dec (str, optional): ``'enc'`` or ``'dec'``. Controls if
+            filterbank is used as an encoder or a decoder.
+        sample_rate (int, optional): The sample rate (used for initialization).
+        min_low_hz (int, optional): Lowest low frequency allowed (Hz).
+        min_band_hz (int, optional): Lowest band frequency allowed (Hz).
 
-    # References
+    Attributes:
+        sample_rate (int)
+        min_low_hz (int)
+        min_band_hz (int)
+        half_kernel (int)
+        cutoff (int)
+        n_feats_out (int)
+
+    References:
         [1] : "Speaker Recognition from raw waveform with SincNet". SLT 2018.
         Mirco Ravanelli, Yoshua Bengio.  https://arxiv.org/abs/1808.00158
+
         [2] : "Filterbank design for end-to-end speech separation".
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.
