@@ -16,7 +16,7 @@ script:
     - cd docs
     - make doc
     - make html
-    - touch build/html/.nojekyll  # do not use jekyll to build doc
+    - touch build/html/.nojekyll  # prevents use jekyll to build doc
 
 deploy:
     provider: pages
@@ -25,4 +25,4 @@ deploy:
     github_token: $GITHUB_PAGES
     local_dir: docs/build/html
     on:
-      all_branches: true
+      branches: master
