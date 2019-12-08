@@ -1,6 +1,6 @@
 """
-Free filterbank.
-@author : Manuel Pariente, Inria-Nancy
+| Free filterbank.
+| @author : Manuel Pariente, Inria-Nancy
 """
 
 import torch
@@ -9,17 +9,22 @@ from .enc_dec import Filterbank
 
 
 class FreeFB(Filterbank):
-    """Free filterbank without any constraints. Equivalent to nn.Conv1d.
+    """Free filterbank without any constraints.
 
-    # Args
-        n_filters: Positive int. Number of filters.
-        kernel_size: Positive int. Length of the filters.
-        stride: Positive int. Stride of the convolution.
-            If None (default), set to `kernel_size // 2`.
-        enc_or_dec: String. `enc` or `dec`. Controls if filterbank is used as
-            an encoder or a decoder.
+    Equivalent to nn.Conv1d.
 
-    # References
+    Args:
+        n_filters (int): Number of filters.
+        kernel_size (int): Length of the filters.
+        stride (int, optional): Stride of the convolution.
+            If None (default), set to ``kernel_size // 2``.
+        enc_or_dec (str, optional): ``'enc'`` or ``'dec'``. Controls if
+            filterbank is used as an encoder or a decoder. ``unused``
+
+    Attributes:
+        n_feats_out (int): Number of filters.
+
+    References:
         [1] : "Filterbank design for end-to-end speech separation".
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.

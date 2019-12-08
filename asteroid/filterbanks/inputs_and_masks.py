@@ -1,27 +1,49 @@
 """
-Masker inputs and output masks
-@author : Manuel Pariente, Inria-Nancy
-Reference [1] : "Filterbank design for end-to-end speech separation".
-                Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
-                Antoine Deleforge, Emmanuel Vincent.
+| Masker inputs and output masks
+| @author : Manuel Pariente, Inria-Nancy
+
+Reference:
+    [1] "Filterbank design for end-to-end speech separation".
+    Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
+    Antoine Deleforge, Emmanuel Vincent.
 """
 
 import torch
 
 
 def mul_c(inp, other, dim=1):
-    """
-    Complex multiplication for tensors with real and imaginary parts
-    concatenated on the `dim` axis.
+    """ Entrywise product for complex valued tensors.
+
+    Operands are assumed to have the real parts of each entry followed by the
+    imaginary parts of each entry along dimension `dim`, e.g. for,
+    ``dim = 1``, the matrix
+
+    .. code::
+
+        [[1, 2, 3, 4],
+         [5, 6, 7, 8]]
+
+    is interpreted as
+
+    .. code::
+
+        [[1 + 3j, 2 + 4j],
+         [5 + 7j, 6 + 8j]
+
+    where `j` is such that `j * j = -1`.
+
     Args:
-        inp: torch.Tensor. The first multiplicand with real and imaginary parts
-            concatenated on the `dim` axis.
-        other: torch.Tensor. The second multiplicand.
-        dim: int. Dimension along which the real and imaginary parts are
-            concatenated.
+        inp (:class:`torch.Tensor`): The first operand with real and
+            imaginary parts concatenated on the `dim` axis.
+        other (:class:`torch.Tensor`): The second operand.
+        dim (int, optional): Dimension along which the real and imaginary parts
+            are concatenated.
     Returns:
-        torch.Tensor, the complex multiplication between `t1` and `t2`
-    For now, it assumes that `other` has the same shape as `inp` along `dim`.
+        :class:`torch.Tensor`:
+            The complex multiplication between `inp` and `other`
+
+            For now, it assumes that `other` has the same shape as `inp` along
+            `dim`.
     """
     if inp.shape[dim] % 2 != 0:
         raise ValueError('Shape along dimension {} should be even, received '
@@ -37,14 +59,34 @@ def take_reim(x, dim=1):
 
 
 def take_mag(x, dim=1):
-    """
-    Takes the magnitude of a complex tensor with real and imaginary parts
-    concatenated on the `dim` axis.
+    """ Takes the magnitude of a complex tensor.
+
+    **Shouldn't this be called the power?**
+
+    The operands is assumed to have the real parts of each entry followed by
+    the imaginary parts of each entry along dimension `dim`, e.g. for,
+    ``dim = 1``, the matrix
+
+    .. code::
+
+        [[1, 2, 3, 4],
+         [5, 6, 7, 8]]
+
+    is interpreted as
+
+    .. code::
+
+        [[1 + 3j, 2 + 4j],
+         [5 + 7j, 6 + 8j]
+
+    where `j` is such that `j * j = -1`.
+
     Args:
-        x: torch.Tensor. Re and Im are concatenated on the `dim` axis.
-        dim: int. Dimension along which the Re and Im are concatenated.
+        x (:class:`torch.Tensor`): Complex valued tensor.
+        dim (int): Dimension along which the Re and Im are concatenated.
+
     Returns:
-        torch.Tensor, the magnitude of x.
+        :class:`torch.Tensor`: The magnitude of x.
     """
     return torch.stack(torch.chunk(x, 2, dim=dim), dim=-1).pow(2).sum(dim=-1)
 
@@ -54,50 +96,89 @@ def take_cat(x, dim=1):
 
 
 def apply_real_mask(tf_rep, mask, dim=1):
-    """
-    Applies a real mask to a real representation.
+    """ Applies a real-valued mask to a real-valued representation.
+
     It corresponds to ReIm mask in [1].
+
     Args:
-        tf_rep: torch.Tensor. The time frequency representation to apply the
-            mask to.
-        mask: torch.Tensor. The magnitude mask to be applied.
-        dim: Kept to have the same interface with the other ones.
+        tf_rep (:class:`torch.Tensor`): The time frequency representation to
+            apply the mask to.
+        mask (:class:`torch.Tensor`): The real-valued mask to be applied.
+        dim (int): Kept to have the same interface with the other ones.
     Returns:
-        torch.Tensor, `tf_rep` multiplied by the `mask`.
+        :class:`torch.Tensor`: `tf_rep` multiplied by the `mask`.
     """
     return tf_rep * mask
 
 
 def apply_mag_mask(tf_rep, mask, dim=1):
-    """
-    Applies a magnitude mask to a complex representation.
+    """ Applies a real-valued mask to a complex-valued representation.
+
+    If `tf_rep` has 2N elements along `dim`, `mask` has N elements, `mask` is
+    duplicated along `dim` to apply the same mask to both the Re and Im.
+
+    `tf_rep` is assumed to have the real parts of each entry followed by
+    the imaginary parts of each entry along dimension `dim`, e.g. for,
+    ``dim = 1``, the matrix
+
+    .. code::
+
+        [[1, 2, 3, 4],
+         [5, 6, 7, 8]]
+
+    is interpreted as
+
+    .. code::
+
+        [[1 + 3j, 2 + 4j],
+         [5 + 7j, 6 + 8j]
+
+    where `j` is such that `j * j = -1`.
+
     Args:
-        tf_rep: torch.Tensor. The time frequency representation to apply the
-            mask to. Re and Im are concatenated along `dim`.
-        mask: torch.Tensor. The magnitude mask to be applied.
-        dim: int. The frequency (or equivalent) dimension of both `tf_rep` and
+        tf_rep (:class:`torch.Tensor`): The time frequency representation to
+            apply the mask to. Re and Im are concatenated along `dim`.
+        mask (:class:`torch.Tensor`): The real-valued mask to be applied.
+        dim (int): The frequency (or equivalent) dimension of both `tf_rep` and
             `mask`.
     Returns:
-        torch.Tensor, `tf_rep` multiplied by the `mask`.
-    If `tf_rep` has 2N elements along `dim`, `mask` has N elements, they are
-    duplicated along `dim` to apply the same mask to both the Re and Im.
+        :class:`torch.Tensor`: `tf_rep` multiplied by the `mask`.
     """
     mask = torch.cat([mask, mask], dim=dim)
     return tf_rep * mask
 
 
 def apply_complex_mask(tf_rep, mask, dim=1):
-    """
-    Applies a complex mask to a complex representation.
+    """ Applies a complex-valued mask to a complex-valued representation.
+
+    Operands are assumed to have the real parts of each entry followed by the
+    imaginary parts of each entry along dimension `dim`, e.g. for,
+    ``dim = 1``, the matrix
+
+    .. code::
+
+        [[1, 2, 3, 4],
+         [5, 6, 7, 8]]
+
+    is interpreted as
+
+    .. code::
+
+        [[1 + 3j, 2 + 4j],
+         [5 + 7j, 6 + 8j]
+
+    where `j` is such that `j * j = -1`.
+
     Args:
-        tf_rep: torch.Tensor. The time frequency representation to apply the
-            mask to. Re and Im and concatenated along `dim`.
-        mask: torch.Tensor. The complex mask to be applied. Re and Im are
-            concatenated along `dim`.
-        dim: int. The frequency (or equivalent) dimension of both `tf_rep` and
+        tf_rep (:class:`torch.Tensor`): The time frequency representation to
+            apply the mask to.
+        mask (class:`torch.Tensor`): The complex-valued mask to be applied.
+        dim (int): The frequency (or equivalent) dimension of both `tf_rep` an
             `mask`.
+
     Returns:
-        torch.Tensor, `tf_rep` multiplied by the `mask` in the complex sense.
+        :class:`torch.Tensor`:
+            `tf_rep` multiplied by the `mask` in the complex sense.
     """
     return mul_c(tf_rep, mask, dim=dim)
 
