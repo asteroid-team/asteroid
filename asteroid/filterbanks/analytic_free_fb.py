@@ -22,8 +22,6 @@ class AnalyticFreeFB(Filterbank):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution.
             If None (default), set to ``kernel_size // 2``.
-        enc_or_dec (str): ``'enc'`` or ``'dec'``. Controls if filterbank is
-            used as an encoder or a decoder.  ``unused in init?``
 
     References:
         [1] : "Filterbank design for end-to-end speech separation".

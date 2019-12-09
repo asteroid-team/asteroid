@@ -61,8 +61,6 @@ def take_reim(x, dim=1):
 def take_mag(x, dim=1):
     """ Takes the magnitude of a complex tensor.
 
-    **Shouldn't this be called the power?**
-
     The operands is assumed to have the real parts of each entry followed by
     the imaginary parts of each entry along dimension `dim`, e.g. for,
     ``dim = 1``, the matrix
@@ -88,7 +86,8 @@ def take_mag(x, dim=1):
     Returns:
         :class:`torch.Tensor`: The magnitude of x.
     """
-    return torch.stack(torch.chunk(x, 2, dim=dim), dim=-1).pow(2).sum(dim=-1)
+    return torch.stack(torch.chunk(x, 2, dim=dim),
+                       dim=-1).pow(2).sum(dim=-1).pow(0.5)
 
 
 def take_cat(x, dim=1):

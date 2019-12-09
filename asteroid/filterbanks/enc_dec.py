@@ -18,7 +18,7 @@ class Filterbank(nn.Module):
     Args:
         n_filters (int): Number of filters.
         kernel_size (int): Length of the filters.
-        stride (int): Stride of the conv or transposed conv. (Hop size).
+        stride (int, optional): Stride of the conv or transposed conv. (Hop size).
             If None (default), set to ``kernel_size // 2``.
 
     Attributes:

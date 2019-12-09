@@ -24,8 +24,6 @@ class ParamSincFB(Filterbank):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution. If None (default),
             set to ``kernel_size // 2``.
-        enc_or_dec (str, optional): ``'enc'`` or ``'dec'``. Controls if
-            filterbank is used as an encoder or a decoder.
         sample_rate (int, optional): The sample rate (used for initialization).
         min_low_hz (int, optional): Lowest low frequency allowed (Hz).
         min_band_hz (int, optional): Lowest band frequency allowed (Hz).

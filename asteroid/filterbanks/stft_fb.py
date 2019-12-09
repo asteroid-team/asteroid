@@ -18,8 +18,6 @@ class STFTFB(Filterbank):
             (default), set to ``kernel_size // 2``.
         window (:class:`numpy.ndarray`, optional): If None, defaults to
             ``np.sqrt(np.hanning())``.
-        enc_or_dec (str, optional): Either ``'enc'`` or ``'dec'``. Controls if
-            filterbank is used as an encoder or a decoder.
     """
     def __init__(self, n_filters, kernel_size, stride=None, window=None,
                  **kwargs):
