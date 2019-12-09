@@ -2,9 +2,9 @@
 | Sinc-based parameterized filterbank.
 | @author : Manuel Pariente, Inria-Nancy
 
-| Modified and extended from from https://github.com/mravanelli/SincNet
+| Modified and extended from from `<https://github.com/mravanelli/SincNet>`__
 | Copyright (c) 2019 Mirco Ravanelli
-| See also https://github.com/mravanelli/SincNet/blob/master/LICENSE
+| See also `<https://github.com/mravanelli/SincNet/blob/master/LICENSE>`__
 """
 
 import numpy as np

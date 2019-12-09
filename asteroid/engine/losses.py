@@ -2,9 +2,9 @@
 | Package-level utils.
 | @author : Manuel Pariente, Inria-Nancy
 
-| Modified and extended from `<github.com/kaituoxu/Conv-TasNet/>`_
+| Modified and extended from `<https://github.com/kaituoxu/Conv-TasNet/>`__
 | MIT Copyright (c) 2018 Kaituo XU
-| See also `<github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`_
+| See also `<https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`__.
 """
 
 from itertools import permutations
