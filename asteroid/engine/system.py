@@ -23,11 +23,11 @@ class System(pl.LightningModule):
         config: Anything to be saved with the checkpoints during training.
             The config dictionary to re-instantiate the run for example.
 
-    By default, `training_step` (used by pytorch-lightning in the training
-    loop) and `validation_step` (used for the validation loop) share
-    `common_step`. If you want different behavior for the training loop and
-    the validation loop, overwrite both `training_step` and `validation_step`
-    instead.
+    .. note:: By default, `training_step` (used by pytorch-lightning in the
+        training loop) and `validation_step` (used for the validation loop)
+        share `common_step`. If you want different behavior for the training
+        loop and the validation loop, overwrite both `training_step` and
+        `validation_step` instead.
     """
     def __init__(self, model, optimizer, loss_class, train_loader,
                  val_loader=None, scheduler=None, config=None):
@@ -62,7 +62,7 @@ class System(pl.LightningModule):
             batch_nb (int): The number of the batch in the epoch.
 
         Returns:
-            float: The loss value on this batch.
+            :class:`torch.Tensor` : The loss value on this batch.
 
         .. note:: This is typically the method to overwrite when subclassing
             `System`. If the training and validation steps are different

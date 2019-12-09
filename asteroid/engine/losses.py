@@ -144,7 +144,8 @@ def find_best_perm(pair_wise_losses, n_src):
     """Find the best permutation, given the pair-wise losses.
 
     Args:
-        pair_wise_losses (torch.Tensor): Pair-wise losses [batch, n_src, n_src]
+        pair_wise_losses (:class:`torch.Tensor`):
+            Tensor of shape [batch, n_src, n_src]. Pairwise losses.
         n_src (int): Number of sources.
 
     Returns:
@@ -175,11 +176,11 @@ def reorder_source(source, n_src, min_loss_idx):
         source torch.Tensor): Tensor of shape [batch, n_src, time]
         n_src (int): Number of sources.
         min_loss_idx (torch.LongTensor): Tensor of shape [batch],
-            each item is in [0, C!)  ``C! == n_src!``?
+            each item is in [0, n_src!).
 
     Returns:
         :class:`torch.Tensor`:
-            Reordered sources of shape [batch, n_src, time]
+            Reordered sources of shape [batch, n_src, time].
     """
     perms = source.new_tensor(list(permutations(range(n_src))),
                               dtype=torch.long)
