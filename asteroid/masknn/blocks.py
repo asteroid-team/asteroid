@@ -165,8 +165,8 @@ class SingleRNN(nn.Module):
         hidden_size (int): Dimension of the hidden state.
         n_layers (int, optional): Number of layers used in RNN. Default is 1.
         dropout (float, optional): Dropout ratio. Default is 0.
-        bidirectional (bool): Whether the RNN layers are bidirectional.
-            Default is ``False``.
+        bidirectional (bool, optional): Whether the RNN layers are 
+            bidirectional. Default is ``False``.
     """
 
     def __init__(self, rnn_type, input_size, hidden_size, n_layers=1,
