@@ -52,7 +52,7 @@ class WhamDataset(data.Dataset):
 
         sample_rate (int, optional): The sampling rate of the wav files.
         segment (float, optional): Length of the segments used for training,
-            in seconds.
+            in seconds. If None, use full utterances (e.g. for test).
         nondefault_nsrc (int, optional): Number of sources in the training
             targets.
             If None, defaults to one for enhancement tasks and two for
@@ -69,12 +69,13 @@ class WhamDataset(data.Dataset):
         self.task = task
         self.task_dict = WHAM_TASKS[task]
         self.sample_rate = sample_rate
-        self.seg_len = segment
+        self.seg_len = None if segment is None else int(segment * sample_rate)
         if not nondefault_nsrc:
             self.n_src = self.task_dict['default_nsrc']
         else:
             assert nondefault_nsrc >= self.task_dict['default_nsrc']
             self.n_src = nondefault_nsrc
+        self.like_test = self.seg_len is None
         # Load json files
         mix_json = os.path.join(json_dir, self.task_dict['mixture'] + '.json')
         sources_json = [os.path.join(json_dir, source + '.json') for
@@ -85,17 +86,17 @@ class WhamDataset(data.Dataset):
         for src_json in sources_json:
             with open(src_json, 'r') as f:
                 sources_infos.append(json.load(f))
-        # Filter out short utterances
+        # Filter out short utterances only when segment is specified
         orig_len = len(mix_infos)
-        self.seg_len = int(segment * sample_rate)
         drop_utt, drop_len = 0, 0
-        for i in range(len(mix_infos) - 1, -1, -1):  # Go backward
-            if mix_infos[i][1] < self.seg_len:
-                drop_utt += 1
-                drop_len += mix_infos[i][1]
-                del mix_infos[i]
-                for src_inf in sources_infos:
-                    del src_inf[i]
+        if not self.like_test:
+            for i in range(len(mix_infos) - 1, -1, -1):  # Go backward
+                if mix_infos[i][1] < self.seg_len:
+                    drop_utt += 1
+                    drop_len += mix_infos[i][1]
+                    del mix_infos[i]
+                    for src_inf in sources_infos:
+                        del src_inf[i]
 
         print("Drop {} utts({:.2f} h) from {} (shorter than {} samples)".format(
             drop_utt, drop_len/sample_rate/36000, orig_len, self.seg_len))
@@ -121,24 +122,32 @@ class WhamDataset(data.Dataset):
         return len(self.mix)
 
     def __getitem__(self, idx):
+        """ Gets a mixture/sources pair.
+        Returns:
+            mixture, vstack([source_arrays]), {'seg_len': wav_length}
+        """
         # Random start
-        if self.mix[idx][1] == self.seg_len:
+        if self.mix[idx][1] == self.seg_len or self.like_test:
             rand_start = 0
         else:
             rand_start = np.random.randint(0, self.mix[idx][1] - self.seg_len)
+        if self.like_test:
+            stop = None
+        else:
+            stop = rand_start + self.seg_len
         # Load mixture
         x, _ = sf.read(self.mix[idx][0], start=rand_start,
-                       stop=rand_start + self.seg_len, dtype='float32')
+                       stop=stop, dtype='float32')
         seg_len = torch.as_tensor([len(x)])
         # Load sources
         source_arrays = []
         for src in self.sources:
             if src[idx] is None:
-                # Target is filled with zeros id n_src > default_nsrc
+                # Target is filled with zeros if n_src > default_nsrc
                 s = np.zeros((seg_len, ))
             else:
                 s, _ = sf.read(src[idx][0], start=rand_start,
-                               stop=rand_start + self.seg_len, dtype='float32')
+                               stop=stop, dtype='float32')
             source_arrays.append(s)
         sources = torch.from_numpy(np.vstack(source_arrays))
         return torch.from_numpy(x), sources, {'seg_len': seg_len}
