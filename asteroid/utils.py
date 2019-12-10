@@ -47,7 +47,7 @@ def to_cuda(tensors):
             tensors[key] = to_cuda(tensors[key])
         return tensors
     raise TypeError('tensors must be a tensor or a list or dict of tensors. '
-                    ' Got tensor of type {}'.format(type(tensors)))
+                    ' Got tensors of type {}'.format(type(tensors)))
 
 
 def prepare_parser_from_dict(dic, parser=None):
