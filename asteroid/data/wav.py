@@ -6,7 +6,6 @@
 import os
 import numpy as np
 import soundfile as sf
-# import ipdb
 
 
 class SingleWav(object):
@@ -23,8 +22,9 @@ class SingleWav(object):
         >>> SingleWav('/home/test.wav')
 
     """
-    def __init__(self, file_name, channel_interest=None, \
-            wav_id=None, save=False):
+
+    def __init__(self, file_name, channel_interest=None, wav_id=None,
+                 save=False):
         self.file_name = file_name
         self.__wav_data = None
         self.__id = wav_id
@@ -40,9 +40,8 @@ class SingleWav(object):
 
     def verify(self):
         """ Verify if all the information is good """
-        assert os.path.exists(self.file_name),\
-            self.file_name +' does not exists'
-
+        assert os.path.exists(self.file_name), (self.file_name +
+                                                ' does not exists')
 
     def update_info(self):
         """ Get wav related info and place it in the :attr:`info` variable.
@@ -78,9 +77,7 @@ class SingleWav(object):
         self.update_info()
         if self.__wav_data is not None:
             return self.__wav_data
-        #print('reading ', self.file_name)
-        wav_data, self.sampling_rate = \
-                    sf.read(self.file_name, always_2d=True)
+        wav_data, self.sampling_rate = sf.read(self.file_name, always_2d=True)
         if self.channel_interest is not None:
             wav_data = wav_data[:, self.channel_interest]
         if self.save:
@@ -109,7 +106,6 @@ class SingleWav(object):
         """
         self.__wav_data = self.data
 
-
     @property
     def wav_id(self):
         """ Get wav id """
@@ -123,6 +119,7 @@ class SingleWav(object):
         """ Write the wav data into an other path """
         sf.write(path, self.data, self.sampling_rate)
 
+
 class MultipleWav(SingleWav):
     """ Handle a set of wav files as a single object.
 
@@ -134,8 +131,9 @@ class MultipleWav(SingleWav):
         save (bool): Save the data until the object is destroyed if True
 
     """
-    def __init__(self, file_name_list, channel_interest=None, \
-            wav_id=None, save=False):
+
+    def __init__(self, file_name_list, channel_interest=None, wav_id=None,
+                 save=False):
         self.file_name_list = file_name_list
         self.__wav_data = None
         self.__id = wav_id
@@ -158,7 +156,8 @@ class MultipleWav(SingleWav):
                 info = sf.info(_file_)
                 self.info_list.append(info)
                 self.sampling_rate_list.append(info.samplerate)
-                self.sample_len_list.append(int(info.samplerate * info.duration))
+                self.sample_len_list.append(
+                    int(info.samplerate * info.duration))
                 self.channel_count_list.append(info.channels)
             self.info = info
             self.sampling_rate = info.samplerate
@@ -176,7 +175,6 @@ class MultipleWav(SingleWav):
         self.update_info()
         if self.__wav_data is not None:
             return self.__wav_data
-        #print('reading ', self.file_name)
         wav_data = []
         for _file_ in self.file_name_list:
             _wav_data, _ = sf.read(_file_, always_2d=True)
