@@ -9,32 +9,33 @@ import pytorch_lightning as pl
 
 class System(pl.LightningModule):
     """ Base class for deep learning systems.
-    Subclass of pytorch_lightning.LightningModule.
-    Contains a model, an optimizer, a loss_class and training and validation
-    loaders and learning rate scheduler.
+    Contains a model, an optimizer, a loss function, training and validation
+    dataloaders and learning rate scheduler.
 
     Args:
         model (torch.nn.Module): Instance of model.
         optimizer (torch.optim.Optimizer): Instance or list of optimizers.
-        loss_class: Class with `compute` method. (More doc to come)
+        loss_func (callable): Loss function with signature
+            (targets, est_targets).
         train_loader (torch.utils.data.DataLoader): Training dataloader.
         val_loader (torch.utils.data.DataLoader): Validation dataloader.
-        scheduler (torch.optim._LRScheduler): Instance, or list.
+        scheduler (torch.optim.lr_scheduler._LRScheduler): Instance, or list
+            of learning rate schedulers.
         config: Anything to be saved with the checkpoints during training.
             The config dictionary to re-instantiate the run for example.
 
-    .. note:: By default, `training_step` (used by pytorch-lightning in the
+    .. note:: By default, `training_step` (used by `pytorch-lightning` in the
         training loop) and `validation_step` (used for the validation loop)
         share `common_step`. If you want different behavior for the training
         loop and the validation loop, overwrite both `training_step` and
         `validation_step` instead.
     """
-    def __init__(self, model, optimizer, loss_class, train_loader,
+    def __init__(self, model, optimizer, loss_func, train_loader,
                  val_loader=None, scheduler=None, config=None):
         super().__init__()
         self.model = model
         self.optimizer = optimizer
-        self.loss_class = loss_class
+        self.loss_func = loss_func
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.scheduler = scheduler
@@ -69,21 +70,21 @@ class System(pl.LightningModule):
             (except for loss.backward() and optimzer.step()), then overwrite
             `training_step` and `validation_step` instead.
         """
-        inputs, targets, infos = self.unpack_data(batch)
+        inputs, targets, loss_kwargs = self.unpack_data(batch)
         est_targets = self.model(inputs)
-        loss = self.loss_class.compute(targets, est_targets, infos=infos)
+        loss = self.loss_func(targets, est_targets, **loss_kwargs)
         return loss
 
     def unpack_data(self, data):
         """ Unpack data given by the DataLoader
 
         Args:
-            data: list of 2 or 3 elements.
-                [model_inputs, training_targets, additional infos] or
+            data: list of 2 or 3 elements. Output of DataLoader.
+                [model_inputs, training_targets, infos] or
                 [model_inputs, training_targets]
 
         Returns:
-              model_inputs, training_targets, additional infos
+              model_inputs, training_targets, infos
         """
         if len(data) == 2:
             inputs, targets = data
