@@ -1,22 +1,31 @@
 """
-Mean squared error loss functions.
-@author : Manuel Pariente, Inria-Nancy
+| Mean squared error loss functions.
+| @author : Manuel Pariente, Inria-Nancy
 """
 
 
 def pairwise_mse(targets, est_targets):
-    """ Pair-wise mean square error
+    """ Measure pair-wise mean square error on a batch.
+
     Args:
-            targets: torch.Tensor. Expected shape [batch, nsrc, *].
-                The batch of training targets
-            est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
-                The batch of target estimates.
+        targets: torch.Tensor. Expected shape [batch, nsrc, *].
+            The batch of training targets
+        est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
+            The batch of target estimates.
+
     Returns:
-        torch.tensor [batch, nsrc, nsrc]
-    Usage:
+        :class:`torch.Tensor`: with shape [batch, nsrc, nsrc]
+
+    Examples:
+
+        >>> import torch
         >>> from asteroid.losses import PITLossWrapper
-        >>> loss_class = PITLossWrapper(pairwise_mse)
-        >>> loss = loss_class(targets, est_targets)
+        >>> targets = torch.randn(10, 2, 32000)
+        >>> est_targets = torch.randn(10, 2, 32000)
+        >>> loss_func = PITLossWrapper(pairwise_mse, mode='pairwise')
+        >>> loss = loss_func(targets, est_targets)
+        >>> print(loss.size())
+        torch.Size([10, 2, 2])
     """
     targets = targets.unsqueeze(1)
     est_targets = est_targets.unsqueeze(2)
@@ -27,24 +36,32 @@ def pairwise_mse(targets, est_targets):
 
 
 def nosrc_mse(targets, est_targets):
-    """ Mean square error over batch .
+    """ Measure mean square error on a batch.
 
     Supports both tensors with and without source axis.
 
     Args:
-            targets: torch.Tensor. Expected shape [batch, *].
-                The batch of training targets (one source)
-            est_targets: torch.Tensor. Expected shape [batch, *].
-                The batch of target estimates (one source)
+        targets: torch.Tensor. Expected shape [batch, *].
+            The batch of training targets.
+        est_targets: torch.Tensor. Expected shape [batch, *].
+            The batch of target estimates.
+
     Returns:
-        torch.tensor [batch]
-    Usage:
+        :class:`torch.Tensor`: with shape [batch]
+
+    Examples:
+
+        >>> import torch
         >>> from asteroid.losses import PITLossWrapper
-        >>> loss_class = PITLossWrapper(nosrc_mse)
-        >>> loss = loss_class(targets, est_targets)
+        >>> targets = torch.randn(10, 2, 32000)
+        >>> est_targets = torch.randn(10, 2, 32000)
+        >>> # nosrc_mse / nonpit_mse support both 'wo_src' and 'w_src'.
+        >>> loss_func = PITLossWrapper(nosrc_mse, mode='wo_src')
+        >>> loss = loss_func(targets, est_targets)
+        >>> print(loss.size())
+        torch.Size([10])
     """
     loss = (targets - est_targets)**2
-    # Need to return [batch]
     mean_over = list(range(1, loss.ndim))
     return loss.mean(dim=mean_over)
 

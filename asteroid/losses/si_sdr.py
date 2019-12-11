@@ -1,19 +1,39 @@
+"""
+| Negative Scale invariant Signal to Distorsion Ratio (SI-SDR) losses.
+| @author : Manuel Pariente, Inria-Nancy
+"""
+
 import torch
 EPS = 1e-8
 
 
 def pairwise_neg_sisdr(targets, est_targets, scale_invariant=True):
-    """Calculate pair-wise negative SI-SDR.
+    """ Measure pair-wise negative SI-SDR on a batch.
 
     Args:
-        targets: torch.Tensor of shape [batch, n_src, time]. The target sources.
-        est_targets: torch.Tensor of shape [batch, n_src, time]. Estimates
-            of the target sources.
-        scale_invariant: Boolean. Whether to rescale the estimated sources to
-            the targets.
+        targets (:class:`torch.Tensor`): Expected shape [batch, n_src, time].
+            Batch of training targets.
+        est_targets (:class:`torch.Tensor`): Expected shape [batch, n_src, time].
+            Batch of target estimates.
+        scale_invariant (bool): Whether to rescale the estimates to the targets.
 
     Returns:
-        torch.Tensor of shape [batch, n_src, n_src]. Pair-wise losses.
+        :class:`torch.Tensor`: with shape [batch, n_src, n_src].
+        Pair-wise losses.
+
+    Examples:
+
+        >>> import torch
+        >>> from asteroid.losses import PITLossWrapper
+        >>> targets = torch.randn(10, 2, 32000)
+        >>> est_targets = torch.randn(10, 2, 32000)
+        >>> loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
+        >>> loss = loss_func(targets, est_targets)
+        >>> print(loss.size())
+        torch.Size([10, 2, 2])
+
+    References:
+
     """
     assert targets.size() == est_targets.size()
     # if scale_invariant:
@@ -44,17 +64,31 @@ def pairwise_neg_sisdr(targets, est_targets, scale_invariant=True):
 
 
 def nosrc_neg_sisdr(target, est_target, scale_invariant=True):
-    """ Calculate negative SI-SDR for tensors without source axis.
+    """ Measure negative SI-SDR between a single source and its estimate.
 
     Args:
-        target: torch.Tensor of shape [batch, time]. The target source.
-        est_target: torch.Tensor of shape [batch, time]. Estimates
-            of the target source.
-        scale_invariant: Boolean. Whether to rescale the estimated source to
-            the target.
+        target (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of training target.
+        est_target (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of target estimate.
+        scale_invariant (bool): Whether to rescale the estimate to the target.
 
     Returns:
-        torch.Tensor of shape [batch]. Batch losses for this source/est pair.
+        :class:`torch.Tensor`: with shape [batch]. Batch losses.
+
+    Examples:
+
+        >>> import torch
+        >>> from asteroid.losses import PITLossWrapper
+        >>> targets = torch.randn(10, 2, 32000)
+        >>> est_targets = torch.randn(10, 2, 32000)
+        >>> loss_func = PITLossWrapper(nosrc_neg_sisdr, mode='wo_src')
+        >>> loss = loss_func(targets, est_targets)
+        >>> print(loss.size())
+        torch.Size([10])
+
+    References:
+
     """
     assert target.size() == est_target.size()
     # Step 1. Zero-mean norm
@@ -83,16 +117,33 @@ def nosrc_neg_sisdr(target, est_target, scale_invariant=True):
 
 
 def nonpit_neg_sisdr(targets, est_targets, scale_invariant=True):
-    """ Calculate mean negative SI-SDR for tensors with source axis.
+    """ Measure mean negative SI-SDR for a given permutation of source and
+        their estimates.
+
     Args:
-        targets: torch.Tensor of shape [batch, n_src, time]. The target sources.
-        est_targets: torch.Tensor of shape [batch, n_src, time]. Estimates
-            of the target sources.
-        scale_invariant: Boolean. Whether to rescale the estimated sources to
-            the targets.
+        targets (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of training targets.
+        est_targets (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of target estimates.
+        scale_invariant (bool): Whether to rescale the estimate to the target.
 
     Returns:
-        torch.Tensor of shape [batch]. Batch losses for this permutation.
+        :class:`torch.Tensor`: with shape [batch].
+            Batch losses for this permutation.
+
+    Examples:
+
+        >>> import torch
+        >>> from asteroid.losses import PITLossWrapper
+        >>> targets = torch.randn(10, 2, 32000)
+        >>> est_targets = torch.randn(10, 2, 32000)
+        >>> loss_func = PITLossWrapper(nonpit_neg_sisdr, mode='w_src')
+        >>> loss = loss_func(targets, est_targets)
+        >>> print(loss.size())
+        torch.Size([10])
+
+    References:
+
     """
     assert targets.size() == est_targets.size()
     # Step 1. Zero-mean norm
