@@ -50,6 +50,7 @@ intersphinx_mapping = {
 # Napoleon config
 napoleon_include_special_with_doc = True
 napoleon_use_ivar = True
+napoleon_use_rtype = False
 
 # Autodoc config
 autodoc_inherit_docstring = True
