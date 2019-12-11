@@ -1,6 +1,6 @@
 """
-Wham Dataset class.
-@author : Manuel Pariente, Inria-Nancy
+| Wham Dataset class.
+| @author : Manuel Pariente, Inria-Nancy
 """
 import torch
 from torch.utils import data
@@ -39,18 +39,22 @@ WHAM_TASKS['enh_both'] = WHAM_TASKS['enhance_both']
 
 class WhamDataset(data.Dataset):
     """ Dataset class for WHAM source separation and speech enhancement tasks.
+
     Args:
-        json_dir: String, the path to the directory containing the json files.
-        task: String, one of `"enh_single"`, `"enh_both"`, `"sep_clean"` or
-            `"sep_noisy"`.
-            `"enh_single"` for single speaker speech enhancement.
-            `"enh_both"` for multi speaker speech enhancement.
-            `"sep_clean"` for two-speaker clean source separation.
-            `"sep_noisy"` for two-speaker noisy source separation.
-        sample_rate: Integer. The sampling rate of the wav files.
-        segment: Float or None. Length of the segments, in seconds.
-            If None, use full utterances (e.g. for test).
-        nondefault_nsrc: Integer. Number of sources in the training targets.
+        json_dir (str): The path to the directory containing the json files.
+        task (str): One of ``'enh_single'``, ``'enh_both'``, ``'sep_clean'`` or
+            ``'sep_noisy'``.
+
+            * ``'enh_single'`` for single speaker speech enhancement.
+            * ``'enh_both'`` for multi speaker speech enhancement.
+            * ``'sep_clean'`` for two-speaker clean source separation.
+            * ``'sep_noisy'`` for two-speaker noisy source separation.
+
+        sample_rate (int, optional): The sampling rate of the wav files.
+        segment (float, optional): Length of the segments used for training,
+            in seconds. If None, use full utterances (e.g. for test).
+        nondefault_nsrc (int, optional): Number of sources in the training
+            targets.
             If None, defaults to one for enhancement tasks and two for
             separation tasks.
     """

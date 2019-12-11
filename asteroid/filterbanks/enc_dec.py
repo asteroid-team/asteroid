@@ -1,6 +1,6 @@
 """
-Base classes for filterbanks, encoders and decoders.
-@author : Manuel Pariente, Inria-Nancy
+| Base classes for filterbanks, encoders and decoders.
+| @author : Manuel Pariente, Inria-Nancy
 """
 
 import torch
@@ -12,13 +12,19 @@ from . inputs_and_masks import _inputs, _masks
 
 class Filterbank(nn.Module):
     """Base Filterbank class.
+
     Each subclass has to implement a `filters` property.
 
-    # Args
-        n_filters: Positive int. Number of filters.
-        kernel_size: Positive int. Length of the filters.
-        stride: Positive int. Stride of the conv or transposed conv. (Hop size).
-            If None (default), set to `kernel_size // 2`.
+    Args:
+        n_filters (int): Number of filters.
+        kernel_size (int): Length of the filters.
+        stride (int, optional): Stride of the conv or transposed conv. (Hop size).
+            If None (default), set to ``kernel_size // 2``.
+
+    Attributes:
+        n_filters (int)
+        kernel_size (int)
+        stride (int)
     """
     def __init__(self, n_filters, kernel_size, stride=None):
         super(Filterbank, self).__init__()
@@ -32,7 +38,7 @@ class Filterbank(nn.Module):
         raise NotImplementedError
 
     def get_config(self):
-        """ Returns dictionary of arguments to re-instantiate the class."""
+        """ Returns dictionary of arguments to re-instantiate the class. """
         config = {
             'n_filters': self.n_filters,
             'kernel_size': self.kernel_size,
@@ -43,11 +49,18 @@ class Filterbank(nn.Module):
 
 class _EncDec(nn.Module):
     """ Base private class for Encoder and Decoder.
+
     Common parameters and methods.
+
     Args:
-        filterbank: (subclass of) Filterbank instance. The filterbank to
-            use as an encoder or a decoder.
-        is_pinv: Bool. Whether to be the pseudo inverse of filterbank.
+        filterbank (:class:`Filterbank`): Filterbank instance. The filterbank
+            to use as an encoder or a decoder.
+        is_pinv (bool): Whether to be the pseudo inverse of filterbank.
+
+    Attributes:
+        filterbank (:class:`Filterbank`)
+        stride (int)
+        is_pinv (bool)
     """
     def __init__(self, filterbank, is_pinv=False):
         super(_EncDec, self).__init__()
@@ -80,33 +93,43 @@ class _EncDec(nn.Module):
 
 
 class Encoder(_EncDec):
-    """ Encoder class. Add encoding methods to Filterbank classes.
+    """ Encoder class.
+
+    Add encoding methods to Filterbank classes.
     Not intended to be subclassed.
 
     Args:
-        filterbank: (subclass of) Filterbank instance. The filterbank to use
+        filterbank (:class:`Filterbank`): The filterbank to use
             as an encoder.
-        is_pinv: Bool. Whether to be the pseudo inverse of filterbank.
-        inp_mode: String. One of [`'reim'`, `'mag'`, `'cat'`]. Controls
+        is_pinv (bool): Whether to be the pseudo inverse of filterbank.
+        inp_mode (str): One of [``'reim'``, ``'mag'``, ``'cat'``]. Controls
             `post_processing_inputs` method which can be applied after
             the forward.
-            - `'reim'` or `'real'` corresponds to the concatenation of
-                real and imaginary parts. (filterbank seen as real-valued).
-            - `'mag'` or `'mod'`corresponds to the magnitude (or modulus)of the
-                complex filterbank output.
-            - `'cat'` or `'concat'` corresponds to the concatenation of both
-                previous representations.
-        mask_mode: String. One of [`'reim'`, `'mag'`, `'comp'`]. Controls
+                -  ``'reim'`` or ``'real'`` corresponds to the concatenation of
+                   real and imaginary parts. (filterbank seen as real-valued).
+                -  ``'mag'`` or ``'mod'`` corresponds to the magnitude (or
+                   modulus) of the complex filterbank output.
+                -  ``'cat'`` or ``'concat'`` corresponds to the concatenation of
+                   both previous representations.
+        mask_mode (str): One of [``'reim'``, ``'mag'``, ``'comp'``]. Controls
             the way the time-frequency mask is applied to the input
-            representation in the `apply_mask` method.
-            - `'reim'` or `'real'` corresponds to a real-valued filterbank
-                where both the input and the mask consists in the
-                concatenation of real and imaginary parts.
-            - `'mag'` or `'mod'`corresponds to a magnitude (or modulus) mask
-                applied to the complex filterbank output.
-            - `'comp'` or `'complex'` corresponds to a complex mask : the
-                input and the mask are point-wise multiplied in the complex
-                sense.
+            representation in the :func:`apply_mask` method.
+                -  ``'reim'`` or ``'real'`` corresponds to a real-valued
+                   filterbank where both the input and the mask consists in the
+                   concatenation of real and imaginary parts.
+                -  ``'mag'`` or ``'mod'`` corresponds to a magnitude (or
+                   modulus) mask applied to the complex filterbank output.
+                -  ``'comp'`` or ``'complex'`` corresponds to a complex mask:
+                   the input and the mask are point-wise multiplied in the
+                   complex sense.
+
+    Attributes:
+        inp_mode (str)
+        mask_mode (str)
+        inp_func (callable)
+        in_chan_mul
+        mask_fun (callable)
+        n_feats_out (int)
     """
     def __init__(self, filterbank, inp_mode='reim', mask_mode='reim',
                  is_pinv=False):
@@ -150,12 +173,14 @@ class Encoder(_EncDec):
 
 
 class Decoder(_EncDec):
-    """Decoder class. Add decoding methods to Filterbank classes.
+    """Decoder class.
+    
+    Add decoding methods to Filterbank classes.
     Not intended to be subclassed.
+
     Args:
-        filterbank: (subclass of) Filterbank instance. The filterbank to use
-            as an decoder.
-        is_pinv: Bool. Whether to be the pseudo inverse of filterbank.
+        filterbank (:class:`Filterbank`): The filterbank to use as an decoder.
+        is_pinv (bool): Whether to be the pseudo inverse of filterbank.
     """
     @classmethod
     def pinv_of(cls, filterbank):
@@ -166,14 +191,15 @@ class Decoder(_EncDec):
             return cls(filterbank.filterbank, is_pinv=True)
 
     def forward(self, spec):
-        """
-        Applies transposed convolution to a TF representation. This is
-        equivalent to overlap-add.
+        """ Applies transposed convolution to a TF representation.
+
+        This is equivalent to overlap-add.
+
         Args:
-            spec: 3D or 4D torch.Tensor. The TF representation.
-                (Output of `Encoder.forward`).
+            spec (:class:`torch.Tensor`): 3D or 4D Tensor. The TF
+                representation. (Output of :func:`Encoder.forward`).
         Returns:
-            torch.Tensor, the corresponding time domain signal.
+            :class:`torch.Tensor`: The corresponding time domain signal.
         """
         filters = self.get_filters()
 
@@ -187,37 +213,39 @@ class Decoder(_EncDec):
 
 
 class NoEncoder(nn.Module):
-    """ Class to use for no neural encoder, i.e this is a placeholder for
-    precomputed features.
+    """ Class to use for no neural encoder.
+    
+    This is a placeholder for precomputed features.
     The features can be complex with real and imaginary parts concatenated
     into the same axis. The same post processing and masking strategies are
-    available as for the `Encoder` class.
+    available as for the :class:`Encoder` class.
 
     Args:
-        inp_mode: String. One of [`'reim'`, `'mag'`, `'cat'`]. Controls
+        inp_mode (str): One of [``'reim'``, ``'mag'``, ``'cat'``]. Controls
             `post_processing_inputs` method which can be applied after
             the forward.
-            - `'reim'` or `'real'` corresponds to the concatenation of
-                real and imaginary parts. (filterbank seen as real-valued).
-            - `'mag'` or `'mod'`corresponds to the magnitude (or modulus)of the
-                complex filterbank output.
-            - `'cat'` or `'concat'` corresponds to the concatenation of both
-                previous representations.
-        mask_mode: String. One of [`'reim'`, `'mag'`, `'comp'`]. Controls
+                -  ``'reim'`` or ``'real'`` corresponds to the concatenation of
+                   real and imaginary parts. (filterbank seen as real-valued).
+                -  ``'mag'`` or ``'mod'`` corresponds to the magnitude (or
+                   modulus) of the complex filterbank output.
+                -  ``'cat'`` or ``'concat'`` corresponds to the concatenation
+                   of both previous representations.
+        mask_mode (str): One of [``'reim'``, ``'mag'``, ``'comp'``]. Controls
             the way the time-frequency mask is applied to the input
-            representation in the `apply_mask` method.
-            - `'reim'` or `'real'` corresponds to a real-valued filterbank
-                where both the input and the mask consists in the
-                concatenation of real and imaginary parts.
-            - `'mag'` or `'mod'`corresponds to a magnitude (or modulus) mask
-                applied to the complex filterbank output.
-            - `'comp'` or `'complex'` corresponds to a complex mask : the
-                input and the mask are point-wise multiplied in the complex
-                sense.
-    By default :
-     - The forward returns the input.
-     - The input post-processing is the identity.
-     - The mask is applied to the input features.
+            representation in the :func:`apply_mask` method.
+                -  ``'reim'`` or ``'real'`` corresponds to a real-valued
+                   filterbank where both the input and the mask consists in the
+                   concatenation of real and imaginary parts.
+                -  ``'mag'`` or ``'mod'`` corresponds to a magnitude (or
+                   modulus) mask applied to the complex filterbank output.
+                -  ``'comp'`` or ``'complex'`` corresponds to a complex mask:
+                   the input and the mask are point-wise multiplied in the
+                   complex sense.
+
+    By default:
+        - The forward returns the input.
+        - The input post-processing is the identity.
+        - The mask is applied to the input features.
     """
     def __init__(self, inp_mode='reim', mask_mode='reim'):
 

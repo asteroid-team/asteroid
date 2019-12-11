@@ -8,7 +8,21 @@ python:
 
 install:
     - pip install -e .[tests]
+    - pip install -r requirements.txt
 
 script:
     - python --version
     - py.test
+    - cd docs
+    - make doc
+    - make html
+    - touch build/html/.nojekyll  # prevents use jekyll to build doc
+
+deploy:
+    provider: pages
+    skip_cleanup: true
+    keep_history: false
+    github_token: $GITHUB_PAGES
+    local_dir: docs/build/html
+    on:
+      branches: master

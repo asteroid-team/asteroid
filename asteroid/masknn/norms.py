@@ -1,6 +1,6 @@
 """
-Normalization classes.
-@author : Manuel Pariente, Inria-Nancy
+| Normalization classes.
+| @author : Manuel Pariente, Inria-Nancy
 """
 
 import torch
@@ -19,7 +19,7 @@ class _LayerNorm(nn.Module):
                                  requires_grad=True)
 
     def apply_gain_and_bias(self, normed_x):
-        """ Assumes input of size [batch, chanel, *]. """
+        """ Assumes input of size `[batch, chanel, *]`. """
         return (self.gamma * normed_x.transpose(1, -1) +
                 self.beta).transpose(1, -1)
 
@@ -27,11 +27,15 @@ class _LayerNorm(nn.Module):
 class GlobLN(_LayerNorm):
     """Global Layer Normalization (globLN)."""
     def forward(self, x):
-        """ Works for any input size > 2D.
+        """ Applies forward pass.
+        
+        Works for any input size > 2D.
+
         Args:
-            x: [batch, chan, *]
+            x (:class:`torch.Tensor`): Shape `[batch, chan, *]`
+
         Returns:
-            gLN_x: [batch, chan, *]
+            :class:`torch.Tensor`: gLN_x `[batch, chan, *]`
         """
         dims = list(range(1, len(x.shape)))
         mean = x.mean(dim=dims, keepdim=True)
@@ -42,11 +46,15 @@ class GlobLN(_LayerNorm):
 class ChanLN(_LayerNorm):
     """Channel-wise Layer Normalization (chanLN)."""
     def forward(self, x):
-        """ Works for any input size > 2D.
+        """ Applies forward pass.
+        
+        Works for any input size > 2D.
+
         Args:
-            x: [batch, chan, *]
+            x (:class:`torch.Tensor`): `[batch, chan, *]`
+
         Returns:
-            chanLN_x: [batch, chan, *]
+            :class:`torch.Tensor`: chanLN_x `[batch, chan, *]`
         """
         mean = torch.mean(x, dim=1, keepdim=True)
         var = torch.var(x, dim=1, keepdim=True, unbiased=False)
@@ -57,10 +65,11 @@ class CumLN(_LayerNorm):
     """Cumulative Global layer normalization(cumLN)."""
     def forward(self, x):
         """
+
         Args:
-            x: [batch, channels, length]
+            x (:class:`torch.Tensor`): Shape `[batch, channels, length]`
         Returns:
-            cumLN_x: [batch, channels, length]
+             :class:`torch.Tensor`: cumLN_x `[batch, channels, length]`
         """
         batch, chan, spec_len = x.size()
         cum_sum = torch.cumsum(x.sum(1, keepdim=True), dim=-1)

@@ -8,40 +8,26 @@ import pytorch_lightning as pl
 
 
 class System(pl.LightningModule):
-    """ Base class for deep learning system.
+    """ Base class for deep learning systems.
     Subclass of pytorch_lightning.LightningModule.
     Contains a model, an optimizer, a loss_class and training and validation
     loaders and learning rate scheduler.
 
     Args:
-        model: nn.Module instance.
-        optimizer: torch.optim.Optimizer instance, or list of.
+        model (torch.nn.Module): Instance of model.
+        optimizer (torch.optim.Optimizer): Instance or list of optimizers.
         loss_class: Class with `compute` method. (More doc to come)
-        train_loader: torch.utils.data.DataLoader instance.
-        val_loader: torch.utils.data.DataLoader instance.
-        scheduler: torch.optim._LRScheduler instance, or list of.
+        train_loader (torch.utils.data.DataLoader): Training dataloader.
+        val_loader (torch.utils.data.DataLoader): Validation dataloader.
+        scheduler (torch.optim._LRScheduler): Instance, or list.
         config: Anything to be saved with the checkpoints during training.
             The config dictionary to re-instantiate the run for example.
-    Methods:
-        # From System
-        common_step : Common step between training and validation.
-        unpack_data : Unpacks batch from loaders.
 
-        # Overwritten from pl.LightningModule
-        forward: self.model.forward (Unused butrequired by PL)
-        training_step : Training step (doesn't include backward and GD)
-        validation_step : Validation step (forward and compute loss)
-        validation_end : Aggregates results and outputs logs.
-        configure_optimizer: return self.optimizer, self.scheduler by default.
-        train_dataloader: return self.train_loader
-        val_dataloader: return self.val_loader
-        on_checkpoint: adds self.config in checkpoint['training_config']
-
-    By default, `training_step` (used by pytorch-lightning in the training
-    loop) and `validation_step` (used for the validation loop) share
-    `common_step`. If you want different behavior for the training loop and
-    the validation loop, overwrite both `training_step` and `validation_step`
-    instead.
+    .. note:: By default, `training_step` (used by pytorch-lightning in the
+        training loop) and `validation_step` (used for the validation loop)
+        share `common_step`. If you want different behavior for the training
+        loop and the validation loop, overwrite both `training_step` and
+        `validation_step` instead.
     """
     def __init__(self, model, optimizer, loss_class, train_loader,
                  val_loader=None, scheduler=None, config=None):
@@ -55,28 +41,33 @@ class System(pl.LightningModule):
         self.config = config
 
     def forward(self, *args, **kwargs):
-        """ Required by PL.
+        """ Applies forward pass.
+
+        Required by PL.
 
         Returns:
-            self.model.forward
+            :class:`torch.Tensor`
         """
         return self.model.forward(*args, **kwargs)
 
     def common_step(self, batch, batch_nb):
         """ Common forward step between training and validation.
+
         The function of this method is to unpack the data given by the loader,
         forward the batch through the model and compute the loss.
+
         Args:
             batch: the object returned by the loader (a list of torch.Tensor
                 in most cases) but can be something else.
-            batch_nb: The number of the batch in the epoch.
-        Returns:
-            The loss value on this batch.
+            batch_nb (int): The number of the batch in the epoch.
 
-        Note : this is typically the method to overwrite when subclassing
-        `System`. If the training and validation steps are different (except
-        for loss.backward() and optimzer.step()), then overwrite
-        `training_step` and `validation_step` instead.
+        Returns:
+            :class:`torch.Tensor` : The loss value on this batch.
+
+        .. note:: This is typically the method to overwrite when subclassing
+            `System`. If the training and validation steps are different
+            (except for loss.backward() and optimzer.step()), then overwrite
+            `training_step` and `validation_step` instead.
         """
         inputs, targets, infos = self.unpack_data(batch)
         est_targets = self.model(inputs)
@@ -84,12 +75,13 @@ class System(pl.LightningModule):
         return loss
 
     def unpack_data(self, data):
-        """
-         Unpack data given by the DataLoader
+        """ Unpack data given by the DataLoader
+
         Args:
             data: list of 2 or 3 elements.
                 [model_inputs, training_targets, additional infos] or
                 [model_inputs, training_targets]
+
         Returns:
               model_inputs, training_targets, additional infos
         """
@@ -105,18 +97,59 @@ class System(pl.LightningModule):
         return inputs, targets, infos
 
     def training_step(self, batch, batch_nb):
-        """ Pass data through the model and compute the loss. """
+        """ Pass data through the model and compute the loss.
+
+        Backprop is **not** performed.
+
+        Args:
+            batch: the object returned by the loader (a list of torch.Tensor
+                in most cases) but can be something else.
+            batch_nb (int): The number of the batch in the epoch.
+
+        Returns:
+            dict:
+
+            ``'loss'``: loss
+
+            ``'log'``: dict with tensorboard logs
+
+        """
         loss = self.common_step(batch, batch_nb)
         tensorboard_logs = {'train_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
 
     def validation_step(self, batch, batch_nb):
-        """ Need to overwrite PL validation_step to do validation. """
+        """ Need to overwrite PL validation_step to do validation.
+
+        Args:
+            batch: the object returned by the loader (a list of torch.Tensor
+                in most cases) but can be something else.
+            batch_nb (int): The number of the batch in the epoch.
+
+        Returns:
+            dict:
+
+            ``'val_loss'``: loss
+        """
         loss = self.common_step(batch, batch_nb)
         return {'val_loss': loss}
 
     def validation_end(self, outputs):
-        """ How to aggregate outputs of `validation_step` for logging."""
+        """ How to aggregate outputs of `validation_step` for logging.
+
+        Args:
+           outputs (list[dict]): List of validation losses, each with a
+           ``'val_loss'`` key
+
+        Returns:
+            dict: Average loss
+
+            ``'val_loss'``: Average loss on `outputs`
+
+            ``'log'``: Tensorboard logs
+
+            ``'progress_bar'``: Tensorboard logs
+        """
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss}
         return {'val_loss': avg_loss, 'log': tensorboard_logs,

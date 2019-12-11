@@ -1,27 +1,26 @@
 """
-Utils used to handle a wav file
-@author: Sunit Sivasankaran, Inria-Nancy
+| Utils used to handle a wav file
+| @author: Sunit Sivasankaran, Inria-Nancy
 """
 
 import os
 import numpy as np
 import soundfile as sf
-import ipdb
+# import ipdb
 
 
 class SingleWav(object):
-    """
-    Interface to handle a single wav file
+    """ Interface to handle a single wav file
 
-    # Arguments
-        file_name: The path to the wav file
-        channel_interest: An array of interested channels.
+    Args:
+        file_name (str): The path to the wav file
+        channel_interest (list[int]): An array of interested channels.
             Used in case of multichannel signals
         wav_id: An id to identify the wav file
-        save: Boolean, Save the data untill the object is destroyed if True
+        save (bool): Save the data untill the object is destroyed if True
 
-    # Example
-        SingleWav('/home/test.wav')
+    Examples:
+        >>> SingleWav('/home/test.wav')
 
     """
     def __init__(self, file_name, channel_interest=None, \
@@ -40,19 +39,16 @@ class SingleWav(object):
             self.channel_interest = np.array(channel_interest)
 
     def verify(self):
-        """
-        Verify if all the information is good
-        """
+        """ Verify if all the information is good """
         assert os.path.exists(self.file_name),\
             self.file_name +' does not exists'
 
 
     def update_info(self):
-        """
-            Get wav related info and place it in the
-            `info` variable.
-            Note: Avoid calling this in the `__init__` section. Very time
-                consuming
+        """ Get wav related info and place it in the :attr:`info` variable.
+
+        .. note:: Avoid calling this in the `__init__` section. Very time
+            consuming
         """
         if self.info is None:
             self.info = sf.info(self.file_name)
@@ -62,10 +58,10 @@ class SingleWav(object):
 
     @property
     def wav_len(self):
-        """
-            Get the sample length of the signal
-        #Returns
-            A number of samples in wav
+        """ Get the sample length of the signal
+
+        Returns:
+            int: Wav length in number of samples
         """
         if self.sample_len is None:
             self.update_info()
@@ -73,10 +69,11 @@ class SingleWav(object):
 
     @property
     def data(self):
-        """
-            Read the wav file if not saved
-        #Returns
-            A two dimensional numpy array of shape [samples, channels]
+        """ Read the wav file if not saved
+
+        Returns:
+           :class:`numpy.ndarray`:
+                Two dimensional array of shape [samples, channels]
         """
         self.update_info()
         if self.__wav_data is not None:
@@ -99,20 +96,23 @@ class SingleWav(object):
             self.__wav_data = None
 
     def save_space(self):
-        """ Remove the saved data. self.data will read from the file again.
+        """ Remove the saved data.
+
+        self.data will read from the file again.
         """
         self.__wav_data = None
 
     def temp_save(self):
-        """ Temporarily save the wav data. Call `save_space` to remove it.
+        """ Temporarily save the wav data.
+
+        Call :func:`save_space` to remove it.
         """
         self.__wav_data = self.data
 
 
     @property
     def wav_id(self):
-        """getter for the wav id
-        """
+        """ Get wav id """
         return self.__id
 
     @wav_id.setter
@@ -120,19 +120,18 @@ class SingleWav(object):
         self.__id = value
 
     def write_wav(self, path):
-        """ Write the wav data into an other path
-        """
+        """ Write the wav data into an other path """
         sf.write(path, self.data, self.sampling_rate)
 
 class MultipleWav(SingleWav):
-    """
-        Handle a set of wav files as a single object.
-    # Arguments
-        file_name_list: A list of wav file names
-        channel_interest: An array of interested channels.
+    """ Handle a set of wav files as a single object.
+
+    Args:
+        file_name_list (list[str]): List of wav file names
+        channel_interest (list[int]): An array of interested channels.
             Used in case of multichannel signals
         wav_id: An id to identify the bunch of wav file
-        save: Boolean, Save the data untill the object is destroyed if True
+        save (bool): Save the data until the object is destroyed if True
 
     """
     def __init__(self, file_name_list, channel_interest=None, \
@@ -168,9 +167,11 @@ class MultipleWav(SingleWav):
 
     @property
     def data(self):
-        """Reads all the files in the file list
-        #Returns
-            A list of wav signals
+        """ Reads all the files in the file list
+
+        Returns:
+            list[:class:`numpy.ndarray`]:
+                A list of wav signals
         """
         self.update_info()
         if self.__wav_data is not None:

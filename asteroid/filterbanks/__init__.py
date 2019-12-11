@@ -1,6 +1,6 @@
 """
-Convenient methods for filterbanks.
-@author : Manuel Pariente, Inria-Nancy
+| Convenient methods for filterbanks.
+| @author : Manuel Pariente, Inria-Nancy
 """
 from .analytic_free_fb import AnalyticFreeFB
 from .free_fb import FreeFB
@@ -11,36 +11,40 @@ from .enc_dec import Encoder, Decoder, NoEncoder
 
 def make_enc_dec(fb_name, mask_mode='reim', inp_mode='reim',
                  who_is_pinv=None, **kwargs):
-    """
-    Creates congruent encoder and decoder from the same filterbank family.
+    """ Creates congruent encoder and decoder from the same filterbank family.
+
     Args:
-        fb_name: String or className. Filterbank family from which to make
-            encoder and decoder. Among [`'free'`, `'analytic_free'`,
-            `'param_sinc'`, `'stft'`] and many more to come. ClassName such
-            as `FreeFB` and such.
-        inp_mode: String. One of [`'reim'`, `'mag'`, `'cat'`]. Controls
-            `post_processing_inputs` method which can be applied after
-            the forward.
-            - `'reim'` or `'real'` corresponds to the concatenation of
-                real and imaginary parts. (filterbank seen as real-valued).
-            - `'mag'` or `'mod'`corresponds to the magnitude (or modulus)of the
-                complex filterbank output.
-            - `'cat'` or `'concat'` corresponds to the concatenation of both
-                previous representations.
-        mask_mode: String. One of [`'reim'`, `'mag'`, `'comp'`]. Controls
-            the way the time-frequency mask is applied to the input
+        fb_name (str, className): Filterbank family from which to make encoder
+            and decoder. To choose from among [``'free'``, ``'analytic_free'``,
+            ``'param_sinc'``, ``'stft'``] and many more to come. Can also be
+            a class defined in a submodule in this subpackade (e.g.
+            :class:`~.FreeFB`).
+        mask_mode (str, optional): One of [``'reim'``, ``'mag'``, ``'comp'``].
+            Controls the way the time-frequency mask is applied to the input
             representation in the `apply_mask` method.
-            - `'reim'` or `'real'` corresponds to a real-valued filterbank
-                where both the input and the mask consists in the
-                concatenation of real and imaginary parts.
-            - `'mag'` or `'mod'`corresponds to a magnitude (or modulus) mask
-                applied to the complex filterbank output.
-            - `'comp'` or `'complex'` corresponds to a complex mask : the
-                input and the mask are point-wise multiplied in the complex
-                sense.
-        who_is_pinv: None or String. If None, no pseudo-inverse filters will be
-            used. If string, among `'encoder'`, `'decoder'`, decides which of
-            `Encoder` or `Decoder` will be the pseudo inverse of the other one.
+                -  ``'reim'`` or ``'real'`` corresponds to a real-valued
+                   filterbank where both the input and the mask consists in the
+                   concatenation of real and imaginary parts.
+                -  ``'mag'`` or ``'mod'`` corresponds to a magnitude (or
+                   modulus) mask applied to the complex filterbank output.
+                -  ``'comp'`` or ``'complex'`` corresponds to a complex mask:
+                   the input and the mask are point-wise multiplied in the
+                   complex sense.
+        inp_mode (str, optional): One of [``'reim'``, ``'mag'``, ``'cat'``].
+            Controls `post_processing_inputs` method which can be applied after
+            the forward.
+                -  ``'reim'`` or ``'real'`` corresponds to the concatenation
+                   of real and imaginary parts. (filterbank seen as
+                   real-valued).
+                -  ``'mag'`` or ``'mod'`` corresponds to the magnitude (or
+                   modulus)
+                   of the complex filterbank output.
+                -  ``'cat'`` or ``'concat'`` corresponds to the concatenation
+                   of both previous representations.
+        who_is_pinv (str, optional): If None, no pseudo-inverse filters will be
+            used. If string, among ``'encoder'``, ``'decoder'``, decides which
+            of ``Encoder`` or ``Decoder`` will be the pseudo inverse of the
+            other one.
         **kwargs: Arguments which will be passed to the filterbank class.
             Usual argument include `n_filters`, `kernel_size` and `stride` but
             this will depend on the filterbank family.
