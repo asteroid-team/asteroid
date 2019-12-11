@@ -10,32 +10,35 @@ sphere_dir=  # Directory containing sphere files
 wsj0_wav_dir=${base}/DATA/wsj0_wav/ # Directory where to save wsj0 wav files (Need disk space)
 wham_wav_dir=${base}/wham_recipe_results/  # # Directory where to save WHAM wav files (Need disk space)
 
-
+# General
 stage=-1
 tag=""
 python_path=${base}/asteroid_conda/miniconda3/bin/python
 id=
 
-
+# Data
 data_dir=data  # Local data directory (No disk space needed)
-use_cuda=0
 task=sep_clean
 sample_rate=8000
 mode=min
 nondefault_src=
 
-batch_size=3
-num_workers=3
+# Training
+batch_size=16
+num_workers=12
 #optimizer=adam
 lr=0.001
-epochs=100
+epochs=400
 continue_from=
 model_name=final.pth
 
-n_blocks=4
-n_repeats=2
+# Architecture
+n_blocks=8
+n_repeats=3
 mask_nonlinear=relu
 
+# Evaluation
+eval_use_gpu=1
 
 
 . utils/parse_options.sh || exit 1;
@@ -90,7 +93,7 @@ dumpdir=data/$suffix  # directory to put generated json file
 
 train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
-evaluate_dir=$dumpdir/tt
+test_dir=$dumpdir/tt
 
 uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
@@ -100,16 +103,13 @@ expdir=exp/train_convtasnet_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
-
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
   --train_dir $train_dir \
   --valid_dir $valid_dir \
   --task $task \
-  --use_cuda $use_cuda \
   --sample_rate $sample_rate \
-  --use_cuda $use_cuda \
   --lr $lr \
   --epochs $epochs \
   --batch_size $batch_size \
@@ -117,8 +117,7 @@ if [[ $stage -le 3 ]]; then
   --mask_act $mask_nonlinear \
   --n_blocks $n_blocks \
   --n_repeats $n_repeats \
-  --continue_from "$continue_from" \
-  --model_path ${expdir}/$model_name | tee logs/train_${tag}.log
+  --exp_dir ${expdir}/ | tee logs/train_${tag}.log
 fi
 
 

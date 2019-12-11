@@ -1,13 +1,15 @@
 import os
 import argparse
+
+import torch
 from torch.utils.data import DataLoader
-from asteroid.engine.losses import PITLossContainer, pairwise_neg_sisdr
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
+
 from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.system import System
 from model import make_model_and_optimizer
 
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
 
 # Keys which are not in the conf.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be
@@ -34,10 +36,12 @@ def main(conf):
 
     train_loader = DataLoader(train_set, shuffle=True,
                               batch_size=conf['data']['batch_size'],
-                              num_workers=conf['data']['num_workers'])
+                              num_workers=conf['data']['num_workers'],
+                              drop_last=True)
     val_loader = DataLoader(val_set, shuffle=True,
                             batch_size=conf['data']['batch_size'],
-                            num_workers=conf['data']['num_workers'])
+                            num_workers=conf['data']['num_workers'],
+                            drop_last=True)
     # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': train_set.n_src})
 
@@ -64,11 +68,18 @@ def main(conf):
     system = System(model=model, loss_class=loss_class, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
                     config=conf)
+
+    # Don't ask GPU if they are not available.
+    if not torch.cuda.is_available():
+        print('No available GPU were found, set gpus to None')
+        conf['main_args']['gpus'] = None
     trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
                          checkpoint_callback=checkpoint,
                          default_save_path=exp_dir,
                          gpus=conf['main_args']['gpus'],
-                         distributed_backend='dp')
+                         distributed_backend='dp',
+                         train_percent_check=1.0  # Useful for fast experiment
+                         )
     trainer.fit(system)
 
 
@@ -83,7 +94,7 @@ if __name__ == '__main__':
         def_conf = yaml.safe_load(f)
     parser = prepare_parser_from_dict(def_conf, parser=parser)
     # Arguments are then parsed into a hierarchical dictionary (instead of
-    # flat, as returned by argparse) to falicitate calls to the different
+    # flat, as returned by argparse) to facilitate calls to the different
     # asteroid methods (see in main).
     # plain_args is the direct output of parser.parse_args() and contains all
     # the attributes in an non-hierarchical structure. It can be useful to also

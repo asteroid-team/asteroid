@@ -1,7 +1,6 @@
 import os
 import argparse
 from torch.utils.data import DataLoader
-from asteroid.engine.losses import PITLossContainer, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.system import System
 from model import make_model_and_optimizer
@@ -10,23 +9,22 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 parser = argparse.ArgumentParser()
-parser = argparse.ArgumentParser()
 parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Full path to save best validation model')
 
 
 def main(conf):
-    from asteroid.data.toy_data import WavSet
-    train_set = WavSet(n_ex=1000, n_src=2, ex_len=32000)
-    val_set = WavSet(n_ex=1000, n_src=2, ex_len=32000)
+    # from asteroid.data.toy_data import WavSet
+    # train_set = WavSet(n_ex=1000, n_src=2, ex_len=32000)
+    # val_set = WavSet(n_ex=1000, n_src=2, ex_len=32000)
     # Define data pipeline
-    # train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
-    #                         sample_rate=conf['data']['sample_rate'],
-    #                         nondefault_nsrc=conf['data']['nondefault_nsrc'])
-    # val_set = WhamDataset(conf['data']['valid_dir'], conf['data']['task'],
-    #                       sample_rate=conf['data']['sample_rate'],
-    #                       nondefault_nsrc=conf['data']['nondefault_nsrc'])
+    train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
+                            sample_rate=conf['data']['sample_rate'],
+                            nondefault_nsrc=conf['data']['nondefault_nsrc'])
+    val_set = WhamDataset(conf['data']['valid_dir'], conf['data']['task'],
+                          sample_rate=conf['data']['sample_rate'],
+                          nondefault_nsrc=conf['data']['nondefault_nsrc'])
 
     train_loader = DataLoader(train_set, shuffle=True,
                               batch_size=conf['data']['batch_size'],

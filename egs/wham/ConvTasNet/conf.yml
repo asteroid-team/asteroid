@@ -23,8 +23,8 @@ optim:
   weight_decay: 0.
 # Data config
 data:
-  train_dir: data/2speakers_wham/wav8k/min/tr/
-  valid_dir: data/2speakers_wham/wav8k/min/cv/
+  train_dir: data/wav8k/min/tr/
+  valid_dir: data/wav8k/min/cv/
   task: sep_clean
   nondefault_nsrc:
   sample_rate: 8000
