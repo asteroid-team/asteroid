@@ -44,8 +44,6 @@ def main(args):
     else:
         model = AVFusion(num_person=args.input_audio_size).train()
 
-    if args.use_half:
-        model = model.half()
 
     p = "/kaggle/input/speech/fyp/src/logdir/checkpoints/best_full.pth"
     if Path(p).is_file():
