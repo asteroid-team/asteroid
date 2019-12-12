@@ -97,6 +97,95 @@ class PITLossContainer(object):
                       self.loss_kwargs)
 
 
+def pairwise_neg_scaleawaresdr(source, est_source):
+
+    """Calculate pair-wise negative Scale Aware SDR as proposed in [1].
+
+        Args:
+            source (:class:`torch.Tensor`): Tensor of shape [batch, n_src, time].
+                The target sources.
+            est_source (:class:`torch.Tensor`): Tensor of shape
+                [batch, n_src, time]. Estimates of the target sources.
+
+        Returns:
+            :class:`torch.Tensor`:
+                Tensor of shape [batch, n_src, n_src]. Pair-wise losses.
+
+    [1] Roux, Jonathan Le, et al. "SDR-half-baked or well done?." arXiv preprint arXiv:1811.02508 (2018).
+    """
+
+    assert source.size() == est_source.size()
+
+    # zero mean
+    mean_source = torch.mean(source, dim=2, keepdim=True)
+    mean_estimate = torch.mean(est_source, dim=2, keepdim=True)
+    source = source - mean_source
+    est_source = est_source - mean_estimate
+    # Step 2. Pair-wise SI-SDR. (Reshape to use broadcast)
+    s_target = torch.unsqueeze(source, dim=1)
+    s_estimate = torch.unsqueeze(est_source, dim=2)
+
+    # compute alpha
+    scale_factor =  torch.sum(s_estimate * s_target, dim=3, keepdim=True)
+    s_target_energy = torch.sum(s_target ** 2, dim=3, keepdim=True) + EPS
+    alpha = (scale_factor / (s_target_energy + EPS))
+
+    # compute snr
+    s_target = s_target.repeat(1, s_target.shape[2], 1, 1)
+    e_noise = s_estimate - s_target
+
+
+    # [batch, n_src, n_src]
+    pair_wise_snr = torch.sum(s_target ** 2, dim=3) / (
+            torch.sum(e_noise ** 2, dim=3) + EPS)
+    pair_wise_snr = 10 * torch.log10(pair_wise_snr + EPS)
+
+    sdsdr = pair_wise_snr + 10*torch.log10(alpha**2).squeeze(-1)
+
+    return -torch.min(torch.stack((pair_wise_snr, sdsdr)), dim=0)[0]
+
+
+def pairwise_neg_sdsdr(source, est_source):
+    """Calculate pair-wise negative SD-SDR as proposed in [1].
+
+            Args:
+                source (:class:`torch.Tensor`): Tensor of shape [batch, n_src, time].
+                    The target sources.
+                est_source (:class:`torch.Tensor`): Tensor of shape
+                    [batch, n_src, time]. Estimates of the target sources.
+
+            Returns:
+                :class:`torch.Tensor`:
+                    Tensor of shape [batch, n_src, n_src]. Pair-wise losses.
+
+    [1] Roux, Jonathan Le, et al. "SDR-half-baked or well done?." arXiv preprint arXiv:1811.02508 (2018).
+    """
+    assert source.size() == est_source.size()
+
+    # zero mean
+    mean_source = torch.mean(source, dim=2, keepdim=True)
+    mean_estimate = torch.mean(est_source, dim=2, keepdim=True)
+    source = source - mean_source
+    est_source = est_source - mean_estimate
+    # Step 2. Pair-wise SI-SDR. (Reshape to use broadcast)
+    s_target = torch.unsqueeze(source, dim=1)
+    s_estimate = torch.unsqueeze(est_source, dim=2)
+
+    # compute alpha
+    scale_factor = torch.sum(s_estimate * s_target, dim=3, keepdim=True)
+    s_target_energy = torch.sum(s_target ** 2, dim=3, keepdim=True) + EPS
+    pair_wise_proj = scale_factor * s_target / s_target_energy
+
+    # compute snr
+    e_noise = s_estimate - s_target.repeat(1, s_target.shape[2], 1, 1)
+
+    # [batch, n_src, n_src]
+    pair_wise_snr = torch.sum(pair_wise_proj ** 2, dim=3) / (
+            torch.sum(e_noise ** 2, dim=3) + EPS)
+
+    return -10 * torch.log10(pair_wise_snr + EPS)
+
+
 def pairwise_neg_sisdr(source, est_source, scale_invariant=True):
     """Calculate pair-wise negative SI-SDR.
 
@@ -106,7 +195,7 @@ def pairwise_neg_sisdr(source, est_source, scale_invariant=True):
         est_source (:class:`torch.Tensor`): Tensor of shape
             [batch, n_src, time]. Estimates of the target sources.
         scale_invariant (bool): Whether to rescale the estimated sources to
-            the targets.
+            the targets. If False this loss function will be the plain SNR.
 
     Returns:
         :class:`torch.Tensor`:
