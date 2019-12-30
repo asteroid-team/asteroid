@@ -1,13 +1,13 @@
 import sys
 # to import module from directories
-sys.path.extend(["models", "train", "loader", "utils"])
+sys.path.extend(["models", "loader", "utils"])
 
 import torch
 import numpy as np
 from pathlib import Path
 # from train/
-from trainer import train
-from config import ParamConfig
+#from trainer import train
+#from config import ParamConfig
 # from loader/
 from data_loader import AVDataset
 from memory_profiler import profile
@@ -18,45 +18,17 @@ from models import Audio_Visual_Fusion as AVFusion
 from tqdm import tqdm
 from torch.optim.lr_scheduler import StepLR
 
-from ignite.metrics.metric import Metric
 from ignite.metrics import Loss
+from ignite.handlers import ModelCheckpoint
 from ignite.engine import (Engine, Events, create_supervised_trainer,
                            create_supervised_evaluator)
 from ignite.contrib.handlers.param_scheduler import LRScheduler
 
 # from utils/
+from utils import SaveAudio
+from config import ParamConfig
 from loss_utils import DiscriminativeLoss
-from metric_utils import snr
-
-
-class SNRMetric(Metric):
-
-    def __init__(self):
-        super(SNRMetric, self).__init__()
-
-        self._snr_sum = 0
-        self._total_num = 0
-
-    def reset(self):
-        self._snr_sum = 0
-        self._total_num = 0
-
-    def compute(self):
-        return self._snr_sum / self._total_num
-
-    def update(self, output):
-        if isinstance(output, dict):
-            y_pred = output["y_pred"]
-            y = output["y"]
-        else:
-            y_pred, y = output
-
-        assert y_pred.shape == y.shape
-
-        snr_value = snr(y_pred, y)
-
-        self._snr_sum += snr_value.item()
-        self._total_num += y.shape[0]
+from metric_utils import snr, SNRMetric, SDRMetric
 
 
 def main(args):
@@ -97,6 +69,7 @@ def main(args):
     # define the metrics
     loss = Loss(criterion)
     snr_metric = SNRMetric()
+    sdr_metric = SDRMetric()
 
     # custom update function for train to handle the batch
     def _update(engine, batch):
@@ -146,9 +119,10 @@ def main(args):
     # attach the metric hooks to evaluator
     loss.attach(evaluator, "dis_loss")
     snr_metric.attach(evaluator, "snr")
+    sdr_metric.attach(evaluator, "sdr")  
 
     # define the logger
-    loss_desc = "EPOCH: {}/{} ITERATION: {}/{} - Loss: {:.4f} SNR: {:4f}"
+    loss_desc = "EPOCH: {}/{} ITERATION: {}/{} - Loss: {:.4f} SNR: {:.4f}"
     loss_pbar = tqdm(initial=0, leave=True, total=len(train_loader),
                      desc=loss_desc.format(0, 0, 0, 0, 0, 0))
     log_interval = accumulation_step
@@ -167,7 +141,7 @@ def main(args):
         loss_pbar.update(1)
 
     # print validation informarion after epoch completion
-    @trainer.on(Events.EPOCH_COMPLETED)
+    @trainer.on(Events.EPOCH_STARTED)
     def log_training_results(engine):
         # evaluate the validation data
         evaluator.run(val_loader)
@@ -176,10 +150,11 @@ def main(args):
 
         avg_snr = metrics["snr"]
         avg_dis_loss = metrics["dis_loss"]
+        avg_sdr = metrics["sdr"]
 
         tqdm.write(
-                "Validation Results - Epoch: {} Avg loss: {:.2f} AVG snr: {:.4f}"
-                .format(engine.state.epoch, avg_dis_loss, avg_snr)
+                "Validation Results - Epoch: {} Avg loss: {:.2f} AVG snr: {:.4f} AVG sdr: {:.4f}"
+                .format(engine.state.epoch, avg_dis_loss, avg_snr, avg_sdr)
         )
 
     # iterator while predicting validation data
@@ -188,26 +163,33 @@ def main(args):
         iter_pbar.set_description(iter_desc.format(engine.state.iteration % len(val_loader), len(val_loader)))
         iter_pbar.update(1)
 
+    checkpoint = ModelCheckpoint(dirname="models/", filename_prefix="model_",
+                                 save_interval=10, n_saved=2, create_dir=True)
+    save_audio = SaveAudio(dirname="output/", filename_prefix="audio_")
+
     # set the event handlers
-    trainer.add_event_handler(Events.ITERATION_STARTED, scheduler)
+    trainer.add_event_handler(Events.ITERATION_STARTED, scheduler) # set the lr scheduler
+    trainer.add_event_handler(Events.EPOCH_COMPLETED, checkpoint, {"model": model}) # set the checkpointer
+    trainer.add_event_handler(Events.ITERATION_COMPLETED, save_audio) # save audio
 
     # run the trainer
     trainer.run(train_loader, max_epochs=config.epochs)
+
     loss_pbar.close()
     iter_pbar.close()
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--bs", default=8, type=int, help="batch size of dataset")
+    parser.add_argument("--bs", default=2, type=int, help="batch size of dataset")
     parser.add_argument("--epochs", default=10, type=int, help="max epochs to train")
-    parser.add_argument("--cuda", default=False, type=bool, help="cuda for training")
+    parser.add_argument("--cuda", default=True, type=bool, help="cuda for training")
     parser.add_argument("--workers", default=0, type=int, help="total workers for dataset")
     parser.add_argument("--input-audio-size", default=2, type=int, help="total input size")
     parser.add_argument("--dataset-path", default=Path("../data/audio_visual/avspeech_train.csv"), type=Path, help="path for avspeech training data")
     parser.add_argument("--video-dir", default=Path("../data/train"), type=Path, help="directory where all videos are stored")
-    parser.add_argument("--input-df-path", default=Path("../data/input_df.csv"), type=Path, help="path for combinations dataset")
-    parser.add_argument("--val-input-df-path", default=Path("../data/input_df.csv"), type=Path, help="path for val combinations dataset")
+    parser.add_argument("--input-df-path", default=Path("train_short_input_df.csv"), type=Path, help="path for combinations dataset")
+    parser.add_argument("--val-input-df-path", default=Path("val_short_input_df.csv"), type=Path, help="path for val combinations dataset")
     parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
     parser.add_argument("--learning-rate", default=3e-5, type=float, help="learning rate for the network")
     parser.add_argument("--accumulation-step", default=8, type=int, help="accumulation steps")
