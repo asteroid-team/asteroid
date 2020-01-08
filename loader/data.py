@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable, Tuple, List
 
 
-EMBED_DIR = Path("../data/train/embed/")
+EMBED_DIR = Path("../../data/train/embed/")
 
 class Signal:
     '''

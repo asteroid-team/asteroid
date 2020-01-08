@@ -1,3 +1,4 @@
+import tqdm
 import torch
 import numpy as np
 import pandas as pd
@@ -11,8 +12,8 @@ from audio_feature_generator import convert_to_spectrogram
 class AVDataset(torch.utils.data.Dataset):
 
     def __init__(self, dataset_df_path: Path, video_base_dir: Path, input_df_path: Path,
-                input_audio_size=2, use_cuda=False, face_embed_cuda=False, use_half=False,
-                all_embed_saved=True):
+                input_audio_size=2, use_cuda=False, face_embed_cuda=True, use_half=False,
+                all_embed_saved=False):
         """
 
             Args:
@@ -106,14 +107,14 @@ class AVDataset(torch.utils.data.Dataset):
             audio_tensors.append(torch.from_numpy(spectrogram))
 
             #check if the embedding is saved
-            if all_signals[i].embed_is_saved():
+            if all_signals[i].embed_is_saved() and all_signals[i].get_embed() is not None:
                 embeddings = torch.from_numpy(all_signals[i].get_embed())
                 video_tensors.append(embeddings)
                 continue
 
             #retrieve video frames
             raw_frames = all_signals[i].get_video()
-            print(raw_frames.shape)
+            #print(raw_frames.shape)
 
             #NOTE: use_cuda = True, only if VRAM ~ 7+GB, if RAM < 8GB it will not work...
             #run the detector and embedder on raw frames
@@ -146,6 +147,6 @@ if __name__ == "__main__":
     dataset = AVDataset(Path("../../data/audio_visual/avspeech_train.csv"),
                       Path("../../data/train/"),
                       Path("temp.csv"))
-    loader = torch.utils.data.DataLoader(dataset, batch_size=1)
-    for a, v, m in loader:
-        print(len(a), len(v), a[0].shape, v[0].shape, m.shape)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=True)
+    for a, v, m in tqdm.tqdm(loader, total=len(loader)):
+        pass#print(len(a), len(v), a[0].shape, v[0].shape, m.shape)

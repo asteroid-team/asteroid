@@ -5,7 +5,8 @@ from typing import Union, List
 from memory_profiler import profile
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
-@profile
+cpu_device = torch.device("cpu")
+#@profile
 def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
                          mtcnn: MTCNN, resnet: InceptionResnetV1,
                          face_embed_cuda: bool, use_half: bool) -> torch.Tensor:
@@ -67,7 +68,7 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
         emb = resnet(result_cropped_tensors)
     if use_half:
         emb = emb.float()
-    return emb
+    return emb.to(cpu_device)
 
 
 if __name__ == '__main__':

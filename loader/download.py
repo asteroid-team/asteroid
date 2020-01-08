@@ -24,13 +24,15 @@ def crop(path, start, end, resolution="640x480"):
     parent = path.parents[0]
     name = path.stem
     new_filepath = os.path.join(parent, name + "_cropped.mp4")
+    low_res_filepath = os.path.join(parent, name + "_final.mp4")
+    if os.path.exists(low_res_filepath) and os.path.isfile(low_res_filepath):
+        return
 
     command = command.format(path.as_posix(), f"{start_minute}:{start_second}", f"{end_minute}:{end_second}", new_filepath)
     print(command)
 
     p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).communicate()
 
-    low_res_filepath = os.path.join(parent, name + "_final.mp4")
     downsample = f"avconv -i {new_filepath} -s {resolution} {low_res_filepath} -y"
     p = subprocess.Popen(downsample, shell=True, stdout=subprocess.PIPE).communicate()
 
