@@ -172,7 +172,8 @@ def main(args):
     # set the event handlers
     trainer.add_event_handler(Events.ITERATION_STARTED, scheduler) # set the lr scheduler
     trainer.add_event_handler(Events.EPOCH_COMPLETED, checkpoint, {"model": model}) # set the checkpointer
-    trainer.add_event_handler(Events.ITERATION_COMPLETED, save_audio) # save audio
+    #lots of writing slows down
+    #trainer.add_event_handler(Events.ITERATION_COMPLETED, save_audio) # save audio
 
     # run the trainer
     trainer.run(train_loader, max_epochs=config.epochs)
