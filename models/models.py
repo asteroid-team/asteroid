@@ -301,10 +301,10 @@ class Audio_Visual_Fusion(nn.Module):
         complex_mask = complex_mask.view(batch_size,2,298,257,self.num_person)
         
         output_audio = torch.zeros(complex_mask.shape).to(self.device)
-        #for i in range(self.num_person):
-        #    output_audio[..., i] = fast_icRM(input_audio, complex_mask[..., i])
-        
         for i in range(self.num_person):
-            output_audio[..., i] = complex_mask[..., i] * input_audio 
+            output_audio[..., i] = fast_icRM(input_audio, complex_mask[..., i])
+        
+        #for i in range(self.num_person):
+        #    output_audio[..., i] = complex_mask[..., i] * input_audio 
         
         return output_audio

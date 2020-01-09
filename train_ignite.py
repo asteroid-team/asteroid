@@ -1,4 +1,5 @@
 import sys
+import time
 # to import module from directories
 sys.path.extend(["models", "loader", "utils"])
 
@@ -32,6 +33,7 @@ from metric_utils import snr, SNRMetric, SDRMetric
 
 
 def main(args):
+    
     device = "cpu"
     if args.cuda:
         device = "cuda"
@@ -119,7 +121,7 @@ def main(args):
     # attach the metric hooks to evaluator
     loss.attach(evaluator, "dis_loss")
     snr_metric.attach(evaluator, "snr")
-    sdr_metric.attach(evaluator, "sdr")  
+    #sdr_metric.attach(evaluator, "sdr")  
 
     # define the logger
     loss_desc = "EPOCH: {}/{} ITERATION: {}/{} - Loss: {:.4f} SNR: {:.4f}"
@@ -141,7 +143,7 @@ def main(args):
         loss_pbar.update(1)
 
     # print validation informarion after epoch completion
-    @trainer.on(Events.EPOCH_STARTED)
+    @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
         # evaluate the validation data
         evaluator.run(val_loader)
@@ -152,10 +154,10 @@ def main(args):
         avg_dis_loss = metrics["dis_loss"]
         avg_sdr = metrics["sdr"]
 
-        tqdm.write(
-                "Validation Results - Epoch: {} Avg loss: {:.2f} AVG snr: {:.4f} AVG sdr: {:.4f}"
-                .format(engine.state.epoch, avg_dis_loss, avg_snr, avg_sdr)
-        )
+        with open(f"val_log_{time.time()}.txt", 'a') as f:
+            tqdm.write(
+                    "Validation Results - Epoch: {} Avg loss: {:.2f} AVG snr: {:.4f} AVG sdr: {:.4f}"
+                    .format(engine.state.epoch, avg_dis_loss, avg_snr, avg_sdr), file=f)
 
     # iterator while predicting validation data
     @evaluator.on(Events.ITERATION_COMPLETED)
@@ -164,7 +166,7 @@ def main(args):
         iter_pbar.update(1)
 
     checkpoint = ModelCheckpoint(dirname="models/", filename_prefix="model_",
-                                 save_interval=10, n_saved=2, create_dir=True)
+                                 save_interval=1, n_saved=2, create_dir=True)
     save_audio = SaveAudio(dirname="output/", filename_prefix="audio_")
 
     # set the event handlers
@@ -177,11 +179,13 @@ def main(args):
 
     loss_pbar.close()
     iter_pbar.close()
+    log_file.close()
 
 
 if __name__ == "__main__":
+
     parser = ArgumentParser()
-    parser.add_argument("--bs", default=2, type=int, help="batch size of dataset")
+    parser.add_argument("--bs", default=4, type=int, help="batch size of dataset")
     parser.add_argument("--epochs", default=10, type=int, help="max epochs to train")
     parser.add_argument("--cuda", default=True, type=bool, help="cuda for training")
     parser.add_argument("--workers", default=0, type=int, help="total workers for dataset")
@@ -192,7 +196,7 @@ if __name__ == "__main__":
     parser.add_argument("--val-input-df-path", default=Path("val.csv"), type=Path, help="path for val combinations dataset")
     parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
     parser.add_argument("--learning-rate", default=3e-5, type=float, help="learning rate for the network")
-    parser.add_argument("--accumulation-step", default=8, type=int, help="accumulation steps")
+    parser.add_argument("--accumulation-step", default=4, type=int, help="accumulation steps")
 
     args = parser.parse_args()
 
