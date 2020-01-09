@@ -3,17 +3,20 @@ import torch
 
 class DiscriminativeLoss(torch.nn.Module):
 
-    def __init__(self, gamma=0.1):
+    def __init__(self, input_audio_size=2, gamma=0.1):
         super(DiscriminativeLoss, self).__init__()
 
+        self.input_audio_size = input_audio_size
         self.gamma = gamma
-        self.mse_loss = torch.nn.MSELoss(reduction="mean")
 
     def forward(self, input, target):
-        swapped_target = target.clone().detach()
-        swapped_target[..., 0], swapped_target[..., 1] = target[..., 1], target[..., 0]
 
-        loss = self.mse_loss(input, target)
-        loss -= self.gamma * self.mse_loss(input, swapped_target)
+        sum_mtr = torch.zeros_like(input[..., 0])
+        for i in range(self.input_audio_size):
+            sum_mtr += ((target[:,:,:,:,i]-input[:,:,:,:,i]) ** 2)
+            for j in range(self.input_audio_size):
+                if i != j:
+                    sum_mtr -= (self.gamma * ((target[:,:,:,:,i]-input[:,:,:,:,j]) ** 2))
+        sum_mtr = torch.mean(sum_mtr.view(-1))
 
-        return loss
+        return sum_mtr

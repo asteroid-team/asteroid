@@ -24,8 +24,8 @@ class Signal:
         self.embed = None
 
         self._load(sr=sr)
-        self._convert_video()
         self._check_video_embed()
+        self._convert_video()
 
     def _load(self, sr: int):
         self.audio, sr = librosa.load(self.audio_path.as_posix(), sr=sr)
@@ -44,6 +44,8 @@ class Signal:
         self.video = augmenter(self.video, *args, **kwargs)
 
     def _convert_video(self):
+        if self.embed_saved:
+            return
         frame_count = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
         frame_width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(self.video.get(cv2.CAP_PROP_FRAME_HEIGHT))

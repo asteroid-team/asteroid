@@ -17,7 +17,7 @@ MIXED_AUDIO_DIR = "../../data/train/mixed"
 REL_AUDIO_DIR = "../data/train/mixed"
 VIDEO_DIR = "../../data/train"
 REL_VIDEO_DIR = "../data/train"
-AUDIO_SET_DIR = "./../../data/audio_set/audio"
+AUDIO_SET_DIR = "./../../data/audio_set/low_volume"
 
 def sample_audio_set():
     """
@@ -26,7 +26,7 @@ def sample_audio_set():
     audio_files = glob.glob(os.path.join(AUDIO_SET_DIR, "*"))
     total_files = len(audio_files)
 
-    total_choices = int(random.gauss(mu=2, sigma=1))
+    total_choices = int(random.gauss(mu=1, sigma=1))
     choices = list(range(total_files))
     random.shuffle(choices)
 

@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 # to import module from directories
@@ -31,18 +32,19 @@ from config import ParamConfig
 from loss_utils import DiscriminativeLoss
 from metric_utils import snr, SNRMetric, SDRMetric
 
-
+ID = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
 def main(args):
     
     device = "cpu"
     if args.cuda:
         device = "cuda"
+    device = torch.device(device)
 
     # create training and validation dataset
     dataset = AVDataset(args.dataset_path, args.video_dir,
-                        args.input_df_path, args.input_audio_size, args.cuda)
+                        args.train_path, args.input_audio_size, args.cuda)
     val_dataset = AVDataset(args.dataset_path, args.video_dir,
-                        args.val_input_df_path, args.input_audio_size, args.cuda)
+                        args.val_path, args.input_audio_size, args.cuda)
 
     config = ParamConfig(args.bs, args.epochs, args.workers, args.cuda, args.use_half)
 
@@ -145,19 +147,26 @@ def main(args):
     # print validation informarion after epoch completion
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
+        iter_pbar.refresh()
+        loss_pbar.refresh()
+
+        iter_pbar.reset()
+        loss_pbar.reset()
+
         # evaluate the validation data
         evaluator.run(val_loader)
         # retrieve the metrics and print
         metrics = evaluator.state.metrics
 
-        avg_snr = metrics["snr"]
-        avg_dis_loss = metrics["dis_loss"]
-        avg_sdr = metrics["sdr"]
-
-        with open(f"val_log_{time.time()}.txt", 'a') as f:
-            tqdm.write(
-                    "Validation Results - Epoch: {} Avg loss: {:.2f} AVG snr: {:.4f} AVG sdr: {:.4f}"
-                    .format(engine.state.epoch, avg_dis_loss, avg_snr, avg_sdr), file=f)
+        avg_snr = metrics.get("snr", np.nan)
+        avg_dis_loss = metrics.get("dis_loss", np.nan)
+        avg_sdr = metrics.get("sdr", np.nan)
+        
+        log_res = f"Validation Results - Epoch: {engine.state.epoch} Avg loss: {avg_dis_loss:.2f} AVG snr: {avg_snr:.4f} AVG sdr: {avg_sdr:.4f}"
+        print(f"\n\n{log_res}\n\n")
+        epoch = engine.state.epoch
+        with open(f"logs/val_log_{ID}_EPOCH_{epoch}.txt", 'a') as f:
+            tqdm.write(log_res, f)
 
     # iterator while predicting validation data
     @evaluator.on(Events.ITERATION_COMPLETED)
@@ -165,7 +174,8 @@ def main(args):
         iter_pbar.set_description(iter_desc.format(engine.state.iteration % len(val_loader), len(val_loader)))
         iter_pbar.update(1)
 
-    checkpoint = ModelCheckpoint(dirname="models/", filename_prefix="model_",
+    os.mkdir(f"models_{ID}")
+    checkpoint = ModelCheckpoint(dirname=f"models_{ID}/", filename_prefix=f"model_{ID}_",
                                  save_interval=1, n_saved=2, create_dir=True)
     save_audio = SaveAudio(dirname="output/", filename_prefix="audio_")
 
@@ -180,7 +190,6 @@ def main(args):
 
     loss_pbar.close()
     iter_pbar.close()
-    log_file.close()
 
 
 if __name__ == "__main__":
@@ -193,11 +202,11 @@ if __name__ == "__main__":
     parser.add_argument("--input-audio-size", default=2, type=int, help="total input size")
     parser.add_argument("--dataset-path", default=Path("../data/audio_visual/avspeech_train.csv"), type=Path, help="path for avspeech training data")
     parser.add_argument("--video-dir", default=Path("../data/train"), type=Path, help="directory where all videos are stored")
-    parser.add_argument("--input-df-path", default=Path("train.csv"), type=Path, help="path for combinations dataset")
-    parser.add_argument("--val-input-df-path", default=Path("val.csv"), type=Path, help="path for val combinations dataset")
+    parser.add_argument("--train-path", default=Path("train.csv"), type=Path, help="path for combinations dataset")
+    parser.add_argument("--val-path", default=Path("val.csv"), type=Path, help="path for val combinations dataset")
     parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
     parser.add_argument("--learning-rate", default=3e-5, type=float, help="learning rate for the network")
-    parser.add_argument("--accumulation-step", default=4, type=int, help="accumulation steps")
+    parser.add_argument("--accumulation-step", default=1, type=int, help="accumulation steps")
 
     args = parser.parse_args()
 
