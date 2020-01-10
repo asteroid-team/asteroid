@@ -33,6 +33,7 @@ from loss_utils import DiscriminativeLoss
 from metric_utils import snr, SNRMetric, SDRMetric
 
 ID = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
+print(ID)
 def main(args):
     
     device = "cpu"
@@ -52,9 +53,14 @@ def main(args):
     model = AVFusion(num_person=args.input_audio_size, device=device)
     model.to(device)
 
+    if args.saved_model_path:
+        print(f"loading {args.saved_model_path}")
+        model.load_state_dict(torch.load(args.saved_model_path()))
+        print("loaded")
+
     # set optimizer, lr, criterion
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-    criterion = DiscriminativeLoss()
+    criterion = torch.nn.MSELoss(reduction="mean")#DiscriminativeLoss()
 
     # create the dataloader
     train_loader = torch.utils.data.DataLoader(dataset, config.batch_size, shuffle=True,
@@ -77,7 +83,7 @@ def main(args):
 
     # custom update function for train to handle the batch
     def _update(engine, batch):
-        model.train()
+        #model.train()
 
         target, input_video, input_audio = batch
 
@@ -103,7 +109,7 @@ def main(args):
 
     # custom inference function
     def _inference(engine, batch):
-        model.eval()
+        #model.eval()
 
         with torch.no_grad():
             target, input_video, input_audio = batch
@@ -147,6 +153,8 @@ def main(args):
     # print validation informarion after epoch completion
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
+        model.eval()
+
         iter_pbar.refresh()
         loss_pbar.refresh()
 
@@ -167,6 +175,7 @@ def main(args):
         epoch = engine.state.epoch
         with open(f"logs/val_log_{ID}_EPOCH_{epoch}.txt", 'a') as f:
             tqdm.write(log_res, f)
+        model.train()
 
     # iterator while predicting validation data
     @evaluator.on(Events.ITERATION_COMPLETED)
@@ -195,7 +204,7 @@ def main(args):
 if __name__ == "__main__":
 
     parser = ArgumentParser()
-    parser.add_argument("--bs", default=4, type=int, help="batch size of dataset")
+    parser.add_argument("--bs", default=16, type=int, help="batch size of dataset")
     parser.add_argument("--epochs", default=10, type=int, help="max epochs to train")
     parser.add_argument("--cuda", default=True, type=bool, help="cuda for training")
     parser.add_argument("--workers", default=0, type=int, help="total workers for dataset")
@@ -207,7 +216,9 @@ if __name__ == "__main__":
     parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
     parser.add_argument("--learning-rate", default=3e-5, type=float, help="learning rate for the network")
     parser.add_argument("--accumulation-step", default=1, type=int, help="accumulation steps")
+    parser.add_argument("--saved-model-path", default=None, type=str, help="saved model path")
 
     args = parser.parse_args()
 
     main(args)
+

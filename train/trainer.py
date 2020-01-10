@@ -12,7 +12,6 @@ from catalyst.dl.runner import SupervisedRunner
 from catalyst.dl.callbacks import EarlyStoppingCallback
 
 
-@profile
 def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
           optimizer: torch.optim.Optimizer, criterion: torch.nn.Module,
           config: ParamConfig, validate: bool=False,
@@ -37,8 +36,10 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                                     batch_size=config.batch_size, num_workers=config.workers, shuffle=True)
 
     if val_dataset:
-        val_loader = torch.utils.data.DataLoader(val_dataset, config.batch_size,
-                                               shuffle=True, num_workers=config.workers)
+        #val_loader = torch.utils.data.DataLoader(val_dataset, config.batch_size,
+        #                                       shuffle=True, num_workers=config.workers)
+        val_loader = utils.get_loader(val_dataset, open_fn=lambda x: {"input_audio": x[-1], "input_video": x[1], "targets": x[0]},
+                                    batch_size=config.batch_size, num_workers=config.workers, shuffle=True)
 
     loaders["train"] = train_loader
 
@@ -48,18 +49,19 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5,
                                                            patience=2)
 
-    p = "/kaggle/input/speech/fyp/src/logdir/checkpoints/best_full.pth"
+    p = "logdir/checkpoints/best_full.pth"
     resume = None
     if Path(p).is_file():
+        print("loading checkpoint")
         ckpt = torch.load(p)
         #resume = p
 
     runner = SupervisedRunner(input_key=["input_audio", "input_video"]) # parameters of the model in forward(...)
     runner.train(model=model, criterion=criterion,
                  optimizer=optimizer, scheduler=scheduler,
-                 loaders={"train": loaders["train"]}, logdir=logdir, verbose=True,
+                 loaders=loaders, logdir=logdir, verbose=True,
                  num_epochs=config.epochs, resume=resume,
-                 callbacks=collections.OrderedDict({"snr_callback": SNRCallback(), "save_audio_callback": SaveAudioCallback()})
+                 callbacks=collections.OrderedDict({"snr_callback": SNRCallback()})
                  )
 
     #utils.plot_metrics(logdir=logdir, metrics=["loss", "_base/lr"])

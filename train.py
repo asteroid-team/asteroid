@@ -31,11 +31,12 @@ class DiscriminativeLoss(torch.nn.Module):
         return loss
 
 
-@profile
 def main(args):
     config = ParamConfig(args.bs, args.epochs, args.workers, args.cuda, args.use_half)
     dataset = AVDataset(args.dataset_path, args.video_dir,
                         args.input_df_path, args.input_audio_size, args.cuda)
+    val_dataset = AVDataset(args.dataset_path, args.video_dir,
+                        args.val_input_df_path, args.input_audio_size, args.cuda)
 
     if args.cuda:
         device = torch.device("cuda:0")
@@ -45,7 +46,7 @@ def main(args):
         model = AVFusion(num_person=args.input_audio_size).train()
 
 
-    p = "/kaggle/input/speech/fyp/src/logdir/checkpoints/best_full.pth"
+    p = "logdir/checkpoints/best_full.pth"
     if Path(p).is_file():
         ckpt = torch.load(p)
         print(list(ckpt.keys()))
@@ -54,19 +55,20 @@ def main(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     criterion = torch.nn.MSELoss(reduction="mean")#DiscriminativeLoss()#
 
-    train(model, dataset, optimizer, criterion, config)
+    train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, validate=True)
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--bs", default=8, type=int, help="batch size of dataset")
+    parser.add_argument("--bs", default=16, type=int, help="batch size of dataset")
     parser.add_argument("--epochs", default=10, type=int, help="max epochs to train")
-    parser.add_argument("--cuda", default=False, type=bool, help="cuda for training")
+    parser.add_argument("--cuda", default=True, type=bool, help="cuda for training")
     parser.add_argument("--workers", default=0, type=int, help="total workers for dataset")
     parser.add_argument("--input-audio-size", default=2, type=int, help="total input size")
     parser.add_argument("--dataset-path", default=Path("../data/audio_visual/avspeech_train.csv"), type=Path, help="path for avspeech training data")
     parser.add_argument("--video-dir", default=Path("../data/train"), type=Path, help="directory where all videos are stored")
-    parser.add_argument("--input-df-path", default=Path("../data/input_df.csv"), type=Path, help="path for combinations dataset")
+    parser.add_argument("--input-df-path", default=Path("train.csv"), type=Path, help="path for combinations dataset")
+    parser.add_argument("--val-input-df-path", default=Path("val.csv"), type=Path, help="path for combinations dataset")
     parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
     parser.add_argument("--learning-rate", default=3e-5, type=float, help="learning rate for the network")
 

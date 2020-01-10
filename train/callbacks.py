@@ -9,6 +9,10 @@ from pathlib import Path
 from metric_utils import snr
 from catalyst.dl.core import Callback, MetricCallback, CallbackOrder
 
+import logging
+
+logging.basicConfig(filename='loss.log', filemode='a', format='%(name)s - %(levelname)s - %(message)s')
+logging.warning('This will get logged to a file')
 
 class SaveAudioCallback(Callback):
     
@@ -84,13 +88,14 @@ class SNRCallback(MetricCallback):
             output_audio = output_audios[..., n]
             true_audio = true_audios[..., n]
             
-            print(torch.sum((output_audio-true_audio)**2))
+            logging.warning(torch.sum((output_audio-true_audio)**2))
             
-            print(output_audio[0, 0, 0, 0])
-            print('-'*10)
-            print(true_audio[0, 0, 0, 0])
+            logging.warning(output_audio[0, 0, 0, 0])
+            logging.warning('-'*10)
+            logging.warning(true_audio[0, 0, 0, 0])
             
             snr_value = snr(output_audio, true_audio).item()
-            avg_snr += (snr_value - avg_snr) / (n + 1)
-        
+            avg_snr += snr_value#(snr_value - avg_snr) / (n + 1)
+
+        avg_snr /= num_person
         state.metrics.add_batch_value(name=self.prefix, value=avg_snr)

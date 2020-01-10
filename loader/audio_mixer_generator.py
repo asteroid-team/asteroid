@@ -113,5 +113,5 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
 
 
 if __name__ == "__main__":
-    audio_mixer(100_000_000, audio_set=True)
+    audio_mixer(100_000_000, audio_set=False)
 
