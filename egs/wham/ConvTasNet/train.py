@@ -8,6 +8,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.system import System
+from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
+
 from model import make_model_and_optimizer
 
 
@@ -58,14 +60,15 @@ def main(conf):
         yaml.safe_dump(conf, outfile)
 
     # Define Loss function.
-    loss_class = PITLossContainer(pairwise_neg_sisdr, n_src=train_set.n_src)
+
+    loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
     # Checkpointing callback can monitor any quantity which is returned by
     # validation step, defaults to val_loss here (see System).
     checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
     checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
                                  mode='min', save_best_only=False)
     # New PL version will come the 7th of december / will have save_top_k
-    system = System(model=model, loss_class=loss_class, optimizer=optimizer,
+    system = System(model=model, loss_func=loss_func, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
                     config=conf)
 
