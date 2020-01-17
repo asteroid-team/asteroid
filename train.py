@@ -46,7 +46,7 @@ def main(args):
         model = AVFusion(num_person=args.input_audio_size).train()
 
 
-    p = "logdir/checkpoints/best_full.pth"
+    p = "logdir/checkpoints/last_full.pth"
     if Path(p).is_file():
         ckpt = torch.load(p)
         print(list(ckpt.keys()))
@@ -61,16 +61,16 @@ def main(args):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--bs", default=16, type=int, help="batch size of dataset")
-    parser.add_argument("--epochs", default=10, type=int, help="max epochs to train")
+    parser.add_argument("--epochs", default=40, type=int, help="max epochs to train")
     parser.add_argument("--cuda", default=True, type=bool, help="cuda for training")
     parser.add_argument("--workers", default=0, type=int, help="total workers for dataset")
     parser.add_argument("--input-audio-size", default=2, type=int, help="total input size")
     parser.add_argument("--dataset-path", default=Path("../data/audio_visual/avspeech_train.csv"), type=Path, help="path for avspeech training data")
     parser.add_argument("--video-dir", default=Path("../data/train"), type=Path, help="directory where all videos are stored")
-    parser.add_argument("--input-df-path", default=Path("train.csv"), type=Path, help="path for combinations dataset")
-    parser.add_argument("--val-input-df-path", default=Path("val.csv"), type=Path, help="path for combinations dataset")
+    parser.add_argument("--input-df-path", default=Path("more_train.csv"), type=Path, help="path for combinations dataset")
+    parser.add_argument("--val-input-df-path", default=Path("more_val.csv"), type=Path, help="path for combinations dataset")
     parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
-    parser.add_argument("--learning-rate", default=3e-5, type=float, help="learning rate for the network")
+    parser.add_argument("--learning-rate", default=3e-4, type=float, help="learning rate for the network")
 
     args = parser.parse_args()
 

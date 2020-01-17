@@ -102,7 +102,12 @@ class AVDataset(torch.utils.data.Dataset):
 
         for i in range(self.input_audio_size):
             #audio to spectrogram
-            spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
+            if all_signals[i].is_spec():
+                spectrogram =  all_signals[i].get_spec()
+            else:
+                spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
+                print(all_signals[i].spec_path)
+                np.save(all_signals[i].spec_path, spectrogram)
             #convert to tensor
             audio_tensors.append(torch.from_numpy(spectrogram))
 
@@ -145,8 +150,8 @@ class AVDataset(torch.utils.data.Dataset):
 
 if __name__ == "__main__":
     dataset = AVDataset(Path("../../data/audio_visual/avspeech_train.csv"),
-                      Path("../../data/train/"),
-                      Path("temp.csv"))
-    loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=True)
+                      Path("temp_video/"),
+                      Path("train.csv"), all_embed_saved=False)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=False)
     for a, v, m in tqdm.tqdm(loader, total=len(loader)):
         pass#print(len(a), len(v), a[0].shape, v[0].shape, m.shape)

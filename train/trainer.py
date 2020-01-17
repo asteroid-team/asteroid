@@ -46,15 +46,18 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
     if validate:
         loaders["valid"] = val_loader
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5,
-                                                           patience=2)
+    #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5,
+    #                                                       patience=2)
+    scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=3e-4,
+                                                  max_lr=3e-3, step_size_up=4*len(train_loader),
+                                                  mode="triangular", cycle_momentum=False)
 
-    p = "logdir/checkpoints/best_full.pth"
+    p = "logdir/checkpoints/last_full.pth"
     resume = None
     if Path(p).is_file():
         print("loading checkpoint")
         ckpt = torch.load(p)
-        #resume = p
+        resume = p
 
     runner = SupervisedRunner(input_key=["input_audio", "input_video"]) # parameters of the model in forward(...)
     runner.train(model=model, criterion=criterion,

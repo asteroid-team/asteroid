@@ -38,15 +38,15 @@ def crop(path, start, end, resolution="640x480"):
 
 
 def save_video(link, path, start, end, resolution):
-    download(link)
+    download(link, args.vid_dir)
     crop(path, start, end, resolution)
 
 
 def main(args):
     df = pd.read_csv(args.path)
-    links = df.iloc[:, 0][:500]
-    start_times = df.iloc[:, 1][:500]
-    end_times = df.iloc[:, 2][:500]
+    links = df.iloc[:, 0][500:700]
+    start_times = df.iloc[:, 1][500:700]
+    end_times = df.iloc[:, 2][500:700]
     
     yt_links = ["https://youtube.com/watch\?v\="+l for l in links]
     paths = [Path(os.path.join(args.vid_dir, f + ".mp4")) for f in links]
@@ -61,9 +61,9 @@ def main(args):
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Download parameters")
-    parse.add_argument("--jobs", type=int, default=2)
+    parse.add_argument("--jobs", type=int, default=4)
     parse.add_argument("--path", type=str, default="../../data/audio_visual/avspeech_train.csv")
-    parse.add_argument("--vid-dir", type=str, default="../../data/train/")
+    parse.add_argument("--vid-dir", type=str, default="temp_video/")
     parse.add_argument("--resolution", type=str, default="320x200")
     args = parse.parse_args()
     main(args)
