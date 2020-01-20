@@ -25,8 +25,8 @@ def crop(path, start, end, resolution, downloaded_name):
     new_filepath = downloaded_name + "_cropped.mp4"
     low_res_filepath = downloaded_name + "_final.mp4"
     print(new_filepath, low_res_filepath)
-    if os.path.exists(low_res_filepath) and os.path.isfile(low_res_filepath):
-        return
+    #if os.path.exists(low_res_filepath) and os.path.isfile(low_res_filepath):
+    #    return
 
     command = command.format(downloaded_name, f"{start_minute}:{start_second}", f"{end_minute}:{end_second}", new_filepath)
     print(command)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     parse.add_argument("--jobs", type=int, default=1)
     parse.add_argument("--path", type=str, default="../../data/audio_visual/avspeech_train.csv")
     parse.add_argument("--vid-dir", type=str, default="../../data/train/")
-    parse.add_argument("--resolution", type=str, default="320x200")
+    parse.add_argument("--resolution", type=str, default="1024x768")
     args = parse.parse_args()
     main(args)
     

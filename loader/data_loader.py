@@ -152,8 +152,7 @@ class AVDataset(torch.utils.data.Dataset):
 if __name__ == "__main__":
     dataset = AVDataset(Path("../../data/audio_visual/avspeech_train.csv"),
                       Path("../../data/train/"),
-                      Path("val.csv"), all_embed_saved=False)
+                      Path("train.csv"), all_embed_saved=False)
     loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=False)
     for a, v, m in tqdm.tqdm(loader, total=len(loader)):
-        print(a)
         pass#print(len(a), len(v), a[0].shape, v[0].shape, m.shape)

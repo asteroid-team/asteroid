@@ -78,7 +78,6 @@ class Signal:
     def _check_video_embed(self, embed_ext=".npy"):
         video_name_stem = self.video_path.stem
         for embed_dir in EMBED_DIR:
-            print(embed_dir)
             if not embed_dir.is_dir():
                 embed_dir = Path("..", *embed_dir.parts)
             if not embed_dir.is_dir():
@@ -86,7 +85,6 @@ class Signal:
                 print("use this file from src/ or src/loader")
                 continue
             self.embed_path = Path(embed_dir, video_name_stem + embed_ext)
-            print(self.embed_path)
             if self.embed_path.is_file():
                 self.embed_saved = True
                 self.embed = np.load(self.embed_path.as_posix())

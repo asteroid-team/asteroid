@@ -45,7 +45,7 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
             cropped_tensors = None
             height, width, c = f.shape
             bounding_box, prob = mtcnn.detect(frame)
-
+                
             if bounding_box is not None:
                 for box in bounding_box:
                     x1,y1,x2,y2 = box
@@ -66,10 +66,10 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
         if cropped_tensors is None:
             #Face not detected, for some reason
             cropped_tensors = torch.zeros((3, 160, 160))
-        #name = name.replace(".mp4", "")
-        #saveimg = cropped_tensors.detach().cpu().numpy().astype("uint8")
-        #saveimg = np.squeeze(saveimg.transpose(1, 2, 0))
-        #Image.fromarray(saveimg).save(f"{name}_{i}.png")
+        name = name.replace(".mp4", "")
+        saveimg = cropped_tensors.detach().cpu().numpy().astype("uint8")
+        saveimg = np.squeeze(saveimg.transpose(1, 2, 0))
+        Image.fromarray(saveimg).save(f"{name}_{i}.png")
 
         result_cropped_tensors.append(cropped_tensors.to(device))
 
