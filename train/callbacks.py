@@ -93,6 +93,14 @@ class SNRCallback(MetricCallback):
             logging.warning(output_audio[0, 0, 0, 0])
             logging.warning('-'*10)
             logging.warning(true_audio[0, 0, 0, 0])
+
+            #for i in output_audio.view(-1):
+            #    if i > 20 or i<-20:
+            #        print(i)
+            #print('*'*1000)
+            #for i in true_audio.view(-1):
+            #    if i > 20 or i < -20:
+            #        print(i)
             
             snr_value = snr(output_audio, true_audio).item()
             avg_snr += snr_value#(snr_value - avg_snr) / (n + 1)

@@ -264,12 +264,17 @@ class Audio_Visual_Fusion(nn.Module):
         self.audio_output = Audio_Model()
         self.video_output = Video_Model()
         
-        self.lstm = nn.LSTM(self.input_dim,200,num_layers=1,bias=True,batch_first=True,bidirectional=True)
+        self.lstm = nn.LSTM(self.input_dim,400,num_layers=1,bias=True,batch_first=True,bidirectional=True)
         
         self.fc1 = nn.Linear(400,600)
+        torch.nn.init.xavier_uniform_(self.fc1.weight)
         self.fc2 = nn.Linear(600,600)
+        torch.nn.init.xavier_uniform_(self.fc2.weight)
         self.fc3 = nn.Linear(600,600)
+        torch.nn.init.xavier_uniform_(self.fc3.weight)
+
         self.complex_mask_layer = nn.Linear(600,2*257*self.num_person)
+        torch.nn.init.xavier_uniform_(self.complex_mask_layer.weight)
     
     def forward(self,input_audio,input_video):
         # input_audio will be (N,2,298,257)
@@ -290,6 +295,7 @@ class Audio_Visual_Fusion(nn.Module):
         mixed_av = torch.transpose(mixed_av,1,2) # (N,298,input_dim)
         
         mixed_av,(h,c) = self.lstm(mixed_av)
+        mixed_av = mixed_av[..., :400] + mixed_av[..., 400:]
         
         mixed_av = F.relu(self.fc1(mixed_av))
         mixed_av = F.relu(self.fc2(mixed_av))

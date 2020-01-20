@@ -83,8 +83,6 @@ def main(args):
 
     # custom update function for train to handle the batch
     def _update(engine, batch):
-        #model.train()
-
         target, input_video, input_audio = batch
 
         target = target.to(device)
@@ -109,8 +107,6 @@ def main(args):
 
     # custom inference function
     def _inference(engine, batch):
-        #model.eval()
-
         with torch.no_grad():
             target, input_video, input_audio = batch
 
@@ -204,7 +200,7 @@ def main(args):
 if __name__ == "__main__":
 
     parser = ArgumentParser()
-    parser.add_argument("--bs", default=6, type=int, help="batch size of dataset")
+    parser.add_argument("--bs", default=2, type=int, help="batch size of dataset")
     parser.add_argument("--epochs", default=10, type=int, help="max epochs to train")
     parser.add_argument("--cuda", default=True, type=bool, help="cuda for training")
     parser.add_argument("--workers", default=0, type=int, help="total workers for dataset")

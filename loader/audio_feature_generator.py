@@ -73,7 +73,8 @@ def convert_to_wave(spec: np.ndarray, sr=16_000, hann_length=400, hop_length=160
 
 
 if __name__ == "__main__":
-    spec = convert_to_spectrogram(librosa.load("../../data/train/audio/AvWWVOgaMlk_final.wav", mono=True, sr=16_000, duration=3)[0])
+    spec = convert_to_spectrogram(librosa.load("../../data/train/audio/0CabGpMJkiY_3453_3240_final.wav", mono=True, sr=16_000, duration=3)[0])
+    print(spec)
     print(spec.shape)
     #orig = convert_to_wave(spec)
     #librosa.output.write_wav("hmmm.wav", orig, sr=16_000)

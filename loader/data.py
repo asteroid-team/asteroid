@@ -7,15 +7,15 @@ from pathlib import Path
 from typing import Callable, Tuple, List
 
 
-EMBED_DIR = [Path("../data/train/embed"), Path("loader/temp_video/embed/")]
-SPEC_DIR = [Path("../data/train/spec"), Path("loader/temp_video/spec/")]
+EMBED_DIR = [Path("../data/train/embed")]#, Path("loader/temp_video/embed/")]
+SPEC_DIR = [Path("../data/train/spec")]#, Path("loader/temp_video/spec/")]
 
 class Signal:
     '''
         This class holds the video frames and the audio signal.
     '''
 
-    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000, video_max_length=75, load_spec=True):
+    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000, video_max_length=75, load_spec=False):
         self.video_path = Path(video_path)
         self.audio_path = Path(audio_path)
         self.video_max_length = video_max_length
@@ -81,6 +81,7 @@ class Signal:
             if not embed_dir.is_dir():
                 embed_dir = Path("..", *embed_dir.parts)
             if not embed_dir.is_dir():
+                print(embed_dir)
                 print("use this file from src/ or src/loader")
                 continue
             self.embed_path = Path(embed_dir, video_name_stem + embed_ext)

@@ -12,10 +12,10 @@ from pathlib import Path
 
 
 AUDIO_MIX_COMMAND_PREFIX = "ffmpeg -y -t 00:00:03 -ac 1 "
-AUDIO_DIR = "temp_video/audio"#"../../data/train/audio"
-MIXED_AUDIO_DIR = "temp_video/mixed"#"../../data/train/mixed"
+AUDIO_DIR = "../../data/train/audio"
+MIXED_AUDIO_DIR = "../../data/train/mixed"
 REL_AUDIO_DIR = "../data/train/mixed"
-VIDEO_DIR = "temp_video"#"../../data/train"
+VIDEO_DIR = "../../data/train"
 REL_VIDEO_DIR = "../data/train"
 AUDIO_SET_DIR = "./../../data/audio_set/low_volume"
 

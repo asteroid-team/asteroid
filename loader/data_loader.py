@@ -29,7 +29,7 @@ class AVDataset(torch.utils.data.Dataset):
         """
         self.input_audio_size = input_audio_size
 
-        #self.dataset_df = pd.read_csv(dataset_df_path.as_posix())
+        self.dataset_df = pd.read_csv(dataset_df_path.as_posix(), index_col="link")
         #self.file_names = self.dataset_df.iloc[:, 0]
         #
         ##All cropped, pre-processed videos
@@ -102,12 +102,11 @@ class AVDataset(torch.utils.data.Dataset):
 
         for i in range(self.input_audio_size):
             #audio to spectrogram
-            if all_signals[i].is_spec():
-                spectrogram =  all_signals[i].get_spec()
-            else:
-                spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
-                print(all_signals[i].spec_path)
-                np.save(all_signals[i].spec_path, spectrogram)
+            #if all_signals[i].is_spec():
+            #    spectrogram =  all_signals[i].get_spec()
+            #else:
+            spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
+            #    np.save(all_signals[i].spec_path, spectrogram)
             #convert to tensor
             audio_tensors.append(torch.from_numpy(spectrogram))
 
@@ -123,8 +122,10 @@ class AVDataset(torch.utils.data.Dataset):
 
             #NOTE: use_cuda = True, only if VRAM ~ 7+GB, if RAM < 8GB it will not work...
             #run the detector and embedder on raw frames
+            video_file_name = all_signals[i].video_path.stem.split('_')
+            pos_x, pos_y = int(video_file_name[1])/10000, int(video_file_name[2])/10000
             embeddings = input_face_embeddings(raw_frames, is_path=False, mtcnn=self.mtcnn, resnet=self.resnet,
-                                               face_embed_cuda=self.face_embed_cuda, use_half=self.use_half)
+                                               face_embed_cuda=self.face_embed_cuda, use_half=self.use_half, name=all_signals[i].video_path.stem, coord=[pos_x, pos_y])
             #clean
             del raw_frames
 
@@ -150,8 +151,9 @@ class AVDataset(torch.utils.data.Dataset):
 
 if __name__ == "__main__":
     dataset = AVDataset(Path("../../data/audio_visual/avspeech_train.csv"),
-                      Path("temp_video/"),
+                      Path("../../data/train/"),
                       Path("train.csv"), all_embed_saved=False)
     loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=False)
     for a, v, m in tqdm.tqdm(loader, total=len(loader)):
+        print(a)
         pass#print(len(a), len(v), a[0].shape, v[0].shape, m.shape)

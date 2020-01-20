@@ -3,13 +3,13 @@ import torch
 import numpy as np
 from typing import Union, List
 from memory_profiler import profile
-from facenet_pytorch import MTCNN, InceptionResnetV1
+from facenet_pytorch import MTCNN, InceptionResnetV1, extract_face
 
 cpu_device = torch.device("cpu")
 #@profile
 def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
                          mtcnn: MTCNN, resnet: InceptionResnetV1,
-                         face_embed_cuda: bool, use_half: bool) -> torch.Tensor:
+                         face_embed_cuda: bool, use_half: bool, coord: List, name: str) -> torch.Tensor:
     """
         Get the face embedding
 
@@ -35,26 +35,42 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
     else:
         device = torch.device("cpu")
     result_cropped_tensors = []
-    for f in frames:
+    for i, f in enumerate(frames):
         if is_path:
             frame = Image.open(f)
         else:
             frame = Image.fromarray(f.astype("uint8"))
 
         with torch.no_grad():
-            cropped_tensors = mtcnn(frame)
+            cropped_tensors = None
+            height, width, c = f.shape
+            bounding_box, prob = mtcnn.detect(frame)
+
+            for box in bounding_box:
+                x1,y1,x2,y2 = box
+                if(x1 > x2):
+                	x1, x2 = x2, x1
+                if(y1 > y2):
+                	y1, y2 = y2, y1
+
+                #for point in coord:
+                x,y = coord[0], coord[1]
+                x *= width
+                y *= height
+                if(x >= x1 and y >= y1 and x <= x2 and y <= y2):
+                    cropped_tensors = extract_face(frame, box)
+                    print("found", box, x, y)
+                    break
 
         if cropped_tensors is None:
             #Face not detected, for some reason
-            cropped_tensors = torch.zeros((3, 160, 160)).to(device)
-        elif cropped_tensors.shape[0] == 1:
-            #Squeeze the dimenstion if there is only one face
-            cropped_tensors = cropped_tensors.squeeze(0).to(device)
-        else:
-            #Pick a face here
-            cropped_tensors = cropped_tensors[0].to(device)
+            cropped_tensors = torch.zeros((3, 160, 160))
+        #name = name.replace(".mp4", "")
+        #saveimg = cropped_tensors.detach().cpu().numpy().astype("uint8")
+        #saveimg = np.squeeze(saveimg.transpose(1, 2, 0))
+        #Image.fromarray(saveimg).save(f"{name}_{i}.png")
 
-        result_cropped_tensors.append(cropped_tensors)
+        result_cropped_tensors.append(cropped_tensors.to(device))
 
     del frames
     #Stack all frames
