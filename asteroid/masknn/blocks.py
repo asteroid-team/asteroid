@@ -173,7 +173,8 @@ class SingleRNN(nn.Module):
                  dropout=0, bidirectional=False):
         super(SingleRNN, self).__init__()
         assert rnn_type.upper() in ["RNN", "LSTM", "GRU"]
-        self.rnn_type = rnn_type.upper()
+        rnn_type = rnn_type.upper()
+        self.rnn_type = rnn_type
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.rnn = getattr(nn, rnn_type)(input_size, hidden_size,
