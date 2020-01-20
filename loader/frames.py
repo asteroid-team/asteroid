@@ -46,21 +46,22 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
             height, width, c = f.shape
             bounding_box, prob = mtcnn.detect(frame)
 
-            for box in bounding_box:
-                x1,y1,x2,y2 = box
-                if(x1 > x2):
-                	x1, x2 = x2, x1
-                if(y1 > y2):
-                	y1, y2 = y2, y1
+            if bounding_box is not None:
+                for box in bounding_box:
+                    x1,y1,x2,y2 = box
+                    if(x1 > x2):
+                            x1, x2 = x2, x1
+                    if(y1 > y2):
+                            y1, y2 = y2, y1
 
-                #for point in coord:
-                x,y = coord[0], coord[1]
-                x *= width
-                y *= height
-                if(x >= x1 and y >= y1 and x <= x2 and y <= y2):
-                    cropped_tensors = extract_face(frame, box)
-                    print("found", box, x, y)
-                    break
+                    #for point in coord:
+                    x,y = coord[0], coord[1]
+                    x *= width
+                    y *= height
+                    if(x >= x1 and y >= y1 and x <= x2 and y <= y2):
+                        cropped_tensors = extract_face(frame, box)
+                        print("found", box, x, y)
+                        break
 
         if cropped_tensors is None:
             #Face not detected, for some reason

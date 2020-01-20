@@ -123,7 +123,7 @@ class AVDataset(torch.utils.data.Dataset):
             #NOTE: use_cuda = True, only if VRAM ~ 7+GB, if RAM < 8GB it will not work...
             #run the detector and embedder on raw frames
             video_file_name = all_signals[i].video_path.stem.split('_')
-            pos_x, pos_y = int(video_file_name[1])/10000, int(video_file_name[2])/10000
+            pos_x, pos_y = int(video_file_name[-3])/10000, int(video_file_name[-2])/10000
             embeddings = input_face_embeddings(raw_frames, is_path=False, mtcnn=self.mtcnn, resnet=self.resnet,
                                                face_embed_cuda=self.face_embed_cuda, use_half=self.use_half, name=all_signals[i].video_path.stem, coord=[pos_x, pos_y])
             #clean
@@ -152,7 +152,7 @@ class AVDataset(torch.utils.data.Dataset):
 if __name__ == "__main__":
     dataset = AVDataset(Path("../../data/audio_visual/avspeech_train.csv"),
                       Path("../../data/train/"),
-                      Path("train.csv"), all_embed_saved=False)
+                      Path("val.csv"), all_embed_saved=False)
     loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=False)
     for a, v, m in tqdm.tqdm(loader, total=len(loader)):
         print(a)
