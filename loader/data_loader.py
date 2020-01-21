@@ -1,3 +1,4 @@
+import re
 import tqdm
 import torch
 import numpy as np
@@ -29,7 +30,7 @@ class AVDataset(torch.utils.data.Dataset):
         """
         self.input_audio_size = input_audio_size
 
-        self.dataset_df = pd.read_csv(dataset_df_path.as_posix(), index_col="link")
+        #self.dataset_df = pd.read_csv(dataset_df_path.as_posix(), index_col="link")
         #self.file_names = self.dataset_df.iloc[:, 0]
         #
         ##All cropped, pre-processed videos
@@ -79,6 +80,9 @@ class AVDataset(torch.utils.data.Dataset):
             print(f"MTCNN has {sum(np.prod(i.shape) for i in self.mtcnn.parameters())} parameters")
             print(f"RESNET has {sum(np.prod(i.shape) for i in self.resnet.parameters())} parameters")
 
+        with open("corrupt_frames_list.txt", "a") as f:
+            f.write("New Run\n")
+
     def __len__(self):
         return len(self.input_df)
 
@@ -90,8 +94,14 @@ class AVDataset(torch.utils.data.Dataset):
             #get audio, video path from combination dataframe
             video_path = row[i]
             audio_path = row[i+self.input_audio_size]
+            
+            #video length is 3-10 seconds, hence, part index can take values 0-2
+            re_match = re.search(r'_part\d', audio_path)
+            video_length_idx = 0
+            if re_match:
+                video_length_idx = int(re_match.group(0)[-1])
 
-            signal = Signal(video_path, audio_path)
+            signal = Signal(video_path, audio_path, video_start_length=video_length_idx)
             all_signals.append(signal)
 
         #input audio signal is the last column.
@@ -123,11 +133,15 @@ class AVDataset(torch.utils.data.Dataset):
             #NOTE: use_cuda = True, only if VRAM ~ 7+GB, if RAM < 8GB it will not work...
             #run the detector and embedder on raw frames
             video_file_name = all_signals[i].video_path.stem.split('_')
+            frame_stem_name = all_signals[i].video_path.stem + f"_part{all_signals[i].video_start_length}"
             pos_x, pos_y = int(video_file_name[-3])/10000, int(video_file_name[-2])/10000
             embeddings = input_face_embeddings(raw_frames, is_path=False, mtcnn=self.mtcnn, resnet=self.resnet,
-                                               face_embed_cuda=self.face_embed_cuda, use_half=self.use_half, name=all_signals[i].video_path.stem, coord=[pos_x, pos_y])
+                                               face_embed_cuda=self.face_embed_cuda, use_half=self.use_half, name=frame_stem_name, coord=[pos_x, pos_y])
             #clean
             del raw_frames
+            if embeddings is None:
+                with open("corrupt_frames_list.txt", "a") as f:
+                    f.write(all_signals[i].video_path.as_posix()+'\n')
 
             #save embeddings if not saved
             np.save(all_signals[i].embed_path, embeddings.cpu().numpy())

@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from torch import nn
 import torchvision
 import torch.nn.functional as F 
@@ -192,9 +193,9 @@ class Video_Model(nn.Module):
         super(Video_Model, self).__init__()
         
         #video model layers , name of layers as per table 2 given in paper.
-        self.linear_for_512_to_1024 = nn.Linear(512,1024)
+        #self.linear_for_512_to_1024 = nn.Linear(512,1024)
         
-        self.conv1 = nn.Conv2d(1024,256,kernel_size = (7,1),padding = self.get_padding((7,1),(1,1)), dilation = (1,1))
+        self.conv1 = nn.Conv2d(512,256,kernel_size = (7,1),padding = self.get_padding((7,1),(1,1)), dilation = (1,1))
       
         self.conv2 = nn.Conv2d(256,256,kernel_size = (5,1),padding = self.get_padding((5,1),(1,1)), dilation = (1,1))
       
@@ -225,7 +226,7 @@ class Video_Model(nn.Module):
             input_video = input_video.unsqueeze(1)
         #input_video = torch.transpose(input_video,1,3) # (1,75,512)
         #print (input_video.shape)
-        input_video = self.linear_for_512_to_1024(input_video) # (1,75,1024)
+        #input_video = self.linear_for_512_to_1024(input_video) # (1,75,1024)
         
         input_video = torch.transpose(input_video,1,3) # (1024,75,1)
         
@@ -314,3 +315,7 @@ class Audio_Visual_Fusion(nn.Module):
         #    output_audio[..., i] = complex_mask[..., i] * input_audio 
         
         return output_audio
+
+if __name__ == "__main__":
+    av = Audio_Visual_Fusion().to("cuda:0")
+    print(f"{np.sum(np.prod(i.shape) for i in av.parameters())}")

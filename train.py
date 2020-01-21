@@ -57,7 +57,7 @@ def main(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     criterion = DiscriminativeLoss()#torch.nn.MSELoss(reduction="mean")
 
-    train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, validate=True)
+    train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, validate=False)
 
 
 if __name__ == "__main__":

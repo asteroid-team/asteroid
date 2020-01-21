@@ -7,18 +7,18 @@ from pathlib import Path
 from typing import Callable, Tuple, List
 
 
-EMBED_DIR = [Path("../data/train/embed")]#, Path("loader/temp_video/embed/")]
-SPEC_DIR = [Path("../data/train/spec")]#, Path("loader/temp_video/spec/")]
+EMBED_DIR = [Path("../data/testing_directory/embed")]#, Path("loader/temp_video/embed/")]
+SPEC_DIR = [Path("../data/testing_directory/spec")]#, Path("loader/temp_video/spec/")]
 
 class Signal:
     '''
         This class holds the video frames and the audio signal.
     '''
 
-    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000, video_max_length=75, load_spec=False):
+    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000, video_start_length=0, load_spec=False):
         self.video_path = Path(video_path)
         self.audio_path = Path(audio_path)
-        self.video_max_length = video_max_length
+        self.video_start_length = video_start_length
 
         self.embed_path = None
         self.embed_saved = False
@@ -84,7 +84,7 @@ class Signal:
                 print(embed_dir)
                 print("use this file from src/ or src/loader")
                 continue
-            self.embed_path = Path(embed_dir, video_name_stem + embed_ext)
+            self.embed_path = Path(embed_dir, video_name_stem + f"_part{self.video_start_length}" + embed_ext)
             if self.embed_path.is_file():
                 self.embed_saved = True
                 self.embed = np.load(self.embed_path.as_posix())
@@ -97,8 +97,8 @@ class Signal:
         return self.embed
     
     def get_video(self):
-        if self.video_max_length is not None:
-            buffer_video = self.buffer_video[:self.video_max_length]
+        #retrieve slice of video, if video > 75 frames
+        buffer_video = self.buffer_video[self.video_start_length*75: (self.video_start_length+1)*75]
         return buffer_video
 
     def get_audio(self):

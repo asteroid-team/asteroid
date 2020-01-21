@@ -3,6 +3,7 @@
     It stores the mixed audio in data/train/mixed directory.
 '''
 import os
+import re
 import glob
 import random
 import itertools
@@ -12,11 +13,11 @@ from pathlib import Path
 
 
 AUDIO_MIX_COMMAND_PREFIX = "ffmpeg -y -t 00:00:03 -ac 1 "
-AUDIO_DIR = "../../data/train/audio"
-MIXED_AUDIO_DIR = "../../data/train/mixed"
-REL_AUDIO_DIR = "../data/train/mixed"
-VIDEO_DIR = "../../data/train"
-REL_VIDEO_DIR = "../data/train"
+AUDIO_DIR = "../../data/testing_directory/audio"
+MIXED_AUDIO_DIR = "../../data/testing_directory/mixed"
+REL_AUDIO_DIR = "../data/testing_directory/mixed"
+VIDEO_DIR = "../../data/testing_directory"
+REL_VIDEO_DIR = "../data/testing_directory"
 AUDIO_SET_DIR = "./../../data/audio_set/low_volume"
 
 def sample_audio_set():
@@ -57,6 +58,10 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
 
     print(train_files)
     print(val_files)
+
+    def retrieve_name(f):
+        f = os.path.splitext(os.path.basename(f))[0]
+        return re.sub(r'_part\d', '', f)
     
     def mix(audio_filtered_files, file_name_df, offset):
         #Generate all combinations and trim total possibilities
@@ -70,12 +75,16 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         mixed_audio = []
         
         for indx, audio_comb in enumerate(audio_combinations):
+            base_names = [os.path.basename(fname)[:11] for fname in audio_comb]
+            if len(base_names) != len(set(base_names)):
+                # if audio from the same video, assume same speaker and ignore it.
+                continue
             if audio_set:
                 noise_input = sample_audio_set()
                 audio_comb = (*audio_comb, *noise_input)
             audio_inputs.append(audio_comb)
             #Convert audio file path to corresponding video path
-            video_inputs.append(tuple(os.path.join(VIDEO_DIR, os.path.splitext(os.path.basename(f))[0]+video_ext)
+            video_inputs.append(tuple(os.path.join(VIDEO_DIR, retrieve_name(f) +video_ext)
                                         for f in audio_comb))
 
             audio_mix_input = ""
@@ -98,9 +107,13 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         assert len(video_inputs) == len(audio_inputs)
 
         for videos, audios, mixed in zip(video_inputs, audio_inputs, mixed_audio):
+            #fix proper path issue
+            mixed = re.sub(r'../../', '../', mixed)
             for i in range(input_audio_size):
-                combinations[f"video_{i+1}"].append(videos[i])
-                combinations[f"audio_{i+1}"].append(audios[i])
+                v = re.sub(r'../../', '../', videos[i])
+                a = re.sub(r'../../', '../', audios[i])
+                combinations[f"video_{i+1}"].append(v)
+                combinations[f"audio_{i+1}"].append(a)
             combinations["mixed_audio"].append(mixed)
 
         columns = [f"video_{i+1}" for i in range(input_audio_size)] + [f"audio_{i+1}" for i in range(input_audio_size)] + ["mixed_audio"]
