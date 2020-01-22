@@ -80,3 +80,13 @@ such as [wsj0-{2, 3}mix](http://www.merl.com/demos/deep-clustering),
 [MS-SNSD](https://github.com/microsoft/MS-SNSD) are being shared, there has 
 been little effort to create common codebases for development and evaluation 
 of source separation and speech enhancement algorithms. Here is one !
+
+## Remote TensorBoard visualization
+```bash
+# Launch tensorboard remotely (default port is 6006)
+tensorboard --logdir exp/tmp/lightning_logs/version_10/tf/ --port tf_port
+
+# Open port-forwarding connection.
+ssh -NfL localhost:remote_port:localhost:tf_port user@ip
+```
+Then open `http://localhost:6006/`.
