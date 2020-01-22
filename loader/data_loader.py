@@ -142,6 +142,8 @@ class AVDataset(torch.utils.data.Dataset):
             if embeddings is None:
                 with open("corrupt_frames_list.txt", "a") as f:
                     f.write(all_signals[i].video_path.as_posix()+'\n')
+                    video_tensors.append(torch.zeros(75, 512))
+                    continue
 
             #save embeddings if not saved
             np.save(all_signals[i].embed_path, embeddings.cpu().numpy())

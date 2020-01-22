@@ -13,11 +13,11 @@ from pathlib import Path
 
 
 AUDIO_MIX_COMMAND_PREFIX = "ffmpeg -y -t 00:00:03 -ac 1 "
-AUDIO_DIR = "../../data/testing_directory/audio"
-MIXED_AUDIO_DIR = "../../data/testing_directory/mixed"
-REL_AUDIO_DIR = "../data/testing_directory/mixed"
-VIDEO_DIR = "../../data/testing_directory"
-REL_VIDEO_DIR = "../data/testing_directory"
+AUDIO_DIR = "../../data/train/audio"
+MIXED_AUDIO_DIR = "../../data/train/mixed"
+REL_AUDIO_DIR = "../data/train/mixed"
+VIDEO_DIR = "../../data/train"
+REL_VIDEO_DIR = "../data/train"
 AUDIO_SET_DIR = "./../../data/audio_set/low_volume"
 
 def sample_audio_set():

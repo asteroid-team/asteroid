@@ -40,9 +40,9 @@ def main(args):
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Download parameters")
     parse.add_argument("--jobs", type=int, default=2)
-    parse.add_argument("--path", type=str, default="../../data/testing_directory//")
-    parse.add_argument("--aud-dir", type=str, default="../../data/testing_directory/audio/")
-    parse.add_argument("--vid-dir", type=str, default="../../data/testing_directory//")
+    parse.add_argument("--path", type=str, default="../../data/train/")
+    parse.add_argument("--aud-dir", type=str, default="../../data/train/audio/")
+    parse.add_argument("--vid-dir", type=str, default="../../data/train/")
     parse.add_argument("--sampling-rate", type=int, default=16_000)
     parse.add_argument("--audio-channel", type=int, default=2)
     parse.add_argument("--audio-extension", type=str, default="wav")
