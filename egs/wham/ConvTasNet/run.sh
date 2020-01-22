@@ -123,5 +123,11 @@ fi
 
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4 : Evaluation"
-	CUDA_VISIBLE_DEVICES=$id $python_path eval.py
+	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
+	--test_dir $test_dir \
+	--task $task \
+	--sample_rate $sample_rate \
+	--nondefault_nsrc $nondefault_src \
+	--exp_dir ${expdir} \
+	--use_gpu $eval_use_gpu
 fi

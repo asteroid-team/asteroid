@@ -27,8 +27,6 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf):
-    # FIXME : Make a function to return loaders, which take conf['data'] as inp.
-    # Where is the mode min of max?
     train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
                             sample_rate=conf['data']['sample_rate'],
                             nondefault_nsrc=conf['data']['nondefault_nsrc'])
@@ -84,6 +82,9 @@ def main(conf):
                          train_percent_check=1.0  # Useful for fast experiment
                          )
     trainer.fit(system)
+    # Saving last model for evaluation for now.
+    # TODO : extract best performing model from metrics and copy
+    torch.save(system.model.state_dict(), os.path.join(exp_dir, 'final.pth'))
 
 
 if __name__ == '__main__':
@@ -103,4 +104,5 @@ if __name__ == '__main__':
     # the attributes in an non-hierarchical structure. It can be useful to also
     # have it so we included it here but it is not used.
     arg_dic, plain_args = parse_args_as_dict(parser, return_plain_args=True)
+    print(arg_dic)
     main(arg_dic)
