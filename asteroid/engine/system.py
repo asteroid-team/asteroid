@@ -40,6 +40,9 @@ class System(pl.LightningModule):
         self.val_loader = val_loader
         self.scheduler = scheduler
         self.config = config
+        # To be filled
+        self.training_losses = []
+        self.validation_losses = []
 
     def forward(self, *args, **kwargs):
         """ Applies forward pass.
@@ -152,6 +155,7 @@ class System(pl.LightningModule):
             ``'progress_bar'``: Tensorboard logs
         """
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
+        self.validation_losses.append(avg_loss)
         tensorboard_logs = {'val_loss': avg_loss}
         return {'val_loss': avg_loss, 'log': tensorboard_logs,
                 'progress_bar': tensorboard_logs}
@@ -159,7 +163,7 @@ class System(pl.LightningModule):
     def configure_optimizers(self):
         """ Required by pytorch-lightning. """
         if self.scheduler is not None:
-            return self.optimizer, self.scheduler
+            return [self.optimizer], [self.scheduler]
         return self.optimizer
 
     @pl.data_loader
