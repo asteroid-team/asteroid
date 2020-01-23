@@ -1,4 +1,5 @@
 # Asteroid : Audio Source Separation on steroids
+### :construction: :warning: Under development :warning: :construction:
 Asteroid is a Pytorch-based source separation and speech enhancement API 
 that enables fast experimentation on common datasets. 
 It comes with a source code written to support a large range of architectures 
@@ -19,7 +20,11 @@ easily.
 * __Reproducibility.__ Recipes provide an easy way to reproduce 
 results with data preparation, training and evaluation in a same script. 
 
-## :construction: :warning: Under development :warning: :construction:
+
+## Highlights
+- [Permutation invariant training wrapper `PITLossWrapper`
+.](https://github.com/mpariente/AsSteroid/blob/master/examples/PITLossWrapper.ipynb)
+
 ## Installation
 In order to install Asteroid, clone the repo and install it using pip or python :
 ```bash
