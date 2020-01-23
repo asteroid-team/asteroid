@@ -9,6 +9,7 @@ Reference:
 """
 
 import torch
+EPS = 1e-8
 
 
 def mul_c(inp, other, dim=1):
@@ -86,8 +87,9 @@ def take_mag(x, dim=1):
     Returns:
         :class:`torch.Tensor`: The magnitude of x.
     """
-    return torch.stack(torch.chunk(x, 2, dim=dim),
-                       dim=-1).pow(2).sum(dim=-1).pow(0.5)
+    power = torch.stack(torch.chunk(x, 2, dim=dim), dim=-1).pow(2).sum(dim=-1)
+    power = power + EPS
+    return power.pow(0.5)
 
 
 def take_cat(x, dim=1):
