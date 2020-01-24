@@ -1,5 +1,6 @@
 import os
 import argparse
+import json
 
 import torch
 from torch.utils.data import DataLoader
@@ -64,8 +65,7 @@ def main(conf):
     # validation step, defaults to val_loss here (see System).
     checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
     checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
-                                 mode='min', save_best_only=False)
-    # New PL version will come the 7th of december / will have save_top_k
+                                 mode='min', save_top_k=5)
     system = System(model=model, loss_func=loss_func, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
                     config=conf)
@@ -79,12 +79,12 @@ def main(conf):
                          default_save_path=exp_dir,
                          gpus=conf['main_args']['gpus'],
                          distributed_backend='dp',
-                         train_percent_check=1.0  # Useful for fast experiment
-                         )
+                         train_percent_check=1.0,  # Useful for fast experiment
+                         gradient_clip_val=5.)
     trainer.fit(system)
-    # Saving last model for evaluation for now.
-    # TODO : extract best performing model from metrics and copy
-    torch.save(system.model.state_dict(), os.path.join(exp_dir, 'final.pth'))
+
+    with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
+        json.dump(checkpoint.best_k_models, f)
 
 
 if __name__ == '__main__':
