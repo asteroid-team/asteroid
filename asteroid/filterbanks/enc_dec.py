@@ -75,11 +75,13 @@ class _EncDec(nn.Module):
     def filters(self):
         return self.filterbank.filters
 
-    @staticmethod
-    def compute_filter_pinv(filters):
+    def compute_filter_pinv(self, filters):
         """ Computes pseudo inverse filterbank of given filters."""
+        scale = self.filterbank.stride / self.filterbank.kernel_size
         shape = filters.shape
-        return torch.pinverse(filters.squeeze()).transpose(-1, -2).view(shape)
+        ifilt = torch.pinverse(filters.squeeze()).transpose(-1, -2).view(shape)
+        # Compensate for the overlap-add.
+        return ifilt * scale
 
     def get_filters(self):
         """ Returns filters or pinv filters depending on `is_pinv` attribute """
