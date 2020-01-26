@@ -6,7 +6,7 @@ from .analytic_free_fb import AnalyticFreeFB
 from .free_fb import FreeFB
 from .param_sinc_fb import ParamSincFB
 from .stft_fb import STFTFB
-from .enc_dec import Encoder, Decoder, NoEncoder
+from .enc_dec import Filterbank, Encoder, Decoder, NoEncoder
 
 
 def make_enc_dec(fb_name, mask_mode='reim', inp_mode='reim',
