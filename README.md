@@ -24,7 +24,7 @@ results with data preparation, training and evaluation in a same script.
 ## Highlights
 - [Permutation invariant training wrapper `PITLossWrapper`
 .](https://github.com/mpariente/AsSteroid/blob/master/examples/PITLossWrapper.ipynb)
-
+- [Filterbank API](https://github.com/mpariente/AsSteroid/blob/master/examples/Filterbank.ipynb)
 ## Installation
 In order to install Asteroid, clone the repo and install it using pip or python :
 ```bash
@@ -89,9 +89,9 @@ of source separation and speech enhancement algorithms. Here is one !
 ## Remote TensorBoard visualization
 ```bash
 # Launch tensorboard remotely (default port is 6006)
-tensorboard --logdir exp/tmp/lightning_logs/version_10/tf/ --port tf_port
+tensorboard --logdir exp/tmp/lightning_logs/ --port tf_port
 
-# Open port-forwarding connection.
-ssh -NfL localhost:remote_port:localhost:tf_port user@ip
+# Open port-forwarding connection. Add -Nf option not to open remote. 
+ssh -L local_port:localhost:tf_port user@ip
 ```
-Then open `http://localhost:6006/`.
+Then open `http://localhost:local_port/`.
