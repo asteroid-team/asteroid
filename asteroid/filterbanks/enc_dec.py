@@ -31,6 +31,9 @@ class Filterbank(nn.Module):
         self.n_filters = n_filters
         self.kernel_size = kernel_size
         self.stride = stride if stride else self.kernel_size // 2
+        # If not specified otherwise in the filterbank's init, output
+        # number of features is equal to number of required filters.
+        self.n_feats_out = n_filters
 
     @property
     def filters(self):

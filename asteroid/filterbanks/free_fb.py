@@ -29,8 +29,6 @@ class FreeFB(Filterbank):
     """
     def __init__(self, n_filters, kernel_size, stride=None, **kwargs):
         super(FreeFB, self).__init__(n_filters, kernel_size, stride=stride)
-        self.n_feats_out = n_filters
-
         self._filters = nn.Parameter(torch.ones(n_filters, 1, kernel_size))
         for p in self.parameters():
             nn.init.xavier_normal_(p)
