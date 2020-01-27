@@ -295,6 +295,7 @@ class Audio_Visual_Fusion(nn.Module):
         mixed_av = mixed_av.squeeze(3)  # (N,input_dim,298)
         mixed_av = torch.transpose(mixed_av,1,2) # (N,298,input_dim)
         
+        self.lstm.flatten_parameters()
         mixed_av,(h,c) = self.lstm(mixed_av)
         mixed_av = mixed_av[..., :400] + mixed_av[..., 400:]
         

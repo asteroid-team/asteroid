@@ -81,7 +81,7 @@ class SNRCallback(MetricCallback):
         output_audios = state.output[self.output_key]
         true_audios = state.input[self.input_key]
         
-        num_person = state.model.num_person
+        num_person = state.model.module.num_person
         
         avg_snr = 0
         for n in range(num_person):

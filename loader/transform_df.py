@@ -1,8 +1,8 @@
 import re
 import pandas as pd
 
-df = pd.read_csv("../train.csv")
-df_val = pd.read_csv("../val.csv")
+df = pd.read_csv("../filtered_train.csv")
+df_val = pd.read_csv("../filtered_val.csv")
 
 change = lambda x: re.sub(r'\.\./', '../../', x)
 

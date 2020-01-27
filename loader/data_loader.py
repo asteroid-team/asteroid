@@ -105,18 +105,23 @@ class AVDataset(torch.utils.data.Dataset):
             all_signals.append(signal)
 
         #input audio signal is the last column.
-        mixed_signal = Signal.load_audio(row[-1])
+        mixed_signal, is_spec, spec_path = Signal.load_audio(row[-1])
+        if not is_spec:
+            mixed_signal = convert_to_spectrogram(mixed_signal)
+            print("SAVING MIXED")
+            np.save(spec_path, mixed_signal)
 
         audio_tensors = []
         video_tensors = []
 
         for i in range(self.input_audio_size):
             #audio to spectrogram
-            #if all_signals[i].is_spec():
-            #    spectrogram =  all_signals[i].get_spec()
-            #else:
-            spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
-            #    np.save(all_signals[i].spec_path, spectrogram)
+            if all_signals[i].spec_path.is_file():
+                spectrogram =  all_signals[i].get_spec()
+            else:
+                spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
+                print("SAVING")
+                np.save(all_signals[i].spec_path, spectrogram)
             #convert to tensor
             audio_tensors.append(torch.from_numpy(spectrogram))
 
@@ -156,7 +161,7 @@ class AVDataset(torch.utils.data.Dataset):
         # for i in range(num_person):
         #   slice out each one , video_input[i] (because this will be of (1024,75,1))
 
-        mixed_signal_tensor = torch.Tensor(convert_to_spectrogram(mixed_signal))  #shape  (257,298,2)
+        mixed_signal_tensor = torch.Tensor(mixed_signal)  #shape  (257,298,2)
         mixed_signal_tensor = torch.transpose(mixed_signal_tensor,0,2) #shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257	
         audio_tensors = [i.transpose(0, 2) for i in audio_tensors]
         audio_tensors = torch.stack(audio_tensors)
@@ -172,3 +177,4 @@ if __name__ == "__main__":
     loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=False)
     for a, v, m in tqdm.tqdm(loader, total=len(loader)):
         pass#print(len(a), len(v), a[0].shape, v[0].shape, m.shape)
+

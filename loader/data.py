@@ -15,7 +15,7 @@ class Signal:
         This class holds the video frames and the audio signal.
     '''
 
-    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000, video_start_length=0, load_spec=False):
+    def __init__(self, video_path: str, audio_path: str, audio_ext=".mp3", sr=16_000, video_start_length=0, load_spec=True):
         self.video_path = Path(video_path)
         self.audio_path = Path(audio_path)
         self.video_start_length = video_start_length
@@ -105,7 +105,7 @@ class Signal:
         return self.audio
     
     def get_spec(self):
-            return self.audio
+            return np.load(self.spec_path)
     
     def is_spec(self):
         return self._is_spec
@@ -114,7 +114,15 @@ class Signal:
     def load_audio(audio_path: str, sr=16_000):
         if not os.path.exists(audio_path) or not os.path.isfile(audio_path):
             raise ValueError(f"Path: {audio_path} does not exist")
-        return librosa.load(audio_path, sr=sr)[0]
+        audio_path = Path(audio_path)
+        spec_exists = False
+        spec_path = Path(*audio_path.parts[:-2], "spec", audio_path.stem + ".npy")
+        if spec_path.is_file():
+            spec_exists = True
+            audio = np.load(spec_path)
+        else:
+            audio = librosa.load(audio_path, sr=sr)[0]
+        return audio, spec_exists, spec_path
 
 
 class Augment:
@@ -186,3 +194,4 @@ class Augment:
 
 if __name__ == "__main__":
     signal = Signal("../../data/train/AvWWVOgaMlk_cropped.mp4", "../../data/train/audio/AvWWVOgaMlk_cropped.mp3")
+
