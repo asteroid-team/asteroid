@@ -17,7 +17,7 @@ setup(
                       'pytorch-lightning'],
     extra_requires={
         'visualize': ['seaborn>=0.9.0'],
-        'evaluate': ['mir-eval>=0.5', 'pystoi>=0.2.2', 'pypesq>=1.0'],
+        'evaluate': ['pb_bss @ git+https://github.com/fgnt/pb_bss'],
         'tests': ['pytest']
     }
 )
