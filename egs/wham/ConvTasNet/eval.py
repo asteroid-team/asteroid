@@ -40,7 +40,9 @@ def get_model(conf):
         best_k = json.load(f)
     best_model_path = min(best_k, key=best_k.get)
     # Load checkpoint
-    model.load_state_dict(torch.load(best_model_path, map_location='cpu'))
+    checkpoint = torch.load(best_model_path, map_location='cpu')
+    # Load state_dict into model, strict=False is important here
+    model.load_state_dict(checkpoint['state_dict'], strict=False)
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
