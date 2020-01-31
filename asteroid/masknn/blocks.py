@@ -340,7 +340,7 @@ class DPRNN(nn.Module):
                                 n_chunks)
         # Overlap and add:
         # [batch, bn_chan, chunk_size, n_chunks] -> [batch, bn_chan, n_frames]
-        to_unfold = self.bn_chan * self.chunk_size
+        to_unfold = n_filters * self.chunk_size
         output = fold(output.reshape(batch, to_unfold, n_chunks),
                       (n_frames, 1), kernel_size=(self.chunk_size, 1),
                       padding=(self.chunk_size, 0),
