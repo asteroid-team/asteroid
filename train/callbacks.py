@@ -6,13 +6,14 @@ import torch
 import numpy as np
 
 from pathlib import Path
-from metric_utils import snr
+from metric_utils import snr, sdr
 from catalyst.dl.core import Callback, MetricCallback, CallbackOrder
 
 import logging
 
 logging.basicConfig(filename='loss.log', filemode='a', format='%(name)s - %(levelname)s - %(message)s')
 logging.warning('This will get logged to a file')
+
 
 class SaveAudioCallback(Callback):
     
@@ -107,3 +108,53 @@ class SNRCallback(MetricCallback):
 
         avg_snr /= num_person
         state.metrics.add_batch_value(name=self.prefix, value=avg_snr)
+
+
+class SDRCallback(MetricCallback):
+    """
+    SDR callback.
+    """
+
+    def __init__(
+        self,
+        input_key: str = "targets",
+        output_key: str = "logits",
+        prefix: str = "sdr",
+        mixed_audio_key: str="input_audio"
+    ):
+        """
+        Args:
+            input_key (str): input key to use for dice calculation;
+                specifies our y_true.
+            output_key (str): output key to use for dice calculation;
+                specifies our y_pred.
+        """
+        self.mixed_audio_key = mixed_audio_key
+        super().__init__(
+            prefix=prefix,
+            metric_fn=snr,
+            input_key=input_key,
+            output_key=output_key
+        )
+
+    def on_batch_end(self, state):
+        output_audios = state.output[self.output_key]
+        true_audios = state.input[self.input_key]
+
+        num_person = state.model.num_person
+        batch = output_audios.shape[0]
+
+        avg_sdr = 0
+        for n in range(batch):
+            output_audio = output_audios[n, ...]
+            true_audio = true_audios[n, ...]
+
+            output_audio = output_audio.detach().cpu().numpy().transpose(2, 1, 0, 3)
+            true_audio = true_audio.detach().cpu().numpy().transpose(2, 1, 0, 3)
+
+            sdr_value = sdr(output_audio, true_audio)[0]
+            sdr_value = np.mean(sdr_value)
+            avg_sdr += sdr_value#(snr_value - avg_snr) / (n + 1)
+
+        avg_sdr /= batch
+        state.metrics.add_batch_value(name=self.prefix, value=avg_sdr)

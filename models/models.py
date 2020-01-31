@@ -276,6 +276,14 @@ class Audio_Visual_Fusion(nn.Module):
 
         self.complex_mask_layer = nn.Linear(600,2*257*self.num_person)
         torch.nn.init.xavier_uniform_(self.complex_mask_layer.weight)
+
+        self.drop1 = nn.Dropout(0.2)
+        self.drop2 = nn.Dropout(0.2)
+        self.drop3 = nn.Dropout(0.2)
+
+        self.batch_norm1 = nn.BatchNorm1d(298)
+        self.batch_norm2 = nn.BatchNorm1d(298)
+        self.batch_norm3 = nn.BatchNorm1d(298)
     
     def forward(self,input_audio,input_video):
         # input_audio will be (N,2,298,257)
@@ -299,9 +307,14 @@ class Audio_Visual_Fusion(nn.Module):
         mixed_av,(h,c) = self.lstm(mixed_av)
         mixed_av = mixed_av[..., :400] + mixed_av[..., 400:]
         
-        mixed_av = F.relu(self.fc1(mixed_av))
-        mixed_av = F.relu(self.fc2(mixed_av))
-        mixed_av = F.relu(self.fc3(mixed_av)) # (N,298,600)
+        mixed_av = self.batch_norm1((F.relu(self.fc1(mixed_av))))
+        mixed_av = self.drop1(mixed_av)
+
+        mixed_av = self.batch_norm2(F.relu(self.fc2(mixed_av)))
+        mixed_av = self.drop2(mixed_av)
+
+        mixed_av = self.batch_norm3(F.relu(self.fc3(mixed_av))) # (N,298,600)
+        mixed_av = self.drop3(mixed_av)
         
         complex_mask = torch.sigmoid(self.complex_mask_layer(mixed_av)) #(N,298,2*257*num_person)
         
@@ -320,3 +333,4 @@ class Audio_Visual_Fusion(nn.Module):
 if __name__ == "__main__":
     av = Audio_Visual_Fusion().to("cuda:0")
     print(f"{np.sum(np.prod(i.shape) for i in av.parameters())}")
+
