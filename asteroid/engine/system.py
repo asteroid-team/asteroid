@@ -5,6 +5,7 @@ Proposed base class to interface with pytorch-lightning.
 
 import torch
 import pytorch_lightning as pl
+from argparse import Namespace
 
 
 class System(pl.LightningModule):
@@ -40,9 +41,8 @@ class System(pl.LightningModule):
         self.val_loader = val_loader
         self.scheduler = scheduler
         self.config = config
-        # To be filled
-        self.training_losses = []
-        self.validation_losses = []
+        # hparams will be logged to Tensorboard as text variables.
+        self.hparams = Namespace(**config)
 
     def forward(self, *args, **kwargs):
         """ Applies forward pass.
@@ -155,7 +155,6 @@ class System(pl.LightningModule):
             ``'progress_bar'``: Tensorboard logs
         """
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
-        self.validation_losses.append(avg_loss)
         tensorboard_logs = {'val_loss': avg_loss}
         return {'val_loss': avg_loss, 'log': tensorboard_logs,
                 'progress_bar': tensorboard_logs}
