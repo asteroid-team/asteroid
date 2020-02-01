@@ -252,13 +252,18 @@ class DPRNN(nn.Module):
 
     Args:
         in_chan (int): Number of input filters.
-        out_chan  (int): Number of bins in the estimated masks.
-        bn_chan (int): Number of channels after the bottleneck.
-        hid_size (int): Number of neurons in the RNNs cell state.
-        chunk_size (int): window size of overlap and add processing.
-        hop_size (int): hop size (stride) of overlap and add processing.
-        n_repeats (int): Number of repeats.
         n_src (int): Number of masks to estimate.
+        out_chan  (int): Number of bins in the estimated masks.
+            Defaults to `in_chan`.
+        bn_chan (int): Number of channels after the bottleneck.
+            Defaults to 128.
+        hid_size (int): Number of neurons in the RNNs cell state.
+            Defaults to 128.
+        chunk_size (int): window size of overlap and add processing.
+            Defaults to 100.
+        hop_size (int): hop size (stride) of overlap and add processing.
+            Default to `chunk_size // 2` (50% overlap).
+        n_repeats (int): Number of repeats. Defaults to 6.
         norm_type (str, optional): Type of normalization to use. To choose from
 
             - ``'gLN'``: global Layernorm
@@ -276,16 +281,18 @@ class DPRNN(nn.Module):
         time-domain single-channel speech separation", Yi Luo, Zhuo Chen
         and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
-    def __init__(self, in_chan, out_chan, bn_chan, hid_size, chunk_size,
-                 hop_size, n_repeats, n_src, norm_type="gLN",
+    def __init__(self, in_chan, n_src, out_chan=None, bn_chan=128, hid_size=128,
+                 chunk_size=100, hop_size=None, n_repeats=6, norm_type="gLN",
                  mask_act='sigmoid', bidirectional=True, rnn_type="LSTM",
                  num_layers=1, dropout=0):
         super(DPRNN, self).__init__()
         self.in_chan = in_chan
+        out_chan = out_chan if out_chan is not None else in_chan
         self.out_chan = out_chan
         self.bn_chan = bn_chan
         self.hid_size = hid_size
         self.chunk_size = chunk_size
+        hop_size = hop_size if hop_size is not None else chunk_size // 2
         self.hop_size = hop_size
         self.n_repeats = n_repeats
         self.n_src = n_src
@@ -303,8 +310,9 @@ class DPRNN(nn.Module):
         # Succession of DPRNNBlocks.
         net = []
         for x in range(self.n_repeats):
-            net += [DPRNNBlock(bn_chan, hid_size, norm_type, bidirectional,
-                               rnn_type, num_layers, dropout)]
+            net += [DPRNNBlock(bn_chan, hid_size, norm_type=norm_type,
+                               bidirectional=bidirectional, rnn_type=rnn_type,
+                               num_layers=num_layers, dropout=dropout)]
         self.net = nn.Sequential(*net)
 
         mask_conv = nn.Conv2d(bn_chan, n_src*out_chan, 1)
@@ -341,7 +349,7 @@ class DPRNN(nn.Module):
         # Overlap and add:
         # [batch, bn_chan, chunk_size, n_chunks] -> [batch, bn_chan, n_frames]
         to_unfold = n_filters * self.chunk_size
-        output = fold(output.reshape(batch, to_unfold, n_chunks),
+        output = fold(output.reshape(batch * self.n_src, to_unfold, n_chunks),
                       (n_frames, 1), kernel_size=(self.chunk_size, 1),
                       padding=(self.chunk_size, 0),
                       stride=(self.hop_size, 1))
