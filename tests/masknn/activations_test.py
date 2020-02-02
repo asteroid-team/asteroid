@@ -35,6 +35,7 @@ def test_softmax():
     asteroid_softmax = activations.get("softmax")(dim=-1)
     inp = torch.randn(10, 11, 12)
     assert_allclose(torch_softmax(inp), asteroid_softmax(inp))
+    assert torch_softmax == activations.get(torch_softmax)
 
 
 @pytest.mark.parametrize("wrong", ["wrong_string", 12, object()])
