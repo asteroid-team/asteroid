@@ -43,3 +43,5 @@ def test_get_none():
     assert optimizers.get(None) is None
 
 
+def test_make_optimizer():
+    optimizers.make_optimizer(global_model.parameters(), "adam", lr=1e-3)
