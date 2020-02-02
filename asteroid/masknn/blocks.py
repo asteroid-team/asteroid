@@ -80,7 +80,8 @@ class TDConvNet(nn.Module):
         super(TDConvNet, self).__init__()
         self.in_chan = in_chan
         self.n_src = n_src
-        self.out_chan = out_chan if out_chan else in_chan
+        out_chan = out_chan if out_chan else in_chan
+        self.out_chan = out_chan
         self.n_blocks = n_blocks
         self.n_repeats = n_repeats
         self.bn_chan = bn_chan
@@ -101,7 +102,7 @@ class TDConvNet(nn.Module):
                 self.TCN.append(Conv1DBlock(bn_chan, hid_chan, skip_chan,
                                             kernel_size, padding=padding,
                                             dilation=2**x, norm_type=norm_type))
-        mask_conv = nn.Conv1d(bn_chan, n_src*out_chan, 1)
+        mask_conv = nn.Conv1d(skip_chan, n_src*out_chan, 1)
         self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
