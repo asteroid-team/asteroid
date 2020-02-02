@@ -30,10 +30,10 @@ class STFTFB(Filterbank):
             self.window = np.hanning(kernel_size + 1)[:-1]**.5
         else:
             ws = window.size
-            if not (ws == kernel_size or ws == n_filters):
-                raise AssertionError('Expected window of size {} or {} '
+            if not (ws == kernel_size):
+                raise AssertionError('Expected window of size {}.'
                                      'Received window of size {} instead.'
-                                     ''.format(n_filters, kernel_size, ws))
+                                     ''.format(kernel_size, ws))
             self.window = window
         # Create and normalize DFT filters (can be overcomplete)
         filters = np.fft.fft(np.eye(n_filters))

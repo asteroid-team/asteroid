@@ -1,6 +1,7 @@
 import pytest
 import torch
 from torch import testing
+import numpy as np
 
 from asteroid.filterbanks import Encoder, Decoder, STFTFB
 from asteroid.filterbanks import make_enc_dec
@@ -25,6 +26,16 @@ def test_stft_def(fb_config):
     enc2, dec2 = make_enc_dec('stft', **fb_config)
     testing.assert_allclose(enc.filterbank.filters, enc2.filterbank.filters)
     testing.assert_allclose(dec.filterbank.filters, dec2.filterbank.filters)
+
+
+@pytest.mark.parametrize("fb_config", fb_config_list())
+def test_stft_windows(fb_config):
+    n_filters, kernel_size = fb_config["n_filters"], fb_config["kernel_size"]
+    win = np.hanning(kernel_size)
+    fb = STFTFB(**fb_config, window=win)
+    with pytest.raises(AssertionError):
+        win = np.hanning(kernel_size + 1)
+        fb = STFTFB(**fb_config, window=win)
 
 
 @pytest.mark.parametrize("fb_config", fb_config_list())
