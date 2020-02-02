@@ -27,6 +27,7 @@ def test_fb_def_and_forward(fb_class, fb_config):
     inp = torch.randn(1, 1, 32000)
     tf_out = enc(inp)
     out = dec(tf_out)
+    assert tf_out.shape[1] == enc.filterbank.n_feats_out
 
 
 @pytest.mark.parametrize("fb_class", [AnalyticFreeFB, ParamSincFB])
