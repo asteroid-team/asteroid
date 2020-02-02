@@ -254,7 +254,7 @@ class DPRNN(nn.Module):
     Args:
         in_chan (int): Number of input filters.
         n_src (int): Number of masks to estimate.
-        out_chan  (int): Number of bins in the estimated masks.
+        out_chan  (int or None): Number of bins in the estimated masks.
             Defaults to `in_chan`.
         bn_chan (int): Number of channels after the bottleneck.
             Defaults to 128.
@@ -262,7 +262,7 @@ class DPRNN(nn.Module):
             Defaults to 128.
         chunk_size (int): window size of overlap and add processing.
             Defaults to 100.
-        hop_size (int): hop size (stride) of overlap and add processing.
+        hop_size (int or None): hop size (stride) of overlap and add processing.
             Default to `chunk_size // 2` (50% overlap).
         n_repeats (int): Number of repeats. Defaults to 6.
         norm_type (str, optional): Type of normalization to use. To choose from
@@ -345,11 +345,11 @@ class DPRNN(nn.Module):
         # Apply stacked DPRNN Blocks sequentially
         output = self.net(output)
         output = self.mask_net(output)
-        output = output.reshape(batch * self.n_src, n_filters, self.chunk_size,
-                                n_chunks)
+        output = output.reshape(batch * self.n_src, self.out_chan,
+                                self.chunk_size, n_chunks)
         # Overlap and add:
-        # [batch, bn_chan, chunk_size, n_chunks] -> [batch, bn_chan, n_frames]
-        to_unfold = n_filters * self.chunk_size
+        # [batch, out_chan, chunk_size, n_chunks] -> [batch, out_chan, n_frames]
+        to_unfold = self.out_chan * self.chunk_size
         output = fold(output.reshape(batch * self.n_src, to_unfold, n_chunks),
                       (n_frames, 1), kernel_size=(self.chunk_size, 1),
                       padding=(self.chunk_size, 0),
