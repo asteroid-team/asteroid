@@ -42,6 +42,7 @@ class System(pl.LightningModule):
         self.scheduler = scheduler
         self.config = config
         # hparams will be logged to Tensorboard as text variables.
+        config = {} if config is None else config
         self.hparams = Namespace(**config)
 
     def forward(self, *args, **kwargs):
@@ -74,7 +75,7 @@ class System(pl.LightningModule):
             `training_step` and `validation_step` instead.
         """
         inputs, targets, loss_kwargs = self.unpack_data(batch)
-        est_targets = self.model(inputs)
+        est_targets = self(inputs)
         loss = self.loss_func(targets, est_targets, **loss_kwargs)
         return loss
 
@@ -195,6 +196,6 @@ class System(pl.LightningModule):
         pass
 
     @pl.data_loader
-    def tng_dataloader(self):
+    def tng_dataloader(self):  # pragma: no cover
         """ Deprecated."""
         pass
