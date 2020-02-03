@@ -14,6 +14,7 @@ install:
 script:
     - python --version
     - coverage run -m py.test tests
+    - coverage report -m
     - cd docs
     - make doc
     - make html
@@ -21,8 +22,9 @@ script:
 
 # Push the results back to codecov
 after_success:
-    - coverage report -m
-    - codecov
+#    - coverage report -m
+#    - codecov
+    - bash <(curl -s https://codecov.io/bash)
 
 deploy:
     provider: pages
@@ -31,4 +33,4 @@ deploy:
     github_token: $GITHUB_PAGES
     local_dir: docs/build/html
     on:
-      branches: master
+      branch: master
