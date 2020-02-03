@@ -1,5 +1,6 @@
 # Asteroid : Audio Source Separation on steroids
 [![Build Status](https://travis-ci.com/mpariente/AsSteroid.svg?branch=master)](https://travis-ci.com/mpariente/AsSteroid)
+[![codecov](https://codecov.io/gh/mpariente/AsSteroid/branch/master/graph/badge.svg)](https://codecov.io/gh/mpariente/AsSteroid)
 ### :construction: :warning: Under development :warning: :construction:
 Asteroid is a Pytorch-based source separation and speech enhancement API 
 that enables fast experimentation on common datasets. 
