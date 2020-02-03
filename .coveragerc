@@ -6,3 +6,6 @@ exclude_lines =
 
 omit =
   asteroid/data/*
+
+[run]
+source=asteroid
