@@ -217,7 +217,7 @@ class Decoder(_EncDec):
             return out.view(batch, n_src, -1)
 
 
-class NoEncoder(nn.Module):
+class NoEncoder(nn.Module):  # pragma: no cover
     """ Class to use for no neural encoder.
     
     This is a placeholder for precomputed features.

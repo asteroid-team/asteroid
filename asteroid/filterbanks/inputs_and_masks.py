@@ -183,6 +183,7 @@ def apply_complex_mask(tf_rep, mask, dim=1):
     """
     return mul_c(tf_rep, mask, dim=dim)
 
+
 _inputs = {
     'reim': (take_reim, 1),
     'mag': (take_mag, 1/2),

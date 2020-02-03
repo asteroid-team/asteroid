@@ -78,7 +78,7 @@ class CumLN(_LayerNorm):
                            step=chan, dtype=x.dtype).view(1, 1, -1)
         cum_mean = cum_sum / cnt
         cum_var = cum_pow_sum - cum_mean.pow(2)
-        return self.gamma * (x - cum_mean) / (cum_var + EPS).sqrt() + self.beta
+        return self.apply_gain_and_bias((x - cum_mean) / (cum_var + EPS).sqrt())
 
 
 # Aliases.
