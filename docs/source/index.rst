@@ -7,11 +7,11 @@ Welcome to asteroid's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 4
-   :name: docs
+   :maxdepth: 1
    :caption: Python API
 
    filterbanks
+   losses
 
 Indices and tables
 ==================
