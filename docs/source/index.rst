@@ -7,11 +7,11 @@ Welcome to asteroid's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 4
+   :name: docs
+   :caption: Python API
 
-   apidoc/asteroid
-
+   filterbanks
 
 Indices and tables
 ==================
