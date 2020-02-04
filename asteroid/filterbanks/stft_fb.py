@@ -4,7 +4,7 @@ from .enc_dec import Filterbank
 
 
 class STFTFB(Filterbank):
-    """STFT filterbank.
+    """ STFT filterbank.
 
     Args:
         n_filters (int): Number of filters. Determines the length of the STFT
@@ -14,6 +14,9 @@ class STFTFB(Filterbank):
             (default), set to ``kernel_size // 2``.
         window (:class:`numpy.ndarray`, optional): If None, defaults to
             ``np.sqrt(np.hanning())``.
+
+    Attributes:
+        n_feats_out (int): Number of output filters.
     """
     def __init__(self, n_filters, kernel_size, stride=None, window=None,
                  **kwargs):

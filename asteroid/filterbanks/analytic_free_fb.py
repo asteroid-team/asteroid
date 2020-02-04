@@ -6,9 +6,8 @@ from .enc_dec import Filterbank
 
 
 class AnalyticFreeFB(Filterbank):
-    """ Free analytic (fully learned with analycity constraints) filterbank
-
-        For more details, see [1].
+    """ Free analytic (fully learned with analycity constraints) filterbank.
+    For more details, see [1].
 
     Args:
         n_filters (int): Number of filters. Half of `n_filters` will
@@ -17,6 +16,9 @@ class AnalyticFreeFB(Filterbank):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution.
             If None (default), set to ``kernel_size // 2``.
+
+    Attributes:
+        n_feats_out (int): Number of output filters.
 
     References:
         [1] : "Filterbank design for end-to-end speech separation".

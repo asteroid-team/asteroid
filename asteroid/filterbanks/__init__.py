@@ -97,3 +97,7 @@ free = FreeFB
 analytic_free = AnalyticFreeFB
 param_sinc = ParamSincFB
 stft = STFTFB
+
+# For the docs
+__all__ = ['Filterbank', 'Encoder', 'Decoder', 'FreeFB', 'STFTFB',
+           'AnalyticFreeFB', 'ParamSincFB']
