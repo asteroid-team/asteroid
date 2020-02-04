@@ -1,0 +1,18 @@
+sphinx-rtd-theme==0.4.3
+sphinxcontrib-applehelp==1.0.1
+sphinxcontrib-devhelp==1.0.1
+sphinxcontrib-htmlhelp==1.0.2
+sphinxcontrib-jsmath==1.0.1
+sphinxcontrib-qthelp==1.0.2
+sphinxcontrib-serializinghtml==1.1.3
+
+sphinx>=1.8.3
+recommonmark  # fails with badges
+m2r  # fails with multi-line text
+nbsphinx
+pandoc
+docutils
+git+https://github.com/mpariente/asteroid_sphinx_theme
+# sphinxcontrib-fulltoc
+# sphinxcontrib-mockautodoc
+# pip_shims
