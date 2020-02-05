@@ -51,13 +51,7 @@ def make_enc_dec(fb_name, mask_mode='reim', inp_mode='reim',
     Returns:
         Encoder instance, Decoder instance.
     """
-    # Handles class names as strings or as classes.
-    if isinstance(fb_name, str):
-        fb_class = get(fb_name)
-    elif isinstance(fb_name, type):
-        fb_class = fb_name
-    else:
-        raise ValueError('Could not interpret : ' + str(fb_name))
+    fb_class = get(fb_name)
 
     if who_is_pinv in ['dec', 'decoder']:
         fb = fb_class(**kwargs)

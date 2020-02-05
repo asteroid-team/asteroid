@@ -24,7 +24,7 @@ def rmsprop(params, lr=0.001, **kwargs):
 def get(identifier):
     if identifier is None:
         return None
-    elif callable(identifier):
+    elif isinstance(identifier, optim.Optimizer):
         return identifier
     elif isinstance(identifier, str):
         cls = globals().get(identifier)

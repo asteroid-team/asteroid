@@ -7,7 +7,7 @@ from torch import nn
 
 
 def linear():
-    return LinearActivation()
+    return nn.Identity()
 
 
 def relu():
@@ -32,11 +32,6 @@ def softmax(dim=None):
 
 def tanh():
     return nn.Tanh()
-
-
-class LinearActivation(nn.Module):
-    def forward(self, x):
-        return x
 
 
 def get(identifier):

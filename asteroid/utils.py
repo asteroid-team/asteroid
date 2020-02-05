@@ -26,12 +26,12 @@ def has_arg(fn, name):
                                inspect.Parameter.KEYWORD_ONLY))
 
 
-def to_cuda(tensors):
+def to_cuda(tensors):  # pragma: no cover (No CUDA on travis)
     """ Transfer tensor, dict or list of tensors to GPU.
 
     Args:
-        tensors (:class:`torch.Tensor`): May be a single, a list or a
-            dictionary of tensors.
+        tensors (:class:`torch.Tensor`, list or dict): May be a single, a
+            list or a dictionary of tensors.
 
     Returns:
         :class:`torch.Tensor`:
@@ -71,6 +71,7 @@ def tensors_to_device(tensors, device):
     elif isinstance(tensors, dict):
         for key in tensors.keys():
             tensors[key] = tensors_to_device(tensors[key], device)
+        return tensors
     else:
         return tensors
 
@@ -89,33 +90,6 @@ def prepare_parser_from_dict(dic, parser=None):
             and arguments corresponding to the second level keys with default
             values given by the values.
     """
-    def str_int_float(value):
-        """ Type to convert strings to int, float (in this order) if possible.
-
-        Args:
-            value (str): Value to convert.
-
-        Returns:
-            int, float, str: Converted value.
-        """
-        if isint(value):
-            return int(value)
-        if isfloat(value):
-            return float(value)
-        if isinstance(value, str):
-            return value
-        raise argparse.ArgumentTypeError('String expected.')
-
-    def str2bool(value):
-        """ Type to convert strings to Boolean """
-        if isinstance(value, bool):
-            return value
-        if value.lower() in ('yes', 'true', 'y', '1'):
-            return True
-        if value.lower() in ('no', 'false', 'n', '0'):
-            return False
-        raise argparse.ArgumentTypeError('Boolean value expected.')
-
     def standardized_entry_type(value):
         """ If the default value is None, replace NoneType by str_int_float.
             If the default value is boolean, look for boolean strings."""
@@ -136,36 +110,32 @@ def prepare_parser_from_dict(dic, parser=None):
     return parser
 
 
-def parse_args_as_dict(parser, return_plain_args=False):
-    """ Get a dict of dicts out of process `parser.parse_args()`
-
-    Top-level keys corresponding to groups and bottom-level keys corresponding
-    to arguments. Under `'main_args'`, the arguments which don't belong to a
-    argparse group (i.e main arguments defined before parsing from a dict) can
-    be found.
+def str_int_float(value):
+    """ Type to convert strings to int, float (in this order) if possible.
 
     Args:
-        parser (argparse.ArgumentParser): ArgumentParser instance containing
-            groups. Output of `prepare_parser_from_dict`.
-        return_plain_args (bool): Whether to return the output or
-            `parser.parse_args()`.
+        value (str): Value to convert.
 
     Returns:
-        dict:
-            Dictionary of dictionaries containing the arguments. Optionally the
-            direct output `parser.parse_args()`.
+        int, float, str: Converted value.
     """
-    args = parser.parse_args()
-    args_dic = {}
-    for group in parser._action_groups:
-        group_dict = {a.dest: getattr(args, a.dest, None)
-                      for a in group._group_actions}
-        args_dic[group.title] = group_dict
-    args_dic['main_args'] = args_dic['optional arguments']
-    del args_dic['optional arguments']
-    if return_plain_args:
-        return args_dic, args
-    return args_dic
+    if isint(value):
+        return int(value)
+    if isfloat(value):
+        return float(value)
+    elif isinstance(value, str):
+        return value
+
+
+def str2bool(value):
+    """ Type to convert strings to Boolean """
+    if isinstance(value, bool):
+        return value
+    if value.lower() in ('yes', 'true', 'y', '1'):
+        return True
+    if value.lower() in ('no', 'false', 'n', '0'):
+        return False
+    raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def isfloat(value):
@@ -200,3 +170,38 @@ def isint(value):
         return True
     except ValueError:
         return False
+
+
+def parse_args_as_dict(parser, return_plain_args=False, args=None):
+    """ Get a dict of dicts out of process `parser.parse_args()`
+
+    Top-level keys corresponding to groups and bottom-level keys corresponding
+    to arguments. Under `'main_args'`, the arguments which don't belong to a
+    argparse group (i.e main arguments defined before parsing from a dict) can
+    be found.
+
+    Args:
+        parser (argparse.ArgumentParser): ArgumentParser instance containing
+            groups. Output of `prepare_parser_from_dict`.
+        return_plain_args (bool): Whether to return the output or
+            `parser.parse_args()`.
+        args (list): List of arguments as read from the command line.
+            Used for unit testing.
+
+    Returns:
+        dict:
+            Dictionary of dictionaries containing the arguments. Optionally the
+            direct output `parser.parse_args()`.
+    """
+    args = parser.parse_args(args=args)
+    args_dic = {}
+    for group in parser._action_groups:
+        group_dict = {a.dest: getattr(args, a.dest, None)
+                      for a in group._group_actions}
+        args_dic[group.title] = group_dict
+    args_dic['main_args'] = args_dic['optional arguments']
+    del args_dic['optional arguments']
+    if return_plain_args:
+        return args_dic, args
+    return args_dic
+
