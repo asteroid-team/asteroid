@@ -82,7 +82,10 @@ class SNRCallback(MetricCallback):
         output_audios = state.output[self.output_key]
         true_audios = state.input[self.input_key]
         
-        num_person = state.model.module.num_person
+        if hasattr(state.model, "module"):
+            num_person = state.model.module.num_person
+        else:
+            num_person = state.model.num_person
         
         avg_snr = 0
         for n in range(num_person):
@@ -152,7 +155,7 @@ class SDRCallback(MetricCallback):
             output_audio = output_audio.detach().cpu().numpy().transpose(2, 1, 0, 3)
             true_audio = true_audio.detach().cpu().numpy().transpose(2, 1, 0, 3)
 
-            sdr_value = sdr(output_audio, true_audio)[0]
+            sdr_value = sdr(output_audio, true_audio)
             sdr_value = np.mean(sdr_value)
             avg_sdr += sdr_value#(snr_value - avg_snr) / (n + 1)
 

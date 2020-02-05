@@ -10,6 +10,7 @@ from callbacks import SNRCallback, SaveAudioCallback
 from catalyst.dl import utils
 from catalyst.dl.runner import SupervisedRunner
 from catalyst.dl.callbacks import EarlyStoppingCallback
+from catalyst.dl.callbacks.scheduler import SchedulerCallback
 
 
 def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
@@ -64,7 +65,7 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                  optimizer=optimizer, scheduler=scheduler,
                  loaders=loaders, logdir=logdir, verbose=True,
                  num_epochs=config.epochs, resume=resume,
-                 callbacks=collections.OrderedDict({"snr_callback": SNRCallback()})
+                 callbacks=collections.OrderedDict({"snr_callback": SNRCallback(), "sched_callback": SchedulerCallback(mode="batch")})
                  )
 
     #utils.plot_metrics(logdir=logdir, metrics=["loss", "_base/lr"])
