@@ -17,7 +17,6 @@ import shutil
 
 import builtins
 # TODO : change it to asteroid_sphinx_theme
-import pt_lightning_sphinx_theme
 
 PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 PATH_ROOT = os.path.join(PATH_HERE, '..', '..')
@@ -116,15 +115,21 @@ pygments_style = None
 # https://sphinx-themes.org
 
 html_theme = 'sphinx_rtd_theme'
+
+# import pt_lightning_sphinx_theme
 # html_theme = 'pt_lightning_sphinx_theme'
 # html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
 
+# import pytorch_sphinx_theme
+# html_theme = 'pytorch_sphinx_theme'
+# html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
+#
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 
 html_theme_options = {
-    'pytorch_project': 'https://github.com/mpariente/AsSteroid',
+    'pytorch_project': 'docs',
     'canonical_url': 'https://github.com/mpariente/AsSteroid',
     'collapse_navigation': False,
     'display_version': True,

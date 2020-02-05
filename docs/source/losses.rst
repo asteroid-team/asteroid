@@ -7,11 +7,12 @@ Losses
 .. automodule:: asteroid.losses
 .. currentmodule:: asteroid.losses
 
+
 Permutation invariant (PIT) training made easy
 ----------------------------------------------
 
 .. automodule:: asteroid.losses.pit_wrapper
-   :exclude-members:
+   :members:
 
 Available loss functions
 ------------------------
@@ -26,8 +27,14 @@ Available loss functions
 .. automodule:: asteroid.losses.mse
     :members:
 
+Writing your own loss function
+--------------------------------
 
+.. toctree::
+    :maxdepth: 1
+    :titlesonly:
 
+    writing_a_new_loss.rst
 
 
 
