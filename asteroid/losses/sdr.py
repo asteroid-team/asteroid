@@ -9,10 +9,10 @@ EPS = 1e-8
 
 
 class PairwiseNegSDR(_Loss):
-    """ Base class for pair-wise negative SI-SDR, SD-SDR and SNR on a batch.
+    """ Base class for pairwise negative SI-SDR, SD-SDR and SNR on a batch.
 
         Args:
-            sdr_type (string): choose between "snr" for plain SNR, "sisdr" for
+            sdr_type (str): choose between "snr" for plain SNR, "sisdr" for
                 SI-SDR and "sdsdr" for SD-SDR [1].
             zero_mean (bool, optional): by default it zero mean the target
                 and estimate before computing the loss.
@@ -26,7 +26,7 @@ class PairwiseNegSDR(_Loss):
 
         Returns:
             :class:`torch.Tensor`: with shape [batch, n_src, n_src].
-            Pair-wise losses.
+            Pairwise losses.
 
         Examples:
 
@@ -35,14 +35,14 @@ class PairwiseNegSDR(_Loss):
             >>> targets = torch.randn(10, 2, 32000)
             >>> est_targets = torch.randn(10, 2, 32000)
             >>> loss_func = PITLossWrapper(PairwiseNegSDR("sisdr"), mode='pairwise')
-            >>> loss = loss_func(targets, est_targets)
+            >>> loss = loss_func(est_targets, targets)
             >>> print(loss.size())
             torch.Size([10, 2, 2])
 
         References:
-            [1] Le Roux, Jonathan, et al. "SDR–half-baked or well done?."
-            ICASSP 2019-2019 IEEE International Conference on Acoustics,
-            Speech and Signal Processing (ICASSP). IEEE, 2019.
+            [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+            International Conference on Acoustics, Speech and Signal
+            Processing (ICASSP) 2019.
         """
     def __init__(self, sdr_type, zero_mean=True, take_log=True):
         super(PairwiseNegSDR, self).__init__()
@@ -51,7 +51,7 @@ class PairwiseNegSDR(_Loss):
         self.zero_mean = zero_mean
         self.take_log = take_log
 
-    def forward(self, targets, est_targets):
+    def forward(self, est_targets, targets):
         assert targets.size() == est_targets.size()
         # Step 1. Zero-mean norm
         if self.zero_mean:
@@ -117,14 +117,14 @@ class NoSrcSDR(_Loss):
             >>> targets = torch.randn(10, 2, 32000)
             >>> est_targets = torch.randn(10, 2, 32000)
             >>> loss_func = PITLossWrapper(NoSrcSDR("sisdr"), mode='wo_src')
-            >>> loss = loss_func(targets, est_targets)
+            >>> loss = loss_func(est_targets, targets)
             >>> print(loss.size())
             torch.Size([10, 2])
 
         References:
-            [1] Le Roux, Jonathan, et al. "SDR–half-baked or well done?."
-            ICASSP 2019-2019 IEEE International Conference on Acoustics,
-            Speech and Signal Processing (ICASSP). IEEE, 2019.
+            [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+            International Conference on Acoustics, Speech and Signal
+            Processing (ICASSP) 2019.
         """
     def __init__(self, sdr_type, zero_mean=True, take_log=True,
                  reduction='none'):
@@ -136,7 +136,7 @@ class NoSrcSDR(_Loss):
         self.zero_mean = zero_mean
         self.take_log = take_log
 
-    def forward(self, target, est_target):
+    def forward(self, est_target, target):
         assert target.size() == est_target.size()
         # Step 1. Zero-mean norm
         if self.zero_mean:
@@ -170,12 +170,14 @@ class NoSrcSDR(_Loss):
 
 
 class NonPitSDR(_Loss):
-    """ Base class for computing negative SI-SDR, SD-SDR and SNR for a given permutation of source and
-        their estimates.
+    """ Base class for computing negative SI-SDR, SD-SDR and SNR for a given
+        permutation of source and their estimates.
 
         Args:
-            sdr_type (string): choose between "snr" for plain SNR, "sisdr" for SI-SDR and "sdsdr" for SD-SDR [1].
-            zero_mean (bool, optional): by default it zero mean the target and estimate before computing the loss.
+            sdr_type (string): choose between "snr" for plain SNR, "sisdr" for
+                SI-SDR and "sdsdr" for SD-SDR [1].
+            zero_mean (bool, optional): by default it zero mean the target
+                and estimate before computing the loss.
             take_log (bool, optional): by default the log10 of sdr is returned.
 
         Shape:
@@ -185,7 +187,8 @@ class NonPitSDR(_Loss):
                 Batch of training targets.
 
         Returns:
-            :class:`torch.Tensor`: with shape [batch] if reduction='none' else [] scalar if reduction='mean'.
+            :class:`torch.Tensor`: with shape [batch] if reduction='none' else
+                [] scalar if reduction='mean'.
 
         Examples:
 
@@ -194,14 +197,15 @@ class NonPitSDR(_Loss):
             >>> targets = torch.randn(10, 2, 32000)
             >>> est_targets = torch.randn(10, 2, 32000)
             >>> loss_func = PITLossWrapper(NonPitSDR("sisdr"), mode='w_src')
-            >>> loss = loss_func(targets, est_targets)
+            >>> loss = loss_func(est_targets, targets)
             >>> print(loss.size())
             torch.Size([10])
 
         References:
-            [1] Le Roux, Jonathan, et al. "SDR–half-baked or well done?."
-            ICASSP 2019-2019 IEEE International Conference on Acoustics,
-            Speech and Signal Processing (ICASSP). IEEE, 2019.
+            [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+            International Conference on Acoustics, Speech and Signal
+            Processing (ICASSP) 2019.
+
         """
     def __init__(self, sdr_type, zero_mean=True, take_log=True):
         super(NonPitSDR, self).__init__()
@@ -211,7 +215,7 @@ class NonPitSDR(_Loss):
         self.zero_mean = zero_mean
         self.take_log = take_log
 
-    def forward(self, targets, est_targets):
+    def forward(self, est_targets, targets):
         assert targets.size() == est_targets.size()
         # Step 1. Zero-mean norm
         if self.zero_mean:

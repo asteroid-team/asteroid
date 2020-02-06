@@ -14,19 +14,19 @@ def test_mse(n_src):
     wo_src_wrapper = PITLossWrapper(nosrc_mse, mode='wo_src')
     w_src_wrapper = PITLossWrapper(nonpit_mse, mode='w_src')
 
-    pw = pw_wrapper(targets, est_targets)
-    wo_src = wo_src_wrapper(targets, est_targets)
-    w_src = w_src_wrapper(targets, est_targets)
+    pw = pw_wrapper(est_targets, targets)
+    wo_src = wo_src_wrapper(est_targets, targets)
+    w_src = w_src_wrapper(est_targets, targets)
 
-    assert_allclose(pw_wrapper(targets, est_targets),
-                    wo_src_wrapper(targets, est_targets))
-    assert_allclose(w_src_wrapper(targets, est_targets),
-                    wo_src_wrapper(targets, est_targets))
+    assert_allclose(pw_wrapper(est_targets, targets),
+                    wo_src_wrapper(est_targets, targets))
+    assert_allclose(w_src_wrapper(est_targets, targets),
+                    wo_src_wrapper(est_targets, targets))
 
-    assert_allclose(pw_wrapper(targets, est_targets, return_est=True)[1],
-                    wo_src_wrapper(targets, est_targets, return_est=True)[1])
-    assert_allclose(w_src_wrapper(targets, est_targets, return_est=True)[1],
-                    wo_src_wrapper(targets, est_targets, return_est=True)[1])
+    assert_allclose(pw_wrapper(est_targets, targets, return_est=True)[1],
+                    wo_src_wrapper(est_targets, targets, return_est=True)[1])
+    assert_allclose(w_src_wrapper(est_targets, targets, return_est=True)[1],
+                    wo_src_wrapper(est_targets, targets, return_est=True)[1])
 
 
 

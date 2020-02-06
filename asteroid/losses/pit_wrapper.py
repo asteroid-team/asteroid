@@ -42,14 +42,14 @@ class PITLossWrapper(object):
             raise ValueError('Unsupported loss function type for now. Expected'
                              'one of [`pairwise`, `wo_src`, `w_src`]')
 
-    def __call__(self, targets, est_targets, return_est=False, **kwargs):
+    def __call__(self, est_targets, targets, return_est=False, **kwargs):
         """ Find the best permutation and return the loss.
 
         Args:
-            targets: torch.Tensor. Expected shape [batch, nsrc, *].
-                The batch of training targets
             est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
                 The batch of target estimates.
+            targets: torch.Tensor. Expected shape [batch, nsrc, *].
+                The batch of training targets
             return_est: Boolean. Whether to return the reordered targets
                 estimates (To compute metrics or to save example).
             **kwargs: additional keyword argument that will be passed to the
@@ -65,16 +65,16 @@ class PITLossWrapper(object):
         assert n_src < 10, f"Expected source axis along dim 1, found {n_src}"
         if self.mode == 'pairwise':
             # Loss function already returns pairwise losses
-            pw_losses = self.loss_func(targets, est_targets, **kwargs)
+            pw_losses = self.loss_func(est_targets, targets, **kwargs)
         elif self.mode == 'wo_src':
             # Compute pairwise losses with a for loop.
-            pw_losses = self.get_pw_losses(self.loss_func, targets,
-                                           est_targets, **kwargs)
+            pw_losses = self.get_pw_losses(self.loss_func, est_targets,
+                                           targets, **kwargs)
         elif self.mode == 'w_src':
             # Cannot get pairwise losses from this type of loss.
             # Find best permutation directly.
             min_loss, min_loss_idx = self.best_perm_from_wsrc_loss(
-                self.loss_func, targets, est_targets, **kwargs
+                self.loss_func, est_targets, targets, **kwargs
             )
             # Take the mean over the batch
             mean_loss = torch.mean(min_loss)
@@ -98,17 +98,17 @@ class PITLossWrapper(object):
         return mean_loss, reordered
 
     @staticmethod
-    def get_pw_losses(loss_func, targets, est_targets, **kwargs):
+    def get_pw_losses(loss_func, est_targets, targets, **kwargs):
         """ Get pair-wise losses between the training targets and its estimate
         for a given loss function.
 
         Args:
             loss_func: function with signature (targets, est_targets, **kwargs)
                 The loss function to get pair-wise losses from.
-            targets: torch.Tensor. Expected shape [batch, nsrc, *].
-                The batch of training targets.
             est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
                 The batch of target estimates.
+            targets: torch.Tensor. Expected shape [batch, nsrc, *].
+                The batch of training targets.
             **kwargs: additional keyword argument that will be passed to the
                 loss function.
 
@@ -125,20 +125,20 @@ class PITLossWrapper(object):
         for est_idx, est_src in enumerate(est_targets.transpose(0, 1)):
             for target_idx, target_src in enumerate(targets.transpose(0, 1)):
                 pair_wise_losses[:, est_idx, target_idx] = loss_func(
-                    target_src, est_src, **kwargs)
+                    est_src, target_src, **kwargs)
         return pair_wise_losses
 
     @staticmethod
-    def best_perm_from_wsrc_loss(loss_func, targets, est_targets, **kwargs):
+    def best_perm_from_wsrc_loss(loss_func, est_targets, targets, **kwargs):
         """ Find best permutation from loss function with source axis.
 
         Args:
             loss_func: function with signature (targets, est_targets, **kwargs)
                 The loss function batch losses from.
-            targets: torch.Tensor. Expected shape [batch, nsrc, *].
-                The batch of training targets.
             est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
                 The batch of target estimates.
+            targets: torch.Tensor. Expected shape [batch, nsrc, *].
+                The batch of training targets.
             **kwargs: additional keyword argument that will be passed to the
                 loss function.
 
@@ -151,8 +151,8 @@ class PITLossWrapper(object):
         """
         n_src = targets.shape[1]
         perms = list(permutations(range(n_src)))
-        loss_set = torch.stack([loss_func(targets[:, perm],
-                                          est_targets,
+        loss_set = torch.stack([loss_func(est_targets[:, perm],
+                                          targets,
                                           **kwargs) for perm in perms],
                                dim=1)
         # Indexes and values of min losses for each batch element
@@ -180,7 +180,7 @@ class PITLossWrapper(object):
         <https://github.com/kaituoxu/Conv-TasNet/blob/master>`__ and `License
         <https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`__.
         """
-        pwl = pair_wise_losses
+        pwl = pair_wise_losses.transpose(-1, -2)
         perms = pwl.new_tensor(list(permutations(range(n_src))),
                                dtype=torch.long)
         # one-hot, [n_src!, n_src, n_src]
@@ -200,7 +200,7 @@ class PITLossWrapper(object):
         """ Reorder sources according to the best permutation.
 
         Args:
-            source torch.Tensor): Tensor of shape [batch, n_src, time]
+            source (torch.Tensor): Tensor of shape [batch, n_src, time]
             n_src (int): Number of sources.
             min_loss_idx (torch.LongTensor): Tensor of shape [batch],
                 each item is in [0, n_src!).
