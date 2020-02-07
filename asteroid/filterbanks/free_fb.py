@@ -4,9 +4,8 @@ from .enc_dec import Filterbank
 
 
 class FreeFB(Filterbank):
-    """Free filterbank without any constraints.
-
-    Equivalent to nn.Conv1d.
+    """ Free filterbank without any constraints. Equivalent to
+    :class:`nn.Conv1d`.
 
     Args:
         n_filters (int): Number of filters.
@@ -15,7 +14,7 @@ class FreeFB(Filterbank):
             If None (default), set to ``kernel_size // 2``.
 
     Attributes:
-        n_feats_out (int): Number of filters.
+        n_feats_out (int): Number of output filters.
 
     References:
         [1] : "Filterbank design for end-to-end speech separation".

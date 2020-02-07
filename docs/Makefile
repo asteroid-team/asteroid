@@ -1,16 +1,11 @@
 # Minimal makefile for Sphinx documentation
 #
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS     ?=
-SPHINXBUILD    ?= sphinx-build
-SPHINXAPIBUILD = sphinx-apidoc
-SOURCEDIR      = source
-BUILDDIR       = build
-CODEDIR        = ../asteroid
-APIDOCOUT      = "$(SOURCEDIR)"/apidoc
-
+# You can set these variables from the command line.
+SPHINXOPTS    =
+SPHINXBUILD   = sphinx-build
+SOURCEDIR     = source
+BUILDDIR      = build
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -23,6 +18,6 @@ help:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-doc:
-	@echo "Generating doc"
-	@$(SPHINXAPIBUILD) -fTMe "$(CODEDIR)" -o "$(APIDOCOUT)"
+clean :$
+	rm -rf $(BUILDDIR)/*
+	rm -rf $(SOURCEDIR)/apidoc/*

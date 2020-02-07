@@ -11,10 +11,9 @@ def make_enc_dec(fb_name, mask_mode='reim', inp_mode='reim',
 
     Args:
         fb_name (str, className): Filterbank family from which to make encoder
-            and decoder. To choose from among [``'free'``, ``'analytic_free'``,
-            ``'param_sinc'``, ``'stft'``] and many more to come. Can also be
-            a class defined in a submodule in this subpackade (e.g.
-            :class:`~.FreeFB`).
+            and decoder. To choose among [``'free'``, ``'analytic_free'``,
+            ``'param_sinc'``, ``'stft'``]. Can also be a class defined in a
+            submodule in this subpackade (e.g. :class:`~.FreeFB`).
         mask_mode (str, optional): One of [``'reim'``, ``'mag'``, ``'comp'``].
             Controls the way the time-frequency mask is applied to the input
             representation in the `apply_mask` method.
@@ -37,15 +36,15 @@ def make_enc_dec(fb_name, mask_mode='reim', inp_mode='reim',
                    of the complex filterbank output.
                 -  ``'cat'`` or ``'concat'`` corresponds to the concatenation
                    of both previous representations.
-        who_is_pinv (str, optional): If None, no pseudo-inverse filters will be
-            used. If string, among ``'encoder'``, ``'decoder'``, decides which
-            of ``Encoder`` or ``Decoder`` will be the pseudo inverse of the
-            other one.
+        who_is_pinv (str, optional): If `None`, no pseudo-inverse filters will
+            be used. If string (among [``'encoder'``, ``'decoder'``]), decides
+            which of ``Encoder`` or ``Decoder`` will be the pseudo inverse of
+            the other one.
         **kwargs: Arguments which will be passed to the filterbank class.
-            Usual argument include `n_filters`, `kernel_size` and `stride` but
-            this will depend on the filterbank family.
+            Usual argument include `n_filters`, `kernel_size` and `stride`.
+            Depends on the filterbank family.
     Returns:
-        Encoder instance, Decoder instance.
+        :class:`.Encoder`, :class:`.Decoder`
     """
     fb_class = get(fb_name)
 
@@ -69,6 +68,15 @@ def make_enc_dec(fb_name, mask_mode='reim', inp_mode='reim',
 
 
 def get(identifier):
+    """ Returns a filterbank class from a string. Returns its input if it
+    is callable (already a :class:`.Filterbank` for example).
+
+    Args:
+        identifier (str or Callable or None): the filterbank identifier.
+
+    Returns:
+        :class:`.Filterbank` or None
+    """
     if identifier is None:
         return None
     elif callable(identifier):
@@ -89,3 +97,7 @@ free = FreeFB
 analytic_free = AnalyticFreeFB
 param_sinc = ParamSincFB
 stft = STFTFB
+
+# For the docs
+__all__ = ['Filterbank', 'Encoder', 'Decoder', 'FreeFB', 'STFTFB',
+           'AnalyticFreeFB', 'ParamSincFB']

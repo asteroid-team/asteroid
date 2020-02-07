@@ -30,6 +30,15 @@ def tanh():
 
 
 def get(identifier):
+    """ Returns an activation function from a string. Returns its input if it
+    is callable (already an activation for example).
+
+    Args:
+        identifier (str or Callable or None): the activation identifier.
+
+    Returns:
+        :class:`nn.Module` or None
+    """
     if identifier is None:
         return None
     elif callable(identifier):

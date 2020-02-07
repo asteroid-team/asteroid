@@ -83,6 +83,15 @@ cgLN = CumLN
 
 
 def get(identifier):
+    """ Returns a norm class from a string. Returns its input if it
+    is callable (already a :class:`._LayerNorm` for example).
+
+    Args:
+        identifier (str or Callable or None): the norm identifier.
+
+    Returns:
+        :class:`._LayerNorm` or None
+    """
     if identifier is None:
         return None
     elif callable(identifier):

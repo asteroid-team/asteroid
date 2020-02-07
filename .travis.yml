@@ -10,13 +10,13 @@ install:
     - pip install -e .[tests]
     - pip install -r requirements.txt
     - pip install codecov
+    - pip install -r docs/requirements.txt
 
 script:
     - python --version
     - coverage run -m py.test tests
     - coverage report -m
     - cd docs
-    - make doc
     - make html
     - touch build/html/.nojekyll  # prevents use jekyll to build doc
 

@@ -6,8 +6,7 @@ from . inputs_and_masks import _inputs, _masks
 
 
 class Filterbank(nn.Module):
-    """Base Filterbank class.
-
+    """ Base Filterbank class.
     Each subclass has to implement a `filters` property.
 
     Args:
@@ -17,9 +16,7 @@ class Filterbank(nn.Module):
             If None (default), set to ``kernel_size // 2``.
 
     Attributes:
-        n_filters (int)
-        kernel_size (int)
-        stride (int)
+        n_feats_out (int): Number of output filters.
     """
     def __init__(self, n_filters, kernel_size, stride=None):
         super(Filterbank, self).__init__()
@@ -123,13 +120,6 @@ class Encoder(_EncDec):
                    the input and the mask are point-wise multiplied in the
                    complex sense.
 
-    Attributes:
-        inp_mode (str)
-        mask_mode (str)
-        inp_func (callable)
-        in_chan_mul
-        mask_fun (callable)
-        n_feats_out (int)
     """
     def __init__(self, filterbank, inp_mode='reim', mask_mode='reim',
                  is_pinv=False):
@@ -143,14 +133,15 @@ class Encoder(_EncDec):
 
     @classmethod
     def pinv_of(cls, filterbank, **kwargs):
-        """ Returns an Encoder, pseudo inverse of a filterbank or Decoder."""
+        """ Returns an :class:`~.Encoder`, pseudo inverse of a
+        :class:`~.Filterbank` or :class:`~.Decoder`."""
         if isinstance(filterbank, Filterbank):
             return cls(filterbank, is_pinv=True, **kwargs)
         elif isinstance(filterbank, Decoder):
             return cls(filterbank.filterbank, is_pinv=True, **kwargs)
 
     def forward(self, waveform):
-        """ Convolve 1D torch.Tensor with filterbank."""
+        """ Convolve 1D torch.Tensor with the filters from a filterbank."""
         filters = self.get_filters()
         return F.conv1d(waveform, filters, stride=self.stride)
 
@@ -173,7 +164,7 @@ class Encoder(_EncDec):
 
 
 class Decoder(_EncDec):
-    """Decoder class.
+    """ Decoder class.
     
     Add decoding methods to Filterbank classes.
     Not intended to be subclassed.

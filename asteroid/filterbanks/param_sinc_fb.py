@@ -21,12 +21,7 @@ class ParamSincFB(Filterbank):
         min_band_hz (int, optional): Lowest band frequency allowed (Hz).
 
     Attributes:
-        sample_rate (int)
-        min_low_hz (int)
-        min_band_hz (int)
-        half_kernel (int)
-        cutoff (int)
-        n_feats_out (int)
+        n_feats_out (int): Number of output filters.
 
     References:
         [1] : "Speaker Recognition from raw waveform with SincNet". SLT 2018.
@@ -34,7 +29,7 @@ class ParamSincFB(Filterbank):
 
         [2] : "Filterbank design for end-to-end speech separation".
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
-        Antoine Deleforge, Emmanuel Vincent.
+        Antoine Deleforge, Emmanuel Vincent. https://arxiv.org/abs/1910.10400
     """
     def __init__(self, n_filters, kernel_size, stride=None,
                  sample_rate=16000, min_low_hz=50, min_band_hz=50):
