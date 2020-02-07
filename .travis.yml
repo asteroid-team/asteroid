@@ -17,7 +17,6 @@ script:
     - coverage run -m py.test tests
     - coverage report -m
     - cd docs
-    - make doc
     - make html
     - touch build/html/.nojekyll  # prevents use jekyll to build doc
 
