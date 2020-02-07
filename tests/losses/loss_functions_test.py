@@ -4,6 +4,7 @@ from torch.testing import assert_allclose
 
 from asteroid.losses import PITLossWrapper
 from asteroid.losses import sdr
+from asteroid.losses import nosrc_mse, pairwise_mse, nonpit_mse
 
 
 @pytest.mark.parametrize("n_src", [2, 3, 4])
@@ -11,6 +12,7 @@ from asteroid.losses import sdr
     [sdr.pairwise_neg_sisdr, sdr.nosrc_neg_sisdr, sdr.nonpit_neg_sisdr],
     [sdr.pairwise_neg_sdsdr, sdr.nosrc_neg_sdsdr, sdr.nonpit_neg_sdsdr],
     [sdr.pairwise_neg_snr, sdr.nosrc_neg_snr, sdr.nonpit_neg_snr],
+    [pairwise_mse, nosrc_mse, nonpit_mse],
 ])
 def test_sisdr(n_src, function_triplet):
     # Unpack the triplet
