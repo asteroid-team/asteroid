@@ -81,6 +81,26 @@ See our [contributing guidelines](https://github.com/mpariente/AsSteroid/blob/ma
 
 ```
 
+## Building the docs
+To build the docs, you'll need [Sphinx](https://www.sphinx-doc.org/en/master/), 
+a theme and some other package
+```bash
+# Start by installing the required packages
+cd docs/
+pip install -r requirements.txt
+# Build the docs
+make doc
+make html
+# View it ! (Change firefox by your favorite browser)
+firefox build/html/index.html
+```
+If you rebuild the docs, don't forget to run `make clean` before it.  
+
+You can add this to your `.bashrc`, source it and run `run_docs` 
+for the `docs/` folder
+```bash
+alias run_docs='make clean; make doc; make html; firefox build/html/index.html'
+```
 ## Why Asteroid ? 
 Audio source separation and speech enhancement are fast evolving fields with 
 a growing number of papers submitted to conferences each year. While datasets 
