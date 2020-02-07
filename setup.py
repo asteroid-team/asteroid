@@ -17,6 +17,7 @@ setup(
     license='MIT',
     python_requires='>=3.6',
     install_requires=['numpy',
+                      'Cython',
                       'scipy',
                       'pandas',
                       'pyyaml',
