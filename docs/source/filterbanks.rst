@@ -36,3 +36,4 @@ Fixed filterbanks
 ~~~~~~~~~~~~~~~~
 .. automodule:: asteroid.filterbanks.stft_fb
     :members:
+

@@ -17,24 +17,15 @@ Permutation invariant (PIT) training made easy
 Available loss functions
 ------------------------
 
-:hidden:`SI-SDR`
+:hidden:`SDR`
 ~~~~~~~~~~~~~~~~
-.. automodule:: asteroid.losses.si_sdr
-    :members:
+
+.. autofunction:: asteroid.losses.sdr.PairwiseNegSDR
 
 :hidden:`MSE`
 ~~~~~~~~~~~~~~~~
-.. automodule:: asteroid.losses.mse
-    :members:
 
-Writing your own loss function
---------------------------------
-
-.. toctree::
-    :maxdepth: 1
-    :titlesonly:
-
-    writing_a_new_loss.rst
+.. autofunction:: asteroid.losses.mse.PairwiseMSE
 
 
 
