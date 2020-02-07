@@ -1,12 +1,13 @@
 from setuptools import setup
-import asteroid
+
+asteroid_version = "0.0.1"
 
 with open("README.md", encoding='utf-8') as fh:
     long_description = fh.read()
 
 setup(
     name='asteroid',
-    version=asteroid.__version__,
+    version=asteroid_version,
     author='Manuel Pariente',
     author_email='manuel.pariente@loria.fr',
     url="https://github.com/mpariente/AsSteroid",
