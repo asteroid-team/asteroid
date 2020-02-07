@@ -34,7 +34,8 @@ class PairwiseNegSDR(_Loss):
             >>> from asteroid.losses import PITLossWrapper
             >>> targets = torch.randn(10, 2, 32000)
             >>> est_targets = torch.randn(10, 2, 32000)
-            >>> loss_func = PITLossWrapper(PairwiseNegSDR("sisdr"), mode='pairwise')
+            >>> loss_func = PITLossWrapper(PairwiseNegSDR("sisdr"),
+            >>>                            mode='pairwise')
             >>> loss = loss_func(est_targets, targets)
             >>> print(loss.size())
             torch.Size([10, 2, 2])
@@ -65,9 +66,10 @@ class PairwiseNegSDR(_Loss):
 
         if self.sdr_type in ["sisdr", "sdsdr"]:
             # [batch, n_src, n_src, 1]
-            pair_wise_dot = torch.sum(s_estimate * s_target, dim=3, keepdim=True)
+            pair_wise_dot = torch.sum(s_estimate * s_target, dim=3,
+                                      keepdim=True)
             # [batch, 1, n_src, 1]
-            s_target_energy = torch.sum(s_target ** 2, dim=3, keepdim=True) + EPS
+            s_target_energy = torch.sum(s_target**2, dim=3, keepdim=True) + EPS
             # [batch, n_src, n_src, time]
             pair_wise_proj = pair_wise_dot * s_target / s_target_energy
         else:
@@ -89,7 +91,7 @@ class NoSrcSDR(_Loss):
     """ Base class for single-source negative SI-SDR, SD-SDR and SNR.
 
         Args:
-            type (string): choose between "snr" for plain SNR, "sisdr" for
+            sdr_type (string): choose between "snr" for plain SNR, "sisdr" for
                 SI-SDR and "sdsdr" for SD-SDR [1].
             zero_mean (bool, optional): by default it zero mean the target and
                 estimate before computing the loss.
@@ -211,7 +213,7 @@ class NonPitSDR(_Loss):
         super(NonPitSDR, self).__init__()
 
         assert sdr_type in ["snr", "sisdr", "sdsdr"]
-        self.sdr_type  = sdr_type
+        self.sdr_type = sdr_type
         self.zero_mean = zero_mean
         self.take_log = take_log
 
@@ -258,5 +260,3 @@ nosrc_neg_snr = NoSrcSDR("snr")
 nonpit_neg_sisdr = NonPitSDR("sisdr")
 nonpit_neg_sdsdr = NonPitSDR("sdsdr")
 nonpit_neg_snr = NonPitSDR("snr")
-
-

@@ -5,7 +5,7 @@
 
 
 def pairwise_mse(est_targets, targets):
-    """ Measure pair-wise mean square error on a batch.
+    """ Measure pairwise mean square error on a batch.
 
     Args:
         est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
