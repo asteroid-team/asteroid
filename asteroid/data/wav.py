@@ -1,8 +1,3 @@
-"""
-| Utils used to handle a wav file
-| @author: Sunit Sivasankaran, Inria-Nancy
-"""
-
 import os
 import numpy as np
 import soundfile as sf

@@ -1,7 +1,3 @@
-"""
-| Package-level utils.
-| @author : Manuel Pariente, Inria-Nancy
-"""
 import torch
 import inspect
 import argparse

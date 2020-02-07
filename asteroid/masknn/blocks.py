@@ -1,8 +1,3 @@
-"""
-| NN blocks for separators.
-| @author : Manuel Pariente, Inria-Nancy
-"""
-
 from torch import nn
 from torch.nn.functional import fold, unfold
 

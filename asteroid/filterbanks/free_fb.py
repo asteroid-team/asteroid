@@ -1,8 +1,3 @@
-"""
-| Free filterbank.
-| @author : Manuel Pariente, Inria-Nancy
-"""
-
 import torch
 import torch.nn as nn
 from .enc_dec import Filterbank

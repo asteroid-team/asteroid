@@ -1,8 +1,3 @@
-"""
-| Negative Scale invariant Signal to Distorsion Ratio (SI-SDR) losses.
-| @author : Manuel Pariente, Inria-Nancy & Samuele Cornell, UNIVPM-Ancona
-"""
-
 import torch
 from torch.nn.modules.loss import _Loss
 EPS = 1e-8

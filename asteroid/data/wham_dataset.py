@@ -1,7 +1,3 @@
-"""
-| Wham Dataset class.
-| @author : Manuel Pariente, Inria-Nancy
-"""
 import torch
 from torch.utils import data
 import json

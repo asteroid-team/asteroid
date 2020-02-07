@@ -1,8 +1,3 @@
-"""
-| Loss wrapper to automatically handle permutation invariant training (PIT).
-| @author : Manuel Pariente, Inria-Nancy
-"""
-
 from itertools import permutations
 import torch
 

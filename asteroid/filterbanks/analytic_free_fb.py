@@ -1,8 +1,3 @@
-"""
-| Analytic free filterbank.
-| @author : Manuel Pariente, Inria-Nancy
-"""
-
 import torch
 import torch.nn as nn
 import numpy as np

@@ -1,8 +1,3 @@
-"""
-| Normalization classes.
-| @author : Manuel Pariente, Inria-Nancy
-"""
-
 import torch
 from torch import nn
 EPS = 1e-8

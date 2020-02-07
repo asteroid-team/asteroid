@@ -1,8 +1,3 @@
-"""
-Proposed base class to interface with pytorch-lightning.
-@author : Manuel Pariente, Inria-Nancy
-"""
-
 import torch
 import pytorch_lightning as pl
 from argparse import Namespace

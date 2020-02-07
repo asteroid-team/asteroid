@@ -1,9 +1,3 @@
-"""
-| Mean squared error loss functions.
-| @author : Manuel Pariente, Inria-Nancy
-"""
-
-
 def pairwise_mse(est_targets, targets):
     """ Measure pairwise mean square error on a batch.
 

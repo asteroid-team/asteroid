@@ -1,13 +1,3 @@
-"""
-| Masker inputs and output masks
-| @author : Manuel Pariente, Inria-Nancy
-
-Reference:
-    [1] "Filterbank design for end-to-end speech separation".
-    Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
-    Antoine Deleforge, Emmanuel Vincent.
-"""
-
 import torch
 EPS = 1e-8
 

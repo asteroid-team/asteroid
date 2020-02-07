@@ -1,8 +1,3 @@
-"""
-| Activation functions which are retrievable from a string (all lower-case).
-| @author : Manuel Pariente, Inria-Nancy
-"""
-
 from torch import nn
 
 

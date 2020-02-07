@@ -1,8 +1,3 @@
-"""
-| Base classes for filterbanks, encoders and decoders.
-| @author : Manuel Pariente, Inria-Nancy
-"""
-
 import torch
 from torch import nn
 from torch.nn import functional as F

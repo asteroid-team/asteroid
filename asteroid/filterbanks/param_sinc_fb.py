@@ -1,12 +1,3 @@
-"""
-| Sinc-based parameterized filterbank.
-| @author : Manuel Pariente, Inria-Nancy
-
-| Modified and extended from from `<https://github.com/mravanelli/SincNet>`__
-| Copyright (c) 2019 Mirco Ravanelli
-| See also `<https://github.com/mravanelli/SincNet/blob/master/LICENSE>`__
-"""
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -16,6 +7,7 @@ from .enc_dec import Filterbank
 
 class ParamSincFB(Filterbank):
     """Extension of the parameterized filterbank from [1] proposed in [2].
+    Modified and extended from from `<https://github.com/mravanelli/SincNet>`__
 
     Args:
         n_filters (int): Number of filters. Half of `n_filters` (the real

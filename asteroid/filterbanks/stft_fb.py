@@ -1,7 +1,3 @@
-"""
-| STFT filterbank i.e DFT filters
-| @author : Manuel Pariente, Inria-Nancy
-"""
 import torch
 import numpy as np
 from .enc_dec import Filterbank
