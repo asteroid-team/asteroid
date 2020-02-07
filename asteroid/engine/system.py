@@ -17,7 +17,7 @@ class System(pl.LightningModule):
         model (torch.nn.Module): Instance of model.
         optimizer (torch.optim.Optimizer): Instance or list of optimizers.
         loss_func (callable): Loss function with signature
-            (targets, est_targets).
+            (est_targets, targets).
         train_loader (torch.utils.data.DataLoader): Training dataloader.
         val_loader (torch.utils.data.DataLoader): Validation dataloader.
         scheduler (torch.optim.lr_scheduler._LRScheduler): Instance, or list
@@ -76,7 +76,7 @@ class System(pl.LightningModule):
         """
         inputs, targets, loss_kwargs = self.unpack_data(batch)
         est_targets = self(inputs)
-        loss = self.loss_func(targets, est_targets, **loss_kwargs)
+        loss = self.loss_func(est_targets, targets, **loss_kwargs)
         return loss
 
     def unpack_data(self, data):

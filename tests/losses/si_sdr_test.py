@@ -24,13 +24,13 @@ def test_sisdr(n_src, function_triplet):
     w_src_wrapper = PITLossWrapper(nonpit, mode='w_src')
 
     # Circular tests on value
-    assert_allclose(pw_wrapper(targets, est_targets),
-                    wo_src_wrapper(targets, est_targets))
-    assert_allclose(wo_src_wrapper(targets, est_targets),
-                    w_src_wrapper(targets, est_targets))
+    assert_allclose(pw_wrapper(est_targets, targets),
+                    wo_src_wrapper(est_targets, targets))
+    assert_allclose(wo_src_wrapper(est_targets, targets),
+                    w_src_wrapper(est_targets, targets))
 
     # Circular tests on returned estimates
-    assert_allclose(pw_wrapper(targets, est_targets, return_est=True)[1],
-                    wo_src_wrapper(targets, est_targets, return_est=True)[1])
-    assert_allclose(wo_src_wrapper(targets, est_targets, return_est=True)[1],
-                    w_src_wrapper(targets, est_targets, return_est=True)[1])
+    assert_allclose(pw_wrapper(est_targets, targets, return_est=True)[1],
+                    wo_src_wrapper(est_targets, targets, return_est=True)[1])
+    assert_allclose(wo_src_wrapper(est_targets, targets, return_est=True)[1],
+                    w_src_wrapper(est_targets, targets, return_est=True)[1])
