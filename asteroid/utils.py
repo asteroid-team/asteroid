@@ -92,8 +92,8 @@ def prepare_parser_from_dict(dic, parser=None):
             If the default value is boolean, look for boolean strings."""
         if value is None:
             return str_int_float
-        if isinstance(value, bool):
-            return str2bool
+        if isinstance(str2bool(value), bool):
+            return str2bool_arg
         return type(value)
 
     if parser is None:
@@ -125,13 +125,22 @@ def str_int_float(value):
 
 
 def str2bool(value):
-    """ Type to convert strings to Boolean """
-    if isinstance(value, bool):
+    """ Type to convert strings to Boolean (returns input if not boolean) """
+    if not isinstance(value, str):
         return value
     if value.lower() in ('yes', 'true', 'y', '1'):
         return True
-    if value.lower() in ('no', 'false', 'n', '0'):
+    elif value.lower() in ('no', 'false', 'n', '0'):
         return False
+    else:
+        return value
+
+
+def str2bool_arg(value):
+    """ Argparse type to convert strings to Boolean """
+    value = str2bool(value)
+    if isinstance(value, bool):
+        return value
     raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
