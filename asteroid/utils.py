@@ -63,7 +63,7 @@ def tensors_to_device(tensors, device):
     """
     if isinstance(tensors, torch.Tensor):
         return tensors.to(device)
-    elif isinstance(tensors, list):
+    elif isinstance(tensors, (list, tuple)):
         return [tensors_to_device(tens, device) for tens in tensors]
     elif isinstance(tensors, dict):
         for key in tensors.keys():
