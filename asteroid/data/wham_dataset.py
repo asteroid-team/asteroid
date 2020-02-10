@@ -120,7 +120,7 @@ class WhamDataset(data.Dataset):
     def __getitem__(self, idx):
         """ Gets a mixture/sources pair.
         Returns:
-            mixture, vstack([source_arrays]), {'seg_len': wav_length}
+            mixture, vstack([source_arrays])
         """
         # Random start
         if self.mix[idx][1] == self.seg_len or self.like_test:
@@ -146,4 +146,4 @@ class WhamDataset(data.Dataset):
                                stop=stop, dtype='float32')
             source_arrays.append(s)
         sources = torch.from_numpy(np.vstack(source_arrays))
-        return torch.from_numpy(x), sources, {'seg_len': seg_len}
+        return torch.from_numpy(x), sources

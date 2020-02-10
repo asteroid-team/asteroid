@@ -73,9 +73,9 @@ class System(pl.LightningModule):
             (except for loss.backward() and optimzer.step()), then overwrite
             `training_step` and `validation_step` instead.
         """
-        inputs, targets, loss_kwargs = self.unpack_data(batch)
+        inputs, targets = batch
         est_targets = self(inputs)
-        loss = self.loss_func(est_targets, targets, **loss_kwargs)
+        loss = self.loss_func(est_targets, targets)
         return loss
 
     def unpack_data(self, data):
