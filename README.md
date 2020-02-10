@@ -29,6 +29,7 @@ results with data preparation, training and evaluation in a same script.
 - [Permutation invariant training wrapper `PITLossWrapper`
 .](https://github.com/mpariente/AsSteroid/blob/master/examples/PITLossWrapper.ipynb)
 - [Filterbank API](https://github.com/mpariente/AsSteroid/blob/master/examples/Filterbank.ipynb)
+
 ## Installation
 In order to install Asteroid, clone the repo and install it using pip or python :
 ```bash
@@ -38,6 +39,14 @@ cd AsSteroid
 pip install -e .
 # Install with python
 python setup.py install
+```
+
+Running the recipes requires additional packages in most cases, 
+we recommend running :
+```bash
+pip install numpy Cython scipy
+# from AsSteroid/
+pip install -r requirements.txt
 ```
 
 ## Running a recipe

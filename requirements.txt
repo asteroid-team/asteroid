@@ -10,6 +10,6 @@ scipy>=1.1.0
 seaborn>=0.9.0
 SoundFile>=0.10.2
 torch>=1.3.0
-torchvision>=0.4.1
+torchvision>=0.4.0, < 0.5  # (lightning compat)
 pytorch-lightning>=0.6.0
 pb_bss @ git+https://github.com/fgnt/pb_bss
