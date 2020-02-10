@@ -214,7 +214,8 @@ def parse_args_as_dict(parser, return_plain_args=False, args=None):
 
 def flatten_dict(d, parent_key='', sep='_'):
     """ Flattens a dictionary into a single-level dictionary while preserving
-    parent keys.
+    parent keys. Taken from https://stackoverflow.com/questions/6027558/
+    flatten-nested-dictionaries-compressing-keys?answertab=votes#tab-top
 
     Args:
         d (collections.MutableMapping): Dictionary to be flattened.

@@ -1,4 +1,5 @@
 import argparse
+import collections
 import torch
 from torch.testing import assert_allclose
 import pytest
@@ -71,3 +72,19 @@ def test_transfer(tensors):
     if isinstance(tensors, dict):
         assert dict(utils.tensors_to_device(tensors, 'cpu')) == dict(tensors)
 
+
+def test_flatten_dict():
+    to_test = dict(
+        top1=[1, 2],
+        top2=dict(
+            sub1='hey',
+            sub2=dict(
+                subsub1=True,
+                subsub2=['This', 'is', 'a', 'list']
+            ),
+            sub3=False
+        )
+    )
+    flat_dic = utils.flatten_dict(to_test)
+    for k, v in flat_dic.items():
+        assert not isinstance(v, collections.MutableMapping)
