@@ -1,6 +1,7 @@
 import torch
 import pytorch_lightning as pl
 from argparse import Namespace
+from ..utils import flatten_dict
 
 
 class System(pl.LightningModule):
@@ -35,10 +36,13 @@ class System(pl.LightningModule):
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.scheduler = scheduler
+        config = {} if config is None else config
         self.config = config
         # hparams will be logged to Tensorboard as text variables.
-        config = {} if config is None else config
-        self.hparams = Namespace(**config)
+        # torch doesn't support None in the summary writer for now, convert
+        # None to strings temporarily.
+        # See https://github.com/pytorch/pytorch/issues/33140
+        self.hparams = Namespace(**self.none_to_string(flatten_dict(config)))
 
     def forward(self, *args, **kwargs):
         """ Applies forward pass.
@@ -194,3 +198,18 @@ class System(pl.LightningModule):
     def tng_dataloader(self):  # pragma: no cover
         """ Deprecated."""
         pass
+
+    @staticmethod
+    def none_to_string(dic):
+        """ Converts `None` to  ``'None'`` to be handled by torch summary writer.
+
+        Args:
+            dic (dict): Dictionary to be transformed.
+
+        Returns:
+            dict: Transformed dictionary.
+        """
+        for k, v in dic.items():
+            if v is None:
+                dic[k] = str(v)
+        return dic

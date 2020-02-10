@@ -1,3 +1,4 @@
+import collections
 import torch
 import inspect
 import argparse
@@ -201,3 +202,24 @@ def parse_args_as_dict(parser, return_plain_args=False, args=None):
         return args_dic, args
     return args_dic
 
+
+def flatten_dict(d, parent_key='', sep='_'):
+    """ Flattens a dictionary into a single-level dictionary while preserving
+    parent keys.
+
+    Args:
+        d (collections.MutableMapping): Dictionary to be flattened.
+        parent_key (str): String to use as a prefix to all subsequent keys.
+        sep (str): String to use as a separator between two key levels.
+
+    Returns:
+        dict: Single-level dictionary, flattened.
+    """
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
