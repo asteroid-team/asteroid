@@ -18,7 +18,7 @@ MIXED_AUDIO_DIR = "../../data/train/mixed"
 REL_AUDIO_DIR = "../data/train/mixed"
 VIDEO_DIR = "../../data/train"
 REL_VIDEO_DIR = "../data/train"
-AUDIO_SET_DIR = "./../../data/audio_set/low_volume"
+AUDIO_SET_DIR = "./../../data/audio_set/audio"
 
 def sample_audio_set():
     """
@@ -27,7 +27,7 @@ def sample_audio_set():
     audio_files = glob.glob(os.path.join(AUDIO_SET_DIR, "*"))
     total_files = len(audio_files)
 
-    total_choices = int(random.gauss(mu=1, sigma=1))
+    total_choices = max(1, int(random.gauss(mu=1, sigma=1)))
     choices = list(range(total_files))
     random.shuffle(choices)
 
@@ -73,6 +73,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         video_inputs = []
         audio_inputs = []
         mixed_audio = []
+        noises = []
         
         for indx, audio_comb in enumerate(audio_combinations):
             base_names = [os.path.basename(fname)[:11] for fname in audio_comb]
@@ -81,7 +82,9 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
                 continue
             if audio_set:
                 noise_input = sample_audio_set()
+                noises.append(":".join(noise_input))
                 audio_comb = (*audio_comb, *noise_input)
+
             audio_inputs.append(audio_comb)
             #Convert audio file path to corresponding video path
             video_inputs.append(tuple(os.path.join(VIDEO_DIR, retrieve_name(f) +video_ext)
@@ -97,6 +100,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
             print(audio_command)
             process = subprocess.Popen(audio_command, shell=True, stdout=subprocess.PIPE)#.communicate()
             mixed_audio.append(mixed_audio_name)
+            #print(video_inputs, audio_inputs, mixed_audio, noises)
         
         combinations = {}
         for i in range(input_audio_size):
@@ -112,6 +116,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
             for i in range(input_audio_size):
                 v = re.sub(r'../../', '../', videos[i])
                 a = re.sub(r'../../', '../', audios[i])
+                
                 combinations[f"video_{i+1}"].append(v)
                 combinations[f"audio_{i+1}"].append(a)
             combinations["mixed_audio"].append(mixed)
@@ -119,12 +124,15 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         columns = [f"video_{i+1}" for i in range(input_audio_size)] + [f"audio_{i+1}" for i in range(input_audio_size)] + ["mixed_audio"]
         df = pd.DataFrame(combinations).reindex(columns=columns)
         df.to_csv(file_name_df, index=False)
+
+        if audio_set:
+            pd.Series(noises).to_csv("noise_only_" + file_name_df, index=False)
         return df.shape[0]
 
-    offset = mix(train_files, "train.csv", 0)
-    mix(val_files, "val.csv", offset)
+    offset = mix(train_files, "../train.csv", 0)
+    mix(val_files, "../val.csv", offset)
 
 
 if __name__ == "__main__":
-    audio_mixer(100_000_000, audio_set=False)
+    audio_mixer(100_000_000, audio_set=True)
 

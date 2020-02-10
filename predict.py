@@ -119,14 +119,14 @@ def _predict_row(model, df, row_idx, device):
     audio = Path(audio)
     video = [Path(i) for i in video]
 
-    generate_audio(model, audio, video, device=device, save=False)
+    generate_audio(model, audio, video, device=device, save=True)
 
 if __name__ == "__main__":
     device = torch.device("cuda")
     model =  AVFusion().to(device)
     model.load_state_dict(torch.load("last_full.pth")["model_state_dict"])
 
-    train_df = pd.read_csv("filtered_val.csv")
+    train_df = pd.read_csv("filtered_train.csv")
 
     for i in trange(1000):
         _predict_row(model, train_df, i, device)

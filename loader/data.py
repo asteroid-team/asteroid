@@ -112,8 +112,6 @@ class Signal:
 
     @staticmethod
     def load_audio(audio_path: str, sr=16_000):
-        if not os.path.exists(audio_path) or not os.path.isfile(audio_path):
-            raise ValueError(f"Path: {audio_path} does not exist")
         audio_path = Path(audio_path)
         spec_exists = False
         spec_path = Path(*audio_path.parts[:-2], "spec", audio_path.stem + ".npy")
