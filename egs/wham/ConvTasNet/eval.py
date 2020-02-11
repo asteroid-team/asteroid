@@ -7,12 +7,15 @@ import yaml
 import json
 import argparse
 import pandas as pd
+from tqdm import tqdm
+from pprint import pprint
+from pb_bss.evaluation import InputMetrics, OutputMetrics
 
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from model import make_model_and_optimizer
 from asteroid.data.wham_dataset import WhamDataset
-from asteroid.utils import tensors_to_device
-from pb_bss.evaluation import InputMetrics, OutputMetrics
+from asteroid.utils import tensors_to_device, average_arrays_in_dic
+
+from model import make_model_and_optimizer
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--task', type=str, required=True,
@@ -20,16 +23,14 @@ parser.add_argument('--task', type=str, required=True,
                          '`sep_clean` or `sep_noisy`')
 parser.add_argument('--test_dir', type=str, required=True,
                     help='Test directory including the json files')
-parser.add_argument('--sample_rate', type=int, default=8000,
-                    help='Sampling frequency in Hz')
-parser.add_argument('--nondefault_nsrc', type=int, default=None,
-                    help='Different number of sources from the default task')
 parser.add_argument('--use_gpu', type=int, default=0,
                     help='Whether to use the GPU for model execution')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Experiment root')
 parser.add_argument('--n_save_ex', type=int, default=50,
-                    help='Number of denoising examples to save')
+                    help='Number of audio examples to save, -1 means all')
+
+compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi']
 
 
 def get_model(conf):
@@ -55,49 +56,49 @@ def main(conf):
     model_device = next(model.parameters()).device
     test_set = WhamDataset(conf['test_dir'], conf['task'],
                            sample_rate=conf['sample_rate'],
-                           nondefault_nsrc=conf['nondefault_nsrc'],
+                           nondefault_nsrc=model.masker.n_src,
                            segment=None)  # Uses all segment length
     # Used to reorder sources only
     loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
 
-    all_metrics_df = pd.DataFrame()
     # Randomly choose the indexes of sentences to save.
     ex_save_dir = os.path.join(conf['exp_dir'], 'examples/')
     if conf['n_save_ex'] == -1:
         conf['n_save_ex'] = len(test_set)
     save_idx = random.sample(range(len(test_set)), conf['n_save_ex'])
-    for idx in range(len(test_set)):
+    series_list = []
+    for idx in tqdm(range(len(test_set))):
         # Forward the network on the mixture.
-        mix, sources, _ = tensors_to_device(test_set[idx], device=model_device)
-        est_sources = model(mix)
-        loss, reordered_sources = loss_func(sources, est_sources,
+        mix, sources = tensors_to_device(test_set[idx], device=model_device)
+        est_sources = model(mix[None, None])
+        loss, reordered_sources = loss_func(est_sources, sources[None],
                                             return_est=True)
-        mix_np = mix.data.numpy()[0]
-        sources_np = sources.data.numpy()[0]
-        est_sources_np = reordered_sources.data.numpy()[0]
+        mix_np = mix[None].cpu().data.numpy()
+        sources_np = sources.squeeze().cpu().data.numpy()
+        est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
         # For each utterance, we get a dictionary with the mixture path,
-        # the input and output metrics.
-        utt_metrics = {'mix_path': test_set.mix[idx][0]}
-
+        # the input and output metrics.utt_metrics
         input_metrics = InputMetrics(observation=mix_np,
                                      speech_source=sources_np,
                                      enable_si_sdr=True,
                                      sample_rate=conf['sample_rate'])
-        utt_metrics.update({'input_' + n : input_metrics[n] for n in
-                            input_metrics._available_metric_names()})
+        utt_metrics = {'input_' + n: input_metrics[n] for n in compute_metrics}
 
         output_metrics = OutputMetrics(speech_prediction=est_sources_np,
                                        speech_source=sources_np,
                                        enable_si_sdr=True,
-                                       sample_rate=conf['sample_rate'])
-        utt_metrics.update(output_metrics.as_dict())
-        all_metrics_df.append(pd.DataFrame.from_dict(utt_metrics),
-                              ignore_index=True)
+                                       sample_rate=conf['sample_rate'],
+                                       compute_permutation=False)
 
+        utt_metrics.update(output_metrics[compute_metrics])
+        utt_metrics['mix_path'] = test_set.mix[idx][0]
+        series_list.append(pd.Series(average_arrays_in_dic(utt_metrics)))
+
+        # Save some examples in a folder. Wav files and metrics as text.
         if idx in save_idx:
             local_save_dir = os.path.join(ex_save_dir, 'ex_{}/'.format(idx))
             os.makedirs(local_save_dir, exist_ok=True)
-            sf.write(local_save_dir + "mixture.wav", mix_np,
+            sf.write(local_save_dir + "mixture.wav", mix_np[0],
                      conf['sample_rate'])
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):
@@ -109,19 +110,37 @@ def main(conf):
             # Write local metrics to the example folder.
             with open(local_save_dir + 'metrics.json', 'w') as f:
                 json.dump(utt_metrics, f, indent=0)
+
     # Save all metrics to the experiment folder.
-    all_metrics_df.to_csv(os.path.join(conf['exp_dir'], 'all_metrics.csv'),
-                          sep='\t')
+    all_metrics_df = pd.DataFrame(series_list)
+    all_metrics_df.to_csv(os.path.join(conf['exp_dir'], 'all_metrics.csv'))
+
+    # Print and save summary metrics
+    final_results = {}
+    for metric_name in compute_metrics:
+        input_metric_name = 'input_' + metric_name
+        ldf = all_metrics_df[metric_name] - all_metrics_df[input_metric_name]
+        final_results[metric_name] = all_metrics_df[metric_name].mean()
+        final_results[metric_name + '_imp'] = ldf.mean()
+    print('Overall metrics :')
+    pprint(final_results)
+    with open(os.path.join(conf['exp_dir'], 'final_metrics.json'), 'w') as f:
+        json.dump(final_results, f, indent=0)
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    arg_dic = dict(vars(args))
 
     # Load training config
     conf_path = os.path.join(args.exp_dir, 'conf.yml')
     with open(conf_path) as f:
         train_conf = yaml.safe_load(f)
-    arg_dic = dict(vars(args))
+    arg_dic['sample_rate'] = train_conf['data']['sample_rate']
     arg_dic['train_conf'] = train_conf
+
+    if args.task != arg_dic['train_conf']['data']['task']:
+        print("Warning : the task used to test is different than "
+              "the one from training, be sure this is what you want.")
 
     main(arg_dic)
