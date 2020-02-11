@@ -5,17 +5,17 @@ filterbank:
   stride: 8
 # Network config
 masknet:
-  n_blocks: 3
-  n_repeats: 2
+  n_blocks: 8
+  n_repeats: 3
   mask_act: relu
+  bn_chan: 128
+  skip_chan: 128
+  hid_chan: 512
 # Training config
 training:
-  epochs: 100
+  epochs: 200
   half_lr: yes
   early_stop: yes
-  max_norm: 5
-  checkpoint: n
-  continue_from:
 # Optim config
 optim:
   optimizer: adam
@@ -29,5 +29,5 @@ data:
   nondefault_nsrc:
   sample_rate: 8000
   mode: min
-  batch_size: 3
+  batch_size: 8
   num_workers: 4
