@@ -3,9 +3,10 @@ import argparse
 import json
 
 import torch
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.system import System
@@ -50,7 +51,11 @@ def main(conf):
     # Two advantages to this : re-instantiating the model and optimizer
     # for retraining and evaluating is straight-forward.
     model, optimizer = make_model_and_optimizer(conf)
-
+    # Define scheduler
+    scheduler = None
+    if conf['training']['half_lr']:
+        scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5,
+                                      patience=5)
     # Just after instantiating, save the args. Easy loading in the future.
     exp_dir = conf['main_args']['exp_dir']
     os.makedirs(exp_dir, exist_ok=True)
@@ -59,16 +64,19 @@ def main(conf):
         yaml.safe_dump(conf, outfile)
 
     # Define Loss function.
-
     loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
-    # Checkpointing callback can monitor any quantity which is returned by
-    # validation step, defaults to val_loss here (see System).
-    checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
-    checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
-                                 mode='min', save_top_k=5)
     system = System(model=model, loss_func=loss_func, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
-                    config=conf)
+                    scheduler=scheduler, config=conf)
+
+    # Define callbacks
+    checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
+    checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
+                                 mode='min', save_top_k=5, verbose=1)
+    early_stopping = False
+    if conf['training']['early_stop']:
+        early_stopping = EarlyStopping(monitor='val_loss', patience=10,
+                                       verbose=1)
 
     # Don't ask GPU if they are not available.
     if not torch.cuda.is_available():
@@ -76,6 +84,7 @@ def main(conf):
         conf['main_args']['gpus'] = None
     trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
                          checkpoint_callback=checkpoint,
+                         early_stop_callback=early_stopping,
                          default_save_path=exp_dir,
                          gpus=conf['main_args']['gpus'],
                          distributed_backend='dp',
@@ -84,11 +93,12 @@ def main(conf):
     trainer.fit(system)
 
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
-        json.dump(checkpoint.best_k_models, f)
+        json.dump(checkpoint.best_k_models, f, indent=0)
 
 
 if __name__ == '__main__':
     import yaml
+    from pprint import pprint as print
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
 
     # We start with opening the config file conf.yml as a dictionary from

@@ -1,36 +1,45 @@
 #!/bin/bash
 
-# * If you have mixture wsj0 audio, modify `data` to your path that including tr, cv and tt.
-# * If you jsut have origin sphere format wsj0 , modify `wsj0_origin` to your path and
-# modify `wsj0_wav` to path that put output wav format wsj0, then read and run stage 1 part.
-# After that, modify `data` and run from stage 2.
+set -e  # Exit on error
+# Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
+# files if you start from sphere files.
+storage_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/
 
-base=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/
+# If you start from the sphere files, specify the path to the directory and start from stage 0
 sphere_dir=  # Directory containing sphere files
-wsj0_wav_dir=${base}/DATA/wsj0_wav/ # Directory where to save wsj0 wav files (Need disk space)
-wham_wav_dir=${base}/wham_recipe_results/  # # Directory where to save WHAM wav files (Need disk space)
+# If you already have wsj0 wav files, specify the path to the directory here and start from stage 1
+wsj0_wav_dir=${storage_dir}/wsj0_wav/
+# If you already have the WHAM mixtures, specify the path to the directory here and start from stage 2
+wham_wav_dir=${storage_dir}/wham_wav/
+# After running the recipe a first time, you can run it from stage 3 directly to train new models.
+
+# Path to the python you'll use for the experiment. Defaults to the current python
+# You can run ./utils/prepare_python_env.sh to create a suitable python environment, paste the output here.
+#python_path=${storage_dir}/asteroid_conda/miniconda3/bin/python
+python_path=python
+
+# Example usage
+# ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
 
 # General
-stage=-1
-tag=""
-python_path=${base}/asteroid_conda/miniconda3/bin/python
+stage=0  # Controls from which stage to start
+tag=""  # Controls the directory name associated to the experiment
+# You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=
 
 # Data
 data_dir=data  # Local data directory (No disk space needed)
-task=sep_clean
+task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
 sample_rate=8000
 mode=min
-nondefault_src=
+nondefault_src=  # If you want to train a network with 3 output streams for example.
 
 # Training
-batch_size=16
-num_workers=12
+batch_size=8
+num_workers=8
 #optimizer=adam
 lr=0.001
-epochs=400
-continue_from=
-model_name=final.pth
+epochs=200
 
 # Architecture
 n_blocks=8
@@ -41,9 +50,7 @@ mask_nonlinear=relu
 eval_use_gpu=1
 
 
-. utils/parse_options.sh || exit 1;
-
-mkdir -p logs
+. utils/parse_options.sh
 
 
 if [[ $stage -le  -1 ]]; then
@@ -62,7 +69,7 @@ fi
 
 
 if [[ $stage -le  0 ]]; then
-	echo "Stage 0: Converting sphere files to wav files"
+  echo "Stage 0: Converting sphere files to wav files"
   . local/convert_sphere2wav.sh --sphere_dir $sphere_dir --wav_dir $wsj0_wav_dir
 fi
 
@@ -74,7 +81,7 @@ fi
 
 
 if [[ $stage -le  2 ]]; then
-	# Make json directories with all modes and sampling rates
+	# Make json directories with min/max modes and sampling rates
 	echo "Stage 2: Generating json files including wav path and duration"
 	for sr_string in 8 16; do
 		for mode in min max; do
@@ -95,6 +102,7 @@ train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
 test_dir=$dumpdir/tt
 
+# Generate a random ID for the run if no tag is specified
 uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
 	tag=${task}_${sr_string}k${mode}_${uuid}
@@ -103,8 +111,10 @@ expdir=exp/train_convtasnet_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
+
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
+  mkdir -p logs
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
   --train_dir $train_dir \
   --valid_dir $valid_dir \
@@ -124,10 +134,8 @@ fi
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4 : Evaluation"
 	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
-	--test_dir $test_dir \
 	--task $task \
-	--sample_rate $sample_rate \
-	--nondefault_nsrc $nondefault_src \
-	--exp_dir ${expdir} \
-	--use_gpu $eval_use_gpu
+	--test_dir $test_dir \
+	--use_gpu $eval_use_gpu \
+	--exp_dir ${expdir}
 fi
