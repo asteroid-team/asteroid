@@ -207,6 +207,7 @@ class StackedResidualRNN(nn.Module):
         self.n_units = n_units
         self.n_layers = n_layers
         self.dropout = dropout
+        assert bidirectional is False, "Bidirectional not supported yet"
         self.bidirectional = bidirectional
 
         self.layers = nn.ModuleList()
@@ -217,11 +218,13 @@ class StackedResidualRNN(nn.Module):
         self.dropout_layer = nn.Dropout(self.dropout)
 
     def forward(self, x):
-        """ Builtin residual connections + dropout applied before residual."""
+        """ Builtin residual connections + dropout applied before residual.
+            Input shape : [batch, time_axis, feat_axis]
+        """
         for rnn in self.layers:
             rnn_out = rnn(x)
-            droped_out = self.dropout_layer(rnn_out)
-            x = x + droped_out
+            dropped_out = self.dropout_layer(rnn_out)
+            x = x + dropped_out
         return x
 
 
