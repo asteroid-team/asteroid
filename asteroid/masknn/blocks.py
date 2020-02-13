@@ -186,6 +186,48 @@ class SingleRNN(nn.Module):
         return rnn_output
 
 
+class StackedResidualRNN(nn.Module):
+    """ Stacked RNN with builtin residual connection.
+
+    Args:
+        rnn_type (str): Select from ``'RNN'``, ``'LSTM'``, ``'GRU'``. Can
+            also be passed in lowercase letters.
+        n_units (int): Number of units in recurrent layers. This will also be
+            the expected input size.
+        n_layers (int): Number of recurrent layers.
+        dropout (float): Dropout value, between 0. and 1. (Default: 0.)
+        bidirectional (bool): If True, use bidirectional RNN, else
+            unidirectional. (Default: False)
+    """
+
+    def __init__(self, rnn_type, n_units, n_layers=4, dropout=0.,
+                 bidirectional=False):
+        super(StackedResidualRNN, self).__init__()
+        self.rnn_type = rnn_type
+        self.n_units = n_units
+        self.n_layers = n_layers
+        self.dropout = dropout
+        assert bidirectional is False, "Bidirectional not supported yet"
+        self.bidirectional = bidirectional
+
+        self.layers = nn.ModuleList()
+        for _ in range(n_layers):
+            self.layers.append(SingleRNN(rnn_type, input_size=n_units,
+                                         hidden_size=n_units,
+                                         bidirectional=bidirectional))
+        self.dropout_layer = nn.Dropout(self.dropout)
+
+    def forward(self, x):
+        """ Builtin residual connections + dropout applied before residual.
+            Input shape : [batch, time_axis, feat_axis]
+        """
+        for rnn in self.layers:
+            rnn_out = rnn(x)
+            dropped_out = self.dropout_layer(rnn_out)
+            x = x + dropped_out
+        return x
+
+
 class DPRNNBlock(nn.Module):
     """ Dual-Path RNN Block as proposed in [1].
 
