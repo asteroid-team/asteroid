@@ -43,9 +43,10 @@ fi
 
 if [[ $stage -le  4 ]]; then
   echo "Stage 4 : Train"
-
+  python train.py
 fi
 
 if [[ $stage -le  5 ]]; then
   echo "Stage 5 : Evaluate"
+  python eval.py
 fi
