@@ -252,3 +252,24 @@ def average_arrays_in_dic(dic):
         if isinstance(v, np.ndarray):
             dic[k] = float(v.mean())
     return dic
+
+
+def get_wav_random_start_stop(signal_len, desired_len=4*8000):
+    """ Get indexes for a chunk of signal of a given length.
+
+    Args:
+        signal_len (int): length of the signal to trim.
+        desired_len (int): the length of [start:stop]
+
+    Returns:
+        tuple: random start integer, stop integer.
+    """
+    if signal_len == desired_len or desired_len is None:
+        rand_start = 0
+    else:
+        rand_start = np.random.randint(0, signal_len - desired_len)
+    if desired_len is None:
+        stop = None
+    else:
+        stop = rand_start + desired_len
+    return rand_start, stop
