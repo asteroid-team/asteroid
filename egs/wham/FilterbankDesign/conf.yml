@@ -11,14 +11,14 @@ masknet:
   n_blocks: 3
   n_repeats: 2
   mask_act: relu
+  bn_chan: 128
+  skip_chan: 128
+  hid_chan: 512
 # Training config
 training:
   epochs: 100
   half_lr: yes
   early_stop: yes
-  max_norm: 5
-  checkpoint: no
-  continue_from:
 # Optim config
 optim:
   optimizer: adam
@@ -32,5 +32,5 @@ data:
   nondefault_nsrc:
   sample_rate: 8000
   mode: min
-  batch_size: 3
+  batch_size: 16
   num_workers: 4

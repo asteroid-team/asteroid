@@ -1,6 +1,7 @@
 import collections
 import torch
 import inspect
+import numpy as np
 import argparse
 
 
@@ -233,3 +234,21 @@ def flatten_dict(d, parent_key='', sep='_'):
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+def average_arrays_in_dic(dic):
+    """ Take average of numpy arrays in a dictionary.
+
+    Args:
+        dic (dict): Input dictionary to take average from
+
+    Returns:
+        dict: New dictionary with array averaged.
+
+    """
+    # Copy dic first
+    dic = dict(dic)
+    for k, v in dic.items():
+        if isinstance(v, np.ndarray):
+            dic[k] = float(v.mean())
+    return dic

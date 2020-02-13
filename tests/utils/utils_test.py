@@ -3,6 +3,7 @@ import collections
 import torch
 from torch.testing import assert_allclose
 import pytest
+import numpy as np
 
 from asteroid import utils
 from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
@@ -88,3 +89,19 @@ def test_flatten_dict():
     flat_dic = utils.flatten_dict(to_test)
     for k, v in flat_dic.items():
         assert not isinstance(v, collections.MutableMapping)
+
+
+def test_average_array_in_dic():
+    d = dict(
+        a='hey',
+        b=np.array([1., 3.]),
+        c=2
+    )
+    av_d = utils.average_arrays_in_dic(d)
+    d_should_be = dict(
+        a='hey',
+        b=2.,
+        c=2
+    )
+    # We need the arrays to be averaged
+    assert av_d == d_should_be
