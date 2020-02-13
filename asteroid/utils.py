@@ -243,9 +243,11 @@ def average_arrays_in_dic(dic):
         dic (dict): Input dictionary to take average from
 
     Returns:
-        dict: Same dictionary with array averaged.
+        dict: New dictionary with array averaged.
 
     """
+    # Copy dic first
+    dic = dict(dic)
     for k, v in dic.items():
         if isinstance(v, np.ndarray):
             dic[k] = float(v.mean())
