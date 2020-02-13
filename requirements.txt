@@ -12,4 +12,4 @@ SoundFile>=0.10.2
 torch>=1.3.0
 torchvision>=0.4.0, < 0.5  # (lightning compat)
 pytorch-lightning>=0.6.0
-pb_bss @ git+https://github.com/fgnt/pb_bss
+pb_bss @ git+https://github.com/mpariente/pb_bss

@@ -45,14 +45,12 @@ class System(pl.LightningModule):
         self.hparams = Namespace(**self.none_to_string(flatten_dict(config)))
 
     def forward(self, *args, **kwargs):
-        """ Applies forward pass.
-
-        Required by PL.
+        """ Applies forward pass of the model.
 
         Returns:
             :class:`torch.Tensor`
         """
-        return self.model.forward(*args, **kwargs)
+        return self.model(*args, **kwargs)
 
     def common_step(self, batch, batch_nb):
         """ Common forward step between training and validation.
@@ -78,32 +76,10 @@ class System(pl.LightningModule):
         loss = self.loss_func(est_targets, targets)
         return loss
 
-    def unpack_data(self, data):
-        """ Unpack data given by the DataLoader
-
-        Args:
-            data: list of 2 or 3 elements. Output of DataLoader.
-                [model_inputs, training_targets, infos] or
-                [model_inputs, training_targets]
-
-        Returns:
-              model_inputs, training_targets, infos
-        """
-        if len(data) == 2:
-            inputs, targets = data
-            infos = dict()
-        elif len(data) == 3:
-            inputs, targets, infos = data
-        else:
-            raise ValueError('Expected DataLoader output to have '
-                             '2 or 3 elements. Received '
-                             '{} elements'.format(len(data)))
-        return inputs, targets, infos
-
     def training_step(self, batch, batch_nb):
         """ Pass data through the model and compute the loss.
 
-        Backprop is **not** performed.
+        Backprop is **not** performed (meaning PL will do it for you).
 
         Args:
             batch: the object returned by the loader (a list of torch.Tensor
