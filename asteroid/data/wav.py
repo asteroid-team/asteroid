@@ -1,3 +1,6 @@
+""" Utils to handle wav files
+"""
+
 import os
 import numpy as np
 import soundfile as sf
@@ -79,6 +82,47 @@ class SingleWav(object):
             self.__wav_data = wav_data
         return wav_data
 
+    def random_part_data(self, duration=-1):
+        """
+            Return random part of the wav file
+            Args:
+                duration: float. required duration in seconds.
+                    defaults to -1 in which case returns the full signal
+
+            Returns:
+                A two dimensional numpy array of shape [samples, channels]
+        """
+        if duration == -1:
+            return self.data
+        self.update_info()
+        assert duration < self.info.duration, \
+                'Requested duration exceeds signal length'
+        max_sample = int((self.info.duration - duration) * self.sampling_rate)
+        start_sample = np.random.randint(0,max_sample)
+        end_sample = start_sample + int(duration * self.sampling_rate)
+        return self.part_data(start_sample, end_sample)
+
+    def part_data(self, start, end):
+        """
+            Read part of the wav file 
+        Args:
+            start: int, start of the wav file (in samples)
+            end: int, end of the wav file in samples
+        Returns
+            A two dimensional numpy array of shape [samples, channels]
+        """
+        self.update_info()
+        assert end > start, 'End should be greater than start'
+        assert end <= self.sample_len, \
+                'Requested length is greater than max available'
+        wav_data, self.sampling_rate = \
+                    sf.read(self.file_name, always_2d=True, start=start, \
+                    stop=end, dtype='float32')
+        if self.channel_interest is not None:
+            wav_data = wav_data[:, self.channel_interest]
+        return wav_data
+
+
     # Handle with statement
     def __enter__(self):
         self.__wav_data = self.data
@@ -88,9 +132,7 @@ class SingleWav(object):
             self.__wav_data = None
 
     def save_space(self):
-        """ Remove the saved data.
-
-        self.data will read from the file again.
+        """ Remove the saved data. self.data will read from the file again.
         """
         self.__wav_data = None
 
@@ -100,6 +142,7 @@ class SingleWav(object):
         Call :func:`save_space` to remove it.
         """
         self.__wav_data = self.data
+
 
     @property
     def wav_id(self):
@@ -113,7 +156,6 @@ class SingleWav(object):
     def write_wav(self, path):
         """ Write the wav data into an other path """
         sf.write(path, self.data, self.sampling_rate)
-
 
 class MultipleWav(SingleWav):
     """ Handle a set of wav files as a single object.
@@ -172,7 +214,7 @@ class MultipleWav(SingleWav):
             return self.__wav_data
         wav_data = []
         for _file_ in self.file_name_list:
-            _wav_data, _ = sf.read(_file_, always_2d=True)
+            _wav_data, _ = sf.read(_file_, always_2d=True, dtype='float32')
             if self.channel_interest is not None:
                 _wav_data = _wav_data[:, self.channel_interest]
             wav_data.append(_wav_data)
