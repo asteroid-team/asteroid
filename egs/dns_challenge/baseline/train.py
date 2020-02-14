@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 import torch
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.utils import data
+from torch.utils.data import DataLoader, random_split
 
 from asteroid.data import DNSDataset
 from asteroid.utils import str2bool_arg
@@ -20,24 +20,22 @@ parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Full path to save best validation model')
 parser.add_argument('--is_complex', default=True, type=str2bool_arg)
-# parser.add_argument()
-# parser.add_argument()
 
 
 def main(conf):
     total_set = DNSDataset(conf['data']['json_dir'])
-    val_prop = conf['data']['val_prop']
-    lengths = [int(len(total_set) * prop) for prop in [1 - val_prop, val_prop]]
-    train_set, val_set = data.random_split(total_set, lengths)
+    train_len = int(len(total_set) * (1 - conf['data']['val_prop']))
+    val_len = len(total_set) - train_len
+    train_set, val_set = random_split(total_set, [train_len, val_len])
 
-    train_loader = data.DataLoader(train_set, shuffle=True,
-                                   batch_size=conf['data']['batch_size'],
-                                   num_workers=conf['data']['num_workers'],
-                                   drop_last=True)
-    val_loader = data.DataLoader(val_set, shuffle=True,
-                                 batch_size=conf['data']['batch_size'],
-                                 num_workers=conf['data']['num_workers'],
-                                 drop_last=True)
+    train_loader = DataLoader(train_set, shuffle=True,
+                              batch_size=conf['data']['batch_size'],
+                              num_workers=conf['data']['num_workers'],
+                              drop_last=True)
+    val_loader = DataLoader(val_set, shuffle=True,
+                            batch_size=conf['data']['batch_size'],
+                            num_workers=conf['data']['num_workers'],
+                            drop_last=True)
 
     # Define model and optimizer in a local function (defined in the recipe).
     # Two advantages to this : re-instantiating the model and optimizer
@@ -82,7 +80,7 @@ def main(conf):
                          gpus=conf['main_args']['gpus'],
                          distributed_backend='dp',
                          train_percent_check=1.0,  # Useful for fast experiment
-                         gradient_clip_val=5.)
+                         gradient_clip_val=5.,)
     trainer.fit(system)
 
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
