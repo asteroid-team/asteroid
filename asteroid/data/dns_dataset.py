@@ -12,7 +12,7 @@ class DNSDataset(data.Dataset):
         with open(os.path.join(json_dir, 'file_infos.json'), 'r') as f:
             self.mix_infos = json.load(f)
 
-        self.wav_ids = self.mix_infos.keys()
+        self.wav_ids = list(self.mix_infos.keys())
 
     def __len__(self):
         return len(self.wav_ids)
@@ -22,7 +22,7 @@ class DNSDataset(data.Dataset):
         Returns:
             mixture, vstack([source_arrays])
         """
-        utt_info = self.mix_infos(self.wav_ids[idx])
+        utt_info = self.mix_infos[self.wav_ids[idx]]
         # Load mixture
         x = torch.from_numpy(sf.read(utt_info['mix'], dtype='float32')[0])
         # Load clean
