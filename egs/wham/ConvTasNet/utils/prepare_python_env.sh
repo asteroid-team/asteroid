@@ -2,7 +2,7 @@
 # Usage ./utils/install_env.sh --install_dir A --asteroid_root B --pip_requires C
 install_dir=~
 asteroid_root=../../../../
-pip_requires=  # Expects a requirement.txt
+pip_requires=../../../requirements.txt  # Expects a requirement.txt
 
 . utils/parse_options.sh || exit 1
 
