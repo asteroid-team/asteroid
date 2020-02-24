@@ -110,4 +110,4 @@ def test_average_array_in_dic():
 @pytest.mark.parametrize("desired", [50, 100])
 def test_get_start_stop(desired):
     sig = np.random.randn(100)
-    utils.get_wav_random_start_stop(len(sig), desired_len=desired)
+    start, stop = utils.get_wav_random_start_stop(len(sig), desired_len=desired)

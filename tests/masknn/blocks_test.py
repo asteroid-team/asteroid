@@ -37,7 +37,7 @@ def test_dprnn(mask_act, out_chan, hop_size):
 @pytest.mark.parametrize("rnn_type", ["LSTM", "GRU", "RNN"])
 @pytest.mark.parametrize("dropout", [0., 0.2])
 @pytest.mark.parametrize("bidir", [False])
-def test_dprnn(rnn_type, dropout, bidir):
+def test_res_rnn(rnn_type, dropout, bidir):
     n_units, n_layers = 20, 3
     model = blocks.StackedResidualRNN(rnn_type, n_units, n_layers=n_layers,
                                       dropout=dropout, bidirectional=bidir)
