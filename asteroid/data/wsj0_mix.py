@@ -1,8 +1,3 @@
-"""
-wsj-*mix Dataset class: A dataset interface to process wsj-{2,3}mix dataset
-@author : Sunit Sivasankaran, Inria-Nancy
-"""
-
 import torch
 from torch.utils import data
 import json
@@ -65,9 +60,6 @@ class WSJmixDataset(data.Dataset):
 
     def __len__(self):
         return self.len
-
-    def __getitem__(self, idx):
-        raise NotImplementedError
 
     def shuffle_list(self):
         """

@@ -95,7 +95,7 @@ class SingleWav(object):
         if duration == -1:
             return self.data
         self.update_info()
-        assert duration < self.info.duration, \
+        assert duration < self.info.duration,\
                 'Requested duration exceeds signal length'
         max_sample = int((self.info.duration - duration) * self.sampling_rate)
         start_sample = np.random.randint(0,max_sample)
@@ -104,7 +104,7 @@ class SingleWav(object):
 
     def part_data(self, start, end):
         """
-            Read part of the wav file 
+            Read part of the wav file
         Args:
             start: int, start of the wav file (in samples)
             end: int, end of the wav file in samples
@@ -113,23 +113,47 @@ class SingleWav(object):
         """
         self.update_info()
         assert end > start, 'End should be greater than start'
-        assert end <= self.sample_len, \
+        assert end <= self.sample_len,\
                 'Requested length is greater than max available'
-        wav_data, self.sampling_rate = \
-                    sf.read(self.file_name, always_2d=True, start=start, \
-                    stop=end, dtype='float32')
+        if self.__wav_data is None:
+            wav_data, self.sampling_rate = \
+                    sf.read(self.file_name, always_2d=True, 
+                            start=start, stop=end, dtype='float32')
+        else:
+            wav_data = self.__wav_data[start:end, :]
         if self.channel_interest is not None:
             wav_data = wav_data[:, self.channel_interest]
         return wav_data
 
-
-    # Handle with statement
     def __enter__(self):
-        self.__wav_data = self.data
+        """ Using `with` operator for wav object
+        Examples:
+            >>> from asteroid.data.wav import SingleWav
+            >>> from asteroid.filterbanks import Encoder, STFTFB
+            >>> wav_obj = SingleWav('file.wav')
+            >>> fb = Encoder(STFTFB(512, 512))
+            >>> set_trace()
+            >>> with wav_obj: # Wav file is read
+            >>>     print(wav_obj._SingleWav__wav_data is None)
+            False
+            >>>     data = torch.tensor(wav_obj.data,
+                        dtype=torch.float32).T.unsqueeze(1)
+            >>>     data_stft = fb(data)
+            ## Picks wav data from memory and not from file
+            >>>     new_data = torch.tensor(wav_obj.data.sum(1),
+                        dtype=torch.float32).T.unsqueeze(0).unsqueeze(0)
+            >>>     new_data_stft = fb(new_data)
+            >>> # Wav data cleared from memory
+            >>> print(wav_obj._SingleWav__wav_data is None)
+            True
+        """
+        self.temp_save()
 
     def __exit__(self, data_type, data_val, data_tb):
+        """ Clear wav data is save not requested
+        """
         if not self.save:
-            self.__wav_data = None
+            self.save_space()
 
     def save_space(self):
         """ Remove the saved data. self.data will read from the file again.
@@ -142,7 +166,6 @@ class SingleWav(object):
         Call :func:`save_space` to remove it.
         """
         self.__wav_data = self.data
-
 
     @property
     def wav_id(self):
@@ -157,9 +180,9 @@ class SingleWav(object):
         """ Write the wav data into an other path """
         sf.write(path, self.data, self.sampling_rate)
 
+
 class MultipleWav(SingleWav):
     """ Handle a set of wav files as a single object.
-
     Args:
         file_name_list (list[str]): List of wav file names
         channel_interest (list[int]): An array of interested channels.

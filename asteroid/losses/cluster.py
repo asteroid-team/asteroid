@@ -1,4 +1,3 @@
-from ipdb import set_trace
 import torch
 
 def batch_matrix_norm(matrix, norm_order=2):
