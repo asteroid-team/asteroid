@@ -105,3 +105,9 @@ def test_average_array_in_dic():
     )
     # We need the arrays to be averaged
     assert av_d == d_should_be
+
+
+@pytest.mark.parametrize("desired", [50, 100])
+def test_get_start_stop(desired):
+    sig = np.random.randn(100)
+    start, stop = utils.get_wav_random_start_stop(len(sig), desired_len=desired)
