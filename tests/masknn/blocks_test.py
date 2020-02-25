@@ -33,7 +33,7 @@ def test_dprnn(mask_act, out_chan, hop_size):
     out_chan = out_chan if out_chan else in_chan
     assert out.shape == (batch, n_src, out_chan, n_frames)
 
-
+    
 @pytest.mark.parametrize("embed_dim", [10, 20, 30])
 def test_chimerapp(embed_dim):
     in_chan, n_src = 512, 2
@@ -43,3 +43,16 @@ def test_chimerapp(embed_dim):
     out = model(inp)
     assert out[0].shape == (batch, freq_dim*nframes, embed_dim)
     assert out[1].shape == (batch, n_src, in_chan, nframes)
+
+    
+@pytest.mark.parametrize("rnn_type", ["LSTM", "GRU", "RNN"])
+@pytest.mark.parametrize("dropout", [0., 0.2])
+@pytest.mark.parametrize("bidir", [False])
+def test_res_rnn(rnn_type, dropout, bidir):
+    n_units, n_layers = 20, 3
+    model = blocks.StackedResidualRNN(rnn_type, n_units, n_layers=n_layers,
+                                      dropout=dropout, bidirectional=bidir)
+    batch, n_frames = 2, 78
+    inp = torch.randn(batch, n_frames, n_units)
+    out = model(inp)
+    assert out.shape == (batch, n_frames, n_units)
