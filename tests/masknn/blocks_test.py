@@ -32,3 +32,16 @@ def test_dprnn(mask_act, out_chan, hop_size):
     _ = model.get_config()
     out_chan = out_chan if out_chan else in_chan
     assert out.shape == (batch, n_src, out_chan, n_frames)
+
+def test_chimerapp():
+    in_chan, n_src = 512, 2
+    model = blocks.ChimeraPP(in_chan, n_src)
+    batch, freq_dim, nframes = 10, in_chan, 10
+    inp = torch.randn(batch, in_chan, nframes)
+    out = model(inp)
+    assert out[0].shape == (batch, freq_dim*nframes, 20)
+    assert out[1].shape == (batch, n_src, in_chan, nframes)
+
+    model = blocks.ChimeraPP(in_chan, n_src, embedding_dim=40)
+    out = model(inp)
+    assert out[0].shape == (batch, freq_dim*nframes, 40)
