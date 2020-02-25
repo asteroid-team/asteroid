@@ -5,6 +5,7 @@ from torch.testing import assert_allclose
 from asteroid.losses import PITLossWrapper
 from asteroid.losses import sdr
 from asteroid.losses import nosrc_mse, pairwise_mse, nonpit_mse
+from asteroid.losses import deep_clustering_loss
 
 
 @pytest.mark.parametrize("n_src", [2, 3, 4])
@@ -36,3 +37,10 @@ def test_sisdr(n_src, function_triplet):
                     wo_src_wrapper(est_targets, targets, return_est=True)[1])
     assert_allclose(wo_src_wrapper(est_targets, targets, return_est=True)[1],
                     w_src_wrapper(est_targets, targets, return_est=True)[1])
+
+@pytest.mark.parametrize("spk_cnt", [2, 3, 4])
+def test_dc(spk_cnt):
+    embedding = torch.randn(10, 5*400, 20)
+    targets = torch.LongTensor(10, 400, 5).random_(0, spk_cnt)
+    loss = deep_clustering_loss(embedding, targets, spk_cnt)
+    assert loss.shape[0] == 10

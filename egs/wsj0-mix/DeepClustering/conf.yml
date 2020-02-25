@@ -1,0 +1,30 @@
+# Filterbank config
+filterbank:
+  n_filters: 512
+  kernel_size: 512
+  stride: 256
+# Training config
+training:
+  epochs: 100
+  half_lr: yes
+  early_stop: yes
+  max_norm: 5
+  checkpoint: n
+  continue_from:
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.
+# Data config
+data:
+  tr_wav_len_list: /srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/ssivasankaran/experiments/data/speech_separation/wsj0-mix/2speakers_reverb_kinect_chime_noise_corrected/wav16k/max/tr.wavid.sample.10
+  cv_wav_len_list: /srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/ssivasankaran/experiments/data/speech_separation/wsj0-mix/2speakers_reverb_kinect_chime_noise_corrected/wav16k/max/cv.wavid.sample.10
+  wav_base_path: /srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/ssivasankaran/experiments/data/speech_separation/wsj0-mix/2speakers_reverb_kinect_chime_noise_corrected/wav16k/max/
+  task: sep_clean
+  nondefault_nsrc:
+  sample_rate: 16000
+  mode: max
+  batch_size: 3
+  num_workers: 4
+  segment: 1 # Segment length in seconds for training
