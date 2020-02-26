@@ -12,18 +12,18 @@ Asteroid is intended to be a __community-based project__
 so hop on and help us !
 
 ## Table of contents
-- [Installation](https://github.com/mpariente/AsSteroid#installation)
-- [Tutorials](https://github.com/mpariente/AsSteroid#highlights)
-- [Running a recipe](https://github.com/mpariente/AsSteroid#running-a-recipe)
-- [Available recipes](https://github.com/mpariente/AsSteroid#recipes)
-- [Supported datasets](https://github.com/mpariente/AsSteroid#supported-datasets)
-- [Our guiding principles](https://github.com/mpariente/AsSteroid#guiding-principles)
+- [Installation](https://github.com/mpariente/asteroid#installation)
+- [Tutorials](https://github.com/mpariente/asteroid#highlights)
+- [Running a recipe](https://github.com/mpariente/asteroid#running-a-recipe)
+- [Available recipes](https://github.com/mpariente/asteroid#recipes)
+- [Supported datasets](https://github.com/mpariente/asteroid#supported-datasets)
+- [Our guiding principles](https://github.com/mpariente/asteroid#guiding-principles)
 
 ## Installation
 In order to install Asteroid, clone the repo and install it using pip or python :
 ```bash
-git clone https://github.com/mpariente/AsSteroid
-cd AsSteroid
+git clone https://github.com/mpariente/asteroid
+cd asteroid
 # Install with pip (in editable mode)
 pip install -e .
 # Install with python
@@ -33,15 +33,15 @@ python setup.py install
 ## Highlights
 Few notebooks showing example usage of `asteroid`'s features.
 - [Permutation invariant training wrapper `PITLossWrapper`
-.](https://github.com/mpariente/AsSteroid/blob/master/examples/PITLossWrapper.ipynb)
-- [Filterbank API](https://github.com/mpariente/AsSteroid/blob/master/examples/Filterbank.ipynb)
+.](https://github.com/mpariente/asteroid/blob/master/examples/PITLossWrapper.ipynb)
+- [Filterbank API](https://github.com/mpariente/asteroid/blob/master/examples/Filterbank.ipynb)
 
 
 ## Running a recipe
 Running the recipes requires additional packages in most cases, 
 we recommend running :
 ```bash
-# from AsSteroid/
+# from asteroid/
 pip install -r requirements.txt
 ```
 Then choose the recipe you want to run and run it !
@@ -49,7 +49,7 @@ Then choose the recipe you want to run and run it !
 cd egs/wham/ConvTasNet
 ./run.sh
 ```
-More information in [egs/README.md](https://github.com/mpariente/AsSteroid/tree/master/egs).
+More information in [egs/README.md](https://github.com/mpariente/asteroid/tree/master/egs).
 
 ## Recipes 
 * [x] ConvTasnet ([Luo et al.](https://arxiv.org/abs/1809.07454))
@@ -71,7 +71,7 @@ More information in [egs/README.md](https://github.com/mpariente/AsSteroid/tree/
 ## Writing your own recipe
 
 ## Contributing
-See our [contributing guidelines](https://github.com/mpariente/AsSteroid/blob/master/CONTRIBUTING.md).
+See our [contributing guidelines](https://github.com/mpariente/asteroid/blob/master/CONTRIBUTING.md).
 
 
 ## Building the docs

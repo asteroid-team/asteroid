@@ -130,7 +130,7 @@ html_theme = 'sphinx_rtd_theme'
 
 html_theme_options = {
     'pytorch_project': 'docs',
-    'canonical_url': 'https://github.com/mpariente/AsSteroid',
+    'canonical_url': 'https://github.com/mpariente/asteroid',
     'collapse_navigation': False,
     'display_version': True,
     'logo_only': False,
@@ -297,7 +297,7 @@ autodoc_mock_imports = MOCK_REQUIRE_PACKAGES + MOCK_MANUAL_PACKAGES
 # Options for the linkcode extension
 # ----------------------------------
 # github_user = 'mpariente'
-# github_repo = 'Assteroid'
+# github_repo = 'asteroid'
 #
 #
 # # Resolve function

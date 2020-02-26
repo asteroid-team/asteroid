@@ -2,8 +2,8 @@
 ## Running the tests locally
 
 ```bash
-git clone https://github.com/mpariente/AsSteroid
-cd AsSteroid
+git clone https://github.com/mpariente/asteroid
+cd asteroid
 
 # install module locally
 pip install -e .
@@ -16,7 +16,7 @@ py.test -v
 ```
 
 ## Running coverage
-From `AsSteroid` parent directory
+From `asteroid` parent directory
 ```bash
 # Install coverage
 pip install coverage

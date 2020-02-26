@@ -10,7 +10,7 @@ setup(
     version=asteroid_version,
     author='Manuel Pariente',
     author_email='manuel.pariente@loria.fr',
-    url="https://github.com/mpariente/AsSteroid",
+    url="https://github.com/mpariente/asteroid",
     description='PyTorch-based audio source separation toolkit',
     long_description=long_description,
     long_description_content_type="text/markdown",
