@@ -1,6 +1,6 @@
 # Asteroid : Audio Source Separation on steroids
-[![Build Status](https://travis-ci.com/mpariente/AsSteroid.svg?branch=master)](https://travis-ci.com/mpariente/AsSteroid)
-[![codecov](https://codecov.io/gh/mpariente/AsSteroid/branch/master/graph/badge.svg)](https://codecov.io/gh/mpariente/AsSteroid)
+[![Build Status](https://travis-ci.com/mpariente/asteroid.svg?branch=master)](https://travis-ci.com/mpariente/asteroid)
+[![codecov](https://codecov.io/gh/mpariente/asteroid/branch/master/graph/badge.svg)](https://codecov.io/gh/mpariente/asteroid)
 
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/asteroid-dev/shared_invite/enQtOTM4NjEzOTI0MzQzLWMyODBmZjRiODAyOGZmNjQ0ZjVjZjM3NGM0NDIyOTc4ZjEyYjc0ZmI1NDI5N2I2YzE5OWU2ZGE1NmEyMjBlYTQ)
 
