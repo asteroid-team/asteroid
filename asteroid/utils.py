@@ -57,7 +57,7 @@ def tensors_to_device(tensors, device):
         device (:class: `torch.device`): the device where to place the tensors.
 
     Returns:
-        :class:`torch.Tensor`:
+        Union [:class:`torch.Tensor`, list, tuple, dict]:
             Same as input but transferred to device.
             Goes through lists and dicts and transfers the torch.Tensor to
             device. Leaves the rest untouched.
