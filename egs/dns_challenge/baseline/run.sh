@@ -14,6 +14,9 @@ id=
 # Experiment config
 is_complex=1  # If we use a complex network for training.
 
+# Evaluation
+eval_use_gpu=1
+
 . ./utils/parse_options.sh
 
 recipe_dir=$PWD
@@ -36,7 +39,7 @@ fi
 if [[ $stage -le  2 ]]; then
   echo "Stage 2 : Create the dataset"
   cd $clone_dir/DNS-Challenge
-  . ./local/create_dns_dataset.sh
+  . ./local/create_dns_dataset.sh $storage_dir
   cd $recipe_dir
 fi
 
@@ -69,5 +72,16 @@ fi
 
 if [[ $stage -le  5 ]]; then
   echo "Stage 5 : Evaluate"
-  python eval.py
+  python eval_on_synthetic.py \
+  --test_dir $clone_dir/DNS-Challenge/datasets/test_set/synthetic \
+  --use_gpu $eval_use_gpu \
+  --exp_dir $expdir | tee logs/eval_dns_${tag}.log
+fi
+
+if [[ $stage -le  6 ]]; then
+  echo "Stage 5 : Separate"
+  python denoise.py \
+  --denoise_path $clone_dir/DNS-Challenge/datasets/test_set/real_recordings/ \
+  --use_gpu $eval_use_gpu \
+  --exp_dir $expdir
 fi
