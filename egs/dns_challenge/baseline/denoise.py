@@ -19,7 +19,6 @@ parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Experiment root')
 
 
-
 def main(conf):
     # Get best trained model
     model = get_model(conf)

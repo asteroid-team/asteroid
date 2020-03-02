@@ -37,6 +37,7 @@ def main(conf):
     for subdir in ['with_reverb', 'no_reverb']:
         dict_list = get_wavs_dict_list(os.path.join(conf['test_dir'], subdir))
         save_dir = os.path.join(conf['exp_dir'], subdir + 'examples/')
+        os.makedirs(save_dir, exist_ok=True)
         all_metrics_df = evaluate(dict_list, model, conf=conf,
                                   save_dir=save_dir)
         all_metrics_df.to_csv(os.path.join(conf['exp_dir'],
@@ -126,30 +127,30 @@ def evaluate(dict_list, model, conf, save_dir=None):
         conf['n_save_ex'] = len(dict_list)
     save_idx = random.sample(range(len(dict_list)), conf['n_save_ex'])
     series_list = []
-    for idx, wav_dic in tqdm(enumerate(dict_list)):
+    for idx, wav_dic in enumerate(tqdm(dict_list)):
         # Forward the network on the mixture.
-        noisy_np, clean_np = load_wav_dic(wav_dic)
+        noisy_np, clean_np, fs = load_wav_dic(wav_dic)
         with torch.no_grad():
             net_input = torch.tensor(noisy_np)[None, None].to(model_device)
             est_clean_np = model.denoise(net_input).squeeze().cpu().data.numpy()
 
         utt_metrics = get_metrics(mix=noisy_np, clean=clean_np,
                                   estimate=est_clean_np,
-                                  sample_rate=conf['sample_rate'],
+                                  sample_rate=fs,
                                   metrics_list=COMPUTE_METRICS)
         utt_metrics['noisy_path'] = wav_dic['noisy']
         utt_metrics['clean_path'] = wav_dic['clean']
-        series_list.append(pd.Series(average_arrays_in_dic(utt_metrics)))
+        series_list.append(pd.Series(utt_metrics))
         # Save some examples in a folder. Wav files and metrics as text.
         if idx in save_idx:
             local_save_dir = os.path.join(save_dir, 'ex_{}/'.format(idx))
             os.makedirs(local_save_dir, exist_ok=True)
-            sf.write(local_save_dir + "noisy.wav", noisy_np[0],
-                     conf['sample_rate'])
-            sf.write(local_save_dir + "clean.wav", clean_np[0],
-                     conf['sample_rate'])
-            sf.write(local_save_dir + "estimate.wav", est_clean_np[0],
-                     conf['sample_rate'])
+            sf.write(local_save_dir + "noisy.wav", noisy_np,
+                     fs)
+            sf.write(local_save_dir + "clean.wav", clean_np,
+                     fs)
+            sf.write(local_save_dir + "estimate.wav", est_clean_np,
+                     fs)
             # Write local metrics to the example folder.
             with open(local_save_dir + 'metrics.json', 'w') as f:
                 json.dump(utt_metrics, f, indent=0)
@@ -166,9 +167,9 @@ def load_wav_dic(wav_dic):
         tuple: noisy speech waveform, clean speech waveform.
     """
     noisy_path, clean_path = wav_dic['noisy'], wav_dic['clean']
-    noisy = sf.read(noisy_path)[0]
-    clean = sf.read(clean_path)[0]
-    return noisy, clean
+    noisy, fs = sf.read(noisy_path, dtype='float32')
+    clean, fs = sf.read(clean_path, dtype='float32')
+    return noisy, clean, fs
 
 
 def get_metrics(mix, clean, estimate, sample_rate=16000,
@@ -204,7 +205,7 @@ def get_metrics(mix, clean, estimate, sample_rate=16000,
                                    sample_rate=sample_rate,
                                    compute_permutation=False)
     utt_metrics.update(output_metrics[metrics_list])
-    return utt_metrics
+    return average_arrays_in_dic(utt_metrics)
 
 
 if __name__ == '__main__':
@@ -215,7 +216,6 @@ if __name__ == '__main__':
     conf_path = os.path.join(args.exp_dir, 'conf.yml')
     with open(conf_path) as conf_file:
         train_conf = yaml.safe_load(conf_file)
-    arg_dic['sample_rate'] = train_conf['data']['sample_rate']
     arg_dic['train_conf'] = train_conf
 
     main(arg_dic)
