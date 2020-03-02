@@ -9,10 +9,9 @@ from asteroid.filterbanks import make_enc_dec
 from asteroid.filterbanks.inputs_and_masks import take_cat, take_mag
 from asteroid.filterbanks.inputs_and_masks import apply_real_mask
 from asteroid.filterbanks.inputs_and_masks import apply_mag_mask
-
 from asteroid.masknn import blocks
-
 from asteroid.engine.optimizers import make_optimizer
+from asteroid.torch_utils import pad_x_to_y
 
 
 def make_model_and_optimizer(conf):
@@ -92,15 +91,7 @@ class Model(nn.Module):
     def denoise(self, x):
         estimate_stft = self(x)
         wav = self.decoder(estimate_stft)
-        return self.pad_output_to_inp(wav, x)
-
-    @staticmethod
-    def pad_output_to_inp(output, inp):
-        """ Pad first argument to have same size as second argument"""
-        # TODO : move to some kind of utils
-        inp_len = inp.size(-1)
-        output_len = output.size(-1)
-        return nn.functional.pad(output, [0, inp_len - output_len])
+        return pad_x_to_y(wav, x)
 
 
 class SimpleModel(nn.Module):
