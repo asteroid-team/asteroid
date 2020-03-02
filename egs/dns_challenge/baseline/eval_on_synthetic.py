@@ -15,6 +15,7 @@ from pb_bss.evaluation import InputMetrics, OutputMetrics
 from asteroid.utils import average_arrays_in_dic
 
 from model import load_best_model
+from local.preprocess_dns import make_wav_id_dict
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test_dir', type=str, required=True,
@@ -84,22 +85,6 @@ def get_wavs_dict_list(test_dir):
     dict_list = [dict(clean=clean_dic[k], noisy=noisy_dic[k], id=k)
                  for k in clean_dic.keys()]
     return dict_list
-
-
-def make_wav_id_dict(file_list):
-    """
-    Args:
-        file_list(List[str]): List of DNS challenge filenames.
-
-    Returns:
-        dict: Look like {file_id: filename, ...}
-    """
-    return {get_file_id(fp): fp for fp in file_list}
-
-
-def get_file_id(fp):
-    """ Split string to get wave id in DNS challenge dataset."""
-    return fp.split('_')[-1].split('.')[0]
 
 
 def evaluate(dict_list, model, conf, save_dir=None):

@@ -6,50 +6,49 @@ import soundfile as sf
 
 
 def preprocess_dns(in_dir, out_dir='./data'):
-    """ Create json file from dataset folder
+    """ Create json file from dataset folder.
 
     Args:
         in_dir (str): Location of the DNS data
         out_dir (str): Where to save the json files.
-
     """
     # Get all file ids
-    clean_files = os.listdir(os.path.join(in_dir, 'clean'))
-    all_ids = [f.split('_')[-1].split('.')[0] for f in clean_files]
-    all_ids.sort()
+    clean_wavs = glob.glob(os.path.join(in_dir, 'clean/*.wav'))
+    clean_dic = make_wav_id_dict(clean_wavs)
 
-    # Create dict for each utterance
-    file_infos = {}
-    for file_id in all_ids:
-        utt_dict = dict(
-            mix=file_from_dir(file_id, os.path.join(in_dir, 'noisy')),
-            clean=file_from_dir(file_id, os.path.join(in_dir, 'clean')),
-            noise=file_from_dir(file_id, os.path.join(in_dir, 'noise')),
-        )
-        # Get SNR
-        utt_dict['snr'] = get_snr_from_mix_path(utt_dict['mix'])
-        # Get utterance length
-        utt_dict['file_len'] = len(sf.SoundFile(utt_dict['mix']))
-        file_infos[file_id] = utt_dict
+    mix_wavs = glob.glob(os.path.join(in_dir, 'noisy/*.wav'))
+    mix_dic = make_wav_id_dict(mix_wavs)
+
+    noise_wavs = glob.glob(os.path.join(in_dir, 'noise/*.wav'))
+    noise_dic = make_wav_id_dict(noise_wavs)
+    assert clean_dic.keys() == mix_dic.keys() == noise_dic.keys()
+    file_infos = {k: dict(
+        mix=mix_dic[k],
+        clean=clean_dic[k],
+        noise=noise_dic[k],
+        snr=get_snr_from_mix_path(mix_dic[k]),
+        file_len=len(sf.SoundFile(mix_dic[k]))
+    ) for k in clean_dic.keys()}
 
     # Save to JSON
     with open(os.path.join(out_dir, 'file_infos.json'), 'w') as f:
         json.dump(file_infos, f, indent=2)
 
 
-def file_from_dir(file_id, file_dir):
-    """ Retrieve file path from file id.
-
+def make_wav_id_dict(file_list):
+    """
     Args:
-        file_id (str): file id.
-        file_dir (str): Where to look for the file.
+        file_list(List[str]): List of DNS challenge filenames.
 
     Returns:
-        The file path with the give id.
+        dict: Look like {file_id: filename, ...}
     """
-    file_list = glob.glob(os.path.join(file_dir, '*fileid_' + file_id + '.*'))
-    assert len(file_list) == 1, "Found more than one file."
-    return file_list[0]
+    return {get_file_id(fp): fp for fp in file_list}
+
+
+def get_file_id(fp):
+    """ Split string to get wave id in DNS challenge dataset."""
+    return fp.split('_')[-1].split('.')[0]
 
 
 def get_snr_from_mix_path(mix_path):
