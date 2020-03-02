@@ -14,7 +14,7 @@ from pb_bss.evaluation import InputMetrics, OutputMetrics
 
 from asteroid.utils import average_arrays_in_dic
 
-from model import make_model_and_optimizer
+from model import load_best_model
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test_dir', type=str, required=True,
@@ -32,7 +32,9 @@ COMPUTE_METRICS = ALL_METRICS
 
 def main(conf):
     # Get best trained model
-    model = get_model(conf)
+    model = load_best_model(conf['train_conf'], conf['exp_dir'])
+    if conf['use_gpu']:
+        model = model.cuda()
     # Evaluate performances separately w/ and w/o reverb
     for subdir in ['with_reverb', 'no_reverb']:
         dict_list = get_wavs_dict_list(os.path.join(conf['test_dir'], subdir))
@@ -56,24 +58,6 @@ def main(conf):
                                 'final_metrics_{}.json'.format(subdir))
         with open(filename, 'w') as f:
             json.dump(final_results, f, indent=0)
-
-
-def get_model(conf):
-    # Create the model from recipe-local function
-    model, _ = make_model_and_optimizer(conf['train_conf'])
-    # Last best model summary
-    with open(os.path.join(conf['exp_dir'], 'best_k_models.json'), "r") as f:
-        best_k = json.load(f)
-    best_model_path = min(best_k, key=best_k.get)
-    # Load checkpoint
-    checkpoint = torch.load(best_model_path, map_location='cpu')
-    # Load state_dict into model, strict=False is important here
-    model.load_state_dict(checkpoint['state_dict'], strict=False)
-    # Handle device placement
-    if conf['use_gpu']:
-        model.cuda()
-    model.eval()
-    return model
 
 
 def get_wavs_dict_list(test_dir):
