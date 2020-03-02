@@ -157,7 +157,7 @@ def load_wav_dic(wav_dic):
 
 
 def get_metrics(mix, clean, estimate, sample_rate=16000,
-                metrics_list='all'):
+                metrics_list='all', average=True):
     """ Get speech separation/ enhancement metrics from mix/clean/estimate.
 
     Args:
@@ -167,13 +167,13 @@ def get_metrics(mix, clean, estimate, sample_rate=16000,
         sample_rate (int): sampling rate of the audio clips.
         metrics_list (Union [str, list]): List of metrics to compute.
             Defaults to 'all' (['si_sdr', 'sdr', 'sir', 'sar', 'stoi', 'pesq']).
+        average (bool): Return dict([float]) if True, else dict([array]).
 
     Returns:
         dict: Dictionary with all requested metrics, with `'input_'` prefix
             for metrics at the input (mixture against clean), no prefix at the
             output (estimate against clean).
     """
-    # TODO(mp) add a average=True option to average arrays in the dict.
     if metrics_list == 'all':
         metrics_list = ALL_METRICS
     # For each utterance, we get a dictionary with the input and output metrics
@@ -189,7 +189,10 @@ def get_metrics(mix, clean, estimate, sample_rate=16000,
                                    sample_rate=sample_rate,
                                    compute_permutation=False)
     utt_metrics.update(output_metrics[metrics_list])
-    return average_arrays_in_dic(utt_metrics)
+    if average is True:
+        return average_arrays_in_dic(utt_metrics)
+    else:
+        return utt_metrics
 
 
 if __name__ == '__main__':
