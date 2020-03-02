@@ -28,7 +28,7 @@ This is made to make *your* life simpler and research easier !
 320GB of data.
 - Just `./run.sh` and it's on. 
 
-#####Some notes:
+##### Some notes:
 - After the first execution, you can go and change `stage=4` in `run.sh` to 
 avoid redoing all the steps everytime. 
 - To use GPUs for training, run `run.sh --id 0,1` where `0` and `1` are the 
@@ -38,7 +38,9 @@ GPUs you want to use, training will automatically take advantage of both GPUs.
 `run.sh --tag with_cool_loss` will save all results to 
 `exp/train_dns_with_cool_loss`. You'll also find the corresponding log 
 file in `logs/train_dns_with_cool_loss.log`.
-
+- If you want to change the data generation config, go the `storage_dir`, 
+change the noisyspeech_synthesizer.cfg accordingly and restart from stage 2.
+Be aware that this will overwrite the previous json files in `data/`.
 
 The data download, dataset creation and preprocessing will take a while 
 (around a day in my case). From stage 4 (training), be sure you have 

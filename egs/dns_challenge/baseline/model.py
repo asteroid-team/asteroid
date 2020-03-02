@@ -1,15 +1,17 @@
+import json
+import os
+
 import torch
 from torch import nn
 
 from asteroid import System
-from asteroid.filterbanks import STFTFB, Encoder
+from asteroid.filterbanks import make_enc_dec
 from asteroid.filterbanks.inputs_and_masks import take_cat, take_mag
 from asteroid.filterbanks.inputs_and_masks import apply_real_mask
 from asteroid.filterbanks.inputs_and_masks import apply_mag_mask
-
 from asteroid.masknn import blocks
-
 from asteroid.engine.optimizers import make_optimizer
+from asteroid.torch_utils import pad_x_to_y
 
 
 def make_model_and_optimizer(conf):
@@ -22,7 +24,7 @@ def make_model_and_optimizer(conf):
     and evaluation very simple.
     """
     # Define building blocks for local model
-    stft = Encoder(STFTFB(**conf['filterbank']))
+    stft, istft = make_enc_dec('stft', **conf['filterbank'])
     # Because we concatenate (re, im, mag) as input and compute a complex mask.
     if conf['main_args']['is_complex']:
         inp_size = int(stft.n_feats_out * 3 / 2)
@@ -34,7 +36,8 @@ def make_model_and_optimizer(conf):
                                 output_size=output_size))
     masker = SimpleModel(**conf['masknet'])
     # Make the complete model
-    model = Model(stft, masker, is_complex=conf['main_args']['is_complex'])
+    model = Model(stft, masker, istft,
+                  is_complex=conf['main_args']['is_complex'])
     # Define optimizer of this model
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
     return model, optimizer
@@ -47,6 +50,8 @@ class Model(nn.Module):
         encoder (~.Encoder): instance of a complex filterbank encoder
             `Encoder(STFTBFB(**))`.
         masker (nn.Module): Mask estimator network.
+        decoder (~.Decoder): instance of a complex filterbank decoder
+            `Decoder(STFTBFB(**))`.
         is_complex (bool): If the network works on the complex domain.
 
     If `is_complex` is `True`, the input to the network are complex features,
@@ -55,10 +60,13 @@ class Model(nn.Module):
     and the returns a **complex** speech estimate.
     The loss function needs to be adapted to complex representations.
     """
-    def __init__(self, encoder, masker, is_complex=True):
+    def __init__(self, encoder, masker, decoder, is_complex=True):
         super().__init__()
         self.encoder = encoder
         self.masker = masker
+        # Decoder is not used for training but eventually, we want to invert
+        # the encoder. Might as well include it in the model.
+        self.decoder = decoder
         self.is_complex = is_complex
 
     def forward(self, x):
@@ -79,6 +87,11 @@ class Model(nn.Module):
         else:
             masked_tf_rep = apply_mag_mask(tf_rep, est_masks)
         return masked_tf_rep
+
+    def denoise(self, x):
+        estimate_stft = self(x)
+        wav = self.decoder(estimate_stft)
+        return pad_x_to_y(wav, x)
 
 
 class SimpleModel(nn.Module):
@@ -145,3 +158,28 @@ def distance(estimate, target, is_complex=True):
     else:
         # Compute the mean difference between magnitudes.
         return (take_mag(estimate) - take_mag(target)).pow(2).mean()
+
+
+def load_best_model(train_conf, exp_dir):
+    """ Load best model after training.
+
+    Args:
+        train_conf (dict): dictionary as expected by `make_model_and_optimizer`
+        exp_dir(str): Experiment directory. Expects to find
+            `'best_k_models.json'` there.
+
+    Returns:
+        nn.Module the best pretrained model according to the val_loss.
+    """
+    # Create the model from recipe-local function
+    model, _ = make_model_and_optimizer(train_conf)
+    # Last best model summary
+    with open(os.path.join(exp_dir, 'best_k_models.json'), "r") as f:
+        best_k = json.load(f)
+    best_model_path = min(best_k, key=best_k.get)
+    # Load checkpoint
+    checkpoint = torch.load(best_model_path, map_location='cpu')
+    # Load state_dict into model, strict=False is important here
+    model.load_state_dict(checkpoint['state_dict'], strict=False)
+    model.eval()
+    return model
