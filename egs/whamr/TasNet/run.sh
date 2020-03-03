@@ -78,8 +78,6 @@ if [[ $stage -le  1 ]]; then
   . local/prepare_data.sh --wav_dir $wsj0_wav_dir --out_dir $whamr_wav_dir --python_path $python_path
 fi
 
-echo "Exit before preprocessing, maybe we can gain some time.."
-exit
 
 if [[ $stage -le  2 ]]; then
 	# Make json directories with min/max modes and sampling rates
@@ -90,7 +88,7 @@ if [[ $stage -le  2 ]]; then
 			echo "Generating json files in $tmp_dumpdir"
 			[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
 			local_wham_dir=$whamr_wav_dir/wav${sr_string}k/$mode/
-      $python_path local/preprocess_wham.py --in_dir $local_wham_dir --out_dir $tmp_dumpdir
+      $python_path local/preprocess_whamr.py --in_dir $local_wham_dir --out_dir $tmp_dumpdir
     done
   done
 fi
