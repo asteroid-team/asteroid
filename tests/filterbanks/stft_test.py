@@ -60,21 +60,22 @@ def test_perfect_istft_default_parameters(fb_config):
     testing.assert_allclose(inp_test, out_wav)
 
 
-@pytest.mark.parametrize('kernel_size', [256])
-@pytest.mark.parametrize('stride', [128, 64])
-def test_ola(kernel_size, stride):
-    """ Unit-test the perfect OLA for boxcar weighted DFT filters."""
-    fb_config = {
-            'n_filters': 2 * kernel_size,
-            'kernel_size': kernel_size,
-            'stride': stride
-        }
-    # Make STFT filters with no analysis and synthesis windows.
-    # kernel_size = fb_config['kernel_size']
-    enc, dec = make_enc_dec('stft', window=None, **fb_config)
-    # Input a boxcar function
-    inp = torch.ones(1, 1, 4096)
-    # Analysis-synthesis. Cut leading and trailing frames.
-    synth = dec(enc(inp))[:, :, kernel_size: -kernel_size]
-    # Assert that an boxcar input returns a boxcar output.
-    testing.assert_allclose(synth, inp[:, :, kernel_size: -kernel_size])
+@pytest.mark.parametrize("fb_config", fb_config_list())
+@pytest.mark.parametrize("analysis_window_name", [
+    'blackman', 'hamming', 'hann', 'bartlett', 'boxcar'
+])
+def test_perfect_resyn_window(fb_config, analysis_window_name):
+    """ Unit test perfect reconstruction """
+    kernel_size = fb_config['kernel_size']
+    window = get_window(analysis_window_name, kernel_size)
+
+    enc = Encoder(STFTFB(**fb_config, window=window))
+    # Compute window for perfect resynthesis
+    synthesis_window = perfect_synthesis_window(enc.filterbank.window,
+                                                enc.stride)
+    dec = Decoder(STFTFB(**fb_config, window=synthesis_window))
+    inp_wav = torch.ones(1, 1, 32000)
+    out_wav = dec(enc(inp_wav))[:, :, kernel_size: -kernel_size]
+    inp_test = inp_wav[:, :, kernel_size: -kernel_size]
+    testing.assert_allclose(inp_test,
+                            out_wav)
