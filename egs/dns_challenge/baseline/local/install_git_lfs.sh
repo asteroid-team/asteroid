@@ -19,4 +19,5 @@ export PATH=$PATH:$HOME/.local/bin
 
 echo -e "Installed git-lfs and temporarly added it to your path. To make it permanent, run the following command \n"
 echo "echo 'export PATH=\$PATH:\$HOME/.local/bin' >> ~/.bashrc"
+cd ../
 
