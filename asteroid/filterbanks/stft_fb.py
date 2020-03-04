@@ -36,15 +36,17 @@ class STFTFB(Filterbank):
             self.window = window
         # Create and normalize DFT filters (can be overcomplete)
         filters = np.fft.fft(np.eye(n_filters))
-        filters /= (.5 * np.sqrt(kernel_size * n_filters / self.stride))
+        filters /= (0.5 * np.sqrt(kernel_size * n_filters / self.stride))
+
         # Keep only the windowed centered part to save computation.
         lpad = int((n_filters - kernel_size) // 2)
         rpad = int(n_filters - kernel_size - lpad)
         indexes = list(range(lpad, n_filters - rpad))
         filters = np.vstack([np.real(filters[:self.cutoff, indexes]),
                              np.imag(filters[:self.cutoff, indexes])])
+
         filters[0, :] /= np.sqrt(2)
-        filters[-1, :] /= np.sqrt(2)
+        filters[n_filters // 2, :] /= np.sqrt(2)
         filters = torch.from_numpy(filters * self.window).unsqueeze(1).float()
         self.register_buffer('_filters', filters)
 
