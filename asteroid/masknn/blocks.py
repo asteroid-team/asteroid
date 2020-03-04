@@ -276,11 +276,11 @@ class DPRNNBlock(nn.Module):
         x = self.intra_norm(x)
         output = output + x
         # Inter-chunk processing
-        output = output.transpose(1, 2).transpose(2, -1).reshape(B * K, L, N)
-        output = self.inter_RNN(output)
-        output = self.inter_linear(output)
-        output = output.reshape(B, K, L, N).transpose(1, -1).transpose(2, -1)
-        output = self.inter_norm(output)
+        x = output.transpose(1, 2).transpose(2, -1).reshape(B * K, L, N)
+        x = self.inter_RNN(x)
+        x = self.inter_linear(x)
+        x = x.reshape(B, K, L, N).transpose(1, -1).transpose(2, -1)
+        x = self.inter_norm(x)
         return output + x
 
 
