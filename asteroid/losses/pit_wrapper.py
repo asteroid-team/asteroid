@@ -1,8 +1,9 @@
 from itertools import permutations
 import torch
+from torch import nn
 
 
-class PITLossWrapper(object):
+class PITLossWrapper(nn.Module):
     """ Permutation invariant loss wrapper.
 
     Args:
@@ -31,13 +32,14 @@ class PITLossWrapper(object):
     """
 
     def __init__(self, loss_func, mode='pairwise'):
+        super().__init__()
         self.loss_func = loss_func
         self.mode = mode
         if self.mode not in ["pairwise", "wo_src", "w_src"]:
             raise ValueError('Unsupported loss function type for now. Expected'
                              'one of [`pairwise`, `wo_src`, `w_src`]')
 
-    def __call__(self, est_targets, targets, return_est=False, **kwargs):
+    def forward(self, est_targets, targets, return_est=False, **kwargs):
         """ Find the best permutation and return the loss.
 
         Args:

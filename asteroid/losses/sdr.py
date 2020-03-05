@@ -32,8 +32,6 @@ class PairwiseNegSDR(_Loss):
             >>> loss_func = PITLossWrapper(PairwiseNegSDR("sisdr"),
             >>>                            mode='pairwise')
             >>> loss = loss_func(est_targets, targets)
-            >>> print(loss.size())
-            torch.Size([10, 2, 2])
 
         References:
             [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
@@ -115,8 +113,6 @@ class NoSrcSDR(_Loss):
             >>> est_targets = torch.randn(10, 2, 32000)
             >>> loss_func = PITLossWrapper(NoSrcSDR("sisdr"), mode='wo_src')
             >>> loss = loss_func(est_targets, targets)
-            >>> print(loss.size())
-            torch.Size([10, 2])
 
         References:
             [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
@@ -195,8 +191,6 @@ class NonPitSDR(_Loss):
             >>> est_targets = torch.randn(10, 2, 32000)
             >>> loss_func = PITLossWrapper(NonPitSDR("sisdr"), mode='w_src')
             >>> loss = loss_func(est_targets, targets)
-            >>> print(loss.size())
-            torch.Size([10])
 
         References:
             [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE

@@ -21,8 +21,6 @@ class PairwiseMSE(_Loss):
         >>> est_targets = torch.randn(10, 2, 32000)
         >>> loss_func = PITLossWrapper(PairwiseMSE(), mode='pairwise')
         >>> loss = loss_func(est_targets, targets)
-        >>> print(loss.size())
-        torch.Size([10, 2, 2])
     """
     def forward(self, est_targets, targets):
         targets = targets.unsqueeze(1)
@@ -55,8 +53,6 @@ class NoSrcMSE(_Loss):
         >>> # nosrc_mse / nonpit_mse support both 'wo_src' and 'w_src'.
         >>> loss_func = PITLossWrapper(nosrc_mse, mode='wo_src')
         >>> loss = loss_func(est_targets, targets)
-        >>> print(loss.size())
-        torch.Size([10])
     """
     def forward(self, est_targets, targets):
         loss = (targets - est_targets)**2
