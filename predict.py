@@ -1,6 +1,6 @@
 import sys
 #to import module from directories
-sys.path.extend(["models", "train", "loader"])
+sys.path.extend(["models", "train", "loader", "postprocess"])
 
 import torch
 import librosa
@@ -12,6 +12,7 @@ from typing import List
 from pathlib import Path
 from argparse import ArgumentParser
 
+from filter_audio import filter_audio
 from models import Audio_Visual_Fusion as AVFusion
 from audio_feature_generator import convert_to_wave, convert_to_spectrogram
 
@@ -66,7 +67,7 @@ def predict(model: AVFusion, audio: torch.Tensor, videos: torch.Tensor, device: 
 
 def generate_audio(model: AVFusion, audio_path: Path, video_paths: List[Path],
                    device: torch.device, save:bool=True, output_dir:Path=Path("output/"),
-                   return_spectrograms:bool=False):
+                   return_spectrograms:bool=False, postprocess:bool=True):
     """
         Separate and generate audio
 
@@ -100,6 +101,8 @@ def generate_audio(model: AVFusion, audio_path: Path, video_paths: List[Path],
         return spectrograms
 
     output_audios = [convert_to_wave(i) for i in spectrograms]
+    if postprocess:
+        output_audios = [filter_audio(i) for i in output_audios]
 
     if not save:
         return output_audios

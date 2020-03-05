@@ -65,7 +65,7 @@ if __name__ == "__main__":
     device = torch.device("cuda")
 
     model = AVFusion().to(device)
-    model.load_state_dict(torch.load("last_full.pth")["model_state_dict"])
+    model.load_state_dict(torch.load("../40_noise_last_full.pth")["model_state_dict"])
 
     for i in range(10):
         plot_row(model, df, i, device) 

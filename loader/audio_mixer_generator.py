@@ -4,6 +4,7 @@
 '''
 import os
 import re
+import math
 import glob
 import random
 import itertools
@@ -20,6 +21,9 @@ VIDEO_DIR = "../../data/train"
 REL_VIDEO_DIR = "../data/train"
 AUDIO_SET_DIR = "./../../data/audio_set/audio"
 
+STORAGE_LIMIT = 50_000_000_000
+REMOVE_RANDOM_CHANCE = 0.9
+
 def sample_audio_set():
     """
         sample random audio files as a noise from audio set dataset
@@ -33,6 +37,20 @@ def sample_audio_set():
 
     return [audio_files[i] for i in choices[:total_choices]]
 
+def requires_excess_storage_space(n, r):
+    # r will be very small anyway
+    print(n, r)
+    total = n**r / math.factorial(r)
+    #total bytes
+    storage_space = total * 700 # approximate storage requirement is (600K for spec and 90K for audio)
+
+    print(storage_space)
+    assert False
+
+    if storage_space > STORAGE_LIMIT:
+        return True
+
+    return False
 
 def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv", audio_set=False, validation_size=0.3) -> None:
     """
@@ -56,8 +74,8 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
     train_files = audio_files[:total_train_files]
     val_files = audio_files[-total_val_files:]
 
-    print(train_files)
-    print(val_files)
+    print(train_files[:10])
+    print(val_files[:10])
 
     def retrieve_name(f):
         f = os.path.splitext(os.path.basename(f))[0]
@@ -68,6 +86,10 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         audio_combinations = itertools.combinations(audio_filtered_files, input_audio_size)
         audio_combinations = itertools.islice(audio_combinations, dataset_size)
 
+        excess_storage = False
+        if requires_excess_storage_space(len(audio_filtered_files), input_audio_size):
+            excess_storage = True
+
         #Store list of tuples, consisting of `input_audio_size`
         #Audio and their corresponding video path
         video_inputs = []
@@ -76,6 +98,10 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         noises = []
         
         for indx, audio_comb in enumerate(audio_combinations):
+            #skip few combinations if required storage is very high
+            if excess_storage and random.random() > REMOVE_RANDOM_CHANCE:
+                continue
+
             base_names = [os.path.basename(fname)[:11] for fname in audio_comb]
             if len(base_names) != len(set(base_names)):
                 # if audio from the same video, assume same speaker and ignore it.

@@ -42,7 +42,7 @@ def validate(model, dataset, val_dataset, config):
                                     batch_size=config.batch_size, num_workers=config.workers, shuffle=True)
 
     val_loader = utils.get_loader(val_dataset, open_fn=lambda x: {"input_audio": x[-1], "input_video": x[1], "targets": x[0]},
-                                    batch_size=config.batch_size, num_workers=config.workers, shuffle=True)
+                                    batch_size=config.batch_size, num_workers=config.workers, shuffle=False)
 
     loaders["valid"] = val_loader
 
