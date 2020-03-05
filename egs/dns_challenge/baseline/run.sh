@@ -38,8 +38,7 @@ fi
 
 if [[ $stage -le  2 ]]; then
   echo "Stage 2 : Create the dataset"
-  cd $clone_dir/DNS-Challenge
-  . ./local/create_dns_dataset.sh $storage_dir
+  . ./local/create_dns_dataset.sh $clone_dir $storage_dir
   cd $recipe_dir
 fi
 
