@@ -33,7 +33,9 @@ def test_fb_def_and_forward_lowdim(fb_class, fb_config):
     inp = torch.randn(1, 1, 32000)
     tf_out = enc(inp)
     # Assert for 2D inputs
-    assert_allclose(enc(inp), enc(inp[0]))
+    with pytest.warns(UserWarning):
+        # STFT(2D) gives 3D and iSTFT(3D) gives 3D. UserWarning about that.
+        assert_allclose(enc(inp), enc(inp[0]))
     # Assert for 1D inputs
     assert_allclose(enc(inp)[0], enc(inp[0, 0]))
 
@@ -43,7 +45,7 @@ def test_fb_def_and_forward_lowdim(fb_class, fb_config):
     out_4d = dec(tf_out_4d)
     assert_allclose(out, out_4d[:, 0])
     # Asser for 2D inputs
-    assert_allclose(out[0], dec(tf_out[0]))
+    assert_allclose(out[0, 0], dec(tf_out[0]))
     assert tf_out.shape[1] == enc.filterbank.n_feats_out
 
 

@@ -1,3 +1,4 @@
+import warnings
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -119,13 +120,15 @@ class Encoder(_EncDec):
                 -  ``'comp'`` or ``'complex'`` corresponds to a complex mask:
                    the input and the mask are point-wise multiplied in the
                    complex sense.
+        as_conv1d (bool): Doc to come.
 
     """
     def __init__(self, filterbank, inp_mode='reim', mask_mode='reim',
-                 is_pinv=False):
+                 is_pinv=False, as_conv1d=True):
         super(Encoder, self).__init__(filterbank, is_pinv=is_pinv)
         self.inp_mode = inp_mode
         self.mask_mode = mask_mode
+        self.as_conv1d = as_conv1d
 
         self.inp_func, self.in_chan_mul = _inputs[self.inp_mode]
         self.mask_func, self.out_chan_mul = _masks[self.mask_mode]
@@ -151,18 +154,26 @@ class Encoder(_EncDec):
         elif waveform.ndim == 2:
             # Assume 2D input with shape (batch or channels, time)
             # Output will be (batch or channels, freq, conv_time)
+            warnings.warn("Input tensor was 2D. Applying the corresponding "
+                          "Decoder to the current output will result in a 3D "
+                          "tensor. This behaviours was introduced to match "
+                          "Conv1D and ConvTranspose1D, please use 3D inputs "
+                          "to avoid it. For example, this can be done with "
+                          "input_tensor.unsqueeze(1).")
             return F.conv1d(waveform.unsqueeze(1), filters,
                             stride=self.stride)
         elif waveform.ndim == 3:
             batch, channels, time_len = waveform.shape
-            if channels == 1:
+            if channels == 1 and self.as_conv1d:
                 # That's the common single channel case (batch, 1, time)
-                # Output will be (batch, freq, stft_time)
+                # Output will be (batch, freq, stft_time), behaves as Conv1D
                 return F.conv1d(waveform, filters, stride=self.stride)
             else:
                 # Return batched convolution, input is (batch, 3, time),
                 # output will be (batch, 3, freq, conv_time).
                 # Useful for multichannel transforms
+                # If as_conv1d is false, (batch, 1, time) will output
+                # (batch, 1, freq, conv_time), useful for consistency.
                 return self.batch_1d_conv(waveform, filters)
         else:  # waveform.ndim > 3
             # This is to compute "multi"multichannel convolution.
@@ -188,6 +199,8 @@ class Decoder(_EncDec):
         filterbank (:class:`Filterbank`): The filterbank to use as an decoder.
         is_pinv (bool): Whether to be the pseudo inverse of filterbank.
     """
+    as_conv1d = True
+    insert_newax = True
     @classmethod
     def pinv_of(cls, filterbank):
         """ Returns an Decoder, pseudo inverse of a filterbank or Encoder."""
@@ -209,9 +222,9 @@ class Decoder(_EncDec):
         """
         filters = self.get_filters()
         if spec.ndim == 2:
-            # Input is (freq, conv_time), output is (1, time)
+            # Input is (freq, conv_time), output is (time)
             return F.conv_transpose1d(spec.unsqueeze(0), filters,
-                                      stride=self.stride).squeeze(0)
+                                      stride=self.stride).squeeze()
         if spec.ndim == 3:
             # Input is (batch, freq, conv_time), output is (batch, 1, time)
             return F.conv_transpose1d(spec, filters, stride=self.stride)
