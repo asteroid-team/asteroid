@@ -1,6 +1,4 @@
 import sys
-#to import module from directories
-sys.path.extend(["models", "train", "loader"])
 
 import collections
 from pathlib import Path

@@ -1,5 +1,4 @@
 import sys
-sys.path.extend(["../loader"])
 from audio_feature_generator import convert_to_wave
 
 import torch

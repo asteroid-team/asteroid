@@ -1,5 +1,4 @@
 import sys
-sys.path.append("../loader")
 
 import numpy as np
 import scipy.signal as sg
@@ -9,7 +8,7 @@ import pydub
 import librosa
 import librosa.display
 
-from audio_feature_generator import convert_to_spectrogram
+from src.loader import convert_to_spectrogram
 
 
 def filter_audio(y, sr=16_000, cutoff=15_000, low_cutoff=1, filter_order=5):

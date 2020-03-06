@@ -1,4 +1,4 @@
-from audio_feature_generator import convert_to_spectrogram
+from src.loader import convert_to_spectrogram
 import concurrent.futures
 import pandas as pd
 import numpy as np

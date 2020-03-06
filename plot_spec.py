@@ -1,5 +1,4 @@
 import sys
-sys.path.extend(["loader", "models"])
 
 import librosa
 import librosa.display

@@ -1,6 +1,4 @@
 import sys
-#to import module from directories
-sys.path.extend(["models", "train", "loader", "postprocess"])
 
 import torch
 import librosa
@@ -12,9 +10,9 @@ from typing import List
 from pathlib import Path
 from argparse import ArgumentParser
 
-from filter_audio import filter_audio
-from models import Audio_Visual_Fusion as AVFusion
-from audio_feature_generator import convert_to_wave, convert_to_spectrogram
+from src.postprocess import filter_audio
+from src.models import Audio_Visual_Fusion as AVFusion
+from src.loader import convert_to_wave, convert_to_spectrogram
 
 def _preprocess_audio(audio: np.ndarray):
     if len(audio.shape) == 1:

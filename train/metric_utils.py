@@ -1,11 +1,10 @@
 import sys
-sys.path.append("../loader/")
 
 import torch
 import mir_eval
 import numpy as np
 
-from audio_feature_generator import convert_to_wave
+from src.loader import convert_to_wave
 
 def snr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTensor:
     """

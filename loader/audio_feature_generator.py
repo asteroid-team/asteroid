@@ -3,7 +3,6 @@
     spectrogram.
 '''
 import librosa
-print(librosa.__version__)
 import numpy as np
 
 

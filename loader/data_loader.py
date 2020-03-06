@@ -1,13 +1,13 @@
 import re
+from pathlib import Path
+
 import tqdm
 import torch
 import numpy as np
 import pandas as pd
-from data import Signal
-from pathlib import Path
-from frames import input_face_embeddings
 from facenet_pytorch import MTCNN, InceptionResnetV1
-from audio_feature_generator import convert_to_spectrogram
+
+from src.loader import Signal, input_face_embeddings, convert_to_spectrogram
 
 
 class AVDataset(torch.utils.data.Dataset):

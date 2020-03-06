@@ -45,7 +45,6 @@ def requires_excess_storage_space(n, r):
     storage_space = total * 700 # approximate storage requirement is (600K for spec and 90K for audio)
 
     print(storage_space)
-    assert False
 
     if storage_space > STORAGE_LIMIT:
         return True
@@ -99,7 +98,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         
         for indx, audio_comb in enumerate(audio_combinations):
             #skip few combinations if required storage is very high
-            if excess_storage and random.random() > REMOVE_RANDOM_CHANCE:
+            if excess_storage and random.random() < REMOVE_RANDOM_CHANCE:
                 continue
 
             base_names = [os.path.basename(fname)[:11] for fname in audio_comb]
