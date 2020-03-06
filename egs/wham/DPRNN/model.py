@@ -1,6 +1,10 @@
+import json
+import os
+import torch
 from torch import nn
 
 import asteroid.filterbanks as fb
+from asteroid import torch_utils
 from asteroid.masknn import DPRNN
 from asteroid.engine.optimizers import make_optimizer
 
@@ -44,3 +48,29 @@ def make_model_and_optimizer(conf):
     # Define optimizer of this model
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
     return model, optimizer
+
+
+def load_best_model(train_conf, exp_dir):
+    """ Load best model after training.
+
+    Args:
+        train_conf (dict): dictionary as expected by `make_model_and_optimizer`
+        exp_dir(str): Experiment directory. Expects to find
+            `'best_k_models.json'` there.
+
+    Returns:
+        nn.Module the best pretrained model according to the val_loss.
+    """
+    # Create the model from recipe-local function
+    model, _ = make_model_and_optimizer(train_conf)
+    # Last best model summary
+    with open(os.path.join(exp_dir, 'best_k_models.json'), "r") as f:
+        best_k = json.load(f)
+    best_model_path = min(best_k, key=best_k.get)
+    # Load checkpoint
+    checkpoint = torch.load(best_model_path, map_location='cpu')
+    # Load state_dict into model.
+    model = torch_utils.load_state_dict_in(checkpoint['state_dict'],
+                                           model)
+    model.eval()
+    return model
