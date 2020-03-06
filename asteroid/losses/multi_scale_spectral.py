@@ -38,8 +38,8 @@ class MultiScaleSpectral(_Loss):
         >>> loss = loss_func(est_targets, targets)
 
         >>> import torch
-        >>> targets = torch.randn(10,1,32000)
-        >>> est_targets = torch.randn(10,1,32000)
+        >>> targets = torch.randn(10,32000)
+        >>> est_targets = torch.randn(10,32000)
         >>> loss_func=MultiScaleSpectral()
         >>> loss = loss_func(est_targets, targets)
 

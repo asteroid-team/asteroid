@@ -61,8 +61,8 @@ def test_multi_scale_spectral_PIT(n_src):
 @pytest.mark.parametrize("batch_size", [2, 3, 4])
 def test_multi_scale_spectral_shape(batch_size):
     # Fake targets and estimates
-    targets = torch.randn(batch_size, 1, 32000)
-    est_targets = torch.randn(batch_size, 1, 32000)
+    targets = torch.randn(batch_size, 32000)
+    est_targets = torch.randn(batch_size, 32000)
     # Create PITLossWrapper in 'wo_src' mode
     loss_func = MultiScaleSpectral()
     # Compute the loss
