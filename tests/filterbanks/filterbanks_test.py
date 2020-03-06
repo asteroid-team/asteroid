@@ -1,3 +1,4 @@
+import random
 import pytest
 import torch
 from torch.testing import assert_allclose
@@ -23,24 +24,63 @@ def fb_config_list():
 
 @pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB])
 @pytest.mark.parametrize("fb_config", fb_config_list())
-def test_fb_def_and_forward(fb_class, fb_config):
-    """ Test filterbank defintion and encoder/decoder forward."""
+def test_fb_def_and_forward_lowdim(fb_class, fb_config):
+    """ Test filterbank definition and encoder/decoder forward."""
     # Definition
     enc = Encoder(fb_class(**fb_config))
     dec = Decoder(fb_class(**fb_config))
     # Forward
     inp = torch.randn(1, 1, 32000)
     tf_out = enc(inp)
+    # Assert for 2D inputs
+    with pytest.warns(UserWarning):
+        # STFT(2D) gives 3D and iSTFT(3D) gives 3D. UserWarning about that.
+        assert_allclose(enc(inp), enc(inp[0]))
+    # Assert for 1D inputs
+    assert_allclose(enc(inp)[0], enc(inp[0, 0]))
+
     out = dec(tf_out)
-    # 4d forward + unit test
+    # Assert for 4D inputs
     tf_out_4d = tf_out.repeat(1, 2, 1, 1)
     out_4d = dec(tf_out_4d)
     assert_allclose(out, out_4d[:, 0])
-    # Get config tests
-    dec_config = dec.get_config()
-    enc_config = enc.get_config()
-    # N feats out test
+    # Asser for 2D inputs
+    assert_allclose(out[0, 0], dec(tf_out[0]))
     assert tf_out.shape[1] == enc.filterbank.n_feats_out
+
+
+@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB])
+@pytest.mark.parametrize("fb_config", fb_config_list())
+def test_fb_def_and_forward_all_dims(fb_class, fb_config):
+    """ Test encoder/decoder on other shapes than 3D"""
+    # Definition
+    enc = Encoder(fb_class(**fb_config))
+    dec = Decoder(fb_class(**fb_config))
+
+    # 3D Forward with one channel
+    inp = torch.randn(3, 1, 32000)
+    tf_out = enc(inp)
+    assert tf_out.shape[:2] == (3, enc.filterbank.n_feats_out)
+    out = dec(tf_out)
+    assert out.shape[:-1] == inp.shape[:-1]  # Time axis can differ
+
+
+@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB])
+@pytest.mark.parametrize("fb_config", fb_config_list())
+@pytest.mark.parametrize("ndim", [2, 3, 4])
+def test_fb_forward_multichannel(fb_class, fb_config, ndim):
+    """ Test encoder/decoder in multichannel setting"""
+    # Definition
+    enc = Encoder(fb_class(**fb_config))
+    dec = Decoder(fb_class(**fb_config))
+    # 3D Forward with several channels
+    tensor_shape = tuple([random.randint(2, 4) for _ in range(ndim)]) + (4000,)
+    inp = torch.randn(tensor_shape)
+    tf_out = enc(inp)
+    assert tf_out.shape[:ndim+1] == (tensor_shape[:-1] +
+                                     (enc.filterbank.n_feats_out,))
+    out = dec(tf_out)
+    assert out.shape[:-1] == inp.shape[:-1]  # Time axis can differ
 
 
 @pytest.mark.parametrize("fb_class", [AnalyticFreeFB, ParamSincFB])
