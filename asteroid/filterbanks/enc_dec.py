@@ -221,7 +221,7 @@ class Decoder(_EncDec):
             view_as = (-1,) + spec.shape[-2:]
             out = F.conv_transpose1d(spec.view(view_as),
                                      filters, stride=self.stride)
-            return out.view(spec.shape[:-1] + (-1,))
+            return out.view(spec.shape[:-2] + (-1,))
 
 
 class NoEncoder(nn.Module):  # pragma: no cover
