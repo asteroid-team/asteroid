@@ -67,6 +67,7 @@ def main(conf):
         conf['n_save_ex'] = len(test_set)
     save_idx = random.sample(range(len(test_set)), conf['n_save_ex'])
     series_list = []
+    torch.no_grad().__enter__()
     for idx in tqdm(range(len(test_set))):
         # Forward the network on the mixture.
         mix, sources = tensors_to_device(test_set[idx], device=model_device)
@@ -92,7 +93,8 @@ def main(conf):
 
         utt_metrics.update(output_metrics[compute_metrics])
         utt_metrics['mix_path'] = test_set.mix[idx][0]
-        series_list.append(pd.Series(average_arrays_in_dic(utt_metrics)))
+        utt_metrics = average_arrays_in_dic(utt_metrics)
+        series_list.append(pd.Series(utt_metrics))
 
         # Save some examples in a folder. Wav files and metrics as text.
         if idx in save_idx:
