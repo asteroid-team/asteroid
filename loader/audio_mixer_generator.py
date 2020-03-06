@@ -10,6 +10,7 @@ import random
 import itertools
 import subprocess
 import pandas as pd
+from tqdm import tqdm
 from pathlib import Path
 
 
@@ -21,7 +22,7 @@ VIDEO_DIR = "../../data/train"
 REL_VIDEO_DIR = "../data/train"
 AUDIO_SET_DIR = "./../../data/audio_set/audio"
 
-STORAGE_LIMIT = 50_000_000_000
+STORAGE_LIMIT = 5_000_000_000
 REMOVE_RANDOM_CHANCE = 0.9
 
 def sample_audio_set():
@@ -39,17 +40,18 @@ def sample_audio_set():
 
 def requires_excess_storage_space(n, r):
     # r will be very small anyway
-    print(n, r)
     total = n**r / math.factorial(r)
     #total bytes
-    storage_space = total * 700 # approximate storage requirement is (600K for spec and 90K for audio)
-
-    print(storage_space)
+    storage_space = total * 90 # approximate storage requirement is (600K for spec and 90K for audio)
 
     if storage_space > STORAGE_LIMIT:
-        return True
+        return storage_space, True
 
-    return False
+    return storage_space, False
+
+
+def nCr(n, r): 
+    return (math.factorial(n) / (math.factorial(r) * math.factorial(n - r))) 
 
 def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv", audio_set=False, validation_size=0.3) -> None:
     """
@@ -73,9 +75,6 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
     train_files = audio_files[:total_train_files]
     val_files = audio_files[-total_val_files:]
 
-    print(train_files[:10])
-    print(val_files[:10])
-
     def retrieve_name(f):
         f = os.path.splitext(os.path.basename(f))[0]
         return re.sub(r'_part\d', '', f)
@@ -85,9 +84,14 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         audio_combinations = itertools.combinations(audio_filtered_files, input_audio_size)
         audio_combinations = itertools.islice(audio_combinations, dataset_size)
 
-        excess_storage = False
-        if requires_excess_storage_space(len(audio_filtered_files), input_audio_size):
-            excess_storage = True
+        storage_space, excess_storage = requires_excess_storage_space(len(audio_filtered_files), input_audio_size)
+
+        if excess_storage:
+            storage_space = (1 - REMOVE_RANDOM_CHANCE) * storage_space
+            print(f"Removing {REMOVE_RANDOM_CHANCE * 100} percent of combinations")
+            print(f"Saving total space: {storage_space - storage_space * REMOVE_RANDOM_CHANCE:,} bytes")
+
+        print(f"Occupying space: {storage_space:,} bytes")
 
         #Store list of tuples, consisting of `input_audio_size`
         #Audio and their corresponding video path
@@ -96,36 +100,41 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         mixed_audio = []
         noises = []
         
-        for indx, audio_comb in enumerate(audio_combinations):
+        total_comb_size = nCr(len(audio_filtered_files), input_audio_size)
+        for indx, audio_comb in tqdm(enumerate(audio_combinations), total=total_comb_size):
             #skip few combinations if required storage is very high
-            if excess_storage and random.random() < REMOVE_RANDOM_CHANCE:
-                continue
+            try:
+                if excess_storage and random.random() < REMOVE_RANDOM_CHANCE:
+                    continue
 
-            base_names = [os.path.basename(fname)[:11] for fname in audio_comb]
-            if len(base_names) != len(set(base_names)):
-                # if audio from the same video, assume same speaker and ignore it.
-                continue
-            if audio_set:
-                noise_input = sample_audio_set()
-                noises.append(":".join(noise_input))
-                audio_comb = (*audio_comb, *noise_input)
+                base_names = [os.path.basename(fname)[:11] for fname in audio_comb]
+                if len(base_names) != len(set(base_names)):
+                    # if audio from the same video, assume same speaker and ignore it.
+                    continue
+                if audio_set:
+                    noise_input = sample_audio_set()
+                    noises.append(":".join(noise_input))
+                    audio_comb = (*audio_comb, *noise_input)
 
-            audio_inputs.append(audio_comb)
-            #Convert audio file path to corresponding video path
-            video_inputs.append(tuple(os.path.join(VIDEO_DIR, retrieve_name(f) +video_ext)
-                                        for f in audio_comb))
+                audio_inputs.append(audio_comb)
+                #Convert audio file path to corresponding video path
+                video_inputs.append(tuple(os.path.join(VIDEO_DIR, retrieve_name(f) +video_ext)
+                                            for f in audio_comb))
 
-            audio_mix_input = ""
-            for audio in audio_comb:
-                audio_mix_input += f"-i {audio} "
+                audio_mix_input = ""
+                for audio in audio_comb:
+                    audio_mix_input += f"-i {audio} "
 
-            
-            mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx+offset}{audio_ext}")
-            audio_command = AUDIO_MIX_COMMAND_PREFIX + audio_mix_input + audio_mix_command_suffix.format(len(audio_comb)) + mixed_audio_name
-            print(audio_command)
-            process = subprocess.Popen(audio_command, shell=True, stdout=subprocess.PIPE)#.communicate()
-            mixed_audio.append(mixed_audio_name)
-            #print(video_inputs, audio_inputs, mixed_audio, noises)
+                
+                mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx+offset}{audio_ext}")
+                audio_command = AUDIO_MIX_COMMAND_PREFIX + audio_mix_input + audio_mix_command_suffix.format(len(audio_comb)) + mixed_audio_name
+
+                process = subprocess.Popen(audio_command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)#.communicate()
+                mixed_audio.append(mixed_audio_name)
+                #print(video_inputs, audio_inputs, mixed_audio, noises)
+            except KeyboardInterrupt as e:
+                print("Caught Interrupt!")
+                break
         
         combinations = {}
         for i in range(input_audio_size):
@@ -133,7 +142,14 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
             combinations[f"audio_{i+1}"] = []
         combinations["mixed_audio"] = []
 
-        assert len(video_inputs) == len(audio_inputs)
+        min_length = min(min(len(video_inputs), len(audio_inputs)), len(mixed_audio))
+        print(f"Total combinations: {min_length}")
+
+        video_inputs = video_inputs[:min_length]
+        audio_inputs = audio_inputs[:min_length]
+        mixed_audio = mixed_audio[:min_length]
+
+        assert len(video_inputs) == len(audio_inputs) == len(mixed_audio)
 
         for videos, audios, mixed in zip(video_inputs, audio_inputs, mixed_audio):
             #fix proper path issue
@@ -159,5 +175,5 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
 
 
 if __name__ == "__main__":
-    audio_mixer(100_000_000, audio_set=True)
+    audio_mixer(100_000_000, audio_set=False)
 
