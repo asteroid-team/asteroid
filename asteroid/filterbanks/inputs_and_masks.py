@@ -224,7 +224,6 @@ def from_numpy(array, dim=-2):
         :class:`torch.Tensor`:
             Corresponding torch.Tensor (complex axis in dim `dim`=
     """
-    assert array.dtype is ['complex64', 'complex128'], array.dtype
     return torch.cat([torch.from_numpy(np.real(array)),
                       torch.from_numpy(np.imag(array))], dim=dim)
 
