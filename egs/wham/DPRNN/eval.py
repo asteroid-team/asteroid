@@ -1,6 +1,5 @@
 import os
 import random
-
 import soundfile as sf
 import torch
 import yaml
@@ -15,7 +14,7 @@ from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
 from asteroid.utils import tensors_to_device, average_arrays_in_dic
 
-from model import make_model_and_optimizer
+from model import load_best_model
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--task', type=str, required=True,
@@ -33,26 +32,11 @@ parser.add_argument('--n_save_ex', type=int, default=50,
 compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi']
 
 
-def get_model(conf):
-    # Create the model from recipe-local function
-    model, _ = make_model_and_optimizer(conf['train_conf'])
-    # Last best model summary
-    with open(os.path.join(conf['exp_dir'], 'best_k_models.json'), "r") as f:
-        best_k = json.load(f)
-    best_model_path = min(best_k, key=best_k.get)
-    # Load checkpoint
-    checkpoint = torch.load(best_model_path, map_location='cpu')
-    # Load state_dict into model, strict=False is important here
-    model.load_state_dict(checkpoint['state_dict'], strict=False)
+def main(conf):
+    model = load_best_model(conf['train_conf'], conf['exp_dir'])
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
-    model.eval()
-    return model
-
-
-def main(conf):
-    model = get_model(conf)
     model_device = next(model.parameters()).device
     test_set = WhamDataset(conf['test_dir'], conf['task'],
                            sample_rate=conf['sample_rate'],

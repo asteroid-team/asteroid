@@ -11,7 +11,7 @@ from asteroid.filterbanks.inputs_and_masks import apply_real_mask
 from asteroid.filterbanks.inputs_and_masks import apply_mag_mask
 from asteroid.masknn import blocks
 from asteroid.engine.optimizers import make_optimizer
-from asteroid.torch_utils import pad_x_to_y
+from asteroid import torch_utils
 
 
 def make_model_and_optimizer(conf):
@@ -91,7 +91,7 @@ class Model(nn.Module):
     def denoise(self, x):
         estimate_stft = self(x)
         wav = self.decoder(estimate_stft)
-        return pad_x_to_y(wav, x)
+        return torch_utils.pad_x_to_y(wav, x)
 
 
 class SimpleModel(nn.Module):
@@ -179,7 +179,8 @@ def load_best_model(train_conf, exp_dir):
     best_model_path = min(best_k, key=best_k.get)
     # Load checkpoint
     checkpoint = torch.load(best_model_path, map_location='cpu')
-    # Load state_dict into model, strict=False is important here
-    model.load_state_dict(checkpoint['state_dict'], strict=False)
+    # Load state_dict into model.
+    model = torch_utils.load_state_dict_in(checkpoint['state_dict'],
+                                           model)
     model.eval()
     return model
