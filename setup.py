@@ -21,7 +21,7 @@ setup(
                       'soundfile',
                       'torch',
                       'torchvision',
-                      'pytorch-lightning'],
+                      'pytorch-lightning==0.6.0'],
     extras_require={
         'visualize': ['seaborn>=0.9.0'],
         'tests': ['pytest']
