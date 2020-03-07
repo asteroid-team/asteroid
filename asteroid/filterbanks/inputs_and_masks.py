@@ -228,6 +228,36 @@ def from_numpy(array, dim=-2):
                       torch.from_numpy(np.imag(array))], dim=dim)
 
 
+def to_torchaudio(tensor, dim=-2):
+    """ Converts complex-like torch tensor to torchaudio style complex tensor.
+
+    Args:
+        tensor (torch.tensor): asteroid-style complex-like torch tensor.
+        dim(int, optional): the frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
+
+    Returns:
+        :class:`torch.Tensor`:
+            torchaudio-style complex-like torch tensor.
+    """
+    return torch.stack(torch.chunk(tensor, 2, dim=dim), dim=-1)
+
+
+def from_torchaudio(tensor, dim=-2):
+    """ Converts torchaudio style complex tensor to complex-like torch tensor.
+
+    Args:
+        tensor (torch.tensor): torchaudio-style complex-like torch tensor.
+        dim(int, optional): the frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
+
+    Returns:
+        :class:`torch.Tensor`:
+            asteroid-style complex-like torch tensor.
+    """
+    return torch.cat([tensor[..., 0], tensor[..., 1]], dim=dim)
+
+
 def angle(tensor, dim=-2):
     """ Return the angle of the complex-like torch tensor.
 

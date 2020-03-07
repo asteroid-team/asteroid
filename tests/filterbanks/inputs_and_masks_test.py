@@ -189,3 +189,17 @@ def test_check_complex_error(dim):
     not_complex = torch.randn(3, 5, 7, 9, 15)
     with pytest.raises(AssertionError):
         phase = inputs_and_masks.check_complex(not_complex, dim=dim)
+
+
+@pytest.mark.parametrize("dim", [0, 1, 2, 3])
+def test_torchaudio_format(dim):
+    max_tested_ndim = 4
+    # Random tensor shape
+    tensor_shape = [random.randint(1, 10) for _ in range(max_tested_ndim)]
+    # Make sure complex dimension has even shape
+    tensor_shape[dim] = 2 * tensor_shape[dim]
+    complex_tensor = torch.randn(tensor_shape)
+    ta_tensor = inputs_and_masks.to_torchaudio(complex_tensor, dim=dim)
+    tensor_back = inputs_and_masks.from_torchaudio(ta_tensor, dim=dim)
+    assert_allclose(complex_tensor, tensor_back)
+    assert ta_tensor.shape[-1] == 2
