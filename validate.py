@@ -51,9 +51,9 @@ def validate(model, dataset, val_dataset, config):
 
 def main(args):
     config = ParamConfig(args.bs, args.epochs, args.workers, args.cuda, args.use_half, args.learning_rate)
-    dataset = AVDataset(args.dataset_path, args.video_dir,
+    dataset = AVDataset(args.video_dir,
                         args.input_df_path, args.input_audio_size, args.cuda)
-    val_dataset = AVDataset(args.dataset_path, args.video_dir,
+    val_dataset = AVDataset(args.video_dir,
                         args.val_input_df_path, args.input_audio_size, args.cuda)
 
     if args.cuda:

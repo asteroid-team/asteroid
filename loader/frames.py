@@ -9,7 +9,7 @@ cpu_device = torch.device("cpu")
 #@profile
 def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
                          mtcnn: MTCNN, resnet: InceptionResnetV1,
-                         face_embed_cuda: bool, use_half: bool, coord: List, name: str) -> torch.Tensor:
+                         face_embed_cuda: bool, use_half: bool, coord: List, name: str=None, save_frames:bool=False) -> torch.Tensor:
     """
         Get the face embedding
 
@@ -61,21 +61,23 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
                     y *= height
                     if(x >= x1 and y >= y1 and x <= x2 and y <= y2):
                         cropped_tensors = extract_face(frame, box)
-                        print("found", box, x, y)
+                        print("found", box, x, y, end='\r')
                         break
 
         if cropped_tensors is None:
             #Face not detected, for some reason
             cropped_tensors = torch.zeros((3, 160, 160))
             no_face_indices.append(i)
-        #name = name.replace(".mp4", "")
-        #saveimg = cropped_tensors.detach().cpu().numpy().astype("uint8")
-        #saveimg = np.squeeze(saveimg.transpose(1, 2, 0))
-        #Image.fromarray(saveimg).save(f"{name}_{i}.png")
+
+        if save_frames:
+            name = name.replace(".mp4", "")
+            saveimg = cropped_tensors.detach().cpu().numpy().astype("uint8")
+            saveimg = np.squeeze(saveimg.transpose(1, 2, 0))
+            Image.fromarray(saveimg).save(f"{name}_{i}.png")
 
         result_cropped_tensors.append(cropped_tensors.to(device))
     
-    if len(no_face_indices) > 15:
+    if len(no_face_indices) > 20:
         #few videos start with silence, allow 0.5 seconds of silence else remove
         return None
     del frames

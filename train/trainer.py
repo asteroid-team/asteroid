@@ -2,10 +2,9 @@ import torch
 
 import collections
 from pathlib import Path
-from memory_profiler import profile
 
-from config import ParamConfig
-from callbacks import SNRCallback, SaveAudioCallback
+from src.train import ParamConfig
+from src.train import SNRCallback
 
 from catalyst.dl import utils
 from catalyst.dl.runner import SupervisedRunner

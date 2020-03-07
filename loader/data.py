@@ -10,6 +10,24 @@ from typing import Callable, Tuple, List
 EMBED_DIR = [Path("../data/train/embed")]#, Path("loader/temp_video/embed/")]
 SPEC_DIR = [Path("../data/train/spec")]#, Path("loader/temp_video/spec/")]
 
+def get_frames(video):
+    frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    buffer_video = np.empty((frame_count, frame_height, frame_width, 3), np.dtype('uint8'))
+
+    frame = 0
+    ret = True
+
+    while (frame < frame_count  and ret):
+        ret, f = video.read()
+        buffer_video[frame] = cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
+
+        frame += 1
+    video.release()
+    return buffer_video
+
 class Signal:
     '''
         This class holds the video frames and the audio signal.
@@ -59,21 +77,7 @@ class Signal:
     def _convert_video(self):
         if self.embed_saved:
             return
-        frame_count = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
-        frame_width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(self.video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-        self.buffer_video = np.empty((frame_count, frame_height, frame_width, 3), np.dtype('uint8'))
-
-        frame = 0
-        ret = True
-
-        while (frame < frame_count  and ret):
-            ret, f = self.video.read()
-            self.buffer_video[frame] = cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
-
-            frame += 1
-        self.video.release()
+        self.buffer_video = get_frames(self.video)
 
     def _check_video_embed(self, embed_ext=".npy"):
         video_name_stem = self.video_path.stem

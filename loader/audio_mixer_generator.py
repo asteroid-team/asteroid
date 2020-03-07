@@ -129,7 +129,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
                 mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx+offset}{audio_ext}")
                 audio_command = AUDIO_MIX_COMMAND_PREFIX + audio_mix_input + audio_mix_command_suffix.format(len(audio_comb)) + mixed_audio_name
 
-                process = subprocess.Popen(audio_command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)#.communicate()
+                process = subprocess.Popen(audio_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)#.communicate()
                 mixed_audio.append(mixed_audio_name)
                 #print(video_inputs, audio_inputs, mixed_audio, noises)
             except KeyboardInterrupt as e:

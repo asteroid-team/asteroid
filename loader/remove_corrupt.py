@@ -26,4 +26,7 @@ print(df_train.shape)
 print(df_val.shape)
 
 df_train.to_csv("../filtered_train.csv", index=False)
+df_train.to_csv("train.csv", index=False)
+
 df_val.to_csv("../filtered_val.csv", index=False)
+df_val.to_csv("val.csv", index=False)

@@ -6,13 +6,7 @@ import librosa
 from tqdm import tqdm
 import os
 
-mixed_files = ["../../data/train/mixed/" + i for i in os.listdir("../../data/train/mixed")]
-audio_files = ["../../data/train/audio" + i for i in os.listdir("../../data/train/audio")]
 
-total_files = mixed_files + audio_files
-
-
-#for f in tqdm(total_files, total=len(total_files)):
 def convert(f):
     spec_path = "../../data/train/spec/"
     file_name = f.split('/')[-1]
@@ -33,10 +27,23 @@ def main():
     total_files += get_list(pd.read_csv("../filtered_train.csv"))
     total_files += get_list(pd.read_csv("../filtered_val.csv"))
     convert(total_files[0])
+
+    number_files = len(total_files)
+
+    if number_files * 900_000 > 50_000_000_000:
+        print("Total space usage is more than 50GB")
+        yn = input("Continue(y/n)?")
+        if len(yn) == 0:
+            yn = 'n'
+
+        if yn.lower()[0] != 'y':
+            return
+
     with concurrent.futures.ProcessPoolExecutor(4) as executor:
         futures = [executor.submit(convert, f) for f in tqdm(total_files, total=len(total_files))]
 
         #for f in tqdm(concurrent.futures.as_completed(futures), total=len(total_files)):
         #    pass
 
-main()
+if __name__ == "__main__":
+    main()

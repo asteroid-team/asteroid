@@ -12,13 +12,12 @@ from src.loader import Signal, input_face_embeddings, convert_to_spectrogram
 
 class AVDataset(torch.utils.data.Dataset):
 
-    def __init__(self, dataset_df_path: Path, video_base_dir: Path, input_df_path: Path,
+    def __init__(self, video_base_dir: Path, input_df_path: Path,
                 input_audio_size=2, use_cuda=False, face_embed_cuda=True, use_half=False,
                 all_embed_saved=True):
         """
 
             Args:
-                dataset_df_path: path for AVSpeech dataset
                 video_base_dir: base directory for all the videos
                 input_df_path: path for combination dataset
                 input_audio_size: total audio/video inputs
@@ -30,22 +29,6 @@ class AVDataset(torch.utils.data.Dataset):
         """
         self.input_audio_size = input_audio_size
 
-        #self.dataset_df = pd.read_csv(dataset_df_path.as_posix(), index_col="link")
-        #self.file_names = self.dataset_df.iloc[:, 0]
-        #
-        ##All cropped, pre-processed videos
-        #self.file_names = [os.path.join(video_base_dir.as_posix(), f + "_final.mp4") 
-        #                for f in self.file_names]
-
-        #self.start_times = self.dataset_df.iloc[:, 1]
-        #self.end_times = self.dataset_df.iloc[:, 2]
-
-        #self.face_x = self.dataset_df.iloc[:, 3]
-        #self.face_y = self.dataset_df.iloc[:, 4]
-
-        #NOTE: All the above information is not being used anywhere right now.
-
-        #Combination dataset stores, mixed audio, input_audio_size inputs
         self.input_df = pd.read_csv(input_df_path.as_posix())
 
         #Use Cuda for dataset
@@ -106,6 +89,7 @@ class AVDataset(torch.utils.data.Dataset):
 
         #input audio signal is the last column.
         mixed_signal, is_spec, spec_path = Signal.load_audio(row[-1])
+
         if not is_spec:
             mixed_signal = convert_to_spectrogram(mixed_signal)
             print("SAVING MIXED")
@@ -130,7 +114,7 @@ class AVDataset(torch.utils.data.Dataset):
                 embeddings = torch.from_numpy(all_signals[i].get_embed())
                 video_tensors.append(embeddings)
                 continue
-
+            """
             #retrieve video frames
             raw_frames = all_signals[i].get_video()
             #print(raw_frames.shape)
@@ -153,6 +137,7 @@ class AVDataset(torch.utils.data.Dataset):
             #save embeddings if not saved
             np.save(all_signals[i].embed_path, embeddings.cpu().numpy())
             video_tensors.append(embeddings)
+            """
 
         # video tensors are expected to be (75,1,1024) (h,w,c)
         # list of video tensors where len(list) == num_person
@@ -169,12 +154,48 @@ class AVDataset(torch.utils.data.Dataset):
 
         return audio_tensors, video_tensors, mixed_signal_tensor
 
+def _check_all_embed_saved(path, num_video):
+    files = Path(path).rglob("*")
+    files = filter(lambda x: x.contains("npy"), files)
+
+    return len(files == num_video)
+    
+
+def main(args):
+
+    train_dataset = AVDataset(args.video_dir, args.train_path, all_embed_saved=False)
+    train_df = train_dataset.input_df
+    train_video_num = _get_video_num(train_df)
+
+    val_dataset = AVDataset(args.video_dir, args.val_path, all_embed_saved=False)
+    val_df = val_dataset.input_df
+    val_video_num = _get_video_num(val_df)
+
+    total_video_num = train_video_num + val_video_num
+
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=8, shuffle=False)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=8, shuffle=False)
+
+    for a, v, m in tqdm.tqdm(train_loader, total=len(train_loader)):
+        if _check_all_embed_saved(args.embed_dir, train_video_num):
+            print("Saved all training embed")
+            break
+
+    for a, v, m in tqdm.tqdm(val_loader, total=len(val_loader)):
+        if _check_all_embed_saved(args.embed_dir, total_video_num):
+            print("Saved all validation embed")
+            break
+
 
 if __name__ == "__main__":
-    dataset = AVDataset(Path("../../data/audio_visual/avspeech_train.csv"),
-                      Path("../../data/train/"),
-                      Path("train.csv"), all_embed_saved=False)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=False)
-    for a, v, m in tqdm.tqdm(loader, total=len(loader)):
-        pass#print(len(a), len(v), a[0].shape, v[0].shape, m.shape)
+    from argparse import ArgumentParser
 
+    parser = ArgumentParser()
+    parser.add_argument("--video-dir", default="../../data/train/", type=Path)
+    parser.add_argument("--embed-dir", default="../../data/embed/", type=Path)
+    parser.add_argument("--train-path", default="../train.csv", type=Path)
+    parser.add_argument("--val-path", default="../val.csv", type=Path)
+
+    args = parser.parse_args()
+
+    main(args)

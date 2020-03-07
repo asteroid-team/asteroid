@@ -1,11 +1,11 @@
 import sys
-from audio_feature_generator import convert_to_wave
+from src.loader import convert_to_wave
 
 import torch
 import numpy as np
 
 from pathlib import Path
-from metric_utils import snr, sdr
+from src.train import snr, sdr
 from catalyst.dl.core import Callback, MetricCallback, CallbackOrder
 
 import logging

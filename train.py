@@ -3,12 +3,12 @@ import sys
 import torch
 import numpy as np
 from pathlib import Path
-from trainer import train
-from config import ParamConfig
-from data_loader import AVDataset
 from memory_profiler import profile
 from argparse import ArgumentParser
-from models import Audio_Visual_Fusion as AVFusion
+
+from src.loader import AVDataset
+from src.train import train, ParamConfig
+from src.models import Audio_Visual_Fusion as AVFusion
 
 class DiscriminativeLoss(torch.nn.Module):
 
@@ -33,9 +33,9 @@ class DiscriminativeLoss(torch.nn.Module):
 
 def main(args):
     config = ParamConfig(args.bs, args.epochs, args.workers, args.cuda, args.use_half, args.learning_rate)
-    dataset = AVDataset(args.dataset_path, args.video_dir,
+    dataset = AVDataset(args.video_dir,
                         args.input_df_path, args.input_audio_size, args.cuda)
-    val_dataset = AVDataset(args.dataset_path, args.video_dir,
+    val_dataset = AVDataset(args.video_dir,
                         args.val_input_df_path, args.input_audio_size, args.cuda)
 
     if args.cuda:
