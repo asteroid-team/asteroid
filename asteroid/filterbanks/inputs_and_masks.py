@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 EPS = 1e-8
 
 
@@ -27,8 +28,8 @@ def mul_c(inp, other, dim=-2):
         inp (:class:`torch.Tensor`): The first operand with real and
             imaginary parts concatenated on the `dim` axis.
         other (:class:`torch.Tensor`): The second operand.
-        dim (int, optional): Dimension along which the real and imaginary parts
-            are concatenated.
+        dim (int, optional): frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
     Returns:
         :class:`torch.Tensor`:
             The complex multiplication between `inp` and `other`
@@ -36,9 +37,8 @@ def mul_c(inp, other, dim=-2):
             For now, it assumes that `other` has the same shape as `inp` along
             `dim`.
     """
-    if inp.shape[dim] % 2 != 0:
-        raise ValueError('Shape along dimension {} should be even, received '
-                         '{}'.format(dim, inp.shape[dim]))
+    check_complex(inp, dim=dim)
+    check_complex(other, dim=dim)
     real1, imag1 = inp.chunk(2, dim=dim)
     real2, imag2 = other.chunk(2, dim=dim)
     return torch.cat([real1 * real2 - imag1 * imag2,
@@ -72,11 +72,13 @@ def take_mag(x, dim=-2):
 
     Args:
         x (:class:`torch.Tensor`): Complex valued tensor.
-        dim (int): Dimension along which the Re and Im are concatenated.
+        dim (int): frequency (or equivalent) dimension along which real and
+            imaginary values are concatenated.
 
     Returns:
         :class:`torch.Tensor`: The magnitude of x.
     """
+    check_complex(x, dim=dim)
     power = torch.stack(torch.chunk(x, 2, dim=dim), dim=-1).pow(2).sum(dim=-1)
     power = power + EPS
     return power.pow(0.5)
@@ -131,10 +133,11 @@ def apply_mag_mask(tf_rep, mask, dim=-2):
             apply the mask to. Re and Im are concatenated along `dim`.
         mask (:class:`torch.Tensor`): The real-valued mask to be applied.
         dim (int): The frequency (or equivalent) dimension of both `tf_rep` and
-            `mask`.
+            `mask` along which real and imaginary values are concatenated.
     Returns:
         :class:`torch.Tensor`: `tf_rep` multiplied by the `mask`.
     """
+    check_complex(tf_rep, dim=dim)
     mask = torch.cat([mask, mask], dim=dim)
     return tf_rep * mask
 
@@ -165,13 +168,100 @@ def apply_complex_mask(tf_rep, mask, dim=-2):
             apply the mask to.
         mask (class:`torch.Tensor`): The complex-valued mask to be applied.
         dim (int): The frequency (or equivalent) dimension of both `tf_rep` an
-            `mask`.
+            `mask` along which real and imaginary values are concatenated.
 
     Returns:
         :class:`torch.Tensor`:
             `tf_rep` multiplied by the `mask` in the complex sense.
     """
+    check_complex(tf_rep, dim=dim)
     return mul_c(tf_rep, mask, dim=dim)
+
+
+def check_complex(tensor, dim=-2):
+    """ Assert tensor in complex-like in a given dimension.
+
+    Args:
+        tensor (torch.Tensor): tensor to be checked.
+        dim(int): the frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
+
+    Raises:
+        AssertionError if dimension is not even in the specified dimension
+
+    """
+    if tensor.shape[dim] % 2 != 0:
+        raise AssertionError('Could not equally chunk the tensor (shape {}) '
+                             'along the given dimension ({}). Dim axis is '
+                             'probably wrong')
+
+
+def to_numpy(tensor, dim=-2):
+    """ Convert complex-like torch tensor to numpy complex array
+
+    Args:
+        tensor (torch.Tensor): Complex tensor to convert to numpy.
+        dim(int, optional): the frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
+    Returns:
+        :class:`numpy.array`:
+            Corresponding complex array.
+    """
+    check_complex(tensor, dim=dim)
+    real, imag = torch.chunk(tensor, 2, dim=dim)
+    return real.data.numpy() + 1j * imag.data.numpy()
+
+
+def from_numpy(array, dim=-2):
+    """ Convert complex numpy array to complex-like torch tensor.
+
+    Args:
+        array (np.array): array to be converted.
+        dim(int, optional): the frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
+
+    Returns:
+        :class:`torch.Tensor`:
+            Corresponding torch.Tensor (complex axis in dim `dim`=
+    """
+    assert array.dtype is ['complex64', 'complex128'], array.dtype
+    return torch.cat([torch.from_numpy(np.real(array)),
+                      torch.from_numpy(np.imag(array))], dim=dim)
+
+
+def angle(tensor, dim=-2):
+    """ Return the angle of the complex-like torch tensor.
+
+    Args:
+        tensor (torch.Tensor): the complex tensor from which to extract the
+            phase.
+        dim(int, optional): the frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
+
+    Returns:
+        :class:`torch.Tensor`:
+            The counterclockwise angle from the positive real axis on
+            the complex plane in radians.
+    """
+    check_complex(tensor, dim=dim)
+    real, imag = torch.chunk(tensor, 2, dim=dim)
+    return torch.atan2(imag, real)
+
+
+def from_mag_and_phase(mag, phase, dim=-2):
+    """ Return a complex-like torch tensor from magnitude and phase components.
+
+    Args:
+        mag (torch.tensor): magnitude of the tensor.
+        phase (torch.tensor): angle of the tensor
+        dim(int, optional): the frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
+
+    Returns:
+        :class:`torch.Tensor`:
+            The corresponding complex-like torch tensor.
+    """
+    return torch.cat([mag*torch.cos(phase), mag*torch.sin(phase)], dim=dim)
 
 
 _inputs = {
