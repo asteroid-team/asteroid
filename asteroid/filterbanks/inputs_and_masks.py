@@ -2,7 +2,7 @@ import torch
 EPS = 1e-8
 
 
-def mul_c(inp, other, dim=1):
+def mul_c(inp, other, dim=-2):
     """ Entrywise product for complex valued tensors.
 
     Operands are assumed to have the real parts of each entry followed by the
@@ -45,11 +45,11 @@ def mul_c(inp, other, dim=1):
                       real1 * imag2 + imag1 * real2], dim=dim)
 
 
-def take_reim(x, dim=1):
+def take_reim(x, dim=-2):
     return x
 
 
-def take_mag(x, dim=1):
+def take_mag(x, dim=-2):
     """ Takes the magnitude of a complex tensor.
 
     The operands is assumed to have the real parts of each entry followed by
@@ -82,11 +82,11 @@ def take_mag(x, dim=1):
     return power.pow(0.5)
 
 
-def take_cat(x, dim=1):
+def take_cat(x, dim=-2):
     return torch.cat([take_mag(x, dim=dim), x], dim=dim)
 
 
-def apply_real_mask(tf_rep, mask, dim=1):
+def apply_real_mask(tf_rep, mask, dim=-2):
     """ Applies a real-valued mask to a real-valued representation.
 
     It corresponds to ReIm mask in [1].
@@ -102,7 +102,7 @@ def apply_real_mask(tf_rep, mask, dim=1):
     return tf_rep * mask
 
 
-def apply_mag_mask(tf_rep, mask, dim=1):
+def apply_mag_mask(tf_rep, mask, dim=-2):
     """ Applies a real-valued mask to a complex-valued representation.
 
     If `tf_rep` has 2N elements along `dim`, `mask` has N elements, `mask` is
@@ -139,7 +139,7 @@ def apply_mag_mask(tf_rep, mask, dim=1):
     return tf_rep * mask
 
 
-def apply_complex_mask(tf_rep, mask, dim=1):
+def apply_complex_mask(tf_rep, mask, dim=-2):
     """ Applies a complex-valued mask to a complex-valued representation.
 
     Operands are assumed to have the real parts of each entry followed by the
