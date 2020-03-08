@@ -6,11 +6,18 @@
 
 Asteroid is a Pytorch-based source separation and speech enhancement API 
 that enables fast experimentation on common datasets. 
-It comes with a source code written to support a large range of architectures 
-and a set of recipes to reproduce some papers.  
+It comes with a source code written to support a large range of datasets, 
+architectures, loss functions etc... and a set of recipes to reproduce some 
+important papers.  
 Asteroid is intended to be a __community-based project__ 
 so hop on and help us !
 
+### You use asteroid or you want to? 
+Please, if you have found a bug, [open an issue](https://github.com/mpariente/asteroid/issues/new), 
+if you solved it, [open a pull request](https://github.com/mpariente/asteroid/compare) !  
+Same goes for new features, tell us what you want or help us building it !  
+Don't hesitate to [join the slack](https://join.slack.com/t/asteroid-dev/shared_invite/enQtOTM4NjEzOTI0MzQzLWMyODBmZjRiODAyOGZmNjQ0ZjVjZjM3NGM0NDIyOTc4ZjEyYjc0ZmI1NDI5N2I2YzE5OWU2ZGE1NmEyMjBlYTQ) 
+and ask questions / suggest new features there as well, we won't bite !
 ## Table of contents
 - [Installation](https://github.com/mpariente/asteroid#installation)
 - [Tutorials](https://github.com/mpariente/asteroid#highlights)
@@ -55,7 +62,7 @@ More information in [egs/README.md](https://github.com/mpariente/asteroid/tree/m
 * [x] ConvTasnet ([Luo et al.](https://arxiv.org/abs/1809.07454))
 * [ ] Tasnet ([Luo et al.](https://arxiv.org/abs/1711.00541))
 * [x] Deep clustering ([Hershey et al.](https://arxiv.org/abs/1508.04306) and [Isik et al.](https://arxiv.org/abs/1607.02173))
-* [x] Chimera ++ ([Luo et al.](https://arxiv.org/abs/1611.06265) and [Wang et al.](https://ieeexplore.ieee.org/document/8462507))
+* [ ] Chimera ++ ([Luo et al.](https://arxiv.org/abs/1611.06265) and [Wang et al.](https://ieeexplore.ieee.org/document/8462507))
 * [ ] FurcaNeXt ([Shi et al.](https://arxiv.org/abs/1902.04891))
 * [x] DualPathRNN ([Luo et al.](https://arxiv.org/abs/1910.06379))
 * [ ] Two step learning ([Tzinis et al.](https://arxiv.org/abs/1910.09804))
@@ -67,32 +74,14 @@ More information in [egs/README.md](https://github.com/mpariente/asteroid/tree/m
 * [ ] WHAMR ([Maciejewski et al.](https://arxiv.org/abs/1910.10279))
 * [x] Microsoft DNS Challenge ([Chandan et al.](https://arxiv.org/abs/2001.08662))
 * [x] SMS_WSJ ([Drude et al.](https://arxiv.org/abs/1910.13934))
+* [ ] MIUSDB18 ([Raffi et al.](https://hal.inria.fr/hal-02190845)) 
+* [ ] FUSS ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
 
 ## Writing your own recipe
 
 ## Contributing
 See our [contributing guidelines](https://github.com/mpariente/asteroid/blob/master/CONTRIBUTING.md).
 
-
-## Building the docs
-To build the docs, you'll need [Sphinx](https://www.sphinx-doc.org/en/master/), 
-a theme and some other package
-```bash
-# Start by installing the required packages
-cd docs/
-pip install -r requirements.txt
-# Build the docs
-make html
-# View it ! (Change firefox by your favorite browser)
-firefox build/html/index.html
-```
-If you rebuild the docs, don't forget to run `make clean` before it.  
-
-You can add this to your `.bashrc`, source it and run `run_docs` 
-from the `docs/` folder
-```bash
-alias run_docs='make clean; make html; firefox build/html/index.html'
-```
 
 ### Codebase structure
 ```
@@ -122,7 +111,8 @@ tensorboard --logdir exp/tmp/lightning_logs/ --port tf_port
 # Open port-forwarding connection. Add -Nf option not to open remote. 
 ssh -L local_port:localhost:tf_port user@ip
 ```
-Then open `http://localhost:local_port/`.
+Then open `http://localhost:local_port/`. If both ports are the same, you can 
+click on the tensorboard URL given on the remote, it's just more practical.
 
 
 ## Guiding principles
