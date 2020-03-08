@@ -21,7 +21,9 @@ class Model(nn.Module):
         # Encode the waveform
         tf_rep = self.encoder(x)
         # Post process TF representation (take magnitude or keep [Re, Im] etc)
-        masker_input = self.encoder.post_process_inputs(tf_rep)
+        # FIXME, that's removed
+        # masker_input = self.encoder.post_process_inputs(tf_rep)
+        masker_input = tf_rep
         # Estimate masks (Size [batch, n_scr, bins, time])
         est_masks = self.masker(masker_input)
         # Apply mask to TF representation
