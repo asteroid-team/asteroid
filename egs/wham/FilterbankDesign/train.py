@@ -71,7 +71,7 @@ if __name__ == '__main__':
     import yaml
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
 
-    with open('conf.yml') as f:
+    with open('local/conf.yml') as f:
         def_conf = yaml.safe_load(f)
     parser = prepare_parser_from_dict(def_conf, parser=parser)
     arg_dic, plain_args = parse_args_as_dict(parser, return_plain_args=True)

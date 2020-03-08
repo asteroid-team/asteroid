@@ -64,5 +64,5 @@ if [[ $stage -le  2 ]]; then
 		${python_path} -m pip install cython
 		${python_path} -m pip install -e local/pb_bss[all]
 	fi
-	mpiexec -n $num_jobs ${python_path} local/start_evaluation.py --json_path $data_dir/sms_wsj.json
+	mpiexec -n $num_jobs ${python_path} start_evaluation.py --json_path $data_dir/sms_wsj.json
 fi
