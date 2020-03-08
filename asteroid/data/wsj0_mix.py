@@ -5,7 +5,7 @@ import os
 import numpy as np
 import soundfile as sf
 from asteroid.data.wav import SingleWav
-from asteroid.filterbanks.inputs_and_masks import take_mag
+from asteroid.filterbanks.transforms import take_mag
 
 EPS = torch.finfo(torch.float).eps
 

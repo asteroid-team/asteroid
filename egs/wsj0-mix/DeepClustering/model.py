@@ -4,7 +4,7 @@ from torch import nn
 import asteroid.filterbanks as fb
 from asteroid.masknn import TDConvNet
 from asteroid.engine.optimizers import make_optimizer
-from asteroid.filterbanks.inputs_and_masks import take_mag
+from asteroid.filterbanks.transforms import take_mag
 from asteroid.masknn.blocks import ChimeraPP 
 
 class Model(nn.Module):
