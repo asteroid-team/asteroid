@@ -6,9 +6,9 @@ from torch import nn
 
 from asteroid import System
 from asteroid.filterbanks import make_enc_dec
-from asteroid.filterbanks.inputs_and_masks import take_cat, take_mag
-from asteroid.filterbanks.inputs_and_masks import apply_real_mask
-from asteroid.filterbanks.inputs_and_masks import apply_mag_mask
+from asteroid.filterbanks.transforms import take_cat, take_mag
+from asteroid.filterbanks.transforms import apply_real_mask
+from asteroid.filterbanks.transforms import apply_mag_mask
 from asteroid.masknn import blocks
 from asteroid.engine.optimizers import make_optimizer
 from asteroid import torch_utils

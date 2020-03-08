@@ -5,7 +5,7 @@ from torch.testing import assert_allclose
 import numpy as np
 
 from asteroid import filterbanks as fb
-from asteroid.filterbanks import inputs_and_masks
+from asteroid.filterbanks import transforms
 
 
 COMPLEX_FBS = [
@@ -51,7 +51,7 @@ def test_mag_mask(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
         id_mag_mask = torch.ones((1, fb_dim//2, 1))
-        masked = inputs_and_masks.apply_mag_mask(tf_rep, id_mag_mask, dim=1)
+        masked = transforms.apply_mag_mask(tf_rep, id_mag_mask, dim=1)
         assert_allclose(masked, tf_rep)
 
 
@@ -60,7 +60,7 @@ def test_reim_mask(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
         id_reim_mask = torch.ones((1, fb_dim, 1))
-        masked = inputs_and_masks.apply_real_mask(tf_rep, id_reim_mask, dim=1)
+        masked = transforms.apply_real_mask(tf_rep, id_reim_mask, dim=1)
         assert_allclose(masked, tf_rep)
 
 
@@ -71,22 +71,22 @@ def test_comp_mask(encoder_list):
         id_complex_mask = torch.cat((torch.ones((1, fb_dim // 2, 1)),
                                      torch.zeros((1, fb_dim // 2, 1))),
                                     dim=1)
-        masked = inputs_and_masks.apply_complex_mask(tf_rep, id_complex_mask,
-                                                     dim=1)
+        masked = transforms.apply_complex_mask(tf_rep, id_complex_mask,
+                                               dim=1)
         assert_allclose(masked, tf_rep)
 
 
 def test_reim(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
-        assert_allclose(tf_rep, inputs_and_masks.take_reim(tf_rep))
+        assert_allclose(tf_rep, transforms.take_reim(tf_rep))
 
 
 def test_mag(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
         batch, freq, time = tf_rep.shape
-        mag = inputs_and_masks.take_mag(tf_rep, dim=1)
+        mag = transforms.take_mag(tf_rep, dim=1)
         assert mag.shape == (batch, freq // 2, time)
 
 
@@ -94,7 +94,7 @@ def test_cat(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
         batch, freq, time = tf_rep.shape
-        mag = inputs_and_masks.take_cat(tf_rep, dim=1)
+        mag = transforms.take_cat(tf_rep, dim=1)
         assert mag.shape == (batch, 3 * (freq // 2), time)
 
 
@@ -120,7 +120,7 @@ def test_to_numpy(np_torch_tuple, dim):
         torch_tensor = torch.tensor([[from_torch]])
     else:
         return
-    np_from_torch = inputs_and_masks.to_numpy(torch_tensor, dim=dim)
+    np_from_torch = transforms.to_numpy(torch_tensor, dim=dim)
     np.testing.assert_allclose(np_array, np_from_torch)
 
 
@@ -146,7 +146,7 @@ def test_from_numpy(np_torch_tuple, dim):
         torch_tensor = torch.tensor([[from_torch]])
     else:
         return
-    torch_from_np = inputs_and_masks.from_numpy(np_array, dim=dim)
+    torch_from_np = transforms.from_numpy(np_array, dim=dim)
     np.testing.assert_allclose(torch_tensor, torch_from_np)
 
 
@@ -159,9 +159,9 @@ def test_return_ticket_np_torch(dim):
     # Make sure complex dimension has even shape
     tensor_shape[dim] = 2 * tensor_shape[dim]
     complex_tensor = torch.randn(tensor_shape)
-    np_array = inputs_and_masks.to_numpy(complex_tensor, dim=dim)
-    tensor_back = inputs_and_masks.from_numpy(np_array, dim=dim)
-    np_back = inputs_and_masks.to_numpy(tensor_back, dim=dim)
+    np_array = transforms.to_numpy(complex_tensor, dim=dim)
+    tensor_back = transforms.from_numpy(np_array, dim=dim)
+    np_back = transforms.to_numpy(tensor_back, dim=dim)
     # Check torch --> np --> torch
     assert_allclose(complex_tensor, tensor_back)
     # Check np --> torch --> np
@@ -177,9 +177,9 @@ def test_angle_mag_recompostion(dim):
     # Make sure complex dimension has even shape
     tensor_shape[dim] = 2 * tensor_shape[dim]
     complex_tensor = torch.randn(tensor_shape)
-    phase = inputs_and_masks.angle(complex_tensor, dim=dim)
-    mag = inputs_and_masks.take_mag(complex_tensor, dim=dim)
-    tensor_back = inputs_and_masks.from_mag_and_phase(mag, phase, dim=dim)
+    phase = transforms.angle(complex_tensor, dim=dim)
+    mag = transforms.take_mag(complex_tensor, dim=dim)
+    tensor_back = transforms.from_mag_and_phase(mag, phase, dim=dim)
     assert_allclose(complex_tensor, tensor_back)
 
 
@@ -188,7 +188,7 @@ def test_check_complex_error(dim):
     """ Test error in angle """
     not_complex = torch.randn(3, 5, 7, 9, 15)
     with pytest.raises(AssertionError):
-        phase = inputs_and_masks.check_complex(not_complex, dim=dim)
+        phase = transforms.check_complex(not_complex, dim=dim)
 
 
 @pytest.mark.parametrize("dim", [0, 1, 2, 3])
@@ -199,7 +199,7 @@ def test_torchaudio_format(dim):
     # Make sure complex dimension has even shape
     tensor_shape[dim] = 2 * tensor_shape[dim]
     complex_tensor = torch.randn(tensor_shape)
-    ta_tensor = inputs_and_masks.to_torchaudio(complex_tensor, dim=dim)
-    tensor_back = inputs_and_masks.from_torchaudio(ta_tensor, dim=dim)
+    ta_tensor = transforms.to_torchaudio(complex_tensor, dim=dim)
+    tensor_back = transforms.from_torchaudio(ta_tensor, dim=dim)
     assert_allclose(complex_tensor, tensor_back)
     assert ta_tensor.shape[-1] == 2

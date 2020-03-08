@@ -14,7 +14,7 @@ from asteroid.losses import PITLossWrapper, pairwise_mse
 from asteroid.losses import deep_clustering_loss
 
 import asteroid.filterbanks as fb
-from asteroid.filterbanks.inputs_and_masks import take_mag
+from asteroid.filterbanks.transforms import take_mag
 from model import make_model_and_optimizer
 
 EPS = torch.finfo(torch.float).eps

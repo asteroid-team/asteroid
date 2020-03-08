@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from . inputs_and_masks import _inputs, _masks
+from . transforms import _inputs, _masks
 
 
 class Filterbank(nn.Module):

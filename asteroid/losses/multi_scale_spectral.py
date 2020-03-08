@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.loss import _Loss
 from asteroid.filterbanks import STFTFB, Encoder
-from asteroid.filterbanks.inputs_and_masks import take_mag
+from asteroid.filterbanks.transforms import take_mag
 
 EPS = 1e-8
 
