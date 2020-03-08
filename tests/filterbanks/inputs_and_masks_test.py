@@ -1,9 +1,10 @@
+import random
 import pytest
 import torch
 from torch.testing import assert_allclose
+import numpy as np
 
 from asteroid import filterbanks as fb
-from asteroid.filterbanks.inputs_and_masks import _masks
 from asteroid.filterbanks import inputs_and_masks
 
 
@@ -95,3 +96,110 @@ def test_cat(encoder_list):
         batch, freq, time = tf_rep.shape
         mag = inputs_and_masks.take_cat(tf_rep, dim=1)
         assert mag.shape == (batch, 3 * (freq // 2), time)
+
+
+@pytest.mark.parametrize("np_torch_tuple", [
+    ([0], [0, 0]),
+    ([1j], [0, 1]),
+    ([-1], [-1, 0]),
+    ([-1j], [0, -1]),
+    ([1 + 1j], [1, 1]),
+])
+@pytest.mark.parametrize("dim", [0, 1, 2])
+def test_to_numpy(np_torch_tuple, dim):
+    """ Test torch --> np conversion (right angles)"""
+    from_np, from_torch = np_torch_tuple
+    if dim == 0:
+        np_array = np.array(from_np)
+        torch_tensor = torch.tensor(from_torch)
+    elif dim == 1:
+        np_array = np.array([from_np])
+        torch_tensor = torch.tensor([from_torch])
+    elif dim == 2:
+        np_array = np.array([[from_np]])
+        torch_tensor = torch.tensor([[from_torch]])
+    else:
+        return
+    np_from_torch = inputs_and_masks.to_numpy(torch_tensor, dim=dim)
+    np.testing.assert_allclose(np_array, np_from_torch)
+
+
+@pytest.mark.parametrize("np_torch_tuple", [
+    ([0], [0, 0]),
+    ([1j], [0, 1]),
+    ([-1], [-1, 0]),
+    ([-1j], [0, -1]),
+    ([1 + 1j], [1, 1]),
+])
+@pytest.mark.parametrize("dim", [0, 1, 2])
+def test_from_numpy(np_torch_tuple, dim):
+    """ Test np --> torch conversion (right angles)"""
+    from_np, from_torch = np_torch_tuple
+    if dim == 0:
+        np_array = np.array(from_np)
+        torch_tensor = torch.tensor(from_torch)
+    elif dim == 1:
+        np_array = np.array([from_np])
+        torch_tensor = torch.tensor([from_torch])
+    elif dim == 2:
+        np_array = np.array([[from_np]])
+        torch_tensor = torch.tensor([[from_torch]])
+    else:
+        return
+    torch_from_np = inputs_and_masks.from_numpy(np_array, dim=dim)
+    np.testing.assert_allclose(torch_tensor, torch_from_np)
+
+
+@pytest.mark.parametrize("dim", [0, 1, 2, 3])
+def test_return_ticket_np_torch(dim):
+    """ Test torch --> np --> torch --> np conversion"""
+    max_tested_ndim = 4
+    # Random tensor shape
+    tensor_shape = [random.randint(1, 10) for _ in range(max_tested_ndim)]
+    # Make sure complex dimension has even shape
+    tensor_shape[dim] = 2 * tensor_shape[dim]
+    complex_tensor = torch.randn(tensor_shape)
+    np_array = inputs_and_masks.to_numpy(complex_tensor, dim=dim)
+    tensor_back = inputs_and_masks.from_numpy(np_array, dim=dim)
+    np_back = inputs_and_masks.to_numpy(tensor_back, dim=dim)
+    # Check torch --> np --> torch
+    assert_allclose(complex_tensor, tensor_back)
+    # Check np --> torch --> np
+    np.testing.assert_allclose(np_array, np_back)
+
+
+@pytest.mark.parametrize("dim", [0, 1, 2, 3])
+def test_angle_mag_recompostion(dim):
+    """ Test complex --> (mag, angle) --> complex conversions"""
+    max_tested_ndim = 4
+    # Random tensor shape
+    tensor_shape = [random.randint(1, 10) for _ in range(max_tested_ndim)]
+    # Make sure complex dimension has even shape
+    tensor_shape[dim] = 2 * tensor_shape[dim]
+    complex_tensor = torch.randn(tensor_shape)
+    phase = inputs_and_masks.angle(complex_tensor, dim=dim)
+    mag = inputs_and_masks.take_mag(complex_tensor, dim=dim)
+    tensor_back = inputs_and_masks.from_mag_and_phase(mag, phase, dim=dim)
+    assert_allclose(complex_tensor, tensor_back)
+
+
+@pytest.mark.parametrize("dim", [0, 1, 2, 3])
+def test_check_complex_error(dim):
+    """ Test error in angle """
+    not_complex = torch.randn(3, 5, 7, 9, 15)
+    with pytest.raises(AssertionError):
+        phase = inputs_and_masks.check_complex(not_complex, dim=dim)
+
+
+@pytest.mark.parametrize("dim", [0, 1, 2, 3])
+def test_torchaudio_format(dim):
+    max_tested_ndim = 4
+    # Random tensor shape
+    tensor_shape = [random.randint(1, 10) for _ in range(max_tested_ndim)]
+    # Make sure complex dimension has even shape
+    tensor_shape[dim] = 2 * tensor_shape[dim]
+    complex_tensor = torch.randn(tensor_shape)
+    ta_tensor = inputs_and_masks.to_torchaudio(complex_tensor, dim=dim)
+    tensor_back = inputs_and_masks.from_torchaudio(ta_tensor, dim=dim)
+    assert_allclose(complex_tensor, tensor_back)
+    assert ta_tensor.shape[-1] == 2
