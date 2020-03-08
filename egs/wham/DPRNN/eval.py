@@ -88,10 +88,10 @@ def main(conf):
                      conf['sample_rate'])
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):
-                sf.write(local_save_dir + "s{}.wav".format(src_idx), src,
+                sf.write(local_save_dir + "s{}.wav".format(src_idx+1), src,
                          conf['sample_rate'])
             for src_idx, est_src in enumerate(est_sources_np):
-                sf.write(local_save_dir + "s{}_estimate.wav".format(src_idx),
+                sf.write(local_save_dir + "s{}_estimate.wav".format(src_idx+1),
                          est_src, conf['sample_rate'])
             # Write local metrics to the example folder.
             with open(local_save_dir + 'metrics.json', 'w') as f:
