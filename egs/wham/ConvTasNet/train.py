@@ -37,12 +37,12 @@ def main(conf):
                           nondefault_nsrc=conf['data']['nondefault_nsrc'])
 
     train_loader = DataLoader(train_set, shuffle=True,
-                              batch_size=conf['data']['batch_size'],
-                              num_workers=conf['data']['num_workers'],
+                              batch_size=conf['training']['batch_size'],
+                              num_workers=conf['training']['num_workers'],
                               drop_last=True)
     val_loader = DataLoader(val_set, shuffle=True,
-                            batch_size=conf['data']['batch_size'],
-                            num_workers=conf['data']['num_workers'],
+                            batch_size=conf['training']['batch_size'],
+                            num_workers=conf['training']['num_workers'],
                             drop_last=True)
     # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': train_set.n_src})

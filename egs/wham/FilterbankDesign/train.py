@@ -28,11 +28,11 @@ def main(conf):
                           nondefault_nsrc=conf['data']['nondefault_nsrc'])
 
     train_loader = DataLoader(train_set, shuffle=True,
-                              batch_size=conf['data']['batch_size'],
-                              num_workers=conf['data']['num_workers'])
+                              batch_size=conf['training']['batch_size'],
+                              num_workers=conf['training']['num_workers'])
     val_loader = DataLoader(val_set, shuffle=True,
-                            batch_size=conf['data']['batch_size'],
-                            num_workers=conf['data']['num_workers'])
+                            batch_size=conf['training']['batch_size'],
+                            num_workers=conf['training']['num_workers'])
     conf['masknet'].update({'n_src': train_set.n_src})
 
     # Define model and optimizer in a local function (defined in the recipe).

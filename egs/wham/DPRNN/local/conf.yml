@@ -19,6 +19,8 @@ masknet:
 # Training config
 training:
   epochs: 200
+  batch_size: 8
+  num_workers: 4
   half_lr: yes
   early_stop: yes
   gradient_clipping: 5
@@ -35,6 +37,4 @@ data:
   nondefault_nsrc:
   sample_rate: 8000
   mode: min
-  batch_size: 8
-  num_workers: 4
   segment: 4.0
