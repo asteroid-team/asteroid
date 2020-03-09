@@ -9,7 +9,7 @@ sed -i 's+\\+\/+g' noisyspeech_synthesizer.cfg
 
 # Change default saving directories
 # We keep the default values for all the rest feel free to modify it.
-sed -i 's+./training+'"$storage_dir"'+g'
+sed -i 's+./training+'"$storage_dir"'+g' noisyspeech_synthesizer.cfg
 
 # Run the dataset recipe
 python -m pip install librosa pandas
