@@ -1,8 +1,3 @@
-# Test the maximum of functions, very small model will be fast to train for one
-# batch
-
-# Need to test training, and loading right?
-
 import torch
 from torch import nn, optim
 from torch.utils import data
