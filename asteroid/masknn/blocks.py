@@ -182,6 +182,7 @@ class SingleRNN(nn.Module):
 
     def forward(self, inp):
         """ Input shape [batch, seq, feats] """
+        self.rnn.flatten_parameters()  # Enables faster multi-GPU training.
         output = inp
         rnn_output, _ = self.rnn(output)
         return rnn_output
