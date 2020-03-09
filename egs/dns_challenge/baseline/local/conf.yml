@@ -12,6 +12,8 @@ masknet:
 # Training config
 training:
   epochs: 200
+  batch_size: 64
+  num_workers: 32
   half_lr: y
   early_stop: y
 # Optim config
@@ -22,6 +24,4 @@ optim:
 # Data config
 data:
   json_dir: data/
-  batch_size: 64
-  num_workers: 32
   val_prop: 0.2

@@ -28,11 +28,11 @@ def main(conf):
                           nondefault_nsrc=conf['data']['nondefault_nsrc'])
 
     train_loader = DataLoader(train_set, shuffle=True,
-                              batch_size=conf['data']['batch_size'],
-                              num_workers=conf['data']['num_workers'])
+                              batch_size=conf['training']['batch_size'],
+                              num_workers=conf['training']['num_workers'])
     val_loader = DataLoader(val_set, shuffle=True,
-                            batch_size=conf['data']['batch_size'],
-                            num_workers=conf['data']['num_workers'])
+                            batch_size=conf['training']['batch_size'],
+                            num_workers=conf['training']['num_workers'])
     conf['masknet'].update({'n_src': train_set.n_src})
 
     # Define model and optimizer in a local function (defined in the recipe).
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     import yaml
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
 
-    with open('conf.yml') as f:
+    with open('local/conf.yml') as f:
         def_conf = yaml.safe_load(f)
     parser = prepare_parser_from_dict(def_conf, parser=parser)
     arg_dic, plain_args = parse_args_as_dict(parser, return_plain_args=True)

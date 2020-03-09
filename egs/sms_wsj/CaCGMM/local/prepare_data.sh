@@ -1,3 +1,4 @@
+#!/bin/bash
 wsj0_dir=
 wsj1_dir=
 num_jobs=$(nproc --all)
