@@ -37,6 +37,8 @@ nondefault_src=  # If you want to train a network with 3 output streams for exam
 # Training
 batch_size=8
 num_workers=8
+kernel_size=2
+stride=1
 #optimizer=adam
 lr=0.001
 epochs=200
@@ -103,7 +105,7 @@ uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
 	tag=${task}_${sr_string}k${mode}_${uuid}
 fi
-expdir=exp/train_convtasnet_${tag}
+expdir=exp/train_dprnn_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
@@ -120,6 +122,8 @@ if [[ $stage -le 3 ]]; then
   --epochs $epochs \
   --batch_size $batch_size \
   --num_workers $num_workers \
+  --kernel_size $kernel_size \
+  --stride $stride \
   --exp_dir ${expdir}/ | tee logs/train_${tag}.log
 fi
 
