@@ -53,7 +53,7 @@ class SingleSrcMultiScaleSpectral(_Loss):
 
     def __init__(self, n_filters=None, windows_size=None,
                  hops_size=None, alpha=1.):
-        super(MultiScaleSpectral, self).__init__()
+        super().__init__()
 
         if windows_size is None:
             windows_size = [2048, 1024, 512, 256, 128, 64, 32]
