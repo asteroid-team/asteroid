@@ -1,3 +1,5 @@
+import warnings
+from numpy import VisibleDeprecationWarning
 from itertools import permutations
 import torch
 from torch import nn
@@ -8,36 +10,47 @@ class PITLossWrapper(nn.Module):
 
     Args:
         loss_func: function with signature (targets, est_targets, **kwargs).
-        mode (str): Determines how PIT is applied.
+        mode (str): Determines how PIT is applied (deprecated,
+            use `expects` instead.)
+        pit_from (str): Determines how PIT is applied.
 
-            * ``'pairwise'``: `loss_func` computes pairwise losses and returns
-              a torch.Tensor of shape :math:`(batch, n\_src, n\_src)`.
-              Each element :math:`[batch, i, j]` corresponds to the loss between
+            * ``'pw_mtx'`` (pairwise matrix): `loss_func` computes pairwise
+              losses and returns a torch.Tensor of shape
+              :math:`(batch, n\_src, n\_src)`. Each element
+              :math:`[batch, i, j]` corresponds to the loss between
               :math:`targets[:, i]` and :math:`est\_targets[:, j]`
-            * ``'wo_src'``: `loss_func` computes the loss for a batch of single
-              source and single estimates (tensors won't have the
-              source axis). Output shape : :math:`(batch)`.
+            * ``'pw_pt'`` (pairwise point): `loss_func` computes the loss for
+              a batch of single source and single estimates (tensors won't
+              have the source axis). Output shape : :math:`(batch)`.
               See :meth:`~PITLossWrapper.get_pw_losses`.
-            * ``'w_src'``: `loss_func` computes the loss for a given
-              permutations of the sources and estimates. Output shape :
-              :math:`(batch)`.
-              See :meth:`~PITLossWrapper.best_perm_from_wsrc_loss`.
+            * ``'perm_avg'``(permutation average): `loss_func` computes the
+              average loss for a given permutations of the sources and
+              estimates. Output shape : :math:`(batch)`.
+              See :meth:`~PITLossWrapper.best_perm_from_perm_avg_loss`.
 
-            In terms of efficiency, ``'w_src'`` is the least efficicient
-            however easier for the user.
+            In terms of efficiency, ``'perm_avg'`` is the least efficicient.
 
     For each of these modes, the best permutation and reordering will be
     automatically computed.
 
     """
-
-    def __init__(self, loss_func, mode='pairwise'):
+    def __init__(self, loss_func, pit_from='pw_mtx', mode=None):
         super().__init__()
         self.loss_func = loss_func
+        self.pit_from = pit_from
         self.mode = mode
-        if self.mode not in ["pairwise", "wo_src", "w_src"]:
+        if self.mode is not None:
+            warnings.warn('`mode` argument is deprecated since v0.1.0 and'
+                          'will be remove in v0.2.0. Use argument `pit_from`'
+                          'instead', VisibleDeprecationWarning)
+            mapping = dict(pairwise='pw_mtx',
+                           wo_src='pw_pt',
+                           w_src='perm_avg')
+            self.pit_from = mapping.get(mode, None)  # Avoid KeyError here.
+
+        if self.pit_from not in ['pw_mtx', 'pw_pt', 'perm_avg']:
             raise ValueError('Unsupported loss function type for now. Expected'
-                             'one of [`pairwise`, `wo_src`, `w_src`]')
+                             'one of [`pw_mtx`, `pw_pt`, `perm_avg`]')
 
     def forward(self, est_targets, targets, return_est=False, **kwargs):
         """ Find the best permutation and return the loss.
@@ -60,17 +73,17 @@ class PITLossWrapper(nn.Module):
         """
         n_src = targets.shape[1]
         assert n_src < 10, f"Expected source axis along dim 1, found {n_src}"
-        if self.mode == 'pairwise':
+        if self.pit_from == 'pw_mtx':
             # Loss function already returns pairwise losses
             pw_losses = self.loss_func(est_targets, targets, **kwargs)
-        elif self.mode == 'wo_src':
+        elif self.pit_from == 'pw_pt':
             # Compute pairwise losses with a for loop.
             pw_losses = self.get_pw_losses(self.loss_func, est_targets,
                                            targets, **kwargs)
-        elif self.mode == 'w_src':
+        elif self.pit_from == 'perm_avg':
             # Cannot get pairwise losses from this type of loss.
             # Find best permutation directly.
-            min_loss, min_loss_idx = self.best_perm_from_wsrc_loss(
+            min_loss, min_loss_idx = self.best_perm_from_perm_avg_loss(
                 self.loss_func, est_targets, targets, **kwargs
             )
             # Take the mean over the batch
@@ -126,7 +139,7 @@ class PITLossWrapper(nn.Module):
         return pair_wise_losses
 
     @staticmethod
-    def best_perm_from_wsrc_loss(loss_func, est_targets, targets, **kwargs):
+    def best_perm_from_perm_avg_loss(loss_func, est_targets, targets, **kwargs):
         """ Find best permutation from loss function with source axis.
 
         Args:
@@ -211,7 +224,6 @@ class PITLossWrapper(nn.Module):
         <https://github.com/kaituoxu/Conv-TasNet/blob/master>`__ and `License
         <https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`__.
         """
-
         perms = source.new_tensor(list(permutations(range(n_src))),
                                   dtype=torch.long)
         # Reorder estimate targets according the best permutation

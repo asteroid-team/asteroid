@@ -1,5 +1,7 @@
 import torch
 from torch.nn.modules.loss import _Loss
+from ..deprecation_utils import DeprecationMixin
+
 EPS = 1e-8
 
 
@@ -30,7 +32,7 @@ class PairwiseNegSDR(_Loss):
             >>> targets = torch.randn(10, 2, 32000)
             >>> est_targets = torch.randn(10, 2, 32000)
             >>> loss_func = PITLossWrapper(PairwiseNegSDR("sisdr"),
-            >>>                            mode='pairwise')
+            >>>                            pit_from='pairwise')
             >>> loss = loss_func(est_targets, targets)
 
         References:
@@ -80,7 +82,7 @@ class PairwiseNegSDR(_Loss):
         return - pair_wise_sdr
 
 
-class NoSrcSDR(_Loss):
+class SingleSrcNegSDR(_Loss):
     """ Base class for single-source negative SI-SDR, SD-SDR and SNR.
 
         Args:
@@ -111,7 +113,8 @@ class NoSrcSDR(_Loss):
             >>> from asteroid.losses import PITLossWrapper
             >>> targets = torch.randn(10, 2, 32000)
             >>> est_targets = torch.randn(10, 2, 32000)
-            >>> loss_func = PITLossWrapper(NoSrcSDR("sisdr"), mode='wo_src')
+            >>> loss_func = PITLossWrapper(SingleSrcNegSDR("sisdr"),
+            >>>                            pit_from='pw_pt')
             >>> loss = loss_func(est_targets, targets)
 
         References:
@@ -122,7 +125,7 @@ class NoSrcSDR(_Loss):
     def __init__(self, sdr_type, zero_mean=True, take_log=True,
                  reduction='none'):
         assert reduction != 'sum', NotImplementedError
-        super(NoSrcSDR, self).__init__(reduction=reduction)
+        super().__init__(reduction=reduction)
 
         assert sdr_type in ["snr", "sisdr", "sdsdr"]
         self.sdr_type = sdr_type
@@ -162,7 +165,7 @@ class NoSrcSDR(_Loss):
         return - losses
 
 
-class NonPitSDR(_Loss):
+class MultiSrcNegSDR(_Loss):
     """ Base class for computing negative SI-SDR, SD-SDR and SNR for a given
         permutation of source and their estimates.
 
@@ -189,7 +192,8 @@ class NonPitSDR(_Loss):
             >>> from asteroid.losses import PITLossWrapper
             >>> targets = torch.randn(10, 2, 32000)
             >>> est_targets = torch.randn(10, 2, 32000)
-            >>> loss_func = PITLossWrapper(NonPitSDR("sisdr"), mode='w_src')
+            >>> loss_func = PITLossWrapper(MultiSrcNegSDR("sisdr"),
+            >>>                            pit_from='perm_avg')
             >>> loss = loss_func(est_targets, targets)
 
         References:
@@ -199,7 +203,7 @@ class NonPitSDR(_Loss):
 
         """
     def __init__(self, sdr_type, zero_mean=True, take_log=True):
-        super(NonPitSDR, self).__init__()
+        super().__init__()
 
         assert sdr_type in ["snr", "sisdr", "sdsdr"]
         self.sdr_type = sdr_type
@@ -243,9 +247,30 @@ class NonPitSDR(_Loss):
 pairwise_neg_sisdr = PairwiseNegSDR("sisdr")
 pairwise_neg_sdsdr = PairwiseNegSDR("sdsdr")
 pairwise_neg_snr = PairwiseNegSDR("snr")
-nosrc_neg_sisdr = NoSrcSDR("sisdr")
-nosrc_neg_sdsdr = NoSrcSDR("sdsdr")
-nosrc_neg_snr = NoSrcSDR("snr")
-nonpit_neg_sisdr = NonPitSDR("sisdr")
-nonpit_neg_sdsdr = NonPitSDR("sdsdr")
-nonpit_neg_snr = NonPitSDR("snr")
+singlesrc_neg_sisdr = SingleSrcNegSDR("sisdr")
+singlesrc_neg_sdsdr = SingleSrcNegSDR("sdsdr")
+singlesrc_neg_snr = SingleSrcNegSDR("snr")
+multisrc_neg_sisdr = MultiSrcNegSDR("sisdr")
+multisrc_neg_sdsdr = MultiSrcNegSDR("sdsdr")
+multisrc_neg_snr = MultiSrcNegSDR("snr")
+
+
+# Legacy
+class NonPitSDR(MultiSrcNegSDR, DeprecationMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.warn_deprecated()
+
+
+class NoSrcSDR(SingleSrcNegSDR, DeprecationMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.warn_deprecated()
+
+
+nosrc_neg_sisdr = singlesrc_neg_sisdr
+nosrc_neg_sdsdr = singlesrc_neg_sdsdr
+nosrc_neg_snr = singlesrc_neg_snr
+nonpit_neg_sisdr = multisrc_neg_sisdr
+nonpit_neg_sdsdr = multisrc_neg_sdsdr
+nonpit_neg_snr = multisrc_neg_snr

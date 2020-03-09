@@ -35,19 +35,19 @@ def test_wrapper(batch_size, n_src, time):
         with pytest.raises(AssertionError):
             loss(est_targets, targets)
     # wo_src loss function / With and without return estimates
-    loss = PITLossWrapper(good_batch_loss_func, mode='wo_src')
+    loss = PITLossWrapper(good_batch_loss_func, pit_from='pw_pt')
     loss_value_no_return = loss(est_targets, targets)
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape
 
     # pairwise loss function / With and without return estimates
-    loss = PITLossWrapper(good_pairwise_loss_func, mode='pairwise')
+    loss = PITLossWrapper(good_pairwise_loss_func, pit_from='pw_mtx')
     loss_value_no_return = loss(est_targets, targets)
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape
 
     # w_src loss function / With and without return estimates
-    loss = PITLossWrapper(good_batch_loss_func, mode='w_src')
+    loss = PITLossWrapper(good_batch_loss_func, pit_from='perm_avg')
     loss_value_no_return = loss(est_targets, targets)
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape

@@ -7,7 +7,7 @@ from asteroid.filterbanks.transforms import take_mag
 EPS = 1e-8
 
 
-class MultiScaleSpectral(_Loss):
+class SingleSrcMultiScaleSpectral(_Loss):
     """ Measure multi-scale spectral loss as described in [1]
 
     Args:
@@ -19,42 +19,41 @@ class MultiScaleSpectral(_Loss):
             each STFT
 
     Shape:
-        est_targets (:class:`torch.Tensor`): Expected shape
-            [batch, , time]. Batch of target estimates.
-        targets (:class:`torch.Tensor`): Expected shape
-            [batch, 1, time]. Batch of training targets.
-        alpha (:class'float')
+        est_targets (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of target estimates.
+        targets (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of training targets.
+        alpha (float) : Weighting factor for the log term
 
     Returns:
         :class:`torch.Tensor`: with shape [batch]
 
     Examples:
+        >>> import torch
+        >>> targets = torch.randn(10, 32000)
+        >>> est_targets = torch.randn(10, 32000)
+        >>> # Using it by itself on a pair of source/estimate
+        >>> loss_func = SingleSrcMultiScaleSpectral()
+        >>> loss = loss_func(est_targets, targets)
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
-        >>> targets = torch.randn(10,2,32000)
-        >>> est_targets = torch.randn(10,2,32000)
-        >>> loss_func=PITLossWrapper(MultiScaleSpectral(), mode='wo_src')
+        >>> targets = torch.randn(10, 2, 32000)
+        >>> est_targets = torch.randn(10, 2, 32000)
+        >>> # Using it with PITLossWrapper with sets of source/estimates
+        >>> loss_func = PITLossWrapper(SingleSrcMultiScaleSpectral(),
+        >>>                            pit_from='pw_pt')
         >>> loss = loss_func(est_targets, targets)
-
-        >>> import torch
-        >>> targets = torch.randn(10,32000)
-        >>> est_targets = torch.randn(10,32000)
-        >>> loss_func=MultiScaleSpectral()
-        >>> loss = loss_func(est_targets, targets)
-
-
 
     References:
         [1] Jesse Engel and Lamtharn (Hanoi) Hantrakul and Chenjie Gu and
-        Adam Roberts
-        DDSP: Differentiable Digital Signal Processing
-        International Conference on Learning Representations
-        ICLR 2020 """
+        Adam Roberts DDSP: Differentiable Digital Signal Processing
+        International Conference on Learning Representations ICLR 2020 $
+    """
 
     def __init__(self, n_filters=None, windows_size=None,
                  hops_size=None, alpha=1.):
-        super(MultiScaleSpectral, self).__init__()
+        super().__init__()
 
         if windows_size is None:
             windows_size = [2048, 1024, 512, 256, 128, 64, 32]
@@ -86,10 +85,10 @@ class MultiScaleSpectral(_Loss):
         batch_size = est_target.shape[0]
         spect_est_target = take_mag(encoder(est_target)).view(batch_size, -1)
         spect_target = take_mag(encoder(target)).view(batch_size, -1)
-        loss = self.norm1(
-            spect_est_target - spect_target) + self.alpha * self.norm1(
-            torch.log(spect_est_target + EPS) - torch.log(spect_target + EPS))
-        return loss
+        linear_loss = self.norm1(spect_est_target - spect_target)
+        log_loss = self.norm1(torch.log(spect_est_target + EPS) -
+                              torch.log(spect_target + EPS))
+        return linear_loss + self.alpha * log_loss
 
     @staticmethod
     def norm1(a):
