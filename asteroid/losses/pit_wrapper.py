@@ -25,7 +25,7 @@ class PITLossWrapper(nn.Module):
             * ``'perm_avg'``(permutation average): `loss_func` computes the
               average loss for a given permutations of the sources and
               estimates. Output shape : :math:`(batch)`.
-              See :meth:`~PITLossWrapper.best_perm_from_wsrc_loss`.
+              See :meth:`~PITLossWrapper.best_perm_from_perm_avg_loss`.
 
             In terms of efficiency, ``'perm_avg'`` is the least efficicient.
 
@@ -33,7 +33,6 @@ class PITLossWrapper(nn.Module):
     automatically computed.
 
     """
-
     def __init__(self, loss_func, pit_from='pw_mtx', mode=None):
         super().__init__()
         self.loss_func = loss_func
@@ -224,7 +223,6 @@ class PITLossWrapper(nn.Module):
         <https://github.com/kaituoxu/Conv-TasNet/blob/master>`__ and `License
         <https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`__.
         """
-
         perms = source.new_tensor(list(permutations(range(n_src))),
                                   dtype=torch.long)
         # Reorder estimate targets according the best permutation
