@@ -6,7 +6,7 @@ from asteroid.losses import PITLossWrapper
 from asteroid.losses import sdr
 from asteroid.losses import nosrc_mse, pairwise_mse, nonpit_mse
 from asteroid.losses import deep_clustering_loss
-from asteroid.losses.multi_scale_spectral import MultiScaleSpectral
+from asteroid.losses.multi_scale_spectral import SingleSrcMultiScaleSpectral
 
 
 @pytest.mark.parametrize("n_src", [2, 3, 4])
@@ -53,7 +53,7 @@ def test_multi_scale_spectral_PIT(n_src):
     targets = torch.randn(2, n_src, 32000)
     est_targets = torch.randn(2, n_src, 32000)
     # Create PITLossWrapper in 'wo_src' mode
-    loss_func = PITLossWrapper(MultiScaleSpectral(), mode='wo_src')
+    loss_func = PITLossWrapper(SingleSrcMultiScaleSpectral(), mode='wo_src')
     # Compute the loss
     loss = loss_func(targets, est_targets)
 
@@ -64,7 +64,7 @@ def test_multi_scale_spectral_shape(batch_size):
     targets = torch.randn(batch_size, 32000)
     est_targets = torch.randn(batch_size, 32000)
     # Create PITLossWrapper in 'wo_src' mode
-    loss_func = MultiScaleSpectral()
+    loss_func = SingleSrcMultiScaleSpectral()
     # Compute the loss
     loss = loss_func(targets, est_targets)
     assert loss.shape[0] == batch_size

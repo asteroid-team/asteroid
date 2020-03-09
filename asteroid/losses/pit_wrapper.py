@@ -1,4 +1,5 @@
 import warnings
+from numpy import VisibleDeprecationWarning
 from itertools import permutations
 import torch
 from torch import nn
@@ -40,8 +41,8 @@ class PITLossWrapper(nn.Module):
         self.mode = mode
         if self.mode is not None:
             warnings.warn('`mode` argument is deprecated since v0.1.0 and'
-                          'will be remove in v0.2.0. Use argument `expects`'
-                          'instead', DeprecationWarning)
+                          'will be remove in v0.2.0. Use argument `pit_from`'
+                          'instead', VisibleDeprecationWarning)
             mapping = dict(pairwise='pw_mtx',
                            wo_src='pw_pt',
                            w_src='perm_avg')
