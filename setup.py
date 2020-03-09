@@ -1,6 +1,6 @@
 from setuptools import setup
 
-asteroid_version = "0.0.1"
+asteroid_version = "0.1.0"
 
 with open("README.md", encoding='utf-8') as fh:
     long_description = fh.read()
@@ -27,7 +27,7 @@ setup(
         'tests': ['pytest']
     },
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
