@@ -19,9 +19,9 @@ setup(
     install_requires=['numpy',
                       'pyyaml',
                       'soundfile',
+                      'scipy',
                       'torch',
-                      'torchvision',
-                      'pytorch-lightning==0.6.0'],
+                      'pytorch-lightning'],
     extras_require={
         'visualize': ['seaborn>=0.9.0'],
         'tests': ['pytest']
