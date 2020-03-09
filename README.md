@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.com/mpariente/asteroid.svg?branch=master)](https://travis-ci.com/mpariente/asteroid)
 [![codecov](https://codecov.io/gh/mpariente/asteroid/branch/master/graph/badge.svg)](https://codecov.io/gh/mpariente/asteroid)
 
-[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/asteroid-dev/shared_invite/enQtOTM4NjEzOTI0MzQzLWMyODBmZjRiODAyOGZmNjQ0ZjVjZjM3NGM0NDIyOTc4ZjEyYjc0ZmI1NDI5N2I2YzE5OWU2ZGE1NmEyMjBlYTQ)
+[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/asteroid-dev/shared_invite/zt-cn9y85t3-QNHXKD1Et7qoyzu1Ji5bcA)
 
 Asteroid is a Pytorch-based source separation and speech enhancement API 
 that enables fast experimentation on common datasets. 
@@ -16,7 +16,7 @@ so hop on and help us !
 Please, if you have found a bug, [open an issue](https://github.com/mpariente/asteroid/issues/new), 
 if you solved it, [open a pull request](https://github.com/mpariente/asteroid/compare) !  
 Same goes for new features, tell us what you want or help us building it !  
-Don't hesitate to [join the slack](https://join.slack.com/t/asteroid-dev/shared_invite/enQtOTM4NjEzOTI0MzQzLWMyODBmZjRiODAyOGZmNjQ0ZjVjZjM3NGM0NDIyOTc4ZjEyYjc0ZmI1NDI5N2I2YzE5OWU2ZGE1NmEyMjBlYTQ) 
+Don't hesitate to [join the slack](https://join.slack.com/t/asteroid-dev/shared_invite/zt-cn9y85t3-QNHXKD1Et7qoyzu1Ji5bcA) 
 and ask questions / suggest new features there as well, we won't bite !
 ## Table of contents
 - [Installation](https://github.com/mpariente/asteroid#installation)
