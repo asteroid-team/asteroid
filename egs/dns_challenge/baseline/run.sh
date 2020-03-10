@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-storage_dir=
+storage_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/
 # If you want to clone the DNS-Challenge repo somewhere different
 clone_dir=  # optional
 
@@ -23,6 +23,7 @@ recipe_dir=$PWD
 
 if [[ -z ${clone_dir} ]]; then
 	clone_dir=$storage_dir
+	echo $clone_dir
 fi
 
 if [[ $stage -le  0 ]]; then
@@ -78,7 +79,7 @@ if [[ $stage -le  5 ]]; then
 fi
 
 if [[ $stage -le  6 ]]; then
-  echo "Stage 5 : Separate"
+  echo "Stage 6 : Separate"
   python denoise.py \
   --denoise_path $clone_dir/DNS-Challenge/datasets/test_set/real_recordings/ \
   --use_gpu $eval_use_gpu \

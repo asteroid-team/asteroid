@@ -27,6 +27,7 @@ def main(conf):
     model_device = next(model.parameters()).device
     # Get a list of wav files (or single wav file)
     save_folder = os.path.join(conf['exp_dir'], 'denoise')
+    os.makedirs(save_folder, exist_ok=True)
     if os.path.isfile(conf['denoise_path']):
         all_wavs = [conf['denoise_path']]
     else:
@@ -37,8 +38,7 @@ def main(conf):
         all_wavs = glob.glob(conf['denoise_path'] + '*.wav')
 
     for wav_path in tqdm(all_wavs):
-        mix, fs = sf.read(wav_path)
-        assert conf['sample_rate'] == fs, fs
+        mix, fs = sf.read(wav_path, dtype='float32')
         with torch.no_grad():
             net_inp = torch.tensor(mix)[None].to(model_device)
             estimate = model.denoise(net_inp).squeeze().cpu().data.numpy()
@@ -55,7 +55,6 @@ if __name__ == '__main__':
     conf_path = os.path.join(args.exp_dir, 'conf.yml')
     with open(conf_path) as conf_file:
         train_conf = yaml.safe_load(conf_file)
-    arg_dic['sample_rate'] = train_conf['data']['sample_rate']
     arg_dic['train_conf'] = train_conf
 
     main(arg_dic)
