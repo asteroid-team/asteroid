@@ -35,16 +35,13 @@ mode=min
 nondefault_src=  # If you want to train a network with 3 output streams for example.
 
 # Training
-batch_size=8
-num_workers=8
-#optimizer=adam
+batch_size=16
 lr=0.001
 epochs=200
 
 # Architecture
-n_blocks=8
-n_repeats=3
-mask_nonlinear=relu
+kernel_size=40
+stride=20
 
 # Evaluation
 eval_use_gpu=1
@@ -106,28 +103,26 @@ uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
 	tag=${task}_${sr_string}k${mode}_${uuid}
 fi
-expdir=exp/train_convtasnet_${tag}
+expdir=exp/train_tasnet_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
-#
-#if [[ $stage -le 3 ]]; then
-#  echo "Stage 3: Training"
-#  mkdir -p logs
-#  CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-#  --train_dir $train_dir \
-#  --valid_dir $valid_dir \
-#  --task $task \
-#  --sample_rate $sample_rate \
-#  --lr $lr \
-#  --epochs $epochs \
-#  --batch_size $batch_size \
-#  --num_workers $num_workers \
-#  --mask_act $mask_nonlinear \
-#  --n_blocks $n_blocks \
-#  --n_repeats $n_repeats \
-#  --exp_dir ${expdir}/ | tee logs/train_${tag}.log
-#fi
+if [[ $stage -le 3 ]]; then
+  echo "Stage 3: Training"
+  mkdir -p logs
+  CUDA_VISIBLE_DEVICES=$id $python_path train.py \
+  --train_dir $train_dir \
+  --valid_dir $valid_dir \
+  --task $task \
+  --sample_rate $sample_rate \
+  --lr $lr \
+  --epochs $epochs \
+  --batch_size $batch_size \
+  --kernel_size $kernel_size \
+  --stride $stride \
+  --exp_dir ${expdir}/ | tee logs/train_${tag}.log
+fi
+
 #
 #
 #if [[ $stage -le 4 ]]; then
