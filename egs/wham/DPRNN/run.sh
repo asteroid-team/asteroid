@@ -29,7 +29,7 @@ tag=""  # Controls the directory name associated to the experiment
 id=0
 
 # Data
-data_dir=data  # Local data directory (No disk space needed)œ
+data_dir=data  # Local data directory (No disk space needed)
 task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
 sample_rate=8000
 mode=min
