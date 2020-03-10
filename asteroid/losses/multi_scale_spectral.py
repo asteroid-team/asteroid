@@ -72,6 +72,7 @@ class SingleSrcMultiScaleSpectral(_Loss):
             in range(len(self.n_filters)))
 
     def forward(self, est_target, target):
+        self.encoders.to(est_target.device)
         batch_size = est_target.shape[0]
         est_target = est_target.unsqueeze(1)
         target = target.unsqueeze(1)
