@@ -19,7 +19,7 @@ masknet:
 # Training config
 training:
   epochs: 200
-  batch_size: 8
+  batch_size: 4
   num_workers: 4
   half_lr: yes
   early_stop: yes
