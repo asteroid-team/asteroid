@@ -6,6 +6,7 @@ set -e  # Exit on error
 storage_dir=/media/sam/cb915f0e-e440-414c-bb74-df66b311d09d/
 #storage_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/wsj0_wav
 
+
 # If you start from the sphere files, specify the path to the directory and start from stage 0
 sphere_dir=  # Directory containing sphere files
 # If you already have wsj0 wav files, specify the path to the directory here and start from stage 1
@@ -23,7 +24,7 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
 
 # General
-stage=0  # Controls from which stage to start
+stage=3  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=0
@@ -36,7 +37,7 @@ mode=min
 nondefault_src=  # If you want to train a network with 3 output streams for example.
 
 # Training
-batch_size=8
+batch_size=4
 num_workers=8
 kernel_size=2
 stride=1
