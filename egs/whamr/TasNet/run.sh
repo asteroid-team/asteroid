@@ -22,26 +22,29 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
 
 # General
-stage=1  # Controls from which stage to start
+stage=3  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=
 
 # Data
-data_dir=data  # Local data directory (No disk space needed)
-task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
+task=sep_clean  # Specify the task here (sep_clean, sep_noisy, sep_reverb, sep_reverb_noisy)
 sample_rate=8000
 mode=min
 nondefault_src=  # If you want to train a network with 3 output streams for example.
+data_dir=data  # Local data directory (No disk space needed)
 
 # Training
-batch_size=16
+batch_size=32
 lr=0.001
 epochs=200
+weight_decay=0.00001
 
 # Architecture
 kernel_size=40
 stride=20
+n_layers=4
+n_units=600
 
 # Evaluation
 eval_use_gpu=1
@@ -116,10 +119,13 @@ if [[ $stage -le 3 ]]; then
   --task $task \
   --sample_rate $sample_rate \
   --lr $lr \
+  --weight_decay $weight_decay \
   --epochs $epochs \
   --batch_size $batch_size \
   --kernel_size $kernel_size \
   --stride $stride \
+  --n_layers $n_layers \
+  --n_units $n_units \
   --exp_dir ${expdir}/ | tee logs/train_${tag}.log
 fi
 
