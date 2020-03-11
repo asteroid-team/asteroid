@@ -1,10 +1,8 @@
-### About the WHAM corpus 
+### About the WHAM dataset
+WHAM! is a noisy single-channel speech separation dataset based on WSJ0. 
+It is a noisy extension of [wsj0-2mix](./../wsj0-mix/).
 
-- Describe the corpus
-- also cite WSJ
-- The 4 tasks 
-- Hours of train dev and test
-- Suitable for ASR extension.
+More info [here](http://wham.whisper.ai/).
 
 ### References
 ```BibTex

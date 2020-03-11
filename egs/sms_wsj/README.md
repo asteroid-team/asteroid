@@ -1,4 +1,4 @@
-### About the SMS_WSJ corpus 
+### About the SMS_WSJ dataset
 
 SMS_WSJ (stands for Spatialized Multi-Speaker Wall Street Journal) 
 is a multichannel source separation dataset, based on WSJ0 and WSJ1.
