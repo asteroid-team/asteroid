@@ -1,6 +1,6 @@
 import os
 import random
-
+import warnings
 import soundfile as sf
 import torch
 import yaml
@@ -12,10 +12,12 @@ from pprint import pprint
 from pb_bss.evaluation import InputMetrics, OutputMetrics
 
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid.data.wham_dataset import WhamDataset
+from asteroid.data import WhamRDataset
 from asteroid.utils import tensors_to_device, average_arrays_in_dic
 
-from model import make_model_and_optimizer
+from model import load_best_model
+warnings.simplefilter("ignore", UserWarning)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--task', type=str, required=True,
@@ -33,30 +35,15 @@ parser.add_argument('--n_save_ex', type=int, default=50,
 compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi']
 
 
-def get_model(conf):
-    # Create the model from recipe-local function
-    model, _ = make_model_and_optimizer(conf['train_conf'])
-    # Last best model summary
-    with open(os.path.join(conf['exp_dir'], 'best_k_models.json'), "r") as f:
-        best_k = json.load(f)
-    best_model_path = min(best_k, key=best_k.get)
-    # Load checkpoint
-    checkpoint = torch.load(best_model_path, map_location='cpu')
-    # Load state_dict into model, strict=False is important here
-    model.load_state_dict(checkpoint['state_dict'], strict=False)
+def main(conf):
+    model = load_best_model(conf['train_conf'], conf['exp_dir'])
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
-    model.eval()
-    return model
-
-
-def main(conf):
-    model = get_model(conf)
     model_device = next(model.parameters()).device
-    test_set = WhamDataset(conf['test_dir'], conf['task'],
+    test_set = WhamRDataset(conf['test_dir'], conf['task'],
                            sample_rate=conf['sample_rate'],
-                           nondefault_nsrc=model.masker.n_src,
+                           nondefault_nsrc=model.n_src,
                            segment=None)  # Uses all segment length
     # Used to reorder sources only
     loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
@@ -67,7 +54,8 @@ def main(conf):
         conf['n_save_ex'] = len(test_set)
     save_idx = random.sample(range(len(test_set)), conf['n_save_ex'])
     series_list = []
-    for idx in tqdm(range(len(test_set))):
+    torch.no_grad().__enter__()
+    for idx in tqdm(range(3)):#tqdm(range(len(test_set))):
         # Forward the network on the mixture.
         mix, sources = tensors_to_device(test_set[idx], device=model_device)
         est_sources = model(mix[None, None])
@@ -92,7 +80,8 @@ def main(conf):
 
         utt_metrics.update(output_metrics[compute_metrics])
         utt_metrics['mix_path'] = test_set.mix[idx][0]
-        series_list.append(pd.Series(average_arrays_in_dic(utt_metrics)))
+        utt_metrics = average_arrays_in_dic(utt_metrics)
+        series_list.append(pd.Series(utt_metrics))
 
         # Save some examples in a folder. Wav files and metrics as text.
         if idx in save_idx:
@@ -102,10 +91,10 @@ def main(conf):
                      conf['sample_rate'])
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):
-                sf.write(local_save_dir + "s{}.wav".format(src_idx), src,
+                sf.write(local_save_dir + "s{}.wav".format(src_idx+1), src,
                          conf['sample_rate'])
             for src_idx, est_src in enumerate(est_sources_np):
-                sf.write(local_save_dir + "s{}_estimate.wav".format(src_idx),
+                sf.write(local_save_dir + "s{}_estimate.wav".format(src_idx+1),
                          est_src, conf['sample_rate'])
             # Write local metrics to the example folder.
             with open(local_save_dir + 'metrics.json', 'w') as f:

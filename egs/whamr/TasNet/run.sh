@@ -123,13 +123,11 @@ if [[ $stage -le 3 ]]; then
   --exp_dir ${expdir}/ | tee logs/train_${tag}.log
 fi
 
-#
-#
-#if [[ $stage -le 4 ]]; then
-#	echo "Stage 4 : Evaluation"
-#	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
-#	--task $task \
-#	--test_dir $test_dir \
-#	--use_gpu $eval_use_gpu \
-#	--exp_dir ${expdir}
-#fi
+if [[ $stage -le 4 ]]; then
+	echo "Stage 4 : Evaluation"
+	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
+	--task $task \
+	--test_dir $test_dir \
+	--use_gpu $eval_use_gpu \
+	--exp_dir ${expdir}
+fi
