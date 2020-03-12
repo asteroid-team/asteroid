@@ -22,9 +22,9 @@ and ask questions / suggest new features there as well !
 - [Installation](#installation)
 - [Tutorials](#highlights)
 - [Running a recipe](#running-a-recipe)
-- [Available recipes](#recipes)
+- [Available recipes](#available-recipes)
 - [Supported datasets](#supported-datasets)
-- [Our guiding principles](#guiding-principles)
+- [Calls for contributions](#contributing)
 
 ## Installation
 In order to install Asteroid, clone the repo and install it using 
@@ -61,12 +61,11 @@ cd egs/wham/ConvTasNet
 ```
 More information in [egs/README.md](./egs).
 
-## Recipes 
+## Available recipes 
 * [x] [ConvTasnet](./egs/wham/ConvTasNet) ([Luo et al.](https://arxiv.org/abs/1809.07454))
 * [x] [Tasnet](./egs/whamr/TasNet) ([Luo et al.](https://arxiv.org/abs/1711.00541))
 * [x] [Deep clustering](./egs/wsj0-mix/DeepClustering) ([Hershey et al.](https://arxiv.org/abs/1508.04306) and [Isik et al.](https://arxiv.org/abs/1607.02173))
 * [ ] Chimera ++ ([Luo et al.](https://arxiv.org/abs/1611.06265) and [Wang et al.](https://ieeexplore.ieee.org/document/8462507))
-* [ ] FurcaNeXt (Contibutions welcome) ([Shi et al.](https://arxiv.org/abs/1902.04891))
 * [x] [DualPathRNN](./egs/wham/DPRNN) ([Luo et al.](https://arxiv.org/abs/1910.06379))
 * [ ] Two step learning (Coming) ([Tzinis et al.](https://arxiv.org/abs/1910.09804))
 * [ ] Wavesplit (Coming) ([Zeghidour and Grangier](https://arxiv.org/abs/2002.08933))
@@ -78,16 +77,39 @@ More information in [egs/README.md](./egs).
 * [x] [Microsoft DNS Challenge](./egs/dns_challenge) ([Chandan et al.](https://arxiv.org/abs/2001.08662))
 * [x] [SMS_WSJ](./egs/sms_wsj) ([Drude et al.](https://arxiv.org/abs/1910.13934))
 * [ ] MUSDB18 (Coming) ([Raffi et al.](https://hal.inria.fr/hal-02190845)) 
-* [ ] FUSS ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
+* [ ] FUSS (Coming) ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
 
 ## Contributing
-See our [contributing guidelines](./CONTRIBUTING.md).
+We are always looking to expand our coverage of the source separation 
+and speech enhancement research, the following is a list of 
+things we're missing. 
+You want to contribute? This is a great place to start !
+* FurcaNeXt ([Shi et al.](https://arxiv.org/abs/1902.04891))
+* DeepCASA ([Liu and Want](https://arxiv.org/abs/1904.11148))
+* VCTK Test sets from [Kadioglu et al.](https://arxiv.org/pdf/2002.08688.pdf)
+* Interrupted and cascaded PIT ([Yang et al.](https://arxiv.org/abs/1910.12706))
+* Consistency contraints ([Wisdom et al.](https://ieeexplore.ieee.org/abstract/document/8682783))
+* Backpropagable STOI and PESQ.
+* Parametrized filterbanks from [Tukuljac et al.](https://openreview.net/forum?id=HyewT1BKvr)
+* End-to-End MISI ([Wang et al.](https://arxiv.org/abs/1804.10204))
+* Modified MISI ([Wang et al.](https://www.isca-speech.org/archive/Interspeech_2019/pdfs/3242.pdf))
 
-## Remote TensorBoard visualization
+
+Don't forget to read our [contributing guidelines](./CONTRIBUTING.md).
+
+You can also open an issue or make a PR to add something we missed in this list.
+
+## TensorBoard visualization
+The default logger is TensorBoard in all the recipes. From the recipe folder, 
+you can run the following to visualize the logs of all your runs. You can 
+also compare different systems on the same dataset by running a similar command
+from the dataset directiories.
 ```bash
-# Launch tensorboard remotely (default port is 6006)
-tensorboard --logdir exp/tmp/lightning_logs/ --port tf_port
-
+# Launch tensorboard (default port is 6006)
+tensorboard --logdir exp/ --port tf_port
+```
+If your launching tensorboard remotely, you should open an ssh tunnel
+```bash
 # Open port-forwarding connection. Add -Nf option not to open remote. 
 ssh -L local_port:localhost:tf_port user@ip
 ```
@@ -105,7 +127,7 @@ Add a new filterbank, separator architecture, dataset or even recipe very
 easily.
 * __Reproducibility.__ Recipes provide an easy way to reproduce 
 results with data preparation, system design, training and evaluation in a 
-same script. This is an essential tool for the community !
+single script. This is an essential tool for the community !
 
 
 [comment]: <> (Badge)
