@@ -21,7 +21,9 @@ setup(
                       'soundfile',
                       'scipy',
                       'torch',
-                      'pytorch-lightning'],
+                      'pytorch-lightning',
+                      'pb_bss@git+https://github.com/mpariente/pb_bss',
+                      ],
     extras_require={
         'visualize': ['seaborn>=0.9.0'],
         'tests': ['pytest']
