@@ -1,37 +1,53 @@
-There are several ways to contribute to Asteroid. 
+## How to contribute
 
-## Improving the source code
-#### Filterbanks
-Analysis-synthesis
-* [x] STFT (See unit tests)
-* [x] Free e.g fully learned ([Luo et al.](https://arxiv.org/abs/1711.00541))
-* [x] Analytic free e.g fully learned under analycity constraint ([Pariente et al.](https://128.84.21.199/abs/1910.10400))
-* [x] Parametrized Sinc ([Pariente et al.](https://128.84.21.199/abs/1910.10400))
+The general way to contribute to Asteroid is to fork the main 
+repository on GitHub:
+1. Fork the [main repo][asteroid] and `git clone` it.
+2. Make your changes, test them, commit them and push them to your fork. 
+3. You can open a pull request on GitHub when you're satisfied.
 
-Analysis only (can be extended)
-* [ ] Fixed Multi-Phase Gammatones ([Ditter et al.](https://arxiv.org/abs/1910.11615))
-* [ ] Parametrized modulated Gaussian windows ([Openreview](https://openreview.net/forum?id=HyewT1BKvr))
-* [ ] Parametrized Gammatone ([Openreview](https://openreview.net/forum?id=HyewT1BKvr))
-* [ ] Parametrized Gammachirp ([Openreview](https://openreview.net/forum?id=HyewT1BKvr))
+If you made changes to the source code, you'll want to try them out without 
+installing asteroid everytime you change something.
+To do that, install asteroid in develop mode either with pip 
+```pip install -e .[tests]``` or with python ```python setup.py develop```. 
 
-#### Separator
-* [ ] Tasnet
-* [ ] Deep clustering architecture
-* [x] ConvTasNet
-* [ ] FurcaNeXt
-* [x] DualPath RNN
+### Source code contributions
+__All contributions to the source code of asteroid should be documented 
+and unit-tested__.   
+See [here](./tests) to run the tests with coverage reports.  
+Docstrings follow the [Google format][docstrings], have a look at other 
+docstrings in the codebase for examples. Examples in docstrings can
+be bery useful, don't hesitate to add some!
 
-#### Losses
-* [x] Scale Invariant SDR
-* [ ] Deep clustering loss
-* [ ] Backpropagable STOI
-* [ ] Backpropagable PESQ
 
-## Improving the docs.
-To come.
+### Writing new recipes.
+Most new recipes should follow the standard format that is described 
+[here](./egs). We are not dogmatic about it, but another organization should
+be explained and motivated.  
+We welcome any recipe on standard or new datasets, with standard or new
+architectures. You can even link a paper submission with a PR number 
+if you'd like!  
 
-## Writing new recipes.
-To come.
+### Improving the docs.
+If you found a typo, think something could be more explicit etc... 
+Improving the documentation is always welcome. The instructions to install
+dependencies and build the docs can be found [here](./docs).  
+Docstrings follow the [Google format][docstrings], have a look at other 
+docstrings in the codebase for examples.
 
-## Guidelines
-Simple : it needs to comply with PEP8. More to come.
+### Coding style
+We use [PEP8 syntax conventions][pep8]. 
+To make your life easier, we recommend running a PEP8 linter:
+
+- Install PEP8 packages: `pip install pep8 pytest-pep8 autopep8`  
+- Run a standalone PEP8 check: `py.test --pep8 -m pep8`
+
+
+If you have any question, [open an issue][issue] or [join the slack][slack], 
+we'll be happy to help you.
+
+[asteroid]: https://github.com/mpariente/asteroid
+[issue]: https://github.com/mpariente/asteroid/issues/new
+[slack]: https://join.slack.com/t/asteroid-dev/shared_invite/zt-cn9y85t3-QNHXKD1Et7qoyzu1Ji5bcA
+[pep8]: https://www.python.org/dev/peps/pep-0008/
+[docstrings]: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
