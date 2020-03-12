@@ -12,8 +12,13 @@ def test_get_metrics(fs):
                                metrics_list='all')
     # Test no average & squeezing
     metrics_dict_bis = get_metrics(mix[0], clean, est, sample_rate=fs,
-                                   metrics_list='all', average=False)
-    assert float(np.mean(metrics_dict_bis['pesq'])) == metrics_dict["pesq"]
-    assert float(np.mean(metrics_dict_bis['sdr'])) == metrics_dict["sdr"]
-    assert float(np.mean(metrics_dict_bis['pesq'])) == metrics_dict["pesq"]
-    assert float(np.mean(metrics_dict_bis['pesq'])) == metrics_dict["pesq"]
+                                   metrics_list='si_sdr', average=False)
+    assert float(np.mean(metrics_dict_bis['si_sdr'])) == metrics_dict['si_sdr']
+
+
+def test_get_metrics_multichannel():
+    mix = np.random.randn(2, 16000)
+    clean = np.random.randn(2, 16000)
+    est = np.random.randn(2, 16000)
+    metrics_dict_bis = get_metrics(mix, clean, est, sample_rate=8000,
+                               metrics_list='si_sdr', average=False)

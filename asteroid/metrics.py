@@ -49,6 +49,8 @@ def get_metrics(mix, clean, estimate, sample_rate=16000, metrics_list='all',
     """
     if metrics_list == 'all':
         metrics_list = ALL_METRICS
+    if isinstance(metrics_list, str):
+        metrics_list = [metrics_list]
     # For each utterance, we get a dictionary with the input and output metrics
     input_metrics = InputMetrics(observation=mix,
                                  speech_source=clean,
