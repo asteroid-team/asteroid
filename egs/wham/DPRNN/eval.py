@@ -8,11 +8,11 @@ import argparse
 import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
-from pb_bss.evaluation import InputMetrics, OutputMetrics
 
+from asteroid.metrics import get_metrics
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
-from asteroid.utils import tensors_to_device, average_arrays_in_dic
+from asteroid.utils import tensors_to_device
 
 from model import load_best_model
 
@@ -61,23 +61,9 @@ def main(conf):
         mix_np = mix[None].cpu().data.numpy()
         sources_np = sources.squeeze().cpu().data.numpy()
         est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
-        # For each utterance, we get a dictionary with the mixture path,
-        # the input and output metrics.utt_metrics
-        input_metrics = InputMetrics(observation=mix_np,
-                                     speech_source=sources_np,
-                                     enable_si_sdr=True,
-                                     sample_rate=conf['sample_rate'])
-        utt_metrics = {'input_' + n: input_metrics[n] for n in compute_metrics}
-
-        output_metrics = OutputMetrics(speech_prediction=est_sources_np,
-                                       speech_source=sources_np,
-                                       enable_si_sdr=True,
-                                       sample_rate=conf['sample_rate'],
-                                       compute_permutation=False)
-
-        utt_metrics.update(output_metrics[compute_metrics])
+        utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
+                                  sample_rate=conf['sample_rate'])
         utt_metrics['mix_path'] = test_set.mix[idx][0]
-        utt_metrics = average_arrays_in_dic(utt_metrics)
         series_list.append(pd.Series(utt_metrics))
 
         # Save some examples in a folder. Wav files and metrics as text.

@@ -1,7 +1,6 @@
 import glob
 import os
 import random
-
 import soundfile as sf
 import torch
 import yaml
@@ -10,9 +9,8 @@ import argparse
 import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
-from pb_bss.evaluation import InputMetrics, OutputMetrics
 
-from asteroid.utils import average_arrays_in_dic
+from asteroid.metrics import get_metrics
 
 from model import load_best_model
 from local.preprocess_dns import make_wav_id_dict
@@ -139,45 +137,6 @@ def load_wav_dic(wav_dic):
     noisy, fs = sf.read(noisy_path, dtype='float32')
     clean, fs = sf.read(clean_path, dtype='float32')
     return noisy, clean, fs
-
-
-def get_metrics(mix, clean, estimate, sample_rate=16000,
-                metrics_list='all', average=True):
-    """ Get speech separation/ enhancement metrics from mix/clean/estimate.
-
-    Args:
-        mix (np.array): Allowed shapes to come.
-        clean (np.array): Allowed shapes to come.
-        estimate (np.array): Allowed shapes to come.
-        sample_rate (int): sampling rate of the audio clips.
-        metrics_list (Union [str, list]): List of metrics to compute.
-            Defaults to 'all' (['si_sdr', 'sdr', 'sir', 'sar', 'stoi', 'pesq']).
-        average (bool): Return dict([float]) if True, else dict([array]).
-
-    Returns:
-        dict: Dictionary with all requested metrics, with `'input_'` prefix
-            for metrics at the input (mixture against clean), no prefix at the
-            output (estimate against clean).
-    """
-    if metrics_list == 'all':
-        metrics_list = ALL_METRICS
-    # For each utterance, we get a dictionary with the input and output metrics
-    input_metrics = InputMetrics(observation=mix,
-                                 speech_source=clean,
-                                 enable_si_sdr=True,
-                                 sample_rate=sample_rate)
-    utt_metrics = {'input_' + n: input_metrics[n] for n in metrics_list}
-
-    output_metrics = OutputMetrics(speech_prediction=estimate,
-                                   speech_source=clean,
-                                   enable_si_sdr=True,
-                                   sample_rate=sample_rate,
-                                   compute_permutation=False)
-    utt_metrics.update(output_metrics[metrics_list])
-    if average is True:
-        return average_arrays_in_dic(utt_metrics)
-    else:
-        return utt_metrics
 
 
 if __name__ == '__main__':
