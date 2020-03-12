@@ -68,7 +68,7 @@ More information in [egs/README.md](./egs).
 * [ ] Chimera ++ ([Luo et al.](https://arxiv.org/abs/1611.06265) and [Wang et al.](https://ieeexplore.ieee.org/document/8462507))
 * [x] [DualPathRNN](./egs/wham/DPRNN) ([Luo et al.](https://arxiv.org/abs/1910.06379))
 * [ ] Two step learning (Coming) ([Tzinis et al.](https://arxiv.org/abs/1910.09804))
-* [ ] Wavesplit (Coming) ([Zeghidour and Grangier](https://arxiv.org/abs/2002.08933))
+* [ ] Open-Unmix (coming) ([Stöter et al.](https://sigsep.github.io/open-unmix/))
 
 ## Supported datasets
 * [x] [WSJ0-2mix](./egs/wsj0-mix) / WSJ03mix ([Hershey et al.](https://arxiv.org/abs/1508.04306))
@@ -84,6 +84,7 @@ We are always looking to expand our coverage of the source separation
 and speech enhancement research, the following is a list of 
 things we're missing. 
 You want to contribute? This is a great place to start !
+* Wavesplit ([Zeghidour and Grangier](https://arxiv.org/abs/2002.08933))
 * FurcaNeXt ([Shi et al.](https://arxiv.org/abs/1902.04891))
 * DeepCASA ([Liu and Want](https://arxiv.org/abs/1904.11148))
 * VCTK Test sets from [Kadioglu et al.](https://arxiv.org/pdf/2002.08688.pdf)
