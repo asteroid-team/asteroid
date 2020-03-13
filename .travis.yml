@@ -8,7 +8,6 @@ python:
 
 install:
     - pip install -e .[tests]
-    - pip install Cython
     - pip install -r requirements.txt
     - pip install codecov
     - pip install -r docs/requirements.txt
@@ -23,8 +22,6 @@ script:
 
 # Push the results back to codecov
 after_success:
-#    - coverage report -m
-#    - codecov
     - bash <(curl -s https://codecov.io/bash)
 
 deploy:
