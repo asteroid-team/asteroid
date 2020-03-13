@@ -24,9 +24,9 @@ def good_pairwise_loss_func(y_pred, y_true):
     return torch.randn(batch, n_src, n_src)
 
 
-@pytest.mark.parametrize("batch_size", [1, 2, 8, 16])
+@pytest.mark.parametrize("batch_size", [1, 2, 8])
 @pytest.mark.parametrize("n_src", [2, 3, 4])
-@pytest.mark.parametrize("time", [16000, 32000, 1221])
+@pytest.mark.parametrize("time", [16000, 1221])
 def test_wrapper(batch_size, n_src, time):
     targets = torch.randn(batch_size, n_src, time)
     est_targets = torch.randn(batch_size, n_src, time)

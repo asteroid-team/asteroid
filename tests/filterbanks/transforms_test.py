@@ -19,14 +19,10 @@ COMPLEX_FBS = [
 def fb_config_list():
     keys = ['n_filters', 'kernel_size', 'stride']
     param_list = [
-        [512, 256, 128],
-        [512, 256, 64],
-        [512, 32, 16],
+        [256, 256, 128],
+        [256, 256, 64],
+        [512, 32, None],
         [512, 16, 8],
-        [512, 257, 64],
-        [512, 80, 40],
-        [513, 80, 40],
-        [514, 80, 40]
     ]
     return [dict(zip(keys, values)) for values in param_list]
 
@@ -49,7 +45,7 @@ def make_encoder_from(fb_class, config):
 def test_mag_mask(encoder_list):
     """ Assert identity mask works. """
     for (enc, fb_dim) in encoder_list:
-        tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
+        tf_rep = enc(torch.randn(2, 1, 8000))  # [batch, freq, time]
         id_mag_mask = torch.ones((1, fb_dim//2, 1))
         masked = transforms.apply_mag_mask(tf_rep, id_mag_mask, dim=1)
         assert_allclose(masked, tf_rep)
@@ -58,7 +54,7 @@ def test_mag_mask(encoder_list):
 def test_reim_mask(encoder_list):
     """ Assert identity mask works. """
     for (enc, fb_dim) in encoder_list:
-        tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
+        tf_rep = enc(torch.randn(2, 1, 8000))  # [batch, freq, time]
         id_reim_mask = torch.ones((1, fb_dim, 1))
         masked = transforms.apply_real_mask(tf_rep, id_reim_mask, dim=1)
         assert_allclose(masked, tf_rep)
@@ -67,7 +63,7 @@ def test_reim_mask(encoder_list):
 def test_comp_mask(encoder_list):
     """ Assert identity mask works. """
     for (enc, fb_dim) in encoder_list:
-        tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
+        tf_rep = enc(torch.randn(2, 1, 8000))  # [batch, freq, time]
         id_complex_mask = torch.cat((torch.ones((1, fb_dim // 2, 1)),
                                      torch.zeros((1, fb_dim // 2, 1))),
                                     dim=1)

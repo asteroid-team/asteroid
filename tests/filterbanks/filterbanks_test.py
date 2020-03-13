@@ -12,12 +12,10 @@ from asteroid.filterbanks import make_enc_dec
 def fb_config_list():
     keys = ['n_filters', 'kernel_size', 'stride']
     param_list = [
-        [512, 256, 128],
-        [512, 256, 64],
-        [512, 32, 16],
+        [256, 256, 128],
+        [256, 256, 64],
         [500, 16, 8],
-        [200, 80, 80],
-        [200, 80, 20],
+        [200, 80, None],
     ]
     return [dict(zip(keys, values)) for values in param_list]
 
@@ -30,7 +28,7 @@ def test_fb_def_and_forward_lowdim(fb_class, fb_config):
     enc = Encoder(fb_class(**fb_config))
     dec = Decoder(fb_class(**fb_config))
     # Forward
-    inp = torch.randn(1, 1, 32000)
+    inp = torch.randn(1, 1, 16000)
     tf_out = enc(inp)
     # Assert for 2D inputs
     with pytest.warns(UserWarning):
