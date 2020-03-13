@@ -20,8 +20,8 @@ def test_sisdr(n_src, function_triplet):
     # Unpack the triplet
     pairwise, nosrc, nonpit = function_triplet
     # Fake targets and estimates
-    targets = torch.randn(2, n_src, 32000)
-    est_targets = torch.randn(2, n_src, 32000)
+    targets = torch.randn(2, n_src, 10000)
+    est_targets = torch.randn(2, n_src, 10000)
     # Create the 3 PIT wrappers
     pw_wrapper = PITLossWrapper(pairwise, pit_from='pw_mtx')
     wo_src_wrapper = PITLossWrapper(nosrc, pit_from='pw_pt')
@@ -48,24 +48,33 @@ def test_dc(spk_cnt):
     assert loss.shape[0] == 10
 
 
-@pytest.mark.parametrize("n_src", [2, 3, 4])
+@pytest.mark.parametrize("n_src", [2, 3])
 def test_multi_scale_spectral_PIT(n_src):
+    # Test in with reduced number of STFT scales.
+    filt_list = [512, 256, 32]
     # Fake targets and estimates
-    targets = torch.randn(2, n_src, 32000)
-    est_targets = torch.randn(2, n_src, 32000)
-    # Create PITLossWrapper in 'wo_src' mode
-    loss_func = PITLossWrapper(SingleSrcMultiScaleSpectral(), pit_from='pw_pt')
+    targets = torch.randn(2, n_src, 8000)
+    est_targets = torch.randn(2, n_src, 8000)
+    # Create PITLossWrapper in 'pw_pt' mode
+    pt_loss = SingleSrcMultiScaleSpectral(windows_size=filt_list,
+                                          n_filters=filt_list,
+                                          hops_size=filt_list)
+    loss_func = PITLossWrapper(pt_loss, pit_from='pw_pt')
     # Compute the loss
     loss = loss_func(targets, est_targets)
 
 
-@pytest.mark.parametrize("batch_size", [2, 3, 4])
+@pytest.mark.parametrize("batch_size", [1, 2])
 def test_multi_scale_spectral_shape(batch_size):
+    # Test in with reduced number of STFT scales.
+    filt_list = [512, 256, 32]
     # Fake targets and estimates
-    targets = torch.randn(batch_size, 32000)
-    est_targets = torch.randn(batch_size, 32000)
-    # Create PITLossWrapper in 'wo_src' mode
-    loss_func = SingleSrcMultiScaleSpectral()
+    targets = torch.randn(batch_size, 8000)
+    est_targets = torch.randn(batch_size, 8000)
+    # Create PITLossWrapper in 'pw_pt' mode
+    loss_func = SingleSrcMultiScaleSpectral(windows_size=filt_list,
+                                            n_filters=filt_list,
+                                            hops_size=filt_list)
     # Compute the loss
     loss = loss_func(targets, est_targets)
     assert loss.shape[0] == batch_size
