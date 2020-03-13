@@ -1,16 +1,18 @@
 os: linux
 language: python
 cache:
-    pip: true
+    directories:
+        - $HOME/.cache/pip
+        - $HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
 
 python:
-    - "3.6"
+    - "3.6.7"
 
 install:
-    - pip install -e .[tests]
     - pip install -r requirements.txt
-    - pip install codecov
     - pip install -r docs/requirements.txt
+    - pip install -e .[tests]
+    - pip install codecov
 
 script:
     - python --version
