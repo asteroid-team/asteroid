@@ -114,7 +114,7 @@ class System(pl.LightningModule):
         loss = self.common_step(batch, batch_nb)
         return {'val_loss': loss}
 
-    def validation_epoch_end(self, outputs):
+    def validation_end(self, outputs):
         """ How to aggregate outputs of `validation_step` for logging.
 
         Args:
@@ -150,11 +150,18 @@ class System(pl.LightningModule):
             return [self.optimizer], [self.scheduler]
         return self.optimizer
 
+    @pl.data_loader
     def train_dataloader(self):
         return self.train_loader
 
+    @pl.data_loader
     def val_dataloader(self):
         return self.val_loader
+
+    @pl.data_loader
+    def tng_dataloader(self):  # pragma: no cover
+        """ Deprecated."""
+        pass
 
     def on_save_checkpoint(self, checkpoint):
         """ Overwrite if you want to save more things in the checkpoint."""
