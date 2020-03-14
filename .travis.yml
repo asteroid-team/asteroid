@@ -4,7 +4,7 @@ language: python
 # and have the install part of the build almost instantly (instead of 6mins currently)
 env:
     # List in NO_CACHE packages that you want to reinstall everytime
-    - NO_CACHE="" PACKAGES_DIR=$HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
+    - NO_CACHE="coverage" PACKAGES_DIR=$HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
 cache:
     directories:
         - $HOME/.cache/pip
@@ -16,6 +16,7 @@ python:
     - "3.6.7"
 
 install:
+    - apt-get install python3-sphinx
     - pip install Cython
     - pip install pb_bss@git+https://github.com/mpariente/pb_bss
     - pip install -r requirements.txt
