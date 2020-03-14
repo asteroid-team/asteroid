@@ -20,7 +20,7 @@ install:
     - pip install pb_bss@git+https://github.com/mpariente/pb_bss
     - pip install -r requirements.txt
     - pip install -r docs/requirements.txt
-    - pip install sphinx --upgrade --no-deps --force-reinstall
+#    - pip install sphinx --upgrade --no-deps --force-reinstall
     - pip install pytest coverage codecov
     - pip install -e . --no-deps
 
