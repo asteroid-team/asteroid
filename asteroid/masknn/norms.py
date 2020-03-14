@@ -80,9 +80,8 @@ class CumLN(_LayerNorm):
 
 class BatchNorm(_BatchNorm):
     """Wrapper class for pytorch BatchNorm1D and BatchNorm2D"""
-
     def _check_input_dim(self, input):
-        if input.dim() < 3 or input.dim() > 4:
+        if input.dim() < 2 or input.dim() > 4:
             raise ValueError('expected 4D or 3D input (got {}D input)'
                              .format(input.dim()))
 
