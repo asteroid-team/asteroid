@@ -1,6 +1,6 @@
 from setuptools import setup
 
-asteroid_version = "0.1.0"
+asteroid_version = "0.1.1"
 
 with open("README.md", encoding='utf-8') as fh:
     long_description = fh.read()
