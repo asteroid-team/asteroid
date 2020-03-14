@@ -1,9 +1,15 @@
 os: linux
 language: python
+# If we specify the python version, we can cache site-packages directly
+# and have the install part of the build almost instantly (instead of 6mins currently)
+env:
+    - PACKAGES_DIR=$HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
+    - NO_CACHE=""  # List here packages that you want to reinstall everytime
 cache:
     directories:
         - $HOME/.cache/pip
-        - $HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
+        - $PACKAGES_DIR
+#- $HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
 
 python:
     - "3.6.7"
@@ -13,8 +19,8 @@ install:
     - pip install pb_bss@git+https://github.com/mpariente/pb_bss
     - pip install -r requirements.txt
     - pip install -r docs/requirements.txt
-    - pip install -e .[tests]
-    - pip install codecov
+    - pip install pytest coverage codecov
+    - pip install -e . --no-deps
 
 script:
     - python --version
@@ -27,6 +33,7 @@ script:
 # Push the results back to codecov
 after_success:
     - bash <(curl -s https://codecov.io/bash)
+    - for package in $NO_CACHE; do rm -rf $PACKAGES_DIR/{package}*; done
 
 deploy:
     provider: pages
