@@ -4,7 +4,7 @@ language: python
 # and have the install part of the build almost instantly (instead of 6mins currently)
 env:
     # List in NO_CACHE packages that you want to reinstall everytime
-    - NO_CACHE="coverage sphinx" PACKAGES_DIR=$HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
+    - NO_CACHE="pytest coverage sphinx cython" PACKAGES_DIR=$HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
 cache:
     directories:
         - $HOME/.cache/pip
@@ -29,11 +29,10 @@ script:
     - cd docs
     - make html
     - touch build/html/.nojekyll  # prevents use jekyll to build doc
-
+    - for package in $NO_CACHE; do echo "rm -rf $PACKAGES_DIR/${package}*"; rm -rf $PACKAGES_DIR/${package}*; done
 # Push the results back to codecov
 after_success:
     - bash <(curl -s https://codecov.io/bash)
-    - for package in $NO_CACHE; do rm -rf $PACKAGES_DIR/{package}*; done
 
 deploy:
     provider: pages
