@@ -8,7 +8,7 @@ cache:
         - $HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
 env:
     # List packages that you want to reinstall everytime
-    # Packages which install binaries won't be ached properlu
+    # Packages which install binaries won't be ached properly
     - NO_CACHE="pytest coverage sphinx cython"
 
 python:
