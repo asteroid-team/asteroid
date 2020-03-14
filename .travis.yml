@@ -10,6 +10,7 @@ cache:
         - $HOME/.cache/pip
         - $PACKAGES_DIR
 #- $HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
+#- $HOME/virtualenv/python3.6.7/lib/python3.6/bin/sphinx-build
 
 python:
     - "3.6.7"
@@ -29,7 +30,7 @@ script:
     - cd docs
     - make html
     - touch build/html/.nojekyll  # prevents use jekyll to build doc
-    - for package in $NO_CACHE; do echo "rm -rf $PACKAGES_DIR/${package}*"; rm -rf $PACKAGES_DIR/${package}*; done
+    - for package in $NO_CACHE; do pip uninstall ${package}; done
 # Push the results back to codecov
 after_success:
     - bash <(curl -s https://codecov.io/bash)
