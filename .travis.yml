@@ -3,8 +3,8 @@ language: python
 # If we specify the python version, we can cache site-packages directly
 # and have the install part of the build almost instantly (instead of 6mins currently)
 env:
-    - PACKAGES_DIR=$HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
-    - NO_CACHE=""  # List here packages that you want to reinstall everytime
+    # List in NO_CACHE packages that you want to reinstall everytime
+    - NO_CACHE="" PACKAGES_DIR=$HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
 cache:
     directories:
         - $HOME/.cache/pip
