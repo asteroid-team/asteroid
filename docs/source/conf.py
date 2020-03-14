@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.abspath(PATH_ROOT))
 
 project = 'asteroid'
 copyright = '2019, Oncoming'
-author = 'Manuel Pariente, Samuele Cornell, Sunit Sivasankaran, Mathieu Hu'
+author = 'Manuel Pariente et al.'
 # The short X.Y version
 version = '0.0.1'
 # The full version, including alpha/beta/rc tags

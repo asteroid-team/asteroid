@@ -1,17 +1,30 @@
 os: linux
 language: python
+# We can cache site-packages directly and have the install part of
+# the build almost instantly (but adding to the cache takes a while).
 cache:
-    pip: true
+    directories:
+        - $HOME/.cache/pip
+        - $HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
+env:
+    # List packages that you want to reinstall everytime
+    # Packages which install binaries won't be cached properly so install them again
+    - NO_CACHE="pytest coverage sphinx cython"
 
 python:
     - "3.6"
 
+# Start the build by removing the dependencies you want to reinstall
+# If this would be done only at the end, a change in NO_CACHE would
+# have an effect only in the build n+2.
 install:
-    - pip install -e .[tests]
+    - for package in $NO_CACHE; do pip uninstall -y ${package}; done
     - pip install Cython
+    - pip install pytest coverage codecov
+    - pip install pb_bss@git+https://github.com/mpariente/pb_bss
     - pip install -r requirements.txt
-    - pip install codecov
     - pip install -r docs/requirements.txt
+    - pip install -e . --no-deps
 
 script:
     - python --version
@@ -20,11 +33,10 @@ script:
     - cd docs
     - make html
     - touch build/html/.nojekyll  # prevents use jekyll to build doc
+    - for package in $NO_CACHE; do pip uninstall -y ${package}; done  # Don't ship in site-packages
 
 # Push the results back to codecov
 after_success:
-#    - coverage report -m
-#    - codecov
     - bash <(curl -s https://codecov.io/bash)
 
 deploy:
