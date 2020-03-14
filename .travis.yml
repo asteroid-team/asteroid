@@ -10,6 +10,7 @@ cache:
         - $HOME/.cache/pip
         - $PACKAGES_DIR
 #- $HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
+# Diff to check build time
 
 python:
     - "3.6.7"
