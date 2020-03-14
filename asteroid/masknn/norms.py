@@ -1,5 +1,7 @@
 import torch
 from torch import nn
+from torch.nn.modules.batchnorm import _BatchNorm
+
 EPS = 1e-8
 
 
@@ -76,10 +78,18 @@ class CumLN(_LayerNorm):
         return self.apply_gain_and_bias((x - cum_mean) / (cum_var + EPS).sqrt())
 
 
+class BatchNorm(_BatchNorm):
+    """Wrapper class for pytorch BatchNorm1D and BatchNorm2D"""
+    def _check_input_dim(self, input):
+        if input.dim() < 2 or input.dim() > 4:
+            raise ValueError('expected 4D or 3D input (got {}D input)'
+                             .format(input.dim()))
+
 # Aliases.
 gLN = GlobLN
 cLN = ChanLN
 cgLN = CumLN
+bN = BatchNorm
 
 
 def get(identifier):
