@@ -1,27 +1,28 @@
 os: linux
 language: python
-# If we specify the python version, we can cache site-packages directly
-# and have the install part of the build almost instantly (instead of 6mins currently)
-env:
-    # List in NO_CACHE packages that you want to reinstall everytime
-    - NO_CACHE="pytest coverage sphinx cython" PACKAGES_DIR=$HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
+# We can cache site-packages directly and have the install part of
+# the build almost instantly
 cache:
     directories:
         - $HOME/.cache/pip
-        - $PACKAGES_DIR
-#- $HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
-#- $HOME/virtualenv/python3.6.7/lib/python3.6/bin/sphinx-build
+        - $HOME/virtualenv/$TRAVIS_PYTHON_VERSION/lib/python3.6/site-packages
+env:
+    # List in NO_CACHE packages that you want to reinstall everytime
+    - NO_CACHE="pytest coverage sphinx cython"
 
 python:
-    - "3.6.7"
+    - "3.6"
 
+# Start the build by removing the dependencies you want to reinstall
+# If this would be done only at the end, a change in NO_CACHE would
+# have an effect only in the build n+2.
 install:
+    - for package in $NO_CACHE; do pip uninstall -y ${package}; done
     - pip install Cython
+    - pip install pytest coverage codecov
     - pip install pb_bss@git+https://github.com/mpariente/pb_bss
     - pip install -r requirements.txt
     - pip install -r docs/requirements.txt
-#    - pip install sphinx --upgrade --no-deps --force-reinstall
-    - pip install pytest coverage codecov
     - pip install -e . --no-deps
 
 script:
@@ -32,6 +33,7 @@ script:
     - make html
     - touch build/html/.nojekyll  # prevents use jekyll to build doc
     - for package in $NO_CACHE; do pip uninstall -y ${package}; done
+
 # Push the results back to codecov
 after_success:
     - bash <(curl -s https://codecov.io/bash)
