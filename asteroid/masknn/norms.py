@@ -80,6 +80,8 @@ class CumLN(_LayerNorm):
 gLN = GlobLN
 cLN = ChanLN
 cgLN = CumLN
+bN1D = nn.BatchNorm1d
+bN2D = nn.BatchNorm2d
 
 
 def get(identifier):
