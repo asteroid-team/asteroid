@@ -5,9 +5,10 @@ language: python
 cache:
     directories:
         - $HOME/.cache/pip
-        - $HOME/virtualenv/$TRAVIS_PYTHON_VERSION/lib/python3.6/site-packages
+        - $HOME/virtualenv/python3.6.7/lib/python3.6/site-packages
 env:
-    # List in NO_CACHE packages that you want to reinstall everytime
+    # List packages that you want to reinstall everytime
+    # Packages which install binaries won't be ached properlu
     - NO_CACHE="pytest coverage sphinx cython"
 
 python:
