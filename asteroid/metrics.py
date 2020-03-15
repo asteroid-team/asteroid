@@ -1,5 +1,5 @@
 from .utils import average_arrays_in_dic
-from pb_bss.evaluation import InputMetrics, OutputMetrics
+from pb_bss_eval import InputMetrics, OutputMetrics
 ALL_METRICS = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi', 'pesq']
 
 

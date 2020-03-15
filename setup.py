@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 asteroid_version = "0.1.1"
 
@@ -22,12 +22,13 @@ setup(
                       'scipy',
                       'torch',
                       'pytorch-lightning==0.6.0',
-                      'pb_bss@git+https://github.com/mpariente/pb_bss',
+                      'pb_bss_eval',
                       ],
     extras_require={
         'visualize': ['seaborn>=0.9.0'],
         'tests': ['pytest']
     },
+    packages=find_packages(),
     classifiers=[
         'Development Status :: 4 - Beta',
         "Programming Language :: Python :: 3",
