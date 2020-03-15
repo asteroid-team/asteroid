@@ -19,9 +19,9 @@ python:
 # have an effect only in the build n+2.
 install:
     - for package in $NO_CACHE; do pip uninstall -y ${package}; done
-    - pip install Cython
+    - pip install numpy Cython
     - pip install pytest coverage codecov
-    - pip install pb_bss@git+https://github.com/mpariente/pb_bss
+#    - pip install pb_bss@git+https://github.com/mpariente/pb_bss
     - pip install -r requirements.txt
     - pip install -r docs/requirements.txt
     - pip install -e . --no-deps
