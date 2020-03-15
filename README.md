@@ -38,8 +38,11 @@ pip install -e .
 python setup.py develop
 ```
 Asteroid is also on PyPI, you can install the latest release 
-with `pip install asteroid`
-
+with
+```
+pip install numpy Cython
+pip install asteroid
+```
 
 ## Highlights
 Here is a list of notebooks showing example usage of Asteroid's features.
