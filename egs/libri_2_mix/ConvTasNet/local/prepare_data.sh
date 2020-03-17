@@ -29,6 +29,11 @@ echo "Download LibiSpeech_cv_clean dataset into $storage_dir"
 wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/dev-clean.tar.gz -P $storage_dir
 tar -xzvf $storage_dir/dev-clean.tar.gz -C $storage_dir
 
+echo "Download LibiSpeech metadata into $storage_dir"
+# If downloading stalls for more than 20s, relaunch from previous state.
+wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/raw-metadata.tar.gz -P $storage_dir
+tar -xzvf $storage_dir/raw-metadata.tar.gz -C $storage_dir
+
 
 echo "Run python scripts to create the Libri2mix sources and mixtures"
 # Requires : Numpy, Scipy, Pandas, and Pysoundfile
