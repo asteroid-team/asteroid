@@ -19,11 +19,11 @@ sep_noisy = {'mixture': 'mix_both_anechoic',
              'infos': ['noise'],
              'default_nsrc': 2}
 sep_reverb = {'mixture': 'mix_clean_reverb',
-              'sources': ['s1', 's2'],
+              'sources': ['s1_anechoic', 's2_anechoic'],
               'infos': [],
               'default_nsrc': 2}
 sep_reverb_noisy = {'mixture': 'mix_both_reverb',
-                    'sources': ['s1', 's2'],
+                    'sources': ['s1_anechoic', 's2_anechoic'],
                     'infos': ['noise'],
                     'default_nsrc': 2}
 
