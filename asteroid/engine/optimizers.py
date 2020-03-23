@@ -33,6 +33,11 @@ def rmsprop(params, lr=0.001, **kwargs):
     return optim.RMSprop(params, lr=lr, **kwargs)
 
 
+def ranger(params, lr=0.001, **kwargs):
+    from asranger import Ranger
+    return Ranger(params, lr=lr, **kwargs)
+
+
 def get(identifier):
     """ Returns an optimizer function from a string. Returns its input if it
     is callable (already a :class:`torch.optim.Optimizer` for example).

@@ -1,13 +1,15 @@
 import pytest
 from torch import nn, optim
 from asteroid.engine import optimizers
+from asranger import Ranger
 
 
 def optim_mapping():
     mapping_list = [
-        (optim.Adam, "adam"),
-        (optim.SGD, "sgd"),
-        (optim.RMSprop, "rmsprop")
+        (optim.Adam, 'adam'),
+        (optim.SGD, 'sgd'),
+        (optim.RMSprop, 'rmsprop'),
+        (Ranger, 'ranger')
     ]
     return mapping_list
 
