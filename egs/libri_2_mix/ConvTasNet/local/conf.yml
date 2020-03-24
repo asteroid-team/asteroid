@@ -19,8 +19,8 @@ masknet:
 # Training config
 training:
   epochs: 200
-  batch_size: 8
-  num_workers: 4
+  batch_size: 1
+  num_workers: 1
   half_lr: yes
   early_stop: yes
 # Optim config
@@ -30,10 +30,10 @@ optim:
   weight_decay: 0.
 # Data config
 data:
-  # Data config
-  dataset_dir: /home/jcosentino/jcosentino/test/ConvTasNet/16K
-  task: sep_clean
-  nondefault_nsrc:
+  metadata_train_file: "D://libri2mix//mixtures//metadata//train-clean-100.csv"
+  metadata_valid_file: "D://libri2mix//mixtures//metadata//test-clean.csv"
+  metadata_test_file: "D://libri2mix//mixtures//metadata//dev-clean.csv"
   sample_rate: 16000
   mode: min
+  sample_length: 4
 

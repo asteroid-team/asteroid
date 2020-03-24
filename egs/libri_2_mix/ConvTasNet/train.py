@@ -9,14 +9,11 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from asteroid.losses.multi_scale_spectral import SingleSrcMultiScaleSpectral
 
-
 from asteroid.data.libri2mix_dataset import Libri2Mix
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 
-
 from model import make_model_and_optimizer
-
 
 # Keys which are not in the conf.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be
@@ -32,8 +29,8 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf):
-    train_set = Libri2Mix(conf['data']['dataset_dir'])
-    val_set = Libri2Mix(conf['data']['dataset_dir'],"cv")
+    train_set = Libri2Mix(conf['data']['metadata_train_file'])
+    val_set = Libri2Mix(conf['data']['metadata_valid_file'])
 
     train_loader = DataLoader(train_set, shuffle=True,
                               batch_size=conf['training']['batch_size'],
@@ -65,7 +62,9 @@ def main(conf):
 
     # Define Loss function.
     # loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
-    loss_func = PITLossWrapper(SingleSrcMultiScaleSpectral([2048,512,32],[2048,512,32],[1024,256,16],2.),pit_from='pw_pt')
+    loss_func = PITLossWrapper(SingleSrcMultiScaleSpectral(
+        [2048, 512, 32], [2048, 512, 32], [1024, 256, 16], 2.),
+        pit_from='pw_pt')
     system = System(model=model, loss_func=loss_func, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
                     scheduler=scheduler, config=conf)
