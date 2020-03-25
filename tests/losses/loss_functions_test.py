@@ -2,12 +2,12 @@ import pytest
 import torch
 from torch.testing import assert_allclose
 
+from asteroid.filterbanks import STFTFB, Encoder, transforms
 from asteroid.losses import PITLossWrapper
 from asteroid.losses import sdr
 from asteroid.losses import singlesrc_mse, pairwise_mse, multisrc_mse
-from asteroid.losses import deep_clustering_loss
+from asteroid.losses import deep_clustering_loss, SingleSrcPMSQE
 from asteroid.losses.multi_scale_spectral import SingleSrcMultiScaleSpectral
-
 
 @pytest.mark.parametrize("n_src", [2, 3, 4])
 @pytest.mark.parametrize("function_triplet", [
@@ -78,3 +78,42 @@ def test_multi_scale_spectral_shape(batch_size):
     # Compute the loss
     loss = loss_func(targets, est_targets)
     assert loss.shape[0] == batch_size
+
+
+@pytest.mark.parametrize("sample_rate", [8000, 16000])
+def test_pmsqe(sample_rate):
+    # Define supported STFT
+    if sample_rate == 16000:
+        stft = Encoder(STFTFB(kernel_size=512, n_filters=512, stride=256))
+    else:
+        stft = Encoder(STFTFB(kernel_size=256, n_filters=256, stride=128))
+     # Usage by itself
+    ref, est = torch.randn(2, 1, 16000), torch.randn(2, 1, 16000)
+    ref_spec = transforms.take_mag(stft(ref))
+    est_spec = transforms.take_mag(stft(est))
+    loss_func = SingleSrcPMSQE(sample_rate=sample_rate)
+    loss_value = loss_func(est_spec, ref_spec)
+    # Assert output has shape (batch,)
+    assert loss_value.shape[0] == ref.shape[0]
+    # Assert support for transposed inputs.
+    tr_loss_value = loss_func(est_spec.transpose(1, 2),
+                              ref_spec.transpose(1, 2))
+    assert_allclose(loss_value, tr_loss_value)
+
+
+@pytest.mark.parametrize("n_src", [2, 3])
+@pytest.mark.parametrize("sample_rate", [8000, 16000])
+def test_pmsqe_pit(n_src, sample_rate):
+    # Define supported STFT
+    if sample_rate == 16000:
+        stft = Encoder(STFTFB(kernel_size=512, n_filters=512, stride=256))
+    else:
+        stft = Encoder(STFTFB(kernel_size=256, n_filters=256, stride=128))
+     # Usage by itself
+    ref, est = torch.randn(2, n_src, 16000), torch.randn(2, n_src, 16000)
+    ref_spec = transforms.take_mag(stft(ref))
+    est_spec = transforms.take_mag(stft(est))
+    loss_func = PITLossWrapper(SingleSrcPMSQE(sample_rate=sample_rate),
+                               pit_from='pw_pt')
+    # Assert forward ok.
+    loss_value = loss_func(ref_spec, est_spec)
