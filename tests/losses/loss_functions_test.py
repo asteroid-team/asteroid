@@ -80,14 +80,18 @@ def test_multi_scale_spectral_shape(batch_size):
     assert loss.shape[0] == batch_size
 
 
-def test_pmsqe():
+@pytest.mark.parametrize("sample_rate", [8000, 16000])
+def test_pmsqe(sample_rate):
     # Define supported STFT
-    stft = Encoder(STFTFB(kernel_size=512, n_filters=512, stride=256))
+    if sample_rate == 16000:
+        stft = Encoder(STFTFB(kernel_size=512, n_filters=512, stride=256))
+    else:
+        stft = Encoder(STFTFB(kernel_size=256, n_filters=256, stride=128))
      # Usage by itself
     ref, est = torch.randn(2, 1, 16000), torch.randn(2, 1, 16000)
     ref_spec = transforms.take_mag(stft(ref))
     est_spec = transforms.take_mag(stft(est))
-    loss_func = SingleSrcPMSQE()
+    loss_func = SingleSrcPMSQE(sample_rate=sample_rate)
     loss_value = loss_func(est_spec, ref_spec)
     # Assert output has shape (batch,)
     assert loss_value.shape[0] == ref.shape[0]
@@ -98,13 +102,18 @@ def test_pmsqe():
 
 
 @pytest.mark.parametrize("n_src", [2, 3])
-def test_pmsqe_pit(n_src):
+@pytest.mark.parametrize("sample_rate", [8000, 16000])
+def test_pmsqe_pit(n_src, sample_rate):
     # Define supported STFT
-    stft = Encoder(STFTFB(kernel_size=512, n_filters=512, stride=256))
+    if sample_rate == 16000:
+        stft = Encoder(STFTFB(kernel_size=512, n_filters=512, stride=256))
+    else:
+        stft = Encoder(STFTFB(kernel_size=256, n_filters=256, stride=128))
      # Usage by itself
     ref, est = torch.randn(2, n_src, 16000), torch.randn(2, n_src, 16000)
     ref_spec = transforms.take_mag(stft(ref))
     est_spec = transforms.take_mag(stft(est))
-    loss_func = PITLossWrapper(SingleSrcPMSQE(), pit_from='pw_pt')
+    loss_func = PITLossWrapper(SingleSrcPMSQE(sample_rate=sample_rate),
+                               pit_from='pw_pt')
     # Assert forward ok.
     loss_value = loss_func(ref_spec, est_spec)
