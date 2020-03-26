@@ -9,8 +9,17 @@ import glob
 
 def main(arguments):
     storage_dir = arguments.storage_dir
+    storage_dir = 'D://'
     dataset_name = arguments.dataset_name
+    dataset_name = 'libri2mix'
     n_src = arguments.n_src
+    n_src = 2
+
+    # Check if the LibriSpeech metadata already exist
+    try :
+        create_librispeech_metadata(storage_dir)
+    except FileExistsError:
+        pass
     create_libri2mix_mixtures_metadata(storage_dir, dataset_name, n_src)
 
 
@@ -125,15 +134,13 @@ def create_librispeech_metadata(storage_dir):
 def create_libri2mix_mixtures_metadata(storage_dir, dataset_name, n_src):
     """ Generate metadata for train, test  and validation mixtures """
 
-    # create_librispeech_metadata(storage_dir)
-
-    # Create libri2mix directory
+    # Create dataset directory
     os.mkdir(os.path.join(storage_dir, dataset_name))
-    libri2mix_directory_path = os.path.join(storage_dir, dataset_name)
+    dataset_directory_path = os.path.join(storage_dir, dataset_name)
 
     # Create metadata directory
-    os.mkdir(os.path.join(libri2mix_directory_path, 'metadata'))
-    mixtures_metadata_directory_path = os.path.join(libri2mix_directory_path,
+    os.mkdir(os.path.join(dataset_directory_path, 'metadata'))
+    mixtures_metadata_directory_path = os.path.join(dataset_directory_path,
                                                     'metadata')
 
     # Path to Librispeech metadata directory
