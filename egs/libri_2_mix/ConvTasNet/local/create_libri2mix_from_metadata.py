@@ -8,7 +8,6 @@ import random
 
 
 def main(arguments):
-
     # Get librispeech root path
     librispeech_root_path = arguments.librispeech_root_path
 
@@ -26,7 +25,6 @@ def main(arguments):
 
 
 def resample_list(sources_list, freq):
-
     # Create the resampled list
     resampled_list = []
 
@@ -38,7 +36,6 @@ def resample_list(sources_list, freq):
 
 
 def get_longest_source(sources_list):
-
     # Get the max length
     len_list = [len(source) for source in sources_list]
     index = len_list.index(max(len_list))
@@ -47,7 +44,6 @@ def get_longest_source(sources_list):
 
 
 def get_shortest_source(sources_list):
-
     # Get the max length
     len_list = [len(source) for source in sources_list]
     index = len_list.index(min(len_list))
@@ -56,7 +52,6 @@ def get_shortest_source(sources_list):
 
 
 def pad_max(sources_list, index):
-
     # Copy the list
     sources_list_copy = sources_list.copy()
 
@@ -79,7 +74,6 @@ def pad_max(sources_list, index):
 
 
 def cut_to_min(sources_list, index):
-
     # Copy the list and get the target length
     sources_list_copy = sources_list.copy()
     target_length = len(sources_list_copy[index])
@@ -99,7 +93,6 @@ def cut_to_min(sources_list, index):
 
 
 def mix(sources_list, mode):
-
     # Change sources list according to mode
     if mode == 'min':
 
@@ -124,24 +117,27 @@ def mix(sources_list, mode):
 
 
 def generate_mixtures(librispeech_root_path, dataset_root_path, freqs, modes):
-
     # Get the metadata directory path
     metadata_dir_path = os.path.join(dataset_root_path, 'metadata')
 
     # Get metadata files name
     metadata_files_names = os.listdir(metadata_dir_path)
 
+    # We will check if the mixtures don't already exist we create a list that
+    # will contain the metadata files that already have been used
+    already_exist = []
+
     # Create directories according to parameters
     for freq in freqs:
 
         # Create frequency directory
         freq_path = os.path.join(dataset_root_path, freq)
-        os.mkdir(freq_path)
+        os.makedirs(freq_path, exist_ok=True)
 
         for mode in modes:
             # Create mode directory
             mode_path = os.path.join(freq_path, mode)
-            os.mkdir(mode_path)
+            os.makedirs(mode_path, exist_ok=True)
 
             for metadata_files_name in metadata_files_names:
                 # Create directory name
@@ -149,7 +145,15 @@ def generate_mixtures(librispeech_root_path, dataset_root_path, freqs, modes):
 
                 # Make the directory according to the metadata file
                 directory_path = os.path.join(mode_path, directory_name)
-                os.mkdir(directory_path)
+                try:
+                    os.mkdir(directory_path)
+                except FileExistsError:
+                    already_exist.append(metadata_files_name)
+                    print(f"The mixtures from the {metadata_files_name} file"
+                          f" already exist, the metadafile will be ignored")
+
+    for element in already_exist:
+        metadata_files_names.remove(element)
 
     for metadata_files_name in metadata_files_names:
 
