@@ -50,6 +50,50 @@ class Conv1DBlock(nn.Module):
         return res_out, skip_out
 
 
+class SeparableDilatedConv2DBlock(nn.Module):
+    """One dimensional convolutional block, as proposed in [1] without skip
+        output. As used in the two step approach [2]. This block uses the
+        groupnorm across features and also produces always a padded output.
+
+    Args:
+        in_chan (int): Number of input channels.
+        hid_chan (int): Number of hidden channels in the depth-wise
+            convolution.
+        kernel_size (int): Size of the depth-wise convolutional kernel.
+        dilation (int): Dilation of the depth-wise convolution.
+
+    References:
+        [1]: "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
+             for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
+             https://arxiv.org/abs/1809.07454
+        [2]: Tzinis, E., Venkataramani, S., Wang, Z., Subakan, Y. C., and
+            Smaragdis, P., "Two-Step Sound Source Separation:
+            Training on Learned Latent Targets." In Acoustics, Speech
+            and Signal Processing (ICASSP), 2020 IEEE International Conference.
+            https://arxiv.org/abs/1910.09804
+    """
+    def __init__(self, in_chan=256, hid_chan=512, kernel_size=3, dilation=1):
+        super(SeparableDilatedConv2DBlock, self).__init__()
+        self.module = nn.Sequential(
+            nn.Conv1d(in_channels=in_chan, out_channels=hid_chan,
+                      kernel_size=1),
+            nn.PReLU(),
+            nn.GroupNorm(1, hid_chan, eps=1e-08),
+            nn.Conv1d(in_channels=hid_chan, out_channels=hid_chan,
+                      kernel_size=kernel_size,
+                      padding=(dilation * (kernel_size - 1)) // 2,
+                      dilation=dilation, groups=hid_chan),
+            nn.PReLU(),
+            nn.GroupNorm(1, hid_chan, eps=1e-08),
+            nn.Conv1d(in_channels=hid_chan, out_channels=in_chan, kernel_size=1)
+        )
+
+    def forward(self, x):
+        """ Input shape [batch, feats, seq]"""
+        y = x.clone()
+        return x + self.module(y)
+
+
 class TDConvNet(nn.Module):
     """ Temporal Convolutional network used in ConvTasnet.
 
@@ -460,3 +504,114 @@ class ChimeraPP(nn.Module):
         mask_out = self.mask_layer(out)
         mask_out = mask_out.view(batches, self.n_src, self.input_dim, seq_cnt)
         return projection_final, mask_out
+
+
+class TwoStepTDCN(nn.Module):
+    """
+        A time-dilated convolutional network (TDCN) similar to the initial
+        ConvTasNet architecture where the encoder and decoder have been
+        pre-trained separately. The TwoStepTDCN infers masks directly on the
+        latent space and works using an signal to distortion ratio (SDR) loss
+        directly on the ideal latent masks.
+        Adaptive basis encoder and decoder with inference of ideal masks.
+        Copied from: https://github.com/etzinis/two_step_mask_learning/
+
+        Args:
+            pretrained_filterbank: A pretrained encoder decoder like the one
+                implemented in asteroid.filterbanks.simple_adaptive
+            n_sources (int, optional): Number of masks to estimate.
+            n_blocks (int, optional): Number of convolutional blocks in each
+                repeat. Defaults to 8.
+            n_repeats (int, optional): Number of repeats. Defaults to 4.
+            bn_chan (int, optional): Number of channels after the bottleneck.
+            hid_chan (int, optional): Number of channels in the convolutional
+                blocks.
+            kernel_size (int, optional): Kernel size in convolutional blocks.
+                n_sources: The number of sources
+        References:
+            Tzinis, E., Venkataramani, S., Wang, Z., Subakan, Y. C., and
+            Smaragdis, P., "Two-Step Sound Source Separation:
+            Training on Learned Latent Targets." In Acoustics, Speech
+            and Signal Processing (ICASSP), 2020 IEEE International Conference.
+            https://arxiv.org/abs/1910.09804
+    """
+    def __init__(self, pretrained_filterbank,
+                 bn_chan=256, hid_chan=512, kernel_size=3, n_blocks=8,
+                 n_repeats=4, n_sources=2):
+        super(TwoStepTDCN, self).__init__()
+        try:
+            self.pretrained_filterbank = pretrained_filterbank
+            self.encoder = self.pretrained_filterbank.mix_encoder
+            self.decoder = self.pretrained_filterbank.decoder
+            self.fbank_basis = self.encoder.conv.out_channels
+            self.fbank_kernel_size = self.encoder.conv.kernel_size[0]
+
+            # Freeze the encoder and the decoder weights:
+            self.encoder.conv.weight.requires_grad = False
+            self.encoder.conv.bias.requires_grad = False
+            self.decoder.deconv.weight.requires_grad = False
+            self.decoder.deconv.bias.requires_grad = False
+        except Exception as e:
+            print(e)
+            raise ValueError("Could not load features form the pretrained "
+                             "adaptive filterbank.")
+
+        self.n_blocks = n_blocks
+        self.n_repeats = n_repeats
+        self.bn_chan = bn_chan
+        self.hid_chan = hid_chan
+        self.kernel_size = kernel_size
+        self.n_sources = n_sources
+
+        # Norm before the rest, and apply one more dense layer
+        self.ln_in = nn.BatchNorm1d(self.fbank_basis)
+        self.l1 = nn.Conv1d(in_channels=self.fbank_basis,
+                            out_channels=self.bn_chan,
+                            kernel_size=1)
+
+        # Separation module
+        self.separator = nn.Sequential(
+            *[SeparableDilatedConv2DBlock(in_chan=self.bn_chan,
+                                          hid_chan=self.hid_chan,
+                                          kernel_size=self.kernel_size,
+                                          dilation=2**d)
+              for _ in range(self.n_blocks) for d in range(self.n_repeats)])
+
+        # Masks layer
+        self.mask_layer = nn.Conv2d(
+            in_channels=1, out_channels=self.n_sources,
+            kernel_size=(self.fbank_basis + 1, 1),
+            padding=(self.fbank_basis - self.fbank_basis // 2, 0))
+
+        # Reshaping if needed
+        if self.bn_chan != self.fbank_basis:
+            self.out_reshape = nn.Conv1d(in_channels=self.bn_chan,
+                                         out_channels=self.fbank_basis,
+                                         kernel_size=1)
+        self.ln_mask_in = nn.BatchNorm1d(self.fbank_basis)
+
+    def forward(self, x):
+        # Front end
+        x = self.encoder(x)
+        encoded_mixture = x.clone()
+
+        # Separation module
+        x = self.ln_in(x)
+        x = self.l1(x)
+        x = self.separator(x)
+
+        if self.bn_chan != self.fbank_basis:
+            x = self.out_reshape(x)
+
+        x = self.ln_mask_in(x)
+        x = nn.functional.relu(x)
+        x = self.mask_layer(x.unsqueeze(1))
+        masks = nn.functional.softmax(x, dim=1)
+        return masks * encoded_mixture.unsqueeze(1)
+
+    def infer_source_signals(self, mixture_wav):
+        adfe_sources = self.forward(mixture_wav)
+        rec_wavs = self.decoder(adfe_sources.view(adfe_sources.shape[0],
+                                                  -1,
+                                                  adfe_sources.shape[-1]))
+        return rec_wavs
