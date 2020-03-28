@@ -52,24 +52,29 @@ class System(pl.LightningModule):
         """
         return self.model(*args, **kwargs)
 
-    def common_step(self, batch, batch_nb):
+    def common_step(self, batch, batch_nb, train=True):
         """ Common forward step between training and validation.
 
         The function of this method is to unpack the data given by the loader,
         forward the batch through the model and compute the loss.
+        Pytorch-lightning handles all the rest.
 
         Args:
             batch: the object returned by the loader (a list of torch.Tensor
                 in most cases) but can be something else.
             batch_nb (int): The number of the batch in the epoch.
+            train (bool): Whether in training mode. Needed only if the training
+                and validation steps are fundamentally different, otherwise,
+                pytorch-lightning handles the usual differences.
 
         Returns:
             :class:`torch.Tensor` : The loss value on this batch.
 
         .. note:: This is typically the method to overwrite when subclassing
-            `System`. If the training and validation steps are different
-            (except for loss.backward() and optimzer.step()), then overwrite
-            `training_step` and `validation_step` instead.
+            `System`. If the training and validation steps are somehow
+            different (except for loss.backward() and optimzer.step()),
+            the argument `train` can be used to switch behavior.
+            Otherwise, `training_step` and `validation_step` can be overwriten.
         """
         inputs, targets = batch
         est_targets = self(inputs)
@@ -94,7 +99,7 @@ class System(pl.LightningModule):
             ``'log'``: dict with tensorboard logs
 
         """
-        loss = self.common_step(batch, batch_nb)
+        loss = self.common_step(batch, batch_nb, train=True)
         tensorboard_logs = {'train_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
 
@@ -111,7 +116,7 @@ class System(pl.LightningModule):
 
             ``'val_loss'``: loss
         """
-        loss = self.common_step(batch, batch_nb)
+        loss = self.common_step(batch, batch_nb, train=False)
         return {'val_loss': loss}
 
     def validation_end(self, outputs):
