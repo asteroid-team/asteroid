@@ -74,6 +74,9 @@ def create_librispeech_metadata(storage_dir):
         # Generate the dataframe relative to the directory
         directory_metadata = create_librispeech_dataframe(
             librispeech_root_path, directory, speakers_metadata)
+        # Filter out files that are shorter than 3s
+        directory_metadata = directory_metadata[
+            directory_metadata['Length'] >= 3*16000]
         # Sort the dataframe according to ascending Length
         directory_metadata = directory_metadata.sort_values('Length')
         # Write the dataframe in a .csv in the metadata directory
