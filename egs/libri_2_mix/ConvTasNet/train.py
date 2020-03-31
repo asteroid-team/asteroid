@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from asteroid.losses.multi_scale_spectral import SingleSrcMultiScaleSpectral
 
-from asteroid.data.libri2mix_dataset import Libri2Mix
+from asteroid.data.librimix_dataset import LibriMix
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 
@@ -29,10 +29,12 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf):
-    train_set = Libri2Mix(conf['data']['metadata_train_file'])
-    val_set = Libri2Mix(conf['data']['metadata_valid_file'])
+    train_set = LibriMix(conf['data']['sources_train_path'],
+                         conf['data']['mixtures_train_path'])
+    val_set = LibriMix(conf['data']['sources_val_path'],
+                       conf['data']['mixtures_val_path'])
 
-    train_loader = DataLoader(train_set, shuffle=True,
+    train_loader = DataLoader(train_set, shuffle=False,
                               batch_size=conf['training']['batch_size'],
                               num_workers=conf['training']['num_workers'],
                               drop_last=True)
