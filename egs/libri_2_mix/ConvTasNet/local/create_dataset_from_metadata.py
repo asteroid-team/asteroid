@@ -22,16 +22,12 @@ parser.add_argument('--modes', nargs='+', default=['min'],
 def main(arguments):
     # Get librispeech root path
     librispeech_root_path = arguments.librispeech_root_path
-    librispeech_root_path = 'D:/LibriSpeech'
     # Get dataset root path
     dataset_root_path = arguments.dataset_root_path
-    dataset_root_path = 'D:/libri2mix'
     # Get the desired frequencies
     freqs = arguments.freqs
-    freqs = ['16K', '8K']
     # Get the desired modes
     modes = arguments.modes
-    modes = ['min', 'max']
     # Generate source
     generate_mixtures_and_sources(librispeech_root_path, dataset_root_path,
                                   freqs, modes)

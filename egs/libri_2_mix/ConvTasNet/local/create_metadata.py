@@ -29,11 +29,11 @@ parser.add_argument('--n_src', type=int, default=2,
 
 def main(arguments):
     storage_dir = arguments.storage_dir
-    storage_dir = 'D://'
+
     dataset_name = arguments.dataset_name
-    dataset_name = 'libri2mix'
+
     n_src = arguments.n_src
-    n_src = 2
+
     # Check if the LibriSpeech metadata already exist
     try:
         create_librispeech_metadata(storage_dir)
@@ -175,7 +175,7 @@ def create_dataset_metadata(storage_dir, dataset_name, n_src):
     # List metadata files in LibriSpeech
     metadata_file_names = os.listdir(librispeech_metadata_directory_path)
     # If you wish to ignore some metadata files add their name here
-    to_be_ignored = ['dev-other.csv']
+    to_be_ignored = []
     for element in to_be_ignored:
         metadata_file_names.remove(element)
 

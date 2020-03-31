@@ -30,10 +30,9 @@ optim:
   weight_decay: 0.
 # Data config
 data:
-  metadata_train_file: "D://libri2mix//mixtures//metadata//train-clean-100.csv"
-  metadata_valid_file: "D://libri2mix//mixtures//metadata//test-clean.csv"
-  metadata_test_file: "D://libri2mix//mixtures//metadata//dev-clean.csv"
-  sample_rate: 16000
-  mode: min
+  mixtures_train_path : "D://libri2mix//16K//min//mixtures//train-clean-100"
+  sources_train_path : "D://libri2mix//16K//min//sources//train-clean-100"
+  mixtures_val_path : "D://libri2mix//16K//min//mixtures//dev-clean"
+  sources_val_path : "D://libri2mix//16K//min//sources//dev-clean"
   sample_length: 4
 
