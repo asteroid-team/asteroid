@@ -127,7 +127,7 @@ if __name__ == "__main__":
     model =  AVFusion().to(device)
     model.load_state_dict(torch.load("last_full.pth")["model_state_dict"])
 
-    train_df = pd.read_csv("filtered_train.csv")
+    train_df = pd.read_csv("train.csv")
 
     for i in trange(1000):
         _predict_row(model, train_df, i, device)
