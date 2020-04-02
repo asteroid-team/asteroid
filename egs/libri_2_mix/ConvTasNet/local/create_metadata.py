@@ -9,8 +9,17 @@ import pyloudnorm as pyln
 import warnings
 
 # Some parameters
-eps = 1e-10
-max_amp = 0.9
+# eps secures log and division
+EPS = 1e-10
+# max amplitude in sources and mixtures
+MAX_AMP = 0.9
+# We will filter out files shorter than that
+NUMBER_OF_SECONDS = 3
+# In LibriSpeech all the sources are at 16K Hz
+RATE = 16000
+# We will randomize loudness between this range
+MIN_LOUDNESS = -30
+MAX_LOUDNESS = -20
 
 # We wil need to catch a user warning and deal with it
 warnings.filterwarnings("error")
@@ -20,26 +29,30 @@ random.seed(123)
 parser = argparse.ArgumentParser()
 parser.add_argument('--storage_dir', type=str, default=None,
                     help='Directory where Librispeech has been downloaded')
+parser.add_argument('--n_src', type=int, default=2,
+                    help='Number of sources desired to create the mixture')
 parser.add_argument('--dataset_name', type=str, default=None,
                     help='Name of the directory where the dataset will '
                          ' be created')
-parser.add_argument('--n_src', type=int, default=2,
-                    help='Number of sources desired to create the mixture')
 
 
 def main(arguments):
     storage_dir = arguments.storage_dir
-
-    dataset_name = arguments.dataset_name
+    storage_dir = "D://"
 
     n_src = arguments.n_src
+    n_src = 2
+
+    dataset_name = arguments.dataset_name
+    if dataset_name is None:
+        dataset_name = f'libri{n_src}mix'
 
     # Check if the LibriSpeech metadata already exist
     try:
         create_librispeech_metadata(storage_dir)
     except FileExistsError:
         pass
-    create_dataset_metadata(storage_dir, dataset_name, n_src)
+    create_librimix_metadata(storage_dir, dataset_name, n_src)
 
 
 def create_librispeech_metadata(storage_dir):
@@ -75,8 +88,9 @@ def create_librispeech_metadata(storage_dir):
         directory_metadata = create_librispeech_dataframe(
             librispeech_root_path, directory, speakers_metadata)
         # Filter out files that are shorter than 3s
+        number_of_frames = NUMBER_OF_SECONDS * RATE
         directory_metadata = directory_metadata[
-            directory_metadata['Length'] >= 3*16000]
+            directory_metadata['Length'] >= number_of_frames]
         # Sort the dataframe according to ascending Length
         directory_metadata = directory_metadata.sort_values('Length')
         # Write the dataframe in a .csv in the metadata directory
@@ -158,7 +172,7 @@ def create_librispeech_dataframe(librispeech_root_path, directory,
     return directory_metadata
 
 
-def create_dataset_metadata(storage_dir, dataset_name, n_src):
+def create_librimix_metadata(storage_dir, dataset_name, n_src):
     """ Generate metadata for the dataset according to the LibriSpeech
     metadata """
 
@@ -184,59 +198,67 @@ def create_dataset_metadata(storage_dir, dataset_name, n_src):
         print(f"Creating {metadata_file_name} "
               f"metadata file in {dataset_name}/metadata")
 
-        # Get the current metadata  file path
+        # Get the current metadata file path
         metadata_file_path = os.path.join(librispeech_metadata_directory_path,
                                           metadata_file_name)
         # Open .csv files from LibriSpeech
         metadata_file = pd.read_csv(metadata_file_path)
         # Create dataframe
-        metadata_mixtures_file = create_dataset_dataframe(metadata_file, n_src,
-                                                          storage_dir)
+        metadata_mixtures_file, metadata_info_mixtures_file = \
+            create_librimix_dataframe(metadata_file, n_src, storage_dir)
         # Write the dataframe in a .csv in the metadata directory
         save_path = os.path.join(mixtures_metadata_directory_path,
-                                 metadata_file_name)
+                                 'generating_mixture_' + metadata_file_name)
+        save_path_2 = os.path.join(mixtures_metadata_directory_path, 'info_' +
+                                   metadata_file_name)
         metadata_mixtures_file.to_csv(save_path, index=False)
+        metadata_info_mixtures_file.to_csv(save_path_2, index=False)
 
 
-def create_dataset_dataframe(metadata_file, n_src, storage_dir):
+def create_librimix_dataframe(metadata_file, n_src, storage_dir):
     """ Generate dataset dataframe from a LibriSpeech metadata file """
 
-    # Create the dataframe corresponding to a LibriSpeech metadata file
-    metadata_mixtures_file = pd.DataFrame(
-        columns=['Mixture_ID', 'Speaker_ID_list',
-                 'Sex_list', 'Path_list', 'Length_list',
-                 'original_loudness_list', 'target_loudness_list', 'Snr_list'])
+    # Create a dataframe that will be used to generate sources and mixtures
+    metadata_generating_mixtures_file = pd.DataFrame(
+        columns=['Mixture_ID'])
+    # Create a dataframe that gather information about the sources
+    # in the mixtures
+    metadata_info_mixtures_file = pd.DataFrame(
+        columns=['Mixture_ID'])
+    # Add columns they depend on the number of sources
+    for i in range(n_src):
+        metadata_generating_mixtures_file[f"Source_{i+1}_Path"] = {}
+        metadata_generating_mixtures_file[f"Source_{i+1}_Gain"] = {}
+        metadata_info_mixtures_file[f"Speaker_{i+1}_ID"] = {}
+        metadata_info_mixtures_file[f"Speaker_{i+1}_Sex"] = {}
 
     # Generate pairs of sources to mix
     pairs = set_pairs(metadata_file, n_src)
 
     # For each combination create a new line in the dataframe
     for pair in pairs:
-        # row is a list containing all the data for this row in the dataframe
-        # Add infos, generate sources
-        row, sources_list_max, min_length, max_length = \
-            add_sources_info_and_read_sources(metadata_file, pair,
-                                              n_src, storage_dir)
-        # Add infos, randomize loudness and normalize sources
-        row, target_loudness_max_list, sources_list_max_norm = \
-            compute_and_randomize_loudness(row, sources_list_max, n_src,
-                                           max_amp)
+        # return infos about the sources, generate sources
+        sources_info, sources_list_max = \
+            add_sources_info_and_read_sources(metadata_file, pair, n_src,
+                                              storage_dir)
+        # compute initial loudness, randomize loudness and normalize sources
+        loudness, target_loudness_list, sources_list_norm = \
+            compute_and_randomize_loudness(sources_list_max, n_src)
         # Do the mixture
-        mixture_min, mixture_max = mix(sources_list_max_norm, min_length,
-                                       max_length, n_src)
+        mixture_max = mix(sources_list_norm)
         # Check the mixture for clipping and renormalize if necessary
-        row, mixture_min, sources_list_max_norm = \
-            check_for_cliping_and_renormalize(row, mixture_max, mixture_min,
-                                              sources_list_max_norm, max_amp,
-                                              n_src)
-        # Compute SNR for the min mode
-        row = compute_snr(row, mixture_min, sources_list_max_norm, min_length,
-                          n_src, eps)
+        renormalize_loudness = \
+            check_for_cliping_and_renormalize(mixture_max, sources_list_norm)
+        # Compute gain
+        gain_list = compute_gain(loudness, renormalize_loudness)
 
         # Add information to the dataframe
-        metadata_mixtures_file.loc[len(metadata_mixtures_file)] = row
+        metadata_generating_mixtures_file, metadata_info_mixtures_file = \
+            add_line(sources_info, gain_list,
+                     metadata_generating_mixtures_file,
+                     metadata_info_mixtures_file, n_src)
 
-    return metadata_mixtures_file
+    return metadata_generating_mixtures_file, metadata_info_mixtures_file
 
 
 def set_pairs(metadata_file, n_src):
@@ -268,33 +290,24 @@ def set_pairs(metadata_file, n_src):
     return L
 
 
-def add_sources_info_and_read_sources(metadata_file, pair, n_src,
-                                      storage_dir):
+def add_sources_info_and_read_sources(metadata_file, pair, n_src, storage_dir):
     # Get LibriSpeech root directory to be able to read the sources
     librispeech_root_directory_path = os.path.join(storage_dir, 'LibriSpeech')
 
-    # Initialize lists that will be added to the dataframe
-    mixtures_id = ""
-    speaker_id_list = []
-    sex_list = []
-    length_list = []
-    path_list = []
+    # Read lines corresponding to pair
+    sources = [metadata_file.iloc[pair[i]] for i in range(n_src)]
     # Get sources info
-    for i in range(n_src):
-        source = metadata_file.iloc[pair[i]]
-        speaker_id_list.append(source['Speaker_ID'])
-        sex_list.append(source['Sex'])
-        length_list.append(source['Length'])
-        path_list.append(source['Origin_Path'])
-        mixtures_id += os.path.split(
-            source['Origin_Path'])[1].strip('.flac') + '_'
-    # Just remove the last '_' from mixture_id
-    mixtures_id = mixtures_id[:-1]
+    speaker_id_list = [source['Speaker_ID'] for source in sources]
+    sex_list = [source['Sex'] for source in sources]
+    length_list = [source['Length'] for source in sources]
+    path_list = [source['Origin_Path'] for source in sources]
+    id_l = [os.path.split(source['Origin_Path'])[1].strip('.flac')
+            for source in sources]
+    mixtures_id = "_".join(id_l)
 
     # Get the longest and shortest source len
-    min_length = min(length_list)
     max_length = max(length_list)
-    sources_list_max = []
+    sources_list = []
 
     # Read the source and compute some info
     for i in range(n_src):
@@ -304,73 +317,64 @@ def add_sources_info_and_read_sources(metadata_file, pair, n_src,
                                      relative_path)
         s, _ = sf.read(absolute_path, dtype='float32')
         s_max = np.pad(s, (0, max_length - len(s)))
-        sources_list_max.append(s_max)
+        sources_list.append(s_max)
 
-    # Append to the list
-    row = [mixtures_id, speaker_id_list, sex_list, path_list, length_list]
+    sources_info = {'mixtures_id': mixtures_id,
+                    'speaker_id_list': speaker_id_list, 'sex_list': sex_list,
+                    'path_list': path_list}
 
-    return row, sources_list_max, min_length, max_length
+    return sources_info, sources_list
 
 
-def compute_and_randomize_loudness(row, sources_list_max, n_src, max_amp):
+def compute_and_randomize_loudness(sources_list, n_src):
     """ Compute original loudness and normalise them randomly """
 
     # Initialize loudness
-    loudness_list_max = []
+    loudness_list = []
     # In LibriSpeech all sources are at 16KHz hence the meter
-    meter = pyln.Meter(16000)
+    meter = pyln.Meter(RATE)
     # Randomize sources loudness
-    target_loudness_max_list = []
-    sources_list_max_norm = []
+    target_loudness_list = []
+    sources_list_norm = []
 
     # Normalize loudness
     for i in range(n_src):
 
         # Compute initial loudness
-        loudness_list_max.append(
-            meter.integrated_loudness(sources_list_max[i]))
+        loudness_list.append(
+            meter.integrated_loudness(sources_list[i]))
         # Pick a random loudness
-        target_loudness = random.uniform(-30, -20)
+        target_loudness = random.uniform(MIN_LOUDNESS, MAX_LOUDNESS)
 
         try:
             # Normalize loudness
-            sources_list_max_norm.append(pyln.normalize.loudness
-                                         (sources_list_max[i],
-                                          loudness_list_max[i],
-                                          target_loudness))
+            sources_list_norm.append(pyln.normalize.loudness(sources_list[i],
+                                                             loudness_list[i],
+                                                             target_loudness))
             # Save the loudness
-            target_loudness_max_list.append(target_loudness)
+            target_loudness_list.append(target_loudness)
         # Catch user warning and normalize file to max amp
         except UserWarning:
             # Normalize to max amp
-            sources_list_max_norm.append(
-                sources_list_max[i] * max_amp / np.max(np.abs(
-                    sources_list_max[i])))
-            # Save loudness
-            target_loudness_max_list.append(
-                meter.integrated_loudness(sources_list_max_norm[i]))
+            sources_list_norm.append(
+                sources_list[i] * MAX_AMP / np.max(np.abs(
+                    sources_list[i])))
+            # Save the loudness
+            target_loudness_list.append(
+                meter.integrated_loudness(sources_list_norm[i]))
 
-    # Add to row
-    row += [loudness_list_max, target_loudness_max_list]
-
-    return row, target_loudness_max_list, sources_list_max_norm
+    return loudness_list, target_loudness_list, sources_list_norm
 
 
-def mix(sources_list_max_norm, min_length, max_length, n_src):
+def mix(sources_list_norm):
     """ Do the mixture for min mode and max mode """
     # Initialize mixture
-    mixture_max = np.zeros(max_length)
+    mixture_max = np.sum(sources_list_norm)
 
-    # Do the mixture
-    for i in range(n_src):
-        mixture_max += sources_list_max_norm[i]
-    mixture_min = mixture_max[:min_length]
-
-    return mixture_min, mixture_max
+    return mixture_max
 
 
-def check_for_cliping_and_renormalize(row, mixture_max, mixture_min,
-                                      sources_list_max_norm, max_amp, n_src):
+def check_for_cliping_and_renormalize(mixture_max, sources_list_norm):
     """ Check the mixture (mode max) for clipping and re normalize accordingly
     """
     # Initialize renormalized sources and loudness
@@ -379,39 +383,48 @@ def check_for_cliping_and_renormalize(row, mixture_max, mixture_min,
     # Recreate the meter
     meter = pyln.Meter(16000)
     # Check for clipping in mixtures
-    if np.max(np.abs(mixture_max)) > max_amp:
-        weight = max_amp / np.max(np.abs(mixture_max))
+    if np.max(np.abs(mixture_max)) > MAX_AMP:
+        weight = MAX_AMP / np.max(np.abs(mixture_max))
 
     else:
         weight = 1
 
     # Renormalize
-    for i in range(n_src):
-        renormalize_sources.append(sources_list_max_norm[i] * weight)
+    for i in range(len(sources_list_norm)):
+        renormalize_sources.append(sources_list_norm[i] * weight)
         renormalize_loudness.append(
             meter.integrated_loudness(renormalize_sources[i]))
-    mixture_min_renormalize = mixture_min * weight
 
-    # Update the target loudness
-    row[-1] = renormalize_loudness
-    return row, mixture_min_renormalize, renormalize_sources
+    return renormalize_loudness
 
 
-def compute_snr(row, mixture_min, sources_list, min_length, n_src,
-                eps):
-    """Compute the SNR on the mixture mode min"""
-    snr_list_min = []
+def compute_gain(loudness, renormalize_loudness):
+    """ Compute the gain according to the original and target loudness"""
+    gain = []
+    for i in range(len(loudness)):
+        delta_loudness = renormalize_loudness[i] - loudness[i]
+        gain.append(np.power(10.0, delta_loudness / 20.0))
+    return gain
 
-    # Compute SNR for min mode
+
+def add_line(sources_info, gain_list, metadata_generating_mixtures_file,
+             metadata_info_mixtures_file, n_src):
+    """ Add a new line to each dataframe """
+
+    row_mixture = [sources_info['mixtures_id']]
+    row_info = [sources_info['mixtures_id']]
     for i in range(n_src):
-        noise_min = mixture_min - sources_list[i][:min_length]
-        snr_list_min.append(10 * np.log10(
-            np.mean(np.square(sources_list[i][:min_length]))
-            / (np.mean(np.square(noise_min)) + eps) + eps))
+        row_mixture.append(sources_info['path_list'][i])
+        row_mixture.append(gain_list[i])
+        row_info.append(sources_info['speaker_id_list'][i])
+        row_info.append(sources_info['sex_list'][i])
 
-    # Add to row
-    row.append(snr_list_min)
-    return row
+    metadata_generating_mixtures_file.loc[
+        len(metadata_generating_mixtures_file)] = row_mixture
+    metadata_info_mixtures_file.loc[
+        len(metadata_info_mixtures_file)] = row_info
+
+    return metadata_generating_mixtures_file, metadata_info_mixtures_file
 
 
 if __name__ == "__main__":
