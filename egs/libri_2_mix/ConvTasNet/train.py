@@ -7,8 +7,6 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
-from asteroid.losses.multi_scale_spectral import SingleSrcMultiScaleSpectral
-
 from asteroid.data.librimix_dataset import LibriMix
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
@@ -29,12 +27,17 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf):
-    train_set = LibriMix(conf['data']['sources_train_path'],
-                         conf['data']['mixtures_train_path'])
-    val_set = LibriMix(conf['data']['sources_val_path'],
-                       conf['data']['mixtures_val_path'])
+    train_set = LibriMix(conf['data']['metadata_train_path'],
+                         conf['data']['desired_length'],
+                         conf['data']['sample_rate'],
+                         conf['data']['n_src'])
 
-    train_loader = DataLoader(train_set, shuffle=False,
+    val_set = LibriMix(conf['data']['metadata_val_path'],
+                       conf['data']['desired_length'],
+                       conf['data']['sample_rate'],
+                       conf['data']['n_src'])
+
+    train_loader = DataLoader(train_set, shuffle=True,
                               batch_size=conf['training']['batch_size'],
                               num_workers=conf['training']['num_workers'],
                               drop_last=True)
@@ -43,7 +46,6 @@ def main(conf):
                             num_workers=conf['training']['num_workers'],
                             drop_last=True)
 
-    # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': 2})
 
     # Define model and optimizer in a local function (defined in the recipe).
@@ -63,10 +65,7 @@ def main(conf):
         yaml.safe_dump(conf, outfile)
 
     # Define Loss function.
-    # loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
-    loss_func = PITLossWrapper(SingleSrcMultiScaleSpectral(
-        [2048, 512, 32], [2048, 512, 32], [1024, 256, 16], 2.),
-        pit_from='pw_pt')
+    loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
     system = System(model=model, loss_func=loss_func, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
                     scheduler=scheduler, config=conf)
