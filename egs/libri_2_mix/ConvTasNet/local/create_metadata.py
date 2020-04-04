@@ -23,9 +23,10 @@ MAX_LOUDNESS = -20
 
 # We wil need to catch a user warning and deal with it
 warnings.filterwarnings("error")
-
+# A random is used for reproducibility
 random.seed(123)
 
+# Command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--storage_dir', type=str, default=None,
                     help='Directory where Librispeech has been downloaded')
@@ -38,11 +39,7 @@ parser.add_argument('--dataset_name', type=str, default=None,
 
 def main(arguments):
     storage_dir = arguments.storage_dir
-    storage_dir = "D://"
-
     n_src = arguments.n_src
-    n_src = 2
-
     dataset_name = arguments.dataset_name
     if dataset_name is None:
         dataset_name = f'libri{n_src}mix'
@@ -90,9 +87,9 @@ def create_librispeech_metadata(storage_dir):
         # Filter out files that are shorter than 3s
         number_of_frames = NUMBER_OF_SECONDS * RATE
         directory_metadata = directory_metadata[
-            directory_metadata['Length'] >= number_of_frames]
+            directory_metadata['length'] >= number_of_frames]
         # Sort the dataframe according to ascending Length
-        directory_metadata = directory_metadata.sort_values('Length')
+        directory_metadata = directory_metadata.sort_values('length')
         # Write the dataframe in a .csv in the metadata directory
         save_path = os.path.join(metadata_directory_path, directory + '.csv')
         directory_metadata.to_csv(save_path, index=False)
@@ -112,14 +109,14 @@ def create_speakers_dataframe(storage_dir):
     speakers_metadata = pd.read_csv(speakers_metadata_path, sep="|",
                                     skiprows=11,
                                     error_bad_lines=False, header=0,
-                                    names=['Speaker_ID', 'Sex', 'Subset',
-                                           'MINUTES', 'NAMES'],
+                                    names=['speaker_ID', 'sex', 'subset',
+                                           'minutes', 'names'],
                                     skipinitialspace=True)
 
-    speakers_metadata = speakers_metadata.drop(['MINUTES', 'NAMES'],
+    speakers_metadata = speakers_metadata.drop(['minutes', 'names'],
                                                axis=1)
     # Delete white space
-    for column in ['Sex', 'Subset']:
+    for column in ['sex', 'subset']:
         speakers_metadata[column] = speakers_metadata[column].str.strip()
 
     # There is a problem with Speaker_ID = 60 his name contains " | " which is
@@ -145,7 +142,7 @@ def create_librispeech_dataframe(librispeech_root_path, directory,
                             recursive=True)
     # Create the dataframe corresponding to this directory
     directory_metadata = pd.DataFrame(
-        columns=['Speaker_ID', 'Sex', 'Subset', 'Length', 'Origin_Path'])
+        columns=['speaker_ID', 'sex', 'subset', 'length', 'origin_path'])
 
     # Go through the sound file list
     for sound_path in sound_paths:
@@ -160,11 +157,11 @@ def create_librispeech_dataframe(librispeech_root_path, directory,
         # Find the Sex according to the speaker ID in the LibriSpeech
         # metadata
         sex = speakers_metadata[
-            speakers_metadata['Speaker_ID'] == int(speaker_ID)].iat[0, 1]
+            speakers_metadata['speaker_ID'] == int(speaker_ID)].iat[0, 1]
         # Find the subset according to the speaker ID in the LibriSpeech
         # metadata
         subset = speakers_metadata[
-            speakers_metadata['Speaker_ID'] == int(speaker_ID)].iat[0, 2]
+            speakers_metadata['speaker_ID'] == int(speaker_ID)].iat[0, 2]
         # Add information to the dataframe
         directory_metadata.loc[len(directory_metadata)] = \
             [speaker_ID, sex, subset, length, relative_path]
@@ -180,7 +177,8 @@ def create_librimix_metadata(storage_dir, dataset_name, n_src):
     os.makedirs(os.path.join(storage_dir, dataset_name), exist_ok=True)
     dataset_directory_path = os.path.join(storage_dir, dataset_name)
     # Create metadata directory
-    os.mkdir(os.path.join(dataset_directory_path, 'metadata'))
+    os.makedirs(os.path.join(dataset_directory_path, 'metadata'),
+                exist_ok=True)
     mixtures_metadata_directory_path = os.path.join(dataset_directory_path,
                                                     'metadata')
     # Path to Librispeech metadata directory
@@ -189,11 +187,18 @@ def create_librimix_metadata(storage_dir, dataset_name, n_src):
     # List metadata files in LibriSpeech
     metadata_file_names = os.listdir(librispeech_metadata_directory_path)
     # If you wish to ignore some metadata files add their name here
+    # Example : to_be_ignored = ['dev-other.csv']
     to_be_ignored = []
+    # Check if the metadata files in LibriSpeech already have been used
+    already_generated = os.listdir(mixtures_metadata_directory_path)
+    for generated in already_generated:
+        if generated.startswith("generating_mixture"):
+            to_be_ignored.append(generated.replace("generating_mixture_", ""))
+            print(f"{generated} already exists in "
+                  f"mixtures_metadata_directory_path it won't be overwritten")
     for element in to_be_ignored:
         metadata_file_names.remove(element)
-
-    # Go throw each metadata file and create mixture metadata accordingly
+    # Go through each metadata file and create metadata accordingly
     for metadata_file_name in metadata_file_names:
         print(f"Creating {metadata_file_name} "
               f"metadata file in {dataset_name}/metadata")
@@ -220,17 +225,17 @@ def create_librimix_dataframe(metadata_file, n_src, storage_dir):
 
     # Create a dataframe that will be used to generate sources and mixtures
     metadata_generating_mixtures_file = pd.DataFrame(
-        columns=['Mixture_ID'])
+        columns=['mixture_ID'])
     # Create a dataframe that gather information about the sources
     # in the mixtures
     metadata_info_mixtures_file = pd.DataFrame(
-        columns=['Mixture_ID'])
+        columns=['mixture_ID'])
     # Add columns they depend on the number of sources
     for i in range(n_src):
-        metadata_generating_mixtures_file[f"Source_{i+1}_Path"] = {}
-        metadata_generating_mixtures_file[f"Source_{i+1}_Gain"] = {}
-        metadata_info_mixtures_file[f"Speaker_{i+1}_ID"] = {}
-        metadata_info_mixtures_file[f"Speaker_{i+1}_Sex"] = {}
+        metadata_generating_mixtures_file[f"source_{i+1}_path"] = {}
+        metadata_generating_mixtures_file[f"source_{i+1}_gain"] = {}
+        metadata_info_mixtures_file[f"speaker_{i+1}_ID"] = {}
+        metadata_info_mixtures_file[f"speaker_{i+1}_sex"] = {}
 
     # Generate pairs of sources to mix
     pairs = set_pairs(metadata_file, n_src)
@@ -275,7 +280,7 @@ def set_pairs(metadata_file, n_src):
     while len(index) >= n_src and c < 200:
         couple = random.sample(index, n_src)
         # Verify that speakers are different
-        speaker_list = set([metadata_file.iloc[couple[i]]['Speaker_ID']
+        speaker_list = set([metadata_file.iloc[couple[i]]['speaker_ID']
                             for i in range(n_src)])
         # If there are duplicates then increment the counter
         if len(speaker_list) != n_src:
@@ -297,11 +302,11 @@ def add_sources_info_and_read_sources(metadata_file, pair, n_src, storage_dir):
     # Read lines corresponding to pair
     sources = [metadata_file.iloc[pair[i]] for i in range(n_src)]
     # Get sources info
-    speaker_id_list = [source['Speaker_ID'] for source in sources]
-    sex_list = [source['Sex'] for source in sources]
-    length_list = [source['Length'] for source in sources]
-    path_list = [source['Origin_Path'] for source in sources]
-    id_l = [os.path.split(source['Origin_Path'])[1].strip('.flac')
+    speaker_id_list = [source['speaker_ID'] for source in sources]
+    sex_list = [source['sex'] for source in sources]
+    length_list = [source['length'] for source in sources]
+    path_list = [source['origin_path'] for source in sources]
+    id_l = [os.path.split(source['origin_path'])[1].strip('.flac')
             for source in sources]
     mixtures_id = "_".join(id_l)
 
@@ -312,7 +317,7 @@ def add_sources_info_and_read_sources(metadata_file, pair, n_src, storage_dir):
     # Read the source and compute some info
     for i in range(n_src):
         source = metadata_file.iloc[pair[i]]
-        relative_path = source['Origin_Path']
+        relative_path = source['origin_path']
         absolute_path = os.path.join(librispeech_root_directory_path,
                                      relative_path)
         s, _ = sf.read(absolute_path, dtype='float32')
@@ -369,7 +374,10 @@ def compute_and_randomize_loudness(sources_list, n_src):
 def mix(sources_list_norm):
     """ Do the mixture for min mode and max mode """
     # Initialize mixture
-    mixture_max = np.sum(sources_list_norm)
+    mixture_max = np.zeros_like(sources_list_norm[0])
+
+    for i in range(len(sources_list_norm)):
+        mixture_max += sources_list_norm[i]
 
     return mixture_max
 

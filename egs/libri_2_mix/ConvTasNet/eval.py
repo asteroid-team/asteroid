@@ -1,44 +1,40 @@
+import argparse
+import json
 import os
 import random
+from pprint import pprint
+
+import pandas as pd
 import soundfile as sf
 import torch
 import yaml
-import json
-import argparse
-import pandas as pd
-from tqdm import tqdm
-from pprint import pprint
 from pb_bss.evaluation import InputMetrics, OutputMetrics
+from tqdm import tqdm
+
+from asteroid.data.librimix_dataset import LibriMix
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid.data.libri2mix_dataset import Libri2Mix
-from asteroid.losses.multi_scale_spectral import SingleSrcMultiScaleSpectral
-from asteroid.utils import tensors_to_device, average_arrays_in_dic
-import numpy as np
-from model import load_best_model, make_model_and_optimizer
 from asteroid.torch_utils import load_state_dict_in
+from asteroid.utils import tensors_to_device, average_arrays_in_dic
+from model import make_model_and_optimizer
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--task', type=str, required=True,
-                    help='One of `enh_single`, `enh_both`, '
-                         '`sep_clean` or `sep_noisy`')
 parser.add_argument('--test_dir', type=str, required=True,
                     help='Test directory including the json files')
 parser.add_argument('--use_gpu', type=int, default=0,
                     help='Whether to use the GPU for model execution')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Experiment root')
-parser.add_argument('--n_save_ex', type=int, default=50,
+parser.add_argument('--n_save_ex', type=int, default=10,
                     help='Number of audio examples to save, -1 means all')
 
-compute_metrics = [
-    'si_sdr']  # , 'mir_eval_sdr', 'mir_eval_sir', 'mir_eval_sar', 'stoi']
+compute_metrics = ['si_sdr', 'mir_eval_sdr', 'mir_eval_sir', 'mir_eval_sar',
+                   'stoi']
 
 
 def main(conf):
-
-
+    # Make the model
     model, _ = make_model_and_optimizer(conf['train_conf'])
-
+    # Load best model
     with open(os.path.join(conf['exp_dir'], 'best_k_models.json'), "r") as f:
         best_k = json.load(f)
     best_model_path = min(best_k, key=best_k.get)
@@ -46,25 +42,26 @@ def main(conf):
     checkpoint = torch.load(best_model_path, map_location='cpu')
     state = checkpoint['state_dict']
     state_copy = state.copy()
-
     # Remove unwanted keys
     for keys, values in state.items():
         if keys.startswith('loss'):
             del state_copy[keys]
             print(keys)
-
     model = load_state_dict_in(state_copy, model)
 
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
     model_device = next(model.parameters()).device
-    test_set = Libri2Mix(conf['train_conf']['data']['dataset_dir'],"test")
 
-    loss_func = PITLossWrapper(SingleSrcMultiScaleSpectral(), pit_from='pw_pt')
+    test_set = LibriMix(conf['test_dir'], None,
+                        conf['sample_rate'],
+                        conf['train_conf']['data']['n_src'])
+
+    loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
 
     # Randomly choose the indexes of sentences to save.
-    ex_save_dir = os.path.join(conf['exp_dir'], 'examples_mss_16K/')
+    ex_save_dir = os.path.join(conf['exp_dir'], 'examples_mss_8K/')
     if conf['n_save_ex'] == -1:
         conf['n_save_ex'] = len(test_set)
     save_idx = random.sample(range(len(test_set)), conf['n_save_ex'])
@@ -82,12 +79,12 @@ def main(conf):
         mix_np = mix.cpu().data.numpy()
         sources_np = sources.squeeze().cpu().data.numpy()
         est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
-        est_sources_np[0, :] = est_sources_np[0, :] / \
-                               np.max(est_sources_np, axis=1)[0] * \
-                               np.max(sources_np, axis=1)[0]
-        est_sources_np[1, :] = est_sources_np[1, :] / \
-                               np.max(est_sources_np, axis=1)[1] * \
-                               np.max(sources_np, axis=1)[1]
+        # est_sources_np[0, :] = est_sources_np[0, :] / \
+        #                        np.max(est_sources_np, axis=1)[0] * \
+        #                        np.max(sources_np, axis=1)[0]
+        # est_sources_np[1, :] = est_sources_np[1, :] / \
+        #                        np.max(est_sources_np, axis=1)[1] * \
+        #                        np.max(sources_np, axis=1)[1]
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics.utt_metrics
         input_metrics = InputMetrics(observation=mix_np,
@@ -143,16 +140,10 @@ def main(conf):
 if __name__ == '__main__':
     args = parser.parse_args()
     arg_dic = dict(vars(args))
-
     # Load training config
     conf_path = os.path.join(args.exp_dir, 'conf.yml')
     with open(conf_path) as f:
         train_conf = yaml.safe_load(f)
     arg_dic['sample_rate'] = train_conf['data']['sample_rate']
     arg_dic['train_conf'] = train_conf
-
-    if args.task != arg_dic['train_conf']['data']['task']:
-        print("Warning : the task used to test is different than "
-              "the one from training, be sure this is what you want.")
-
     main(arg_dic)

@@ -9,7 +9,7 @@ storage_dir=
 
 # If you already have dowloaded and extracted LibriSpeech,
 # specify the path to the directory here and start from stage 2
-libri2mix_root_path=storage_dir
+librimix_root_path=
 
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
@@ -23,6 +23,36 @@ python_path=python
 
 . utils/parse_options.sh
 
+storage_dir=$storage_dir/libri
+
+# General
+stage=2  # Controls from which stage to start
+#tag=""  # Controls the directory name associated to the experiment
+## You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
+#id=0,1,2,3
+#
+## Data
+#data_dir=data  # Local data directory (No disk space needed)
+#task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
+#sample_rate=16000
+#
+#
+## Training
+#batch_size=8
+#num_workers=8
+##optimizer=adam
+#lr=0.001
+#epochs=200
+#
+## Architecture
+#n_blocks=6
+#n_repeats=2
+#mask_nonlinear=relu
+#
+## Evaluation
+#eval_use_gpu=1
+exp_dir=exp/tmp
+test_dir=/home/jcosentino/libri/libri2mix/8K/min/metadata/mixture_test-clean.csv
 
 if [[ $stage -le  -1 ]]; then
 	echo "Stage -1: Creating python environment to run this"
@@ -42,79 +72,40 @@ fi
 
 if [[ $stage -le  1 ]]; then
 	echo "Stage 1: Downloading LibriSpeech"
-  . local/prepare_data.sh --$storage_dir $storage_dir --python_path $python_path
+  . local/prepare_data.sh --storage_dir $storage_dir
 fi
 
 if [[ $stage -le  2 ]]; then
 	echo "Stage 2: Generating metadata "
-  $python_path local/create_libri2mix_from_scratch.py --storage_dir $storage_dir
+  $python_path local/create_metadata.py --storage_dir $storage_dir --n_src 2
 fi
 
 if [[ $stage -le  3 ]]; then
-	echo "Stage 3: Generating Libri2mix dataset"
-  $python_path local/create_libri2mix_from_metadata.py --libri2mix_root_path $storage_dir
+	echo "Stage 3: Generating Librimix dataset"
+  $python_path local/create_dataset_from_metadata.py --librispeech_root_path $storage_dir/LibriSpeech --dataset_root_path $storage_dir/libri2mix
 fi
 
-
-# General
-stage=3  # Controls from which stage to start
-tag=""  # Controls the directory name associated to the experiment
-# You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=0,1,2,3
-
-# Data
-data_dir=data  # Local data directory (No disk space needed)
-task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
-sample_rate=16000
-
-
-# Training
-batch_size=8
-num_workers=8
-#optimizer=adam
-lr=0.001
-epochs=200
-
-# Architecture
-n_blocks=6
-n_repeats=2
-mask_nonlinear=relu
-
-# Evaluation
-eval_use_gpu=1
-
-# Generate a random ID for the run if no tag is specified
-uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
-if [[ -z ${tag} ]]; then
-	tag=${task}_${sr_string}k${mode}_${uuid}
-fi
-expdir=exp/train_convtasnet_${tag}
-mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
-echo "Results from the following experiment will be stored in $expdir"
+## Generate a random ID for the run if no tag is specified
+#uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
+#if [[ -z ${tag} ]]; then
+#	tag=${task}_${sr_string}k${mode}_${uuid}
+#fi
+#expdir=exp/train_convtasnet_${tag}
+#mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
+#echo "Results from the following experiment will be stored in $expdir"
 
 
 if [[ $stage -le 4 ]]; then
   echo "Stage 4: Training"
   mkdir -p logs
-  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir exp/tmp \
-  --task $task \
-  --sample_rate $sample_rate \
-  --lr $lr \
-  --epochs $epochs \
-  --batch_size $batch_size \
-  --num_workers $num_workers \
-  --mask_act $mask_nonlinear \
-  --n_blocks $n_blocks \
-  --n_repeats $n_repeats \
-  --exp_dir ${expdir}/ | tee logs/train_${tag}.log
+#  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir exp/8K_mss \
+#  --exp_dir ${expdir}/ | tee logs/train_${tag}.log
+  $python_path train.py --exp_dir $exp_dir
 fi
 
 
 if [[ $stage -le 5 ]]; then
 	echo "Stage 5 : Evaluation"
-	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
-	--task $task \
-	--test_dir exp/tmp \
-	--use_gpu $eval_use_gpu \
-	--exp_dir exp/tmp
+#	CUDA_VISIBLE_DEVICES=$id $python_path eval.py
+  $python_path eval.py --exp_dir $exp_dir --test_dir $test_dir
 fi

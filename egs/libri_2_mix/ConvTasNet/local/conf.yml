@@ -18,9 +18,9 @@ masknet:
   hid_chan: 512
 # Training config
 training:
-  epochs: 200
-  batch_size: 1
-  num_workers: 1
+  epochs: 1
+  batch_size: 8
+  num_workers: 2
   half_lr: yes
   early_stop: yes
 # Optim config
@@ -30,9 +30,9 @@ optim:
   weight_decay: 0.
 # Data config
 data:
-  mixtures_train_path : "D://libri2mix//16K//min//mixtures//train-clean-100"
-  sources_train_path : "D://libri2mix//16K//min//sources//train-clean-100"
-  mixtures_val_path : "D://libri2mix//16K//min//mixtures//dev-clean"
-  sources_val_path : "D://libri2mix//16K//min//sources//dev-clean"
-  sample_length: 4
-
+  metadata_train_path : "/home/jcosentino/libri/libri2mix/8K/min/metadata/mixture_train-clean-100.csv"
+  metadata_val_path : "/home/jcosentino/libri/libri2mix/8K/min/metadata/mixture_dev-clean.csv"
+  desired_length: 4
+  sample_rate : 8000
+  n_src : 2
+# Eval config
