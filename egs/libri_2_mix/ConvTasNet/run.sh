@@ -51,7 +51,7 @@ stage=2  # Controls from which stage to start
 #
 ## Evaluation
 #eval_use_gpu=1
-exp_dir=exp/tmp
+exp_dir=exp/tanh
 test_dir=/home/jcosentino/libri/libri2mix/8K/min/metadata/mixture_test-clean.csv
 
 if [[ $stage -le  -1 ]]; then
