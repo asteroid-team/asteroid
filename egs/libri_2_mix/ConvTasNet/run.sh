@@ -1,15 +1,24 @@
 #!/bin/bash
 set -e  # Exit on error
 
-# Main storage directory. You'll need disk space to dump the raw LibriSpeech flac files
-# and generate the mixtures
-storage_dir=
+# If you haven't downloaded and extracted the LibriSpeech dataset start from stage 0
+# and specify storage_dir (only)
 
-# If you haven't downloaded and extracted the LibriSpeech dataset start from stage 1
+# If you have downloaded and extracted the LibriSpeech dataset start from stage 1
+# and specify both librispeech_wav_dir and storage_dir.
 
-# If you already have dowloaded and extracted LibriSpeech,
-# specify the path to the directory here and start from stage 2
-librimix_root_path=
+# If you have generated LibriMix, start from stage 3 and specify librimix_wav_dir
+
+# Main storage directory. You'll need disk space to store LibriSpeech and LibriMix
+storage_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/jcos_libri
+# Directory where LibriSpeech is stored.
+
+librispeech_dir=
+#librispeech_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/jcos_libri/LibriSpeech
+#/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/jcos_libri/LibriSpeech
+
+# Directory where LibriMix is stored.
+librimix_wav_dir=
 
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
@@ -21,12 +30,13 @@ python_path=python
 # Example usage
 # ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
 
+stage=1  # Controls from which stage to start
+
+
 . utils/parse_options.sh
 
-storage_dir=$storage_dir/libri
 
 # General
-stage=2  # Controls from which stage to start
 #tag=""  # Controls the directory name associated to the experiment
 ## You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 #id=0,1,2,3
@@ -54,35 +64,37 @@ stage=2  # Controls from which stage to start
 exp_dir=exp/tmp
 test_dir=/home/jcosentino/libri/libri2mix/8K/min/metadata/mixture_test-clean.csv
 
-if [[ $stage -le  -1 ]]; then
-	echo "Stage -1: Creating python environment to run this"
-	if [[ -x "${python_path}" ]]
-	then
-		echo "The provided python path is executable, don't proceed to installation."
-	else
-	  . utils/prepare_python_env.sh --install_dir $python_path --asteroid_root ../../..
-	  echo "Miniconda3 install can be found at $python_path"
-	  python_path=${python_path}/miniconda3/bin/python
-	  echo -e "\n To use this python version for the next experiments, change"
-	  echo -e "python_path=$python_path at the beginning of the file \n"
-	fi
+if [[ $stage -le  0 ]]; then
+	echo "Stage 0: Downloading LibriSpeech"
+  . local/prepare_data.sh --storage_dir $storage_dir
+	librispeech_dir=$storage_dir/LibriSpeech
 fi
 
-
+if [[ -z ${librispeech_dir} ]]; then
+	librispeech_dir=$storage_dir/LibriSpeech
+fi
 
 if [[ $stage -le  1 ]]; then
-	echo "Stage 1: Downloading LibriSpeech"
-  . local/prepare_data.sh --storage_dir $storage_dir
+	$python_path -m pip install pyloudnorm
+	echo "Stage 1: Generating metadata "
+	$python_path local/create_librispeech_metadata.py --librispeech_dir $librispeech_dir
+  $python_path local/create_librimix_metadata.py --librispeech_dir $librispeech_dir --n_src 2
+fi
+
+metadata_dir=$librispeech_dir/metadata/librimix
+
+if [[ -z ${librimix_wav_dir} ]]; then
+	librimix_wav_dir=$librispeech_dir
 fi
 
 if [[ $stage -le  2 ]]; then
-	echo "Stage 2: Generating metadata "
-  $python_path local/create_metadata.py --storage_dir $storage_dir --n_src 2
-fi
-
-if [[ $stage -le  3 ]]; then
-	echo "Stage 3: Generating Librimix dataset"
-  $python_path local/create_dataset_from_metadata.py --librispeech_root_path $storage_dir/LibriSpeech --dataset_root_path $storage_dir/libri2mix
+	echo "Stage 2: Generating Librimix dataset"
+  $python_path local/create_librimix_from_metadata.py \
+  --librispeech_dir $librispeech_dir \
+  --metadata_dir $metadata_dir \
+  --librimix_outdir $librimix_wav_dir \
+  --n_src 2 \
+  --freqs 8k
 fi
 
 ## Generate a random ID for the run if no tag is specified
@@ -95,7 +107,7 @@ fi
 #echo "Results from the following experiment will be stored in $expdir"
 
 
-if [[ $stage -le 4 ]]; then
+if [[ $stage -le 3 ]]; then
   echo "Stage 4: Training"
   mkdir -p logs
 #  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir exp/8K_mss \
@@ -104,7 +116,7 @@ if [[ $stage -le 4 ]]; then
 fi
 
 
-if [[ $stage -le 5 ]]; then
+if [[ $stage -le 4 ]]; then
 	echo "Stage 5 : Evaluation"
 #	CUDA_VISIBLE_DEVICES=$id $python_path eval.py
   $python_path eval.py --exp_dir $exp_dir --test_dir $test_dir
