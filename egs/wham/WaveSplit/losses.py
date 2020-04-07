@@ -96,6 +96,9 @@ class SpeakerVectorLoss(nn.Module):
 
     def forward(self, speaker_vectors, spk_mask, spk_labels):
 
+        # spk_mask ideally would be the speaker activty at frame level. Because WHAM speakers can be considered always two and active we fix this for now.
+        # mask with ones and zeros B, SRC, FRAMES
+
         if self.gaussian_reg:
             noise = torch.randn(self.spk_embeddings.size(), device=speaker_vectors.device)*math.sqrt(self.gaussian_reg)
             spk_embeddings = self.spk_embeddings + noise

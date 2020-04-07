@@ -101,6 +101,8 @@ class Wavesplit(pl.LightningModule): # redefinition
         tf_rep = self.enc_spk(inputs)
         spk_vectors = self.spk_stack(tf_rep)
         B, src, embed, frames = spk_vectors.size()
+
+        # torch.ones ideally would be the speaker activty at frame level. Because WHAM speakers can be considered always two and active we fix this for now.
         spk_loss, spk_vectors, oracle = self.spk_loss(spk_vectors, torch.ones((B, src, frames)).to(spk_vectors.device), spk_ids)
         tf_rep = self.enc_sep(inputs)
         B, n_filters, frames = tf_rep.size()
