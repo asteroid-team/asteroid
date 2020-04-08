@@ -147,8 +147,8 @@ class System(pl.LightningModule):
             est_sources_time = self.model(mixture_time)
             return self.loss_func(est_sources_time, true_sources_time)
         else:
-            raise NotImplementedError('The requested mode: {} is not '
-                                      'available. Expected `train` or `val`.')
+            raise ValueError('The requested mode: {} is not available. '
+                             'Expected `train` or `val`.')
 
     def training_step(self, batch, batch_nb):
         """ Pass data through the model and compute the loss.
