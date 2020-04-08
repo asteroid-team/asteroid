@@ -127,7 +127,7 @@ class WhamDataset(data.Dataset):
     def __len__(self):
         return len(self.mix)
 
-    def __getitem__(self, idx, eps=10e-8):
+    def __getitem__(self, idx):
         """ Gets a mixture/sources pair.
         Returns:
             mixture, vstack([source_arrays])
@@ -160,6 +160,6 @@ class WhamDataset(data.Dataset):
 
         if self.normalize_audio:
             m_std = mixture.std(-1, keepdim=True)
-            mixture = normalize_tensor_wav(mixture, eps=eps, std=m_std)
-            sources = normalize_tensor_wav(sources, eps=10e-8, std=m_std)
+            mixture = normalize_tensor_wav(mixture, eps=1e-8, std=m_std)
+            sources = normalize_tensor_wav(sources, eps=1e-8, std=m_std)
         return mixture, sources
