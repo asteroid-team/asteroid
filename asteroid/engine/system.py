@@ -168,14 +168,7 @@ class System(pl.LightningModule):
             ``'log'``: dict with tensorboard logs
 
         """
-<<<<<<< 1645d5ea3c9512ea841eb83cf88295ae9bc073a7
         loss = self.common_step(batch, batch_nb, train=True)
-=======
-        if self.two_step_approach is not None:
-            loss = self.common_step_two_step_separtion(batch, mode='train')
-        else:
-            loss = self.common_step(batch, batch_nb)
->>>>>>> Pytorch Lightning System module overwrite commonstep method for integrating the two step source separation recipe. Specifically, for the two step process a new method callback is called which has a modular structure and does not intervene with the other callback methods existing.
         tensorboard_logs = {'train_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
 
