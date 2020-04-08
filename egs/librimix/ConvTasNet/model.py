@@ -22,14 +22,7 @@ class Model(nn.Module):
         tf_rep = self.encoder(x)
         est_masks = self.masker(tf_rep)
         masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
-        return self.pad_output_to_inp(self.decoder(masked_tf_rep), x)
-
-    @staticmethod
-    def pad_output_to_inp(output, inp):
-        """ Pad first argument to have same size as second argument"""
-        inp_len = inp.size(-1)
-        output_len = output.size(-1)
-        return nn.functional.pad(output, [0, inp_len - output_len])
+        return torch_utils.pad_x_to_y(self.decoder(masked_tf_rep), x)
 
 
 def make_model_and_optimizer(conf):

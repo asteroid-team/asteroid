@@ -3,11 +3,12 @@ import argparse
 import soundfile as sf
 import pandas as pd
 import glob
+from tqdm import tqdm
 
 # Command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--librispeech_dir', type=str, default=None,
-                    help='Directory where Librispeech is stored')
+                    help='Path to librispeech root directory')
 
 
 def main(args):
@@ -15,12 +16,7 @@ def main(args):
     # Librispeech metadata directory
     librispeech_md_dir = os.path.join(librispeech_dir, 'metadata')
     os.makedirs(librispeech_md_dir, exist_ok=True)
-    # Check if the LibriSpeech metadata already exist
-    try:
-        create_librispeech_metadata(librispeech_dir, librispeech_md_dir)
-    except FileExistsError:
-        print(f"Found metadata files in {librispeech_md_dir}, passing.")
-        return
+    create_librispeech_metadata(librispeech_dir, librispeech_md_dir)
 
 
 def create_librispeech_metadata(librispeech_dir, md_dir):
@@ -94,7 +90,7 @@ def create_librispeech_dataframe(librispeech_dir, subdir, speakers_md):
                                    'length', 'origin_path'])
 
     # Go through the sound file list
-    for sound_path in sound_paths:
+    for sound_path in tqdm(sound_paths, total=len(sound_paths)):
         # Get the ID of the speaker
         spk_id = os.path.split(sound_path)[1].split('-')[0]
         # Find Sex according to speaker ID in LibriSpeech metadata

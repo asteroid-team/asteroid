@@ -28,14 +28,14 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 def main(conf):
     train_set = LibriMix(conf['data']['metadata_train_path'],
-                         conf['data']['desired_length'],
                          conf['data']['sample_rate'],
-                         conf['data']['n_src'])
+                         conf['data']['n_src'],
+                         conf['data']['segment'])
 
     val_set = LibriMix(conf['data']['metadata_val_path'],
-                       conf['data']['desired_length'],
                        conf['data']['sample_rate'],
-                       conf['data']['n_src'])
+                       conf['data']['n_src'],
+                       conf['data']['segment'])
 
     train_loader = DataLoader(train_set, shuffle=True,
                               batch_size=conf['training']['batch_size'],

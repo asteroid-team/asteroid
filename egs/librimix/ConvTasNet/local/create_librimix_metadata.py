@@ -28,7 +28,7 @@ random.seed(123)
 # Command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--librispeech_dir', type=str, default=None,
-                    help='Directory where Librispeech is stored')
+                    help='Path to librispeech root directory')
 parser.add_argument('--n_src', type=int, default=2,
                     help='Number of sources desired to create the mixture')
 parser.add_argument('--metadata_outdir', type=str, default=None,
@@ -44,14 +44,9 @@ def main(args):
     # Librimix metadata directory
     md_dir = args.metadata_outdir
     if md_dir is None:
-        md_dir = os.path.join(librispeech_dir, 'metadata/librimix')
+        root = os.path.dirname(librispeech_dir)
+        md_dir = os.path.join(root, f'LibriMix/metadata')
     os.makedirs(md_dir, exist_ok=True)
-    # Check if the LibriSpeech metadata already exist
-    # try:
-    #     create_librispeech_metadata(librispeech_dir, librispeech_md_dir)
-    # except FileExistsError:
-    #     print("Found LibriSpeech metadata files, not overwriting it.")
-    #     pass
     create_librimix_metadata(librispeech_dir, librispeech_md_dir,
                              md_dir, n_src=n_src)
 
@@ -130,7 +125,7 @@ def create_librispeech_dataframe(librispeech_dir, subdir, speakers_md):
                                    'length', 'origin_path'])
 
     # Go through the sound file list
-    for sound_path in sound_paths:
+    for sound_path in tqdm(sound_paths, total=len(sound_paths)):
         # Get the ID of the speaker
         spk_id = os.path.split(sound_path)[1].split('-')[0]
         # Find Sex according to speaker ID in LibriSpeech metadata

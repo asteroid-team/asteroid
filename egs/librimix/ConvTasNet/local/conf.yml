@@ -6,8 +6,8 @@ decoder:
 # filterbank config
 filterbank:
   n_filters: 512
-  kernel_size: 32
-  stride: 16
+  kernel_size: 16
+  stride: 8
 # Network config
 masknet:
   n_blocks: 6
@@ -19,7 +19,7 @@ masknet:
 # Training config
 training:
   epochs: 200
-  batch_size: 8
+  batch_size: 4
   num_workers: 2
   half_lr: yes
   early_stop: yes
@@ -30,9 +30,8 @@ optim:
   weight_decay: 0.
 # Data config
 data:
-  metadata_train_path : "/home/jcosentino/libri/libri2mix/8K/min/metadata/mixture_train-clean-100.csv"
-  metadata_val_path : "/home/jcosentino/libri/libri2mix/8K/min/metadata/mixture_dev-clean.csv"
-  desired_length: 4
+  metadata_train_path : "/home/jcosentino/jcosentino/libri/small_snr/8K/min/metadata/mixture_train-clean-360.csv"
+  metadata_val_path : "/home/jcosentino/jcosentino/libri/small_snr/8K/min/metadata/mixture_dev-clean.csv"
   sample_rate : 8000
   n_src : 2
-# Eval config
+  segment: 4

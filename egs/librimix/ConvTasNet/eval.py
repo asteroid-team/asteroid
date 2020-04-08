@@ -3,7 +3,7 @@ import json
 import os
 import random
 from pprint import pprint
-
+import numpy as np
 import pandas as pd
 import soundfile as sf
 import torch
@@ -79,12 +79,12 @@ def main(conf):
         mix_np = mix.cpu().data.numpy()
         sources_np = sources.squeeze().cpu().data.numpy()
         est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
-        # est_sources_np[0, :] = est_sources_np[0, :] / \
-        #                        np.max(est_sources_np, axis=1)[0] * \
-        #                        np.max(sources_np, axis=1)[0]
-        # est_sources_np[1, :] = est_sources_np[1, :] / \
-        #                        np.max(est_sources_np, axis=1)[1] * \
-        #                        np.max(sources_np, axis=1)[1]
+        est_sources_np[0, :] = est_sources_np[0, :] / \
+                               np.max(est_sources_np, axis=1)[0] * \
+                               np.max(sources_np, axis=1)[0]
+        est_sources_np[1, :] = est_sources_np[1, :] / \
+                               np.max(est_sources_np, axis=1)[1] * \
+                               np.max(sources_np, axis=1)[1]
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics.utt_metrics
         input_metrics = InputMetrics(observation=mix_np,
