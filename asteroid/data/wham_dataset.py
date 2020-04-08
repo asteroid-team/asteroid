@@ -33,7 +33,7 @@ WHAM_TASKS['enh_single'] = WHAM_TASKS['enhance_single']
 WHAM_TASKS['enh_both'] = WHAM_TASKS['enhance_both']
 
 
-def normalize_tensor_wav(wav_tensor, eps=10e-8, std=None):
+def normalize_tensor_wav(wav_tensor, eps=1e-8, std=None):
     mean = wav_tensor.mean(-1, keepdim=True)
     if std is None:
         std = wav_tensor.std(-1, keepdim=True)
