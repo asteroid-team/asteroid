@@ -30,7 +30,7 @@ python_path=python
 # Example usage
 # ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
 
-stage=1  # Controls from which stage to start
+stage=0  # Controls from which stage to start
 
 
 . utils/parse_options.sh
@@ -43,7 +43,6 @@ stage=1  # Controls from which stage to start
 #
 ## Data
 #data_dir=data  # Local data directory (No disk space needed)
-#task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
 #sample_rate=16000
 #
 #
@@ -81,10 +80,10 @@ if [[ $stage -le  1 ]]; then
   $python_path local/create_librimix_metadata.py --librispeech_dir $librispeech_dir --n_src 2
 fi
 
-metadata_dir=$librispeech_dir/metadata/librimix
+metadata_dir=$storage_dir/LibriMix/metadata
 
 if [[ -z ${librimix_wav_dir} ]]; then
-	librimix_wav_dir=$librispeech_dir
+	librimix_wav_dir=
 fi
 
 if [[ $stage -le  2 ]]; then
@@ -92,7 +91,6 @@ if [[ $stage -le  2 ]]; then
   $python_path local/create_librimix_from_metadata.py \
   --librispeech_dir $librispeech_dir \
   --metadata_dir $metadata_dir \
-  --librimix_outdir $librimix_wav_dir \
   --n_src 2 \
   --freqs 8k
 fi
@@ -106,18 +104,18 @@ fi
 #mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 #echo "Results from the following experiment will be stored in $expdir"
 
-
-if [[ $stage -le 3 ]]; then
-  echo "Stage 4: Training"
-  mkdir -p logs
-#  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir exp/8K_mss \
-#  --exp_dir ${expdir}/ | tee logs/train_${tag}.log
-  $python_path train.py --exp_dir $exp_dir
-fi
-
-
-if [[ $stage -le 4 ]]; then
-	echo "Stage 5 : Evaluation"
-#	CUDA_VISIBLE_DEVICES=$id $python_path eval.py
-  $python_path eval.py --exp_dir $exp_dir --test_dir $test_dir
-fi
+#
+#if [[ $stage -le 3 ]]; then
+#  echo "Stage 3: Training"
+#  mkdir -p logs
+##  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir exp/8K_mss \
+##  --exp_dir ${expdir}/ | tee logs/train_${tag}.log
+#  $python_path train.py --exp_dir $exp_dir
+#fi
+#
+#
+#if [[ $stage -le 4 ]]; then
+#	echo "Stage 4 : Evaluation"
+##	CUDA_VISIBLE_DEVICES=$id $python_path eval.py
+#  $python_path eval.py --exp_dir $exp_dir --test_dir $test_dir
+#fi

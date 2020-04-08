@@ -35,7 +35,7 @@ def main(args):
     # Get LibriMix root path
     librimix_outdir = args.librimix_outdir
     if librimix_outdir is None:
-        librimix_outdir = librispeech_dir
+        librimix_outdir = os.path.dirname(metadata_dir)
     librimix_outdir = os.path.join(librimix_outdir, f'Libri{args.n_src}Mix')
     # Get the desired frequencies
     freqs = args.freqs
@@ -50,11 +50,10 @@ def main(args):
 
 def create_librimix(in_dir, out_dir, metadata_dir, freqs=None, n_src=2,
                     modes=None):
-    """ Generate mixtures and saves them in dataset_root_path"""
+    """ Generate sources mixtures and saves them in out_dir"""
     # Get metadata files
-    md_filename_list = [f'libri{n_src}mix_train-clean-100.csv',
-                        f'libri{n_src}mix_dev-clean.csv',
-                        f'libri{n_src}mix_test-clean.csv']
+    md_filename_list = [file for file in os.listdir(metadata_dir)
+                        if 'info' not in file]
     # Create all parts of librimix
     for md_filename in md_filename_list:
         csv_path = os.path.join(metadata_dir, md_filename)
@@ -79,8 +78,9 @@ def process_metadata_file(csv_path, freqs, n_src, in_dir, out_dir,
             metrics_df = create_empty_metrics_metadata(n_src)
             mixture_df = create_empty_mixture_metadata(n_src)
             # Directory where the mixtures and sources will be stored
-            dir_name = os.path.basename(csv_path).strip(
-                f'libri{n_src}mix_').replace('-clean', '').strip('.csv')
+            dir_name = os.path.basename(csv_path).replace(
+                f'libri{n_src}mix_', '').replace('-clean', '').replace(
+                '.csv', '')
             dir_path = os.path.join(mode_path, dir_name)
             # If the files already exist then continue the loop
             if os.path.isdir(dir_path):
