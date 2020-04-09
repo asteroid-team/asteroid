@@ -126,8 +126,7 @@ def main(conf):
         train_model_part(conf, train_part='filterbank')
     else:
         print('Found available filterbank at: {}'.format(checkpoint_dir))
-        inp = input('Do you want to refine it further? y/n\n')
-        if inp.lower() == 'y':
+        if conf['filterbank_training']['reuse_pretrained_filterbank']:
             print('Refining filterbank...')
             train_model_part(conf, train_part='filterbank')
     train_model_part(conf, train_part='separator',
@@ -136,7 +135,7 @@ def main(conf):
 
 if __name__ == '__main__':
     import yaml
-    from pprint import pprint as print
+    from pprint import pprint as pprint
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
 
     # We start with opening the config file conf.yml as a dictionary from
