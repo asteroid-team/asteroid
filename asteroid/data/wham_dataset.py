@@ -4,6 +4,7 @@ import json
 import os
 import numpy as np
 import soundfile as sf
+EPS = 1e-8
 
 DATASET = 'WHAM'
 # WHAM tasks
@@ -33,6 +34,13 @@ WHAM_TASKS['enh_single'] = WHAM_TASKS['enhance_single']
 WHAM_TASKS['enh_both'] = WHAM_TASKS['enhance_both']
 
 
+def normalize_tensor_wav(wav_tensor, eps=1e-8, std=None):
+    mean = wav_tensor.mean(-1, keepdim=True)
+    if std is None:
+        std = wav_tensor.std(-1, keepdim=True)
+    return (wav_tensor - mean) / (std + eps)
+
+
 class WhamDataset(data.Dataset):
     """ Dataset class for WHAM source separation and speech enhancement tasks.
 
@@ -53,9 +61,11 @@ class WhamDataset(data.Dataset):
             targets.
             If None, defaults to one for enhancement tasks and two for
             separation tasks.
+        normalize_audio (bool): If True then both sources and the mixture are
+            normalized with the standard deviation of the mixture.
     """
     def __init__(self, json_dir, task, sample_rate=8000, segment=4.0,
-                 nondefault_nsrc=None):
+                 nondefault_nsrc=None, normalize_audio=False):
         super(WhamDataset, self).__init__()
         if task not in WHAM_TASKS.keys():
             raise ValueError('Unexpected task {}, expected one of '
@@ -65,6 +75,7 @@ class WhamDataset(data.Dataset):
         self.task = task
         self.task_dict = WHAM_TASKS[task]
         self.sample_rate = sample_rate
+        self.normalize_audio = normalize_audio
         self.seg_len = None if segment is None else int(segment * sample_rate)
         if not nondefault_nsrc:
             self.n_src = self.task_dict['default_nsrc']
@@ -146,4 +157,10 @@ class WhamDataset(data.Dataset):
                                stop=stop, dtype='float32')
             source_arrays.append(s)
         sources = torch.from_numpy(np.vstack(source_arrays))
-        return torch.from_numpy(x), sources
+        mixture = torch.from_numpy(x)
+
+        if self.normalize_audio:
+            m_std = mixture.std(-1, keepdim=True)
+            mixture = normalize_tensor_wav(mixture, eps=EPS, std=m_std)
+            sources = normalize_tensor_wav(sources, eps=EPS, std=m_std)
+        return mixture, sources

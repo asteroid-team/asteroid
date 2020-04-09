@@ -20,7 +20,6 @@ class System(pl.LightningModule):
             of learning rate schedulers.
         config: Anything to be saved with the checkpoints during training.
             The config dictionary to re-instantiate the run for example.
-
     .. note:: By default, `training_step` (used by `pytorch-lightning` in the
         training loop) and `validation_step` (used for the validation loop)
         share `common_step`. If you want different behavior for the training
