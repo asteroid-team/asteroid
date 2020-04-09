@@ -160,11 +160,6 @@ class WhamDataset(data.Dataset):
 
         if self.normalize_audio:
             m_std = mixture.std(-1, keepdim=True)
-<<<<<<< HEAD
             mixture = normalize_tensor_wav(mixture, eps=1e-8, std=m_std)
             sources = normalize_tensor_wav(sources, eps=1e-8, std=m_std)
-=======
-            mixture = normalize_tensor_wav(mixture, eps=eps, std=m_std)
-            sources = normalize_tensor_wav(sources, eps=10e-8, std=m_std)
->>>>>>> 103bc5ad342580c69f5c9dd12930e8ea3dc5319a
         return mixture, sources
