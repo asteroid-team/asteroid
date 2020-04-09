@@ -10,7 +10,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid import torch_utils
 from asteroid.data.wham_dataset import WhamDataset
-from asteroid.engine.system import System
+from system import SystemTwoStep
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 
 from model import get_encoded_paths
@@ -85,10 +85,10 @@ def train_model_part(conf, train_part='filterbank',
 
     # Define Loss function.
     loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
-    system = System(model=model, loss_func=loss_func, optimizer=optimizer,
-                    train_loader=train_loader, val_loader=val_loader,
-                    scheduler=scheduler, config=conf,
-                    two_step_approach=train_part)
+    system = SystemTwoStep(model=model, loss_func=loss_func,
+                           optimizer=optimizer, train_loader=train_loader,
+                           val_loader=val_loader, scheduler=scheduler,
+                           config=conf, module=train_part)
 
     # Define callbacks
     checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
