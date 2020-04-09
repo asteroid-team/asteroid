@@ -1,23 +1,34 @@
-# Asteroid : Audio Source Separation on steroids
-[![Build Status][travis-badge]][travis]
-[![codecov][codecov-badge]][codecov]
+<div align="center">
+<img src="docs/source/_static/images/asteroid_logo_dark.png" width="50%">
 
+**The PyTorch-based audio source separation toolkit for researchers.**
+ 
+[![PyPI Status](https://badge.fury.io/py/asteroid.svg)](https://badge.fury.io/py/asteroid)
+[![PyPI Status](https://pepy.tech/badge/asteroid)](https://pepy.tech/project/asteroid)
 [![Slack][slack-badge]][slack-invite]
 
-Asteroid is a Pytorch-based source separation and speech enhancement 
-API that enables fast experimentation on common datasets. 
-It comes with a source code written to support a large range 
-of datasets, architectures, loss functions etc... and a set of
- recipes to reproduce some important papers.  
-Asteroid is intended to be a __community-based project__ 
-so hop on and help us !
+[![Build Status][travis-badge]][travis]
+[![codecov][codecov-badge]][codecov]
+</div>
 
-### You use asteroid or you want to? 
+--------------------------------------------------------------------------------
+
+
+Asteroid is a Pytorch-based audio source separation toolkit 
+that enables fast experimentation on common datasets. 
+It comes with a source code thats supports a large range 
+of datasets and architectures, and a set of
+ recipes to reproduce some important papers.
+
+
+### You use Asteroid or you want to? 
 Please, if you have found a bug, [open an issue][issue], 
 if you solved it, [open a pull request][pr] !  
 Same goes for new features, tell us what you want or help us building it !  
 Don't hesitate to [join the slack][slack-invite] 
-and ask questions / suggest new features there as well !
+and ask questions / suggest new features there as well !  
+Asteroid is intended to be a __community-based project__ 
+so hop on and help us !
 ## Table of contents
 - [Installation](#installation)
 - [Tutorials](#highlights)
@@ -70,8 +81,9 @@ More information in [egs/README.md](./egs).
 * [x] [Deep clustering](./egs/wsj0-mix/DeepClustering) ([Hershey et al.](https://arxiv.org/abs/1508.04306) and [Isik et al.](https://arxiv.org/abs/1607.02173))
 * [ ] Chimera ++ ([Luo et al.](https://arxiv.org/abs/1611.06265) and [Wang et al.](https://ieeexplore.ieee.org/document/8462507))
 * [x] [DualPathRNN](./egs/wham/DPRNN) ([Luo et al.](https://arxiv.org/abs/1910.06379))
-* [ ] Two step learning (Coming) ([Tzinis et al.](https://arxiv.org/abs/1910.09804))
+* [x] [Two step learning](./egs/wham/TwoStep)([Tzinis et al.](https://arxiv.org/abs/1910.09804))
 * [ ] Open-Unmix (coming) ([Stöter et al.](https://sigsep.github.io/open-unmix/))
+* [ ] Wavesplit (coming) ([Zeghidour et al.](https://arxiv.org/abs/2002.08933))
 
 ## Supported datasets
 * [x] [WSJ0-2mix](./egs/wsj0-mix) / WSJ03mix ([Hershey et al.](https://arxiv.org/abs/1508.04306))
