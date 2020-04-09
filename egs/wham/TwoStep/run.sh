@@ -36,9 +36,14 @@ nondefault_src=  # If you want to train a network with 3 output streams for exam
 
 # Training parameters separately for optimizing the filterbank and
 # the separator, respectively in a two-step process.
+# If a filterbank exists and is pretrained then reuse it.
+reuse_pretrained_filterbank=False
+filterbank_n_basis=128
+filterbank_kernel_size=21
+
 # Training
-f_batch_size=64
-s_batch_size=8
+f_batch_size=4
+s_batch_size=4
 f_num_workers=8
 s_num_workers=8
 f_optimizer=adam
@@ -59,46 +64,46 @@ eval_use_gpu=1
 . utils/parse_options.sh
 
 
-if [[ $stage -le  -1 ]]; then
-	echo "Stage -1: Creating python environment to run this"
-	if [[ -x "${python_path}" ]]
-	then
-		echo "The provided python path is executable, don't proceed to installation."
-	else
-	  . utils/prepare_python_env.sh --install_dir $python_path --asteroid_root ../../..
-	  echo "Miniconda3 install can be found at $python_path"
-	  python_path=${python_path}/miniconda3/bin/python
-	  echo -e "\n To use this python version for the next experiments, change"
-	  echo -e "python_path=$python_path at the beginning of the file \n"
-	fi
-fi
-
-
-if [[ $stage -le  0 ]]; then
-  echo "Stage 0: Converting sphere files to wav files"
-  . local/convert_sphere2wav.sh --sphere_dir $sphere_dir --wav_dir $wsj0_wav_dir
-fi
-
-
-if [[ $stage -le  1 ]]; then
-	echo "Stage 1: Generating 8k and 16k WHAM dataset"
-  . local/prepare_data.sh --wav_dir $wsj0_wav_dir --out_dir $wham_wav_dir --python_path $python_path
-fi
-
-
-if [[ $stage -le  2 ]]; then
-	# Make json directories with min/max modes and sampling rates
-	echo "Stage 2: Generating json files including wav path and duration"
-	for sr_string in 8 16; do
-		for mode in min max; do
-			tmp_dumpdir=data/wav${sr_string}k/$mode
-			echo "Generating json files in $tmp_dumpdir"
-			[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
-			local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode/
-      $python_path local/preprocess_wham.py --in_dir $local_wham_dir --out_dir $tmp_dumpdir
-    done
-  done
-fi
+#if [[ $stage -le  -1 ]]; then
+#	echo "Stage -1: Creating python environment to run this"
+#	if [[ -x "${python_path}" ]]
+#	then
+#		echo "The provided python path is executable, don't proceed to installation."
+#	else
+#	  . utils/prepare_python_env.sh --install_dir $python_path --asteroid_root ../../..
+#	  echo "Miniconda3 install can be found at $python_path"
+#	  python_path=${python_path}/miniconda3/bin/python
+#	  echo -e "\n To use this python version for the next experiments, change"
+#	  echo -e "python_path=$python_path at the beginning of the file \n"
+#	fi
+#fi
+#
+#
+#if [[ $stage -le  0 ]]; then
+#  echo "Stage 0: Converting sphere files to wav files"
+#  . local/convert_sphere2wav.sh --sphere_dir $sphere_dir --wav_dir $wsj0_wav_dir
+#fi
+#
+#
+#if [[ $stage -le  1 ]]; then
+#	echo "Stage 1: Generating 8k and 16k WHAM dataset"
+#  . local/prepare_data.sh --wav_dir $wsj0_wav_dir --out_dir $wham_wav_dir --python_path $python_path
+#fi
+#
+#
+#if [[ $stage -le  2 ]]; then
+#	# Make json directories with min/max modes and sampling rates
+#	echo "Stage 2: Generating json files including wav path and duration"
+#	for sr_string in 8 16; do
+#		for mode in min max; do
+#			tmp_dumpdir=data/wav${sr_string}k/$mode
+#			echo "Generating json files in $tmp_dumpdir"
+#			[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
+#			local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode/
+#      $python_path local/preprocess_wham.py --in_dir $local_wham_dir --out_dir $tmp_dumpdir
+#    done
+#  done
+#fi
 
 sr_string=$(($sample_rate/1000))
 suffix=wav${sr_string}k/$mode
@@ -134,6 +139,9 @@ if [[ $stage -le 3 ]]; then
   --s_num_workers $s_num_workers \
   --n_blocks $n_blocks \
   --n_repeats $n_repeats \
+  --n_filters $filterbank_n_basis \
+  --kernel_size $filterbank_kernel_size \
+  --reuse_pretrained_filterbank $reuse_pretrained_filterbank \
   --exp_dir ${expdir}/ | tee logs/train_${tag}.log
 fi
 
