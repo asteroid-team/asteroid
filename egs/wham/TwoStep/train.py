@@ -25,7 +25,7 @@ from model import make_model_and_optimizer
 # will limit the number of available GPUs for train.py .
 # This can be changed: `python train.py --gpus 0,1` will only train on 2 GPUs.
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpus', type=str, help='list of GPUs', default='0')
+parser.add_argument('--gpus', type=str, help='list of GPUs', default='2')
 parser.add_argument('--exp_dir', default='exp/model_logs',
                     help='Full path to save best validation model')
 
@@ -126,7 +126,7 @@ def main(conf):
         train_model_part(conf, train_part='filterbank')
     else:
         print('Found available filterbank at: {}'.format(checkpoint_dir))
-        if conf['filterbank_training']['reuse_pretrained_filterbank']:
+        if not conf['filterbank_training']['reuse_pretrained_filterbank']:
             print('Refining filterbank...')
             train_model_part(conf, train_part='filterbank')
     train_model_part(conf, train_part='separator',
