@@ -1,7 +1,7 @@
 # Filterbank config
 filterbank:
   n_filters: 64
-  kernel_size: 21
+  kernel_size: 41
   stride: 10
 # Network config
 masknet:
@@ -12,6 +12,7 @@ masknet:
   hid_chan: 512
 # Training config for the filterbank
 filterbank_training:
+  reuse_pretrained_filterbank: yes
   f_epochs: 200
   f_batch_size: 64
   f_num_workers: 4
