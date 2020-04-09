@@ -40,9 +40,9 @@ def get_data_loaders(conf, train_part='filterbank'):
                           nondefault_nsrc=conf['data']['nondefault_nsrc'],
                           normalize_audio=True)
 
-    if (not train_part == 'filterbank') and (not train_part == 'separator'):
-        raise NotImplementedError('Part to train: {} is not '
-                                  'available.'.format(train_part))
+    if train_part not in ['filterbank', 'separator']:
+        raise ValueError('Part to train: {} is not available.'.format(
+            train_part))
 
     train_loader = DataLoader(train_set, shuffle=True, drop_last=True,
                               batch_size=conf[train_part + '_training'][
