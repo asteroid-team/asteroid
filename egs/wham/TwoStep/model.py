@@ -59,8 +59,10 @@ def load_best_separator_if_available(conf):
     filterbank = load_best_filterbank_if_available(conf)
     _, f_checkpoint_dir = get_encoded_paths(conf, 'filterbank')
     if filterbank is None:
-        raise ImportError('There are no available filterbanks under: {}\n'
-              'Consider training one using train.py.'.format(f_checkpoint_dir))
+        raise FileNotFoundError(
+            'There are no available filterbanks under: {}\n'
+            'Consider training one using train.py.'.format(f_checkpoint_dir)
+        )
 
     exp_dir, checkpoint_dir = get_encoded_paths(conf, train_part='separator')
     model_available = False
@@ -70,8 +72,8 @@ def load_best_separator_if_available(conf):
             model_available = True
 
     if not model_available:
-        raise ImportError('There is no available separator model at: {}'
-                          ''.format(checkpoint_dir))
+        raise FileNotFoundError('There is no available separator model at: {}'
+                                ''.format(checkpoint_dir))
 
     model_path = os.path.join(checkpoint_dir, available_models[0])
     checkpoint = torch.load(model_path, map_location='cpu')
@@ -131,8 +133,8 @@ def make_model_and_optimizer(conf, model_part='filterbank',
                              'initialization of the separator.')
         model = Model(pretrained_filterbank, conf)
     else:
-        raise NotImplementedError('Part to train: {} is not '
-                                  'available.'.format(model_part))
+        raise ValueError('Part to train: {} is not available.'.format(
+            model_part))
     # Define optimizer of this model
     optimizer = make_optimizer(
         model.parameters(),
