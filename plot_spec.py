@@ -8,9 +8,9 @@ import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-from predict import generate_audio
-from models import Audio_Visual_Fusion as AVFusion
-from audio_feature_generator import convert_to_spectrogram
+from src import generate_audio
+from src.models import Audio_Visual_Fusion as AVFusion
+from src.loader import convert_to_spectrogram
 
 def _plot(i, spec, title):
     if len(spec.shape) == 3:
@@ -60,7 +60,7 @@ def plot_row(model, df, row_idx, device):
 if __name__ == "__main__":
     import torch
 
-    df = pd.read_csv("filtered_val.csv")
+    df = pd.read_csv("clean_filtered_val.csv")
     device = torch.device("cuda")
 
     model = AVFusion().to(device)

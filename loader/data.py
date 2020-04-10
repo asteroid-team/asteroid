@@ -115,11 +115,11 @@ class Signal:
         return self._is_spec
 
     @staticmethod
-    def load_audio(audio_path: str, sr=16_000):
+    def load_audio(audio_path: str, sr=16_000, load_spec=False):
         audio_path = Path(audio_path)
         spec_exists = False
         spec_path = Path(*audio_path.parts[:-2], "spec", audio_path.stem + ".npy")
-        if spec_path.is_file():
+        if load_spec and spec_path.is_file():
             spec_exists = True
             audio = np.load(spec_path)
         else:

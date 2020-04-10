@@ -92,8 +92,8 @@ class AVDataset(torch.utils.data.Dataset):
 
         if not is_spec:
             mixed_signal = convert_to_spectrogram(mixed_signal)
-            print("SAVING MIXED")
-            np.save(spec_path, mixed_signal)
+            #print("SAVING MIXED")
+            #np.save(spec_path, mixed_signal)
 
         audio_tensors = []
         video_tensors = []
@@ -104,8 +104,7 @@ class AVDataset(torch.utils.data.Dataset):
                 spectrogram =  all_signals[i].get_spec()
             else:
                 spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
-                print("SAVING")
-                np.save(all_signals[i].spec_path, spectrogram)
+                #np.save(all_signals[i].spec_path, spectrogram)
             #convert to tensor
             audio_tensors.append(torch.from_numpy(spectrogram))
 
@@ -114,30 +113,6 @@ class AVDataset(torch.utils.data.Dataset):
                 embeddings = torch.from_numpy(all_signals[i].get_embed())
                 video_tensors.append(embeddings)
                 continue
-            """
-            #retrieve video frames
-            raw_frames = all_signals[i].get_video()
-            #print(raw_frames.shape)
-
-            #NOTE: use_cuda = True, only if VRAM ~ 7+GB, if RAM < 8GB it will not work...
-            #run the detector and embedder on raw frames
-            video_file_name = all_signals[i].video_path.stem.split('_')
-            frame_stem_name = all_signals[i].video_path.stem + f"_part{all_signals[i].video_start_length}"
-            pos_x, pos_y = int(video_file_name[-3])/10000, int(video_file_name[-2])/10000
-            embeddings = input_face_embeddings(raw_frames, is_path=False, mtcnn=self.mtcnn, resnet=self.resnet,
-                                               face_embed_cuda=self.face_embed_cuda, use_half=self.use_half, name=frame_stem_name, coord=[pos_x, pos_y])
-            #clean
-            del raw_frames
-            if embeddings is None:
-                with open("corrupt_frames_list.txt", "a") as f:
-                    f.write(all_signals[i].video_path.as_posix()+'\n')
-                    video_tensors.append(torch.zeros(75, 512))
-                    continue
-
-            #save embeddings if not saved
-            np.save(all_signals[i].embed_path, embeddings.cpu().numpy())
-            video_tensors.append(embeddings)
-            """
 
         # video tensors are expected to be (75,1,1024) (h,w,c)
         # list of video tensors where len(list) == num_person

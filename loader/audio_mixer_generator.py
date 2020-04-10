@@ -89,9 +89,9 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         if excess_storage:
             storage_space = (1 - REMOVE_RANDOM_CHANCE) * storage_space
             print(f"Removing {REMOVE_RANDOM_CHANCE * 100} percent of combinations")
-            print(f"Saving total space: {storage_space - storage_space * REMOVE_RANDOM_CHANCE:,} bytes")
+            print(f"Saving total space: {storage_space - storage_space * REMOVE_RANDOM_CHANCE:,} Kbytes")
 
-        print(f"Occupying space: {storage_space:,} bytes")
+        print(f"Occupying space: {storage_space:,} Kbytes")
 
         #Store list of tuples, consisting of `input_audio_size`
         #Audio and their corresponding video path
