@@ -27,20 +27,21 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf):
-    train_set = LibriMix(conf['data']['metadata_train_path'],
-                         conf['data']['sample_rate'],
-                         conf['data']['n_src'],
-                         conf['data']['segment'])
+    train_set = LibriMix(csv_dir=conf['data']['train_dir'],
+                         sample_rate=conf['data']['sample_rate'],
+                         n_src=conf['data']['n_src'],
+                         segment=conf['data']['segment'])
 
-    val_set = LibriMix(conf['data']['metadata_val_path'],
-                       conf['data']['sample_rate'],
-                       conf['data']['n_src'],
-                       conf['data']['segment'])
+    val_set = LibriMix(csv_dir=conf['data']['valid_dir'],
+                       sample_rate=conf['data']['sample_rate'],
+                       n_src=conf['data']['n_src'],
+                       segment=conf['data']['segment'])
 
     train_loader = DataLoader(train_set, shuffle=True,
                               batch_size=conf['training']['batch_size'],
                               num_workers=conf['training']['num_workers'],
                               drop_last=True)
+
     val_loader = DataLoader(val_set, shuffle=True,
                             batch_size=conf['training']['batch_size'],
                             num_workers=conf['training']['num_workers'],
@@ -83,7 +84,7 @@ def main(conf):
     if not torch.cuda.is_available():
         print('No available GPU were found, set gpus to None')
         conf['main_args']['gpus'] = None
-    trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
+    trainer = pl.Trainer(max_epochs=conf['training']['epochs'],
                          checkpoint_callback=checkpoint,
                          early_stop_callback=early_stopping,
                          default_save_path=exp_dir,

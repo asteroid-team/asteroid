@@ -84,7 +84,8 @@ def create_librispeech_dataframe(librispeech_dir, subdir, speakers_md):
     # Get the current directory path
     dir_path = os.path.join(librispeech_dir, subdir)
     # Recursively look for .flac files in current directory
-    sound_paths = glob.glob(os.path.join(dir_path, '**/*.flac'), recursive=True)
+    sound_paths = glob.glob(os.path.join(dir_path, '**/*.flac'),
+                            recursive=True)
     # Create the dataframe corresponding to this directory
     dir_md = pd.DataFrame(columns=['speaker_ID', 'sex', 'subset',
                                    'length', 'origin_path'])
@@ -96,7 +97,8 @@ def create_librispeech_dataframe(librispeech_dir, subdir, speakers_md):
         # Find Sex according to speaker ID in LibriSpeech metadata
         sex = speakers_md[speakers_md['speaker_ID'] == int(spk_id)].iat[0, 1]
         # Find subset according to speaker ID in LibriSpeech metadata
-        subset = speakers_md[speakers_md['speaker_ID'] == int(spk_id)].iat[0, 2]
+        subset = speakers_md[speakers_md['speaker_ID'] == int(spk_id)].iat[
+            0, 2]
         # Get its length
         length = len(sf.SoundFile(sound_path))
         # Get the sound file relative path

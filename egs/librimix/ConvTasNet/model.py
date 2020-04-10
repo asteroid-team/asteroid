@@ -35,12 +35,7 @@ def make_model_and_optimizer(conf):
     and evaluation very simple.
     """
     # Define building blocks for local model
-    enc, _ = fb.make_enc_dec(fb_name=conf['encoder']['enc_name'],
-                             **conf['filterbank'])
-    _, dec = fb.make_enc_dec(fb_name=conf['decoder']['dec_name'],
-                             n_filters=enc.n_feats_out,
-                             kernel_size=conf['filterbank']['kernel_size'],
-                             stride=conf['filterbank']['stride'])
+    enc, dec = fb.make_enc_dec('free', **conf['filterbank'])
     masker = TDConvNet(in_chan=enc.filterbank.n_feats_out,
                        out_chan=enc.filterbank.n_feats_out,
                        **conf['masknet'])

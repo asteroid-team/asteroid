@@ -1,8 +1,3 @@
-encoder:
-  enc_name : free
-decoder:
-  dec_name : free
-
 # filterbank config
 filterbank:
   n_filters: 512
@@ -20,7 +15,7 @@ masknet:
 training:
   epochs: 200
   batch_size: 4
-  num_workers: 2
+  num_workers: 4
   half_lr: yes
   early_stop: yes
 # Optim config
@@ -30,8 +25,8 @@ optim:
   weight_decay: 0.
 # Data config
 data:
-  metadata_train_path : "/home/jcosentino/jcosentino/libri/small_snr/8K/min/metadata/mixture_train-clean-360.csv"
-  metadata_val_path : "/home/jcosentino/jcosentino/libri/small_snr/8K/min/metadata/mixture_dev-clean.csv"
+  train_dir : data/wav8k/min/train-360
+  valid_dir : data/wav8k/min/dev
   sample_rate : 8000
   n_src : 2
   segment: 4

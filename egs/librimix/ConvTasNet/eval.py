@@ -1,21 +1,25 @@
-import argparse
-import json
 import os
 import random
-from pprint import pprint
-import numpy as np
-import pandas as pd
+import warnings
 import soundfile as sf
 import torch
 import yaml
-from pb_bss.evaluation import InputMetrics, OutputMetrics
+import json
+import argparse
+import pandas as pd
 from tqdm import tqdm
+from pprint import pprint
+import numpy as np
 
+from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.torch_utils import load_state_dict_in
-from asteroid.utils import tensors_to_device, average_arrays_in_dic
+from asteroid.utils import tensors_to_device
+
 from model import make_model_and_optimizer
+
+warnings.simplefilter("ignore", UserWarning)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test_dir', type=str, required=True,
@@ -27,8 +31,7 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 parser.add_argument('--n_save_ex', type=int, default=10,
                     help='Number of audio examples to save, -1 means all')
 
-compute_metrics = ['si_sdr', 'mir_eval_sdr', 'mir_eval_sir', 'mir_eval_sar',
-                   'stoi']
+compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi']
 
 
 def main(conf):
@@ -54,14 +57,15 @@ def main(conf):
         model.cuda()
     model_device = next(model.parameters()).device
 
-    test_set = LibriMix(conf['test_dir'], None,
-                        conf['sample_rate'],
-                        conf['train_conf']['data']['n_src'])
+    test_set = LibriMix(csv_dir=conf['test_dir'],
+                        sample_rate=conf['sample_rate'],
+                        n_src=conf['train_conf']['data']['n_src'],
+                        segment=None)
 
     loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
 
     # Randomly choose the indexes of sentences to save.
-    ex_save_dir = os.path.join(conf['exp_dir'], 'examples_mss_8K/')
+    ex_save_dir = os.path.join(conf['exp_dir'], 'examples/')
     if conf['n_save_ex'] == -1:
         conf['n_save_ex'] = len(test_set)
     save_idx = random.sample(range(len(test_set)), conf['n_save_ex'])
@@ -80,34 +84,21 @@ def main(conf):
         sources_np = sources.squeeze().cpu().data.numpy()
         est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
         est_sources_np[0, :] = est_sources_np[0, :] / \
-                               np.max(est_sources_np, axis=1)[0] * \
-                               np.max(sources_np, axis=1)[0]
+                               np.max(est_sources_np, axis=1)[0]
         est_sources_np[1, :] = est_sources_np[1, :] / \
-                               np.max(est_sources_np, axis=1)[1] * \
-                               np.max(sources_np, axis=1)[1]
+                               np.max(est_sources_np, axis=1)[1]
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics.utt_metrics
-        input_metrics = InputMetrics(observation=mix_np,
-                                     speech_source=sources_np,
-                                     enable_si_sdr=True,
-                                     sample_rate=conf['sample_rate'])
-        utt_metrics = {'input_' + n: input_metrics[n] for n in compute_metrics}
-
-        output_metrics = OutputMetrics(speech_prediction=est_sources_np,
-                                       speech_source=sources_np,
-                                       enable_si_sdr=True,
-                                       sample_rate=conf['sample_rate'])
-
-        utt_metrics.update(output_metrics[compute_metrics])
-
-        utt_metrics = average_arrays_in_dic(utt_metrics)
+        utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
+                                  sample_rate=conf['sample_rate'])
+        utt_metrics['mix_path'] = test_set.mixture_path
         series_list.append(pd.Series(utt_metrics))
 
         # Save some examples in a folder. Wav files and metrics as text.
         if idx in save_idx:
             local_save_dir = os.path.join(ex_save_dir, 'ex_{}/'.format(idx))
             os.makedirs(local_save_dir, exist_ok=True)
-            sf.write(local_save_dir + "mixture.wav", mix_np[0],
+            sf.write(local_save_dir + "mixture.wav", mix_np,
                      conf['sample_rate'])
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):

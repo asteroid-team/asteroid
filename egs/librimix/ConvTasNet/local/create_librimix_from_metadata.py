@@ -128,13 +128,23 @@ def process_metadata_file(csv_path, freqs, n_src, in_dir, out_dir,
                 add_to_mixture_metadata(mixture_df, mix_id,
                                         abs_mix_path,
                                         abs_source_path_list, length)
-            # Save the metadata
+            # Save the metadata in out_dir ./data/wavxk/mode/subset
             save_path_mixture = os.path.join(subset_metadata_path,
                                              'mixture_' + dir_name + '.csv')
             save_path_metrics = os.path.join(subset_metadata_path,
                                              'metrics_' + dir_name + '.csv')
             mixture_df.to_csv(save_path_mixture, index=False)
             metrics_df.to_csv(save_path_metrics, index=False)
+            # Local path
+            local_path = os.path.relpath(dir_path, out_dir)
+            local_path = os.path.join('data', local_path)
+            save_path_mixture_local = os.path.join(local_path, 'mixture_' +
+                                                   dir_name + '.csv')
+            save_path_metrics_local = os.path.join(local_path, 'metrics_' +
+                                                   dir_name + '.csv')
+            os.makedirs(local_path,exist_ok=True)
+            mixture_df.to_csv(save_path_mixture_local, index=False)
+            metrics_df.to_csv(save_path_metrics_local, index=False)
 
 
 def create_empty_metrics_metadata(n_src):
