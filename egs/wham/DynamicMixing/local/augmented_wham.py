@@ -109,8 +109,9 @@ class AugmentedWhamDataset(Dataset):
         # Load json files
         utterances = glob.glob(os.path.join(wsj_train_dir, "**/*.wav"), recursive=True)
         noises = None
-        if self.task in ["sep_noisy", "enh_clean"]:
+        if self.task in ["sep_noisy", "enh_single", "enhance_single", "enh_both"]:
             noises = glob.glob(os.path.join(noise_dir, "*.wav"))
+            assert len(noises) > 0, "No noises parsed. Wrong path ?"
 
         # parse utterances according to speaker
         drop_utt, drop_len = 0, 0
@@ -121,7 +122,9 @@ class AugmentedWhamDataset(Dataset):
             meta = sf.SoundFile(utt)
             c_len = len(meta)
             assert meta.samplerate == self.sample_rate
-            if c_len < int(np.ceil(self.speed_perturb[1] * self.seg_len)):  # speed perturbation
+
+            target_length = int(np.ceil(self.speed_perturb[1] * self.seg_len)) if self.speed_perturb else self.seg_len
+            if c_len < target_length:  # speed perturbation
                 drop_utt += 1
                 drop_len += c_len
                 continue
@@ -141,7 +144,9 @@ class AugmentedWhamDataset(Dataset):
                 meta = sf.SoundFile(noise)
                 c_len = len(meta)
                 assert meta.samplerate == self.sample_rate
-                if c_len < int(np.ceil(self.speed_perturb[1] * self.seg_len)):  # speed perturbation
+                target_length = int(
+                    np.ceil(self.speed_perturb[1] * self.seg_len)) if self.speed_perturb else self.seg_len
+                if c_len < target_length:  # speed perturbation
                     drop_utt += 1
                     drop_len += c_len
                     continue
@@ -165,11 +170,10 @@ class AugmentedWhamDataset(Dataset):
             return sum(
                 [len(self.hashtab_synth[x]) for x in self.hashtab_synth.keys()])  # we account only the wsj0 length
 
-    def random_data_augmentation(self, signal, c_gain):
+    def random_data_augmentation(self, signal, c_gain, speed):
 
         # factor is a tuple
         if self.speed_perturb:
-            speed = random.uniform(*self.speed_perturb)
             fx = (AudioEffectsChain().speed(speed).custom(
             "norm {}".format(c_gain)))  # speed perturb and then apply gain
         else:
@@ -177,7 +181,7 @@ class AugmentedWhamDataset(Dataset):
                 "norm {}".format(c_gain)))
         signal = fx(signal)
 
-        return signal, c_gain
+        return signal
 
     @staticmethod
     def get_random_subsegment(array, desired_len, tot_length):
@@ -231,34 +235,45 @@ class AugmentedWhamDataset(Dataset):
         for i, spk in enumerate(c_speakers):
             tmp, tmp_spk_len = random.choice(self.hashtab_synth[c_speakers[i]])
             # account for sample reduction in speed perturb
-            target_len = int(np.ceil(self.speed_perturb[1] * self.seg_len))
+            if self.speed_perturb:
+                c_speed =  random.uniform(*self.speed_perturb)
+                target_len = int(np.ceil(c_speed * self.seg_len))
+            else:
+                target_len = self.seg_len
             tmp = self.get_random_subsegment(tmp, target_len, tmp_spk_len)
             if i == 0: # we model the signal level distributions with gaussians
                 c_lvl = np.clip(random.normalvariate(*self.abs_stats), floor, ceil)
                 first_lvl = c_lvl
             else:
                 c_lvl = np.clip(first_lvl - random.normalvariate(*self.rel_stats), floor, ceil)
-            tmp = self.random_data_augmentation(tmp, c_lvl)
+            tmp = self.random_data_augmentation(tmp, c_lvl, c_speed)
             tmp = tmp[:self.seg_len]
             sources.append(tmp)
 
-        if self.task in ["sep_noisy", "enh_clean"]:
+        if self.task in ["sep_noisy", "enh_single", "enh_both", "enhance_single"]:
             # add also noise
             tmp, tmp_spk_len = random.choice(self.hashtab_synth["noise"])
-            target_len = int(np.ceil(self.speed_perturb[1] * self.seg_len))
+            if self.speed_perturb:
+                c_speed =  random.uniform(*self.speed_perturb)
+                target_len = int(np.ceil(c_speed * self.seg_len))
+            else:
+                target_len = self.seg_len
             tmp = self.get_random_subsegment(tmp, target_len, tmp_spk_len)
             c_lvl = np.clip(first_lvl - random.normalvariate(*self.noise_stats), floor, ceil)
-            tmp, _ = self.random_data_augmentation(tmp, c_lvl)
+            tmp = self.random_data_augmentation(tmp, c_lvl, c_speed)
             tmp = tmp[:self.seg_len]
             sources.append(tmp)
 
         mix = np.mean(np.stack(sources), 0)
+        mix = mix / np.max(np.abs(mix))
 
-        if self.task in ["sep_noisy", "enh_clean"]:
+        if self.task in ["sep_noisy", "enh_single", "enhance_single", "enh_both"]:
             sources = sources[:-1]  # discard noise
 
         sources = np.stack(sources)
+        sources = sources / np.max(np.abs(mix))
         return torch.from_numpy(mix).float(), torch.from_numpy(sources).float()
+
 
 
 
