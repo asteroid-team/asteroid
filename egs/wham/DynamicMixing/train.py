@@ -31,7 +31,14 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 warnings.simplefilter("ignore", UserWarning)
 
 def main(conf):
-    train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
+    if conf["data"]["data_augmentation"]:
+        from local.augmented_wham import AugmentedWhamDataset
+        train_set = AugmentedWhamDataset(task=conf['data']['task'],
+                                         segment = conf['data']['segment'],
+                                         json_dir = conf["data"]["train_dir"], sample_rate = conf['data']['sample_rate'],
+                                         nondefault_nsrc = conf['data']['nondefault_nsrc'], **conf["augmentation"])
+    else:
+        train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
                             sample_rate=conf['data']['sample_rate'], segment=conf['data']['segment'],
                             nondefault_nsrc=conf['data']['nondefault_nsrc'])
     val_set = WhamDataset(conf['data']['valid_dir'], conf['data']['task'],

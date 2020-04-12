@@ -110,7 +110,7 @@ if [[ $stage -le  2 ]]; then
 fi
 
 if [[ $stage -le 3 ]]; then
-  echo "Creating a resampled WSJ0 version for 8k"
+  echo "Creating a resampled 8k WSJ0 version"
   python local/resample_dataset.py $wsj0_wav_dir/si_tr_s $wsj0_wav_dir_8k 16000 8000
 
 fi

@@ -35,10 +35,10 @@ class AugmentedWhamDataset(Dataset):
         global_stats: (tuple, optional): Mean and standard deviation for level in dB of first source.
         rel_stats: (tuple, optional): Mean and standard deviation for level in dB of second source relative to the first source.
         noise_stats: (tuple, optional): Mean and standard deviation for level in dB of noise relative to the first source.
-        speed_perturb: (int, optional): Range for SoX speed perturbation transformation.
+        speed_perturb: (tuple, optional): Range for SoX speed perturbation transformation.
     """
 
-    def __init__(self, wsj_train_dir, task, noise_dir=None, json_dir=None, orig_percentage=0., sample_rate=8000,
+    def __init__(self, wsj0train, task, noise_dir=None, json_dir=None, orig_percentage=0., sample_rate=8000,
                  segment=4.0, nondefault_nsrc=None, global_db_range=(-45, 0), abs_stats=(-16.7, 7),
                  rel_stats=(2.52, 4), noise_stats=(5.1, 6.4), speed_perturb=(0.95, 1.05)):
         super(AugmentedWhamDataset, self).__init__()
@@ -71,7 +71,7 @@ class AugmentedWhamDataset(Dataset):
             self.n_src = nondefault_nsrc
         if json_dir:
             self.wham_mix, self.wham_sources = self.parse_wham(json_dir)
-        self.hashtab_synth = self.parse_wsj0(wsj_train_dir, noise_dir)
+        self.hashtab_synth = self.parse_wsj0(wsj0train, noise_dir)
 
     def parse_wham(self, json_dir):
         mix_json = os.path.join(json_dir, self.task_dict['mixture'] + '.json')
@@ -233,7 +233,7 @@ class AugmentedWhamDataset(Dataset):
             # account for sample reduction in speed perturb
             target_len = int(np.ceil(self.speed_perturb[1] * self.seg_len))
             tmp = self.get_random_subsegment(tmp, target_len, tmp_spk_len)
-            if i == 0:
+            if i == 0: # we model the signal level distributions with gaussians
                 c_lvl = np.clip(random.normalvariate(*self.abs_stats), floor, ceil)
                 first_lvl = c_lvl
             else:
