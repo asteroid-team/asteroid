@@ -57,20 +57,18 @@ def get_data_loaders(conf, train_part='filterbank'):
     # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': train_set.n_src})
 
-    return train_set, val_set, train_loader, val_loader
+    return train_loader, val_loader
 
 
-def train_model_part(conf, train_part='filterbank',
-                     pretrained_filterbank=None):
-    train_set, val_set, train_loader, val_loader = get_data_loaders(
-        conf, train_part=train_part)
+def train_model_part(conf, train_part='filterbank', pretrained_filterbank=None):
+    train_loader, val_loader = get_data_loaders(conf, train_part=train_part)
 
     # Define model and optimizer in a local function (defined in the recipe).
     # Two advantages to this : re-instantiating the model and optimizer
     # for retraining and evaluating is straight-forward.
     model, optimizer = make_model_and_optimizer(
-        conf, model_part=train_part,
-        pretrained_filterbank=pretrained_filterbank)
+        conf, model_part=train_part, pretrained_filterbank=pretrained_filterbank
+    )
     # Define scheduler
     scheduler = None
     if conf[train_part + '_training'][train_part[0] + '_half_lr']:
