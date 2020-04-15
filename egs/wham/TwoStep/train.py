@@ -25,7 +25,7 @@ from model import make_model_and_optimizer
 # will limit the number of available GPUs for train.py .
 # This can be changed: `python train.py --gpus 0,1` will only train on 2 GPUs.
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpus', type=str, help='list of GPUs', default='2')
+parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/model_logs',
                     help='Full path to save best validation model')
 
@@ -135,7 +135,6 @@ def main(conf):
 
 if __name__ == '__main__':
     import yaml
-    from pprint import pprint as pprint
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
 
     # We start with opening the config file conf.yml as a dictionary from
