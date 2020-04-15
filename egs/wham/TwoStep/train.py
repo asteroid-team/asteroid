@@ -122,11 +122,13 @@ def main(conf):
         print('There are no available filterbanks under: {}. Going to '
               'training.'.format(checkpoint_dir))
         train_model_part(conf, train_part='filterbank')
+        filterbank = load_best_filterbank_if_available(conf)
     else:
         print('Found available filterbank at: {}'.format(checkpoint_dir))
         if not conf['filterbank_training']['reuse_pretrained_filterbank']:
             print('Refining filterbank...')
             train_model_part(conf, train_part='filterbank')
+            filterbank = load_best_filterbank_if_available(conf)
     train_model_part(conf, train_part='separator',
                      pretrained_filterbank=filterbank)
 
@@ -148,4 +150,5 @@ if __name__ == '__main__':
     # the attributes in an non-hierarchical structure. It can be useful to also
     # have it so we included it here but it is not used.
     arg_dic, plain_args = parse_args_as_dict(parser, return_plain_args=True)
+    print(arg_dic)
     main(arg_dic)
