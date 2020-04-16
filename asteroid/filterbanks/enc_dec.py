@@ -99,7 +99,21 @@ class Encoder(_EncDec):
             as an encoder.
         is_pinv (bool): Whether to be the pseudo inverse of filterbank.
         as_conv1d (bool): Whether to behave like nn.Conv1d.
+            If True (default), forwarding input with shape (batch, 1, time)
+            will output a tensor of shape (batch, freq, conv_time).
+            If False, will output a tensor of shape (batch, 1, freq, conv_time).
         padding (int): Zero-padding added to both sides of the input.
+
+    Notes:
+        (time, ) --> (freq, conv_time)
+        (batch, time) --> (batch, freq, conv_time)  # Avoid
+        if as_conv1d:
+            (batch, 1, time) --> (batch, freq, conv_time)
+            (batch, chan, time) --> (batch, chan, freq, conv_time)
+        else:
+            (batch, chan, time) --> (batch, chan, freq, conv_time)
+        (batch, any, dim, time) --> (batch, any, dim, freq, conv_time)
+
     """
     def __init__(self, filterbank, is_pinv=False, as_conv1d=True, padding=0):
         super(Encoder, self).__init__(filterbank, is_pinv=is_pinv)
