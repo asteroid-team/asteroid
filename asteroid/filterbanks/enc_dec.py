@@ -99,7 +99,7 @@ class Encoder(_EncDec):
             as an encoder.
         is_pinv (bool): Whether to be the pseudo inverse of filterbank.
         as_conv1d (bool): Whether to behave like nn.Conv1d.
-        padding (int or tuple): Zero-padding added to both sides of the input.
+        padding (int): Zero-padding added to both sides of the input.
     """
     def __init__(self, filterbank, is_pinv=False, as_conv1d=True, padding=0):
         super(Encoder, self).__init__(filterbank, is_pinv=is_pinv)
@@ -173,7 +173,19 @@ class Decoder(_EncDec):
     Args:
         filterbank (:class:`Filterbank`): The filterbank to use as an decoder.
         is_pinv (bool): Whether to be the pseudo inverse of filterbank.
+        padding (int): Zero-padding added to both sides of the input.
+        output_padding (int): Additional size added to one side of the
+            output shape.
+
+    Notes
+        `padding` and `output_padding` arguments are directly passed to
+        F.conv_transpose1d.
     """
+    def __init__(self, filterbank, is_pinv=False, padding=0, output_padding=0):
+        super().__init__(filterbank, is_pinv=is_pinv)
+        self.padding = padding
+        self.output_padding = output_padding
+
     @classmethod
     def pinv_of(cls, filterbank):
         """ Returns an Decoder, pseudo inverse of a filterbank or Encoder."""
@@ -196,15 +208,24 @@ class Decoder(_EncDec):
         filters = self.get_filters()
         if spec.ndim == 2:
             # Input is (freq, conv_time), output is (time)
-            return F.conv_transpose1d(spec.unsqueeze(0), filters,
-                                      stride=self.stride).squeeze()
+            return F.conv_transpose1d(
+                spec.unsqueeze(0),
+                filters,
+                stride=self.stride,
+                padding=self.padding,
+                output_padding=self.output_padding
+            ).squeeze()
         if spec.ndim == 3:
             # Input is (batch, freq, conv_time), output is (batch, 1, time)
-            return F.conv_transpose1d(spec, filters, stride=self.stride)
+            return F.conv_transpose1d(spec, filters, stride=self.stride,
+                                      padding=self.padding,
+                                      output_padding=self.output_padding)
         elif spec.ndim > 3:
             # Multiply all the left dimensions together and group them in the
             # batch. Make the convolution and restore.
             view_as = (-1,) + spec.shape[-2:]
             out = F.conv_transpose1d(spec.view(view_as),
-                                     filters, stride=self.stride)
+                                     filters, stride=self.stride,
+                                     padding=self.padding,
+                                     output_padding=self.output_padding)
             return out.view(spec.shape[:-2] + (-1,))
