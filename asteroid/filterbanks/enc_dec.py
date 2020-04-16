@@ -98,13 +98,14 @@ class Encoder(_EncDec):
         filterbank (:class:`Filterbank`): The filterbank to use
             as an encoder.
         is_pinv (bool): Whether to be the pseudo inverse of filterbank.
-        as_conv1d (bool): Doc to come.
-
+        as_conv1d (bool): Whether to behave like nn.Conv1d.
+        padding (int or tuple): Zero-padding added to both sides of the input.
     """
-    def __init__(self, filterbank, is_pinv=False, as_conv1d=True):
+    def __init__(self, filterbank, is_pinv=False, as_conv1d=True, padding=0):
         super(Encoder, self).__init__(filterbank, is_pinv=is_pinv)
         self.as_conv1d = as_conv1d
         self.n_feats_out = self.filterbank.n_feats_out
+        self.padding = padding
 
     @classmethod
     def pinv_of(cls, filterbank, **kwargs):
@@ -122,7 +123,7 @@ class Encoder(_EncDec):
             # Assumes 1D input with shape (time,)
             # Output will be (freq, conv_time)
             return F.conv1d(waveform[None, None], filters,
-                            stride=self.stride).squeeze()
+                            stride=self.stride, padding=self.padding).squeeze()
         elif waveform.ndim == 2:
             # Assume 2D input with shape (batch or channels, time)
             # Output will be (batch or channels, freq, conv_time)
@@ -133,13 +134,14 @@ class Encoder(_EncDec):
                           "to avoid it. For example, this can be done with "
                           "input_tensor.unsqueeze(1).")
             return F.conv1d(waveform.unsqueeze(1), filters,
-                            stride=self.stride)
+                            stride=self.stride, padding=self.padding)
         elif waveform.ndim == 3:
             batch, channels, time_len = waveform.shape
             if channels == 1 and self.as_conv1d:
                 # That's the common single channel case (batch, 1, time)
                 # Output will be (batch, freq, stft_time), behaves as Conv1D
-                return F.conv1d(waveform, filters, stride=self.stride)
+                return F.conv1d(waveform, filters, stride=self.stride,
+                                padding=self.padding)
             else:
                 # Return batched convolution, input is (batch, 3, time),
                 # output will be (batch, 3, freq, conv_time).
@@ -156,7 +158,8 @@ class Encoder(_EncDec):
         # Here we perform multichannel / multi-source convolution. Ou
         # Output should be (batch, channels, freq, conv_time)
         batched_conv = F.conv1d(inp.view(-1, 1, inp.shape[-1]),
-                                filters, stride=self.stride)
+                                filters, stride=self.stride,
+                                padding=self.padding)
         output_shape = inp.shape[:-1] + batched_conv.shape[-2:]
         return batched_conv.view(output_shape)
 
