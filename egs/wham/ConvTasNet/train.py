@@ -82,7 +82,7 @@ def main(conf):
     if not torch.cuda.is_available():
         print('No available GPU were found, set gpus to None')
         conf['main_args']['gpus'] = None
-    trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
+    trainer = pl.Trainer(max_epochs=conf['training']['epochs'],
                          checkpoint_callback=checkpoint,
                          early_stop_callback=early_stopping,
                          default_save_path=exp_dir,
