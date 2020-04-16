@@ -11,6 +11,7 @@ def mixture_consistency(mixture, est_sources, src_weights=None, dim=1):
         src_weights (torch.Tensor): Consistency weight for each source.
             Shape needs to be broadcastable to `est_source`.
             We make sure that the weights sum up to 1 along dim `dim`.
+            If `src_weights` is None, compute them based on relative power.
         dim (int): Axis which contains the sources in `est_sources`.
 
     Returns
@@ -31,6 +32,11 @@ def mixture_consistency(mixture, est_sources, src_weights=None, dim=1):
         >>> mix = torch.randn(10, 514, 400)
         >>> est_sources = torch.randn(10, 2, 514, 400)
         >>> new_est_sources = mixture_consistency(mix, est_sources, dim=1)
+
+    References
+        Scott Wisdom, John R Hershey, Kevin Wilson, Jeremy Thorpe, Michael
+        Chinen, Brian Patton, and Rif A Saurous. "Differentiable consistency
+        constraints for improved deep speech enhancement", ICASSP 2019.
     """
     # If the source weights are not specified, the weights are the relative
     # power of each source to the sum. w_i = P_i / (P_all), P for power.
