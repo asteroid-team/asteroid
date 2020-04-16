@@ -84,11 +84,11 @@ if [[ $stage -le  2 ]]; then
 	# Make json directories with min/max modes and sampling rates
 	echo "Stage 2: Generating json files including wav path and duration"
 	for sr_string in 8 16; do
-		for mode in min max; do
-			tmp_dumpdir=data/wav${sr_string}k/$mode
+		for mode_option in min max; do
+			tmp_dumpdir=data/wav${sr_string}k/$mode_option
 			echo "Generating json files in $tmp_dumpdir"
 			[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
-			local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode/
+			local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode_option/
       $python_path local/preprocess_wham.py --in_dir $local_wham_dir --out_dir $tmp_dumpdir
     done
   done
