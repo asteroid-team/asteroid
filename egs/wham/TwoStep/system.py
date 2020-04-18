@@ -88,6 +88,7 @@ class SystemTwoStep(SystemCore):
             est_latents = self.model.estimate_latent_representations(
                 mixture_time)
             batch_size, n_sources = est_latents.shape[0], est_latents.shape[1]
+            # See section 2.2 of the paper
             return self.loss_func(
                 est_latents.view(batch_size, n_sources, -1),
                 latent_targets.view(batch_size, n_sources, -1))

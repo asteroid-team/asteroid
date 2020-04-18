@@ -25,7 +25,7 @@ from model import make_model_and_optimizer
 # will limit the number of available GPUs for train.py .
 # This can be changed: `python train.py --gpus 0,1` will only train on 2 GPUs.
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpus', type=str, help='list of GPUs', default='2')
+parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/model_logs',
                     help='Full path to save best validation model')
 
@@ -57,20 +57,18 @@ def get_data_loaders(conf, train_part='filterbank'):
     # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': train_set.n_src})
 
-    return train_set, val_set, train_loader, val_loader
+    return train_loader, val_loader
 
 
-def train_model_part(conf, train_part='filterbank',
-                     pretrained_filterbank=None):
-    train_set, val_set, train_loader, val_loader = get_data_loaders(
-        conf, train_part=train_part)
+def train_model_part(conf, train_part='filterbank', pretrained_filterbank=None):
+    train_loader, val_loader = get_data_loaders(conf, train_part=train_part)
 
     # Define model and optimizer in a local function (defined in the recipe).
     # Two advantages to this : re-instantiating the model and optimizer
     # for retraining and evaluating is straight-forward.
     model, optimizer = make_model_and_optimizer(
-        conf, model_part=train_part,
-        pretrained_filterbank=pretrained_filterbank)
+        conf, model_part=train_part, pretrained_filterbank=pretrained_filterbank
+    )
     # Define scheduler
     scheduler = None
     if conf[train_part + '_training'][train_part[0] + '_half_lr']:
@@ -124,18 +122,19 @@ def main(conf):
         print('There are no available filterbanks under: {}. Going to '
               'training.'.format(checkpoint_dir))
         train_model_part(conf, train_part='filterbank')
+        filterbank = load_best_filterbank_if_available(conf)
     else:
         print('Found available filterbank at: {}'.format(checkpoint_dir))
         if not conf['filterbank_training']['reuse_pretrained_filterbank']:
             print('Refining filterbank...')
             train_model_part(conf, train_part='filterbank')
+            filterbank = load_best_filterbank_if_available(conf)
     train_model_part(conf, train_part='separator',
                      pretrained_filterbank=filterbank)
 
 
 if __name__ == '__main__':
     import yaml
-    from pprint import pprint as pprint
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
 
     # We start with opening the config file conf.yml as a dictionary from
@@ -151,4 +150,5 @@ if __name__ == '__main__':
     # the attributes in an non-hierarchical structure. It can be useful to also
     # have it so we included it here but it is not used.
     arg_dic, plain_args = parse_args_as_dict(parser, return_plain_args=True)
+    print(arg_dic)
     main(arg_dic)

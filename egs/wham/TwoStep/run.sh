@@ -3,20 +3,20 @@
 set -e  # Exit on error
 # Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
 # files if you start from sphere files.
-storage_dir=/mnt/data/thymios/
+storage_dir=
 
 # If you start from the sphere files, specify the path to the directory and start from stage 0
 sphere_dir=  # Directory containing sphere files
 # If you already have wsj0 wav files, specify the path to the directory here and start from stage 1
-wsj0_wav_dir=/mnt/data/wsj0-mix/wsj0
+wsj0_wav_dir=
 # If you already have the WHAM mixtures, specify the path to the directory here and start from stage 2
-wham_wav_dir=/mnt/data/wham
+wham_wav_dir=
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
 # Path to the python you'll use for the experiment. Defaults to the current python
 # You can run ./utils/prepare_python_env.sh to create a suitable python environment, paste the output here.
 #python_path=${storage_dir}/asteroid_conda/miniconda3/bin/python
-python_path=/usr/bin/python3.6
+python_path=python
 
 # Example usage
 # ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
@@ -25,14 +25,13 @@ python_path=/usr/bin/python3.6
 stage=-1  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=0,1,2,3
+id=
 
 # Data
 data_dir=data  # Local data directory (No disk space needed)
 task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
 sample_rate=8000
 mode=min
-nondefault_src=  # If you want to train a network with 3 output streams for example.
 
 # Training parameters separately for optimizing the filterbank and
 # the separator, respectively in a two-step process.
@@ -107,14 +106,22 @@ fi
 
 sr_string=$(($sample_rate/1000))
 suffix=wav${sr_string}k/$mode
-dumpdir=data/$suffix  # directory to put generated json file
+dumpdir=$data_dir/$suffix  # directory to put generated json file
 
 train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
 test_dir=$dumpdir/tt
 
-tag=${task}_${sr_string}k${mode}
-expdir=exp/train_two_step_${tag}
+#tag=${task}_${sr_string}k${mode}
+#expdir=exp/train_two_step_${tag}
+
+# Generate a random ID for the run if no tag is specified
+uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
+if [[ -z ${tag} ]]; then
+	tag=${task}_${sr_string}k${mode}_${uuid}
+fi
+expdir=exp/train_twostep_${tag}
+
 mkdir -p $expdir
 echo "Results from the following experiment will be stored in $expdir"
 
