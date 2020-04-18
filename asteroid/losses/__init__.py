@@ -5,6 +5,7 @@ from .sdr import singlesrc_neg_snr, multisrc_neg_snr
 from .mse import singlesrc_mse, multisrc_mse
 from .cluster import deep_clustering_loss
 from .pmsqe import SingleSrcPMSQE
+from .stoi import NegSTOILoss as SingleSrcNegSTOI
 
 # Legacy
 from .sdr import pairwise_neg_sisdr, nosrc_neg_sisdr, nonpit_neg_sisdr

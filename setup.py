@@ -24,6 +24,7 @@ setup(
                       'pytorch-lightning==0.6.0',
                       'pb_bss_eval',
                       'asranger',
+                      'torch_stoi',
                       ],
     extras_require={
         'visualize': ['seaborn>=0.9.0'],

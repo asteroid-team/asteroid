@@ -7,7 +7,9 @@ from asteroid.losses import PITLossWrapper
 from asteroid.losses import sdr
 from asteroid.losses import singlesrc_mse, pairwise_mse, multisrc_mse
 from asteroid.losses import deep_clustering_loss, SingleSrcPMSQE
+from asteroid.losses import SingleSrcNegSTOI
 from asteroid.losses.multi_scale_spectral import SingleSrcMultiScaleSpectral
+
 
 @pytest.mark.parametrize("n_src", [2, 3, 4])
 @pytest.mark.parametrize("function_triplet", [
@@ -116,4 +118,18 @@ def test_pmsqe_pit(n_src, sample_rate):
     loss_func = PITLossWrapper(SingleSrcPMSQE(sample_rate=sample_rate),
                                pit_from='pw_pt')
     # Assert forward ok.
-    loss_value = loss_func(ref_spec, est_spec)
+    loss_value = loss_func(est_spec, ref_spec)
+
+
+@pytest.mark.parametrize("n_src", [2, 3])
+@pytest.mark.parametrize("sample_rate", [8000, 16000])
+@pytest.mark.parametrize("use_vad", [True, False])
+@pytest.mark.parametrize("extended", [True, False])
+def test_negstoi_pit(n_src, sample_rate, use_vad, extended):
+    ref, est = torch.randn(2, n_src, 16000), torch.randn(2, n_src, 16000)
+    singlesrc_negstoi = SingleSrcNegSTOI(sample_rate=sample_rate,
+                                         use_vad=use_vad,
+                                         extended=extended)
+    loss_func = PITLossWrapper(singlesrc_negstoi, pit_from='pw_pt')
+    # Assert forward ok.
+    loss_value = loss_func(est, ref)
