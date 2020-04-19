@@ -265,13 +265,12 @@ class AugmentedWhamDataset(Dataset):
             sources.append(tmp)
 
         mix = np.mean(np.stack(sources), 0)
-        #mix = mix / np.max(np.abs(mix))
 
         if self.task in ["sep_noisy", "enh_single", "enhance_single", "enh_both"]:
             sources = sources[:-1]  # discard noise
 
         sources = np.stack(sources)
-        sources = sources #/ np.max(np.abs(mix))
+        sources = sources
         return torch.from_numpy(mix).float(), torch.from_numpy(sources).float()
 
 
