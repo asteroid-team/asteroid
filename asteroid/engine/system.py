@@ -1,7 +1,7 @@
 import torch
 import pytorch_lightning as pl
 from argparse import Namespace
-from ..utils import flatten_dict
+from ..utils import flatten_dict, sanitize_configs
 
 
 class System(pl.LightningModule):
@@ -36,7 +36,7 @@ class System(pl.LightningModule):
         self.val_loader = val_loader
         self.scheduler = scheduler
         config = {} if config is None else config
-        self.config = config
+        self.config = sanitize_configs(config)
         # hparams will be logged to Tensorboard as text variables.
         # torch doesn't support None in the summary writer for now, convert
         # None to strings temporarily.

@@ -236,6 +236,22 @@ def flatten_dict(d, parent_key='', sep='_'):
     return dict(items)
 
 
+def sanitize_configs(conf_dict):
+    """ Sanitizes configuration dictionary for pytorch-lightning which does not allow for lists and tuples.
+    List and tuples are converted to torch.Tensors which are supported in pytorch-lightning.
+
+    Args:
+        conf_dict (collections.MutableMapping): Dictionary with lists and tuples.
+    Returns:
+        dict: Dictionary suitable for pytorch-lightning
+    """
+    for entry in conf_dict.keys():
+        for k in conf_dict[entry].keys():
+            if isinstance(conf_dict[entry][k], (list, tuple)):
+                conf_dict[entry][k] = torch.Tensor(conf_dict[entry][k])
+    return conf_dict
+
+
 def average_arrays_in_dic(dic):
     """ Take average of numpy arrays in a dictionary.
 

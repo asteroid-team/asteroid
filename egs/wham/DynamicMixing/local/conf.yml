@@ -43,9 +43,9 @@ augmentation:
   wsj0train: data/wsj0_8k_train
   noise_dir:
   orig_percentage: 0.
-  global_db_range: [-50, 0]
-  abs_stats: [-16.7, 7]
-  rel_stats: [2.52, 4]
-  noise_stats: [5.1, 6.4]
-  speed_perturb: [0.95, 1.05]
+  #global_db_range: [-50, 0]
+  #abs_stats: [-16.7, 7]
+  #rel_stats: [2.52, 4]
+  #noise_stats: [5.1, 6.4]
+  speed_perturb: [1, 1]
 
