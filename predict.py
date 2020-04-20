@@ -95,7 +95,6 @@ def generate_audio(model: AVFusion, audio_path: Path, video_paths: List[Path],
 
     spectrograms = predict(model, audio, videos, device)
     if return_spectrograms:
-        print("Not saving the audio")
         return spectrograms
 
     output_audios = [convert_to_wave(i) for i in spectrograms]
@@ -123,14 +122,20 @@ def _predict_row(model, df, row_idx, device):
     generate_audio(model, audio, video, device=device, save=True)
 
 if __name__ == "__main__":
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser()
+    parser.add_argument("--file", default=Path("train.csv"), type=Path)
+    parser.add_argument("--n", default=3, type=int)
+    parser.add_argument("--model-path", default=Path("last_full.pth"), type=Path)
+
+    args = parser.parse_args()
+
     device = torch.device("cuda")
     model =  AVFusion().to(device)
-    model.load_state_dict(torch.load("last_full.pth")["model_state_dict"])
+    model.load_state_dict(torch.load(args.model_path)["model_state_dict"])
 
-    train_df = pd.read_csv("train.csv")
+    train_df = pd.read_csv(args.file)
 
-    for i in trange(1000):
+    for i in trange(args.n):
         _predict_row(model, train_df, i, device)
-    #generate_audio(model, "../data/train/spec/0.npy", ["../data/train/embed/IlnHVjvBDU0_4750_3041_final_part1.npy", "../data/train/embed/0m4_JnhSoDc_5171_2740_final_part2.npy"], device=device)
-    #predict(model, "../data/train/spec/123724.npy", ["../data/train/embed/3fY4X9NlONY_4000_3240_final_part1.npy", "../data/train/embed/M6pEJ3_z5-o_5648_3013_final_part0.npy"])
-

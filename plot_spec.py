@@ -37,11 +37,10 @@ def plot(spec):
 
 def plot_row(model, df, row_idx, device):
     row = df.iloc[row_idx]
-    print(row)
 
-    mixed_spec = np.load(row[-1].replace("mixed", "spec").replace("wav", "npy"))
-    first_spec = np.load(row[2].replace("audio", "spec").replace("wav", "npy"))
-    second_spec = np.load(row[3].replace("audio", "spec").replace("wav", "npy"))
+    mixed_spec = convert_to_spectrogram(librosa.load(row[-1], sr=16_000)[0])
+    first_spec = convert_to_spectrogram(librosa.load(row[2], sr=16_000)[0])
+    second_spec = convert_to_spectrogram(librosa.load(row[3], sr=16_000)[0])
 
     audio = row[-1]
     video = [row[2], row[3]]
@@ -59,52 +58,22 @@ def plot_row(model, df, row_idx, device):
 
 if __name__ == "__main__":
     import torch
+    from tqdm import trange
+    from pathlib import Path
+    from argparse import ArgumentParser
 
-    df = pd.read_csv("clean_filtered_val.csv")
+    parser = ArgumentParser()
+    parser.add_argument("--file", default=Path("train.csv"), type=Path)
+    parser.add_argument("--n", default=3, type=int)
+    parser.add_argument("--model-path", default=Path("last_full.pth"), type=Path)
+
+    args = parser.parse_args()
+
+    df = pd.read_csv(args.file)
     device = torch.device("cuda")
 
     model = AVFusion().to(device)
-    model.load_state_dict(torch.load("../40_noise_last_full.pth")["model_state_dict"])
+    model.load_state_dict(torch.load(args.model_path)["model_state_dict"])
 
-    for i in range(10):
+    for i in trange(args.n):
         plot_row(model, df, i, device) 
-    #mixed_first_already_spec = np.load("../../data/train/spec/0.npy")
-
-    #mixed = librosa.load("../../data/train/mixed/0.wav", sr=16000)
-    #mixed, sr = mixed[0], mixed[1]
-    #print(sr)
-    #mixed = convert_to_spectrogram(mixed)
-
-    #true_first = librosa.load("../../data/train/audio/IlnHVjvBDU0_4750_3041_final_part1.wav", sr=16000)[0]
-    #true_second = librosa.load("../../data/train/audio/0m4_JnhSoDc_5171_2740_final_part2.wav", sr=16000)[0]
-    #
-    #true_first_already_spec = np.load("../../data/train/spec/1.npy")
-
-    #true_first = convert_to_spectrogram(true_first)
-    #true_second = convert_to_spectrogram(true_second)
-
-    #first_pred = librosa.load("/tmp/first.wav", sr=16000)
-    #second_pred = librosa.load("/tmp/second.wav", sr=16000)
-
-    #first_pred = convert_to_spectrogram(first_pred[0])
-    #second_pred = convert_to_spectrogram(second_pred[0])
-
-    #first_pred = first_pred[:, :, 0] + 1j*first_pred[:, :, 1]
-    #second_pred = second_pred[:, :, 0] + 1j*second_pred[:, :, 1]
-    #mixed = mixed[:, :, 0] + 1j*mixed[:, :, 1]
-
-    #mixed_first_already_spec = mixed_first_already_spec[:, :, 0] + 1j*mixed_first_already_spec[:, :, 1]
-
-    #true_first = true_first[:, :, 0] + 1j*true_first[:, :, 1]
-    #true_second = true_second[:, :, 0] + 1j*true_second[:, :, 1]
-
-    #plot_all(mixed, first_pred, second_pred, true_first, true_second)
-
-    #spec = np.load("/tmp/first_spec.npy")
-    #
-    #print(spec.shape)
-    #plot(spec)
-    #spec = np.load("/tmp/second_spec.npy")
-    #
-    #print(spec.shape)
-    #plot(spec)

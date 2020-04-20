@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Callable, Tuple, List
 
 
-EMBED_DIR = [Path("../data/train/embed")]#, Path("loader/temp_video/embed/")]
-SPEC_DIR = [Path("../data/train/spec")]#, Path("loader/temp_video/spec/")]
+EMBED_DIR = [Path("../data/train/embed")]
+SPEC_DIR = [Path("../data/train/spec")]
 
 def get_frames(video):
     frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -125,74 +125,6 @@ class Signal:
         else:
             audio = librosa.load(audio_path, sr=sr)[0]
         return audio, spec_exists, spec_path
-
-
-class Augment:
-    '''
-        Format: function_name(main_signal, *args, **kwargs) -> main_signal:
-    '''
-    
-    @staticmethod
-    def overlay(sig1: np.ndarray, sig2: np.ndarray, start: int, end: int, sr=44_100, w1=0.5, w2=0.5):
-        '''
-            Overlay sig2 on sig1 at [start, end]
-        '''
-        #Normalise seconds to frames
-        start *= sr
-        end *= sr
-
-        len1 = len(sig1)
-        len2 = len(sig2)
-
-        #Take the weighted sum of the signal
-        sig1[start: start + end] = (w1 * sig1[start: start + end] + w2 * sig2).astype(sig1.dtype)
-        return sig1
-
-    @staticmethod
-    def combine(main_signal, *signals, weights=None):
-        '''
-            Combine different signals according to their weight.
-            Signal length should be the same.
-        '''
-        signals = [main_signal, *signals]
-
-        total_signals = len(signals)
-        
-        if weights is None:
-            weights = np.ones((total_signals, 1), dtype=np.float32) / total_signals
-
-        combined_signal = np.zeros((signals[0].shape[0], 1), dtype=np.float32)
-        weight = 0
-        
-        #Running Weighted Average Mean
-        for i, w in enumerate(weights):
-            combined_signal += signals[i] * w
-            weight += w
-        
-        return combined_signal
-
-    @staticmethod
-    def align(main_signal: np.ndarray, all_signals: np.ndarray, all_alignments: List[Tuple[int, int]] , sr=44_100):
-        '''
-            Align signals of different length (smaller) to main_signal.
-            Alignments are tuples containing start and end points wrt main_signal.
-        '''
-
-        length = len(main_signal)
-        assert len(all_signals) == len(all_alignments), "All signals should have alignments"
-
-        for i, (signal, alignment) in enumerate(zip(all_signals, all_alignments)):
-            start, end = alignment
-            start, end = start * sr, end * sr
-            
-            prefix = np.zeros((start, 1))
-            suffix = np.zeros((length - end, 1))
-
-            signal = np.concatenate((prefix, signal, suffix), axis=0)
-
-            all_signals[i] = signal
-        return main_signal
-            
 
 if __name__ == "__main__":
     signal = Signal("../../data/train/AvWWVOgaMlk_cropped.mp4", "../../data/train/audio/AvWWVOgaMlk_cropped.mp3")

@@ -92,8 +92,6 @@ class AVDataset(torch.utils.data.Dataset):
 
         if not is_spec:
             mixed_signal = convert_to_spectrogram(mixed_signal)
-            #print("SAVING MIXED")
-            #np.save(spec_path, mixed_signal)
 
         audio_tensors = []
         video_tensors = []
@@ -104,7 +102,6 @@ class AVDataset(torch.utils.data.Dataset):
                 spectrogram =  all_signals[i].get_spec()
             else:
                 spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
-                #np.save(all_signals[i].spec_path, spectrogram)
             #convert to tensor
             audio_tensors.append(torch.from_numpy(spectrogram))
 
