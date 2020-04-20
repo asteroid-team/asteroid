@@ -1,3 +1,4 @@
+# Reference: https://github.com/bill9800/speech_separation/blob/master/model/lib/utils.py
 def generate_cRM(Y,S):
     '''
     :param Y: mixed/noisy stft  (H,W,C)
