@@ -41,6 +41,25 @@ class PITLossWrapper(nn.Module):
     For each of these modes, the best permutation and reordering will be
     automatically computed.
 
+    Examples:
+        >>> import torch
+        >>> from asteroid.losses import pairwise_neg_sisdr
+        >>> sources = torch.randn(10, 3, 16000)
+        >>> est_sources = torch.randn(10, 3, 16000)
+        >>> # Compute PIT loss based on pairwise losses
+        >>> loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
+        >>> loss_val = loss_func(est_sources, sources)
+        >>>
+        >>> # Using reduce
+        >>> def reduce(perm_loss, src):
+        >>>     weighted = perm_loss * src.norm(dim=-1, keepdim=True)
+        >>>     return torch.mean(weighted, dim=-1)
+        >>>
+        >>> loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx',
+        >>>                            perm_reduce=reduce)
+        >>> reduce_kwargs = {'src': sources}
+        >>> loss_val = loss_func(est_sources, sources,
+        >>>                      reduce_kwargs=reduce_kwargs)
     """
     def __init__(self, loss_func, pit_from='pw_mtx', mode=None,
                  perm_reduce=None):
