@@ -31,8 +31,8 @@ class PITLossWrapper(nn.Module):
             In terms of efficiency, ``'perm_avg'`` is the least efficicient.
 
         perm_reduce (Callable): torch function to reduce permutation losses.
-            Defaults to None (equivalent to mean). Signature of the expected
-            perm_reduce(pwl_set, **kw) --> loss_set || (B, n_src) --> (B, ).
+            Defaults to None (equivalent to mean). Signature of the func
+            (pwl_set, **kwargs) : (B, n_src!, n_src) --> (B, n_src!).
             `perm_reduce` can receive **kwargs during forward using the
             `reduce_kwargs` argument (dict). If those argument are static,
             consider defining a small function or using `functools.partial`.
@@ -194,8 +194,8 @@ class PITLossWrapper(nn.Module):
                 Tensor of shape [batch, n_src, n_src]. Pairwise losses.
             n_src (int): Number of sources.
             perm_reduce (Callable): torch function to reduce permutation losses.
-                Defaults to None (equivalent to mean). Signature of the expected
-                perm_reduce(pwl_set, **) --> loss_set || (B, n_src) --> (B, ).
+                Defaults to None (equivalent to mean). Signature of the func
+                (pwl_set, **kwargs) : (B, n_src!, n_src) --> (B, n_src!)
             **kwargs: additional keyword argument that will be passed to the
                 permutation reduce function.
 
@@ -211,6 +211,7 @@ class PITLossWrapper(nn.Module):
         <https://github.com/kaituoxu/Conv-TasNet/blob/master>`__ and `License
         <https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`__.
         """
+        # After transposition, dim 1 corresp. to sources and dim 2 to estimates
         pwl = pair_wise_losses.transpose(-1, -2)
         perms = pwl.new_tensor(list(permutations(range(n_src))),
                                dtype=torch.long)
@@ -227,10 +228,8 @@ class PITLossWrapper(nn.Module):
             n_perm = idx.shape[0]
             # [batch, n_src!, n_src] : Pairwise losses for each permutation.
             pwl_set = pwl[:, torch.arange(n_src), idx.squeeze(-1)]
-            # Pack the permutations in the batch and apply reduce function
-            loss_set = perm_reduce(
-                pwl_set.view(batch * n_perm, -1), **kwargs
-            ).view(batch, n_perm)
+            # Apply reduce [batch, n_src!, n_src] --> [batch, n_src!]
+            loss_set = perm_reduce(pwl_set, **kwargs)
         # Indexes and values of min losses for each batch element
         min_loss_idx = torch.argmin(loss_set, dim=1)
         min_loss, _ = torch.min(loss_set, dim=1, keepdim=True)
