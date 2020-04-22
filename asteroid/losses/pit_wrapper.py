@@ -30,15 +30,25 @@ class PITLossWrapper(nn.Module):
 
             In terms of efficiency, ``'perm_avg'`` is the least efficicient.
 
+        perm_reduce (Callable): torch function to reduce permutation losses.
+            Defaults to None (equivalent to mean). Signature of the func
+            (pwl_set, **kwargs) : (B, n_src!, n_src) --> (B, n_src!).
+            `perm_reduce` can receive **kwargs during forward using the
+            `reduce_kwargs` argument (dict). If those argument are static,
+            consider defining a small function or using `functools.partial`.
+            Only used in `'pw_mtx'` and `'pw_pt'` `pit_from` modes.
+
     For each of these modes, the best permutation and reordering will be
     automatically computed.
 
     """
-    def __init__(self, loss_func, pit_from='pw_mtx', mode=None):
+    def __init__(self, loss_func, pit_from='pw_mtx', mode=None,
+                 perm_reduce=None):
         super().__init__()
         self.loss_func = loss_func
         self.pit_from = pit_from
         self.mode = mode
+        self.perm_reduce = perm_reduce
         if self.mode is not None:
             warnings.warn('`mode` argument is deprecated since v0.1.0 and'
                           'will be remove in v0.2.0. Use argument `pit_from`'
@@ -52,7 +62,8 @@ class PITLossWrapper(nn.Module):
             raise ValueError('Unsupported loss function type for now. Expected'
                              'one of [`pw_mtx`, `pw_pt`, `perm_avg`]')
 
-    def forward(self, est_targets, targets, return_est=False, **kwargs):
+    def forward(self, est_targets, targets, return_est=False,
+                reduce_kwargs=None, **kwargs):
         """ Find the best permutation and return the loss.
 
         Args:
@@ -62,6 +73,8 @@ class PITLossWrapper(nn.Module):
                 The batch of training targets
             return_est: Boolean. Whether to return the reordered targets
                 estimates (To compute metrics or to save example).
+            reduce_kwargs (dict or None): kwargs that will be passed to the
+                pairwise losses reduce function (`perm_reduce`).
             **kwargs: additional keyword argument that will be passed to the
                 loss function.
 
@@ -100,7 +113,10 @@ class PITLossWrapper(nn.Module):
         assert (pw_losses.shape[0] ==
                 targets.shape[0]), "PIT loss needs same batch dim as input"
 
-        min_loss, min_loss_idx = self.find_best_perm(pw_losses, n_src)
+        reduce_kwargs = reduce_kwargs if reduce_kwargs is not None else dict()
+        min_loss, min_loss_idx = self.find_best_perm(
+            pw_losses, n_src, perm_reduce=self.perm_reduce, **reduce_kwargs
+        )
         mean_loss = torch.mean(min_loss)
         if not return_est:
             return mean_loss
@@ -170,13 +186,18 @@ class PITLossWrapper(nn.Module):
         return min_loss, min_loss_idx[:, 0]
 
     @staticmethod
-    def find_best_perm(pair_wise_losses, n_src):
+    def find_best_perm(pair_wise_losses, n_src, perm_reduce=None, **kwargs):
         """Find the best permutation, given the pair-wise losses.
 
         Args:
             pair_wise_losses (:class:`torch.Tensor`):
                 Tensor of shape [batch, n_src, n_src]. Pairwise losses.
             n_src (int): Number of sources.
+            perm_reduce (Callable): torch function to reduce permutation losses.
+                Defaults to None (equivalent to mean). Signature of the func
+                (pwl_set, **kwargs) : (B, n_src!, n_src) --> (B, n_src!)
+            **kwargs: additional keyword argument that will be passed to the
+                permutation reduce function.
 
         Returns:
             tuple:
@@ -190,19 +211,28 @@ class PITLossWrapper(nn.Module):
         <https://github.com/kaituoxu/Conv-TasNet/blob/master>`__ and `License
         <https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`__.
         """
+        # After transposition, dim 1 corresp. to sources and dim 2 to estimates
         pwl = pair_wise_losses.transpose(-1, -2)
         perms = pwl.new_tensor(list(permutations(range(n_src))),
                                dtype=torch.long)
-        # one-hot, [n_src!, n_src, n_src]
-        index = torch.unsqueeze(perms, 2)
-        perms_one_hot = pwl.new_zeros((*perms.size(), n_src)).scatter_(2, index,
-                                                                       1)
-        # Loss sum of each permutation
-        loss_set = torch.einsum('bij,pij->bp', [pwl, perms_one_hot])
+        # Column permutation indices
+        idx = torch.unsqueeze(perms, 2)
+        # Loss mean of each permutation
+        if perm_reduce is None:
+            # one-hot, [n_src!, n_src, n_src]
+            perms_one_hot = pwl.new_zeros((*perms.size(), n_src)).scatter_(2, idx, 1)
+            loss_set = torch.einsum('bij,pij->bp', [pwl, perms_one_hot])
+            loss_set /= n_src
+        else:
+            batch = pwl.shape[0]
+            n_perm = idx.shape[0]
+            # [batch, n_src!, n_src] : Pairwise losses for each permutation.
+            pwl_set = pwl[:, torch.arange(n_src), idx.squeeze(-1)]
+            # Apply reduce [batch, n_src!, n_src] --> [batch, n_src!]
+            loss_set = perm_reduce(pwl_set, **kwargs)
         # Indexes and values of min losses for each batch element
         min_loss_idx = torch.argmin(loss_set, dim=1)
         min_loss, _ = torch.min(loss_set, dim=1, keepdim=True)
-        min_loss /= n_src
         return min_loss, min_loss_idx
 
     @staticmethod

@@ -71,3 +71,40 @@ def test_permutation(perm):
     assert_allclose(sources, reordered)
 
 
+def test_permreduce():
+    from functools import partial
+    n_src = 3
+    sources = torch.randn(10, n_src, 8000)
+    est_sources = torch.randn(10, n_src, 8000)
+    wo_reduce = PITLossWrapper(pairwise_mse, pit_from='pw_mtx')
+    w_mean_reduce = PITLossWrapper(pairwise_mse, pit_from='pw_mtx',
+                                   # perm_reduce=partial(torch.mean, dim=-1))
+                                   perm_reduce=lambda x: torch.mean(x, dim=-1))
+    w_sum_reduce = PITLossWrapper(pairwise_mse, pit_from='pw_mtx',
+                                  perm_reduce=partial(torch.sum, dim=-1))
+
+    wo = wo_reduce(est_sources, sources)
+    w_mean = w_mean_reduce(est_sources, sources)
+    w_sum = w_sum_reduce(est_sources, sources)
+
+    assert_allclose(wo, w_mean)
+    assert_allclose(wo, w_sum/n_src)
+
+
+def test_permreduce_args():
+    def reduce_func(perm_losses, class_weights=None):
+        # perm_losses is (batch , n_perms, n_src) for now
+        if class_weights is None:
+            return torch.mean(perm_losses, dim=-1)
+        if class_weights.ndim == 2:
+            class_weights = class_weights.unsqueeze(1)
+        return torch.mean(perm_losses * class_weights, -1)
+
+    n_src = 3
+    sources = torch.randn(10, n_src, 8000)
+    est_sources = torch.randn(10, n_src, 8000)
+    loss_func = PITLossWrapper(pairwise_mse, pit_from='pw_mtx',
+                               perm_reduce=reduce_func)
+    weights = torch.softmax(torch.randn(10, n_src), dim=-1)
+    loss = loss_func(est_sources, sources,
+                     reduce_kwargs={'class_weights': weights})
