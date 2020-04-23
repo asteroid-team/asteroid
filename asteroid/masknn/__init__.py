@@ -1,2 +1,2 @@
-from .blocks import TDConvNet
-from .blocks import DPRNN
+from .convolutional import TDConvNet
+from .recurrent import DPRNN
