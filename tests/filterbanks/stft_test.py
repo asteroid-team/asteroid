@@ -5,7 +5,7 @@ import numpy as np
 from scipy.signal import get_window
 
 from asteroid.filterbanks import Encoder, Decoder, STFTFB
-from asteroid.filterbanks import make_enc_dec, griffin_lim
+from asteroid.filterbanks import make_enc_dec, griffin_lim, misi
 from asteroid.filterbanks.stft_fb import perfect_synthesis_window
 from asteroid.filterbanks import transforms
 
@@ -95,3 +95,26 @@ def test_griffinlim(fb_config, feed_istft, feed_angle):
     mag = transforms.take_mag(masked_spec, -2)
     angles = None if not feed_angle else transforms.angle(masked_spec, -2)
     griffin_lim(mag, stft, angles=angles, istft_dec=istft, n_iter=3)
+
+
+@pytest.mark.parametrize("fb_config", fb_config_list())
+@pytest.mark.parametrize("feed_istft", [True, False])
+@pytest.mark.parametrize("feed_angle", [True, False])
+def test_misi(fb_config, feed_istft, feed_angle):
+    stft = Encoder(STFTFB(**fb_config))
+    istft = None if not feed_istft else Decoder(STFTFB(**fb_config))
+    n_src = 3
+    # Create mixture
+    wav = torch.randn(2, 1, 8000)
+    spec = stft(wav).unsqueeze(1)
+    # Create n_src masks on mixture spec and apply them
+    shape = list(spec.shape)
+    shape[1] *= n_src
+    tf_mask = torch.sigmoid(torch.randn(*shape))
+    masked_specs = spec * tf_mask
+    # Separate mag and angle.
+    mag = transforms.take_mag(masked_specs, -2)
+    angles = None if not feed_angle else transforms.angle(masked_specs, -2)
+    est_wavs = misi(wav, mag, stft, angles=angles, istft_dec=istft, n_iter=2)
+    # We actually don't know the last dim because ISTFT(STFT()) cuts the end
+    assert est_wavs.shape[:-1] == (2, n_src)

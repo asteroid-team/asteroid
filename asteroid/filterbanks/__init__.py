@@ -3,7 +3,7 @@ from .free_fb import FreeFB
 from .param_sinc_fb import ParamSincFB
 from .stft_fb import STFTFB
 from .enc_dec import Filterbank, Encoder, Decoder
-from .griffin_lim import griffin_lim
+from .griffin_lim import griffin_lim, misi
 
 
 def make_enc_dec(fb_name, n_filters, kernel_size, stride=None,
