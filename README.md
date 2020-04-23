@@ -43,14 +43,16 @@ pip or python :
 ```bash
 git clone https://github.com/mpariente/asteroid
 cd asteroid
+# Install install-required deps
+pip install numpy Cython
 # Install with pip in editable mode
 pip install -e .
 # Or, install with python in dev mode
-python setup.py develop
+# python setup.py develop
 ```
 Asteroid is also on PyPI, you can install the latest release 
 with
-```
+```bash
 pip install numpy Cython
 pip install asteroid
 ```
