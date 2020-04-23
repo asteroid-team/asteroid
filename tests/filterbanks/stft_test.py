@@ -5,8 +5,9 @@ import numpy as np
 from scipy.signal import get_window
 
 from asteroid.filterbanks import Encoder, Decoder, STFTFB
-from asteroid.filterbanks import make_enc_dec
+from asteroid.filterbanks import make_enc_dec, griffin_lim
 from asteroid.filterbanks.stft_fb import perfect_synthesis_window
+from asteroid.filterbanks import transforms
 
 
 def fb_config_list():
@@ -79,3 +80,18 @@ def test_perfect_resyn_window(fb_config, analysis_window_name):
     inp_test = inp_wav[:, :, kernel_size: -kernel_size]
     testing.assert_allclose(inp_test,
                             out_wav)
+
+
+@pytest.mark.parametrize("fb_config", fb_config_list())
+@pytest.mark.parametrize("feed_istft", [True, False])
+@pytest.mark.parametrize("feed_angle", [True, False])
+def test_griffinlim(fb_config, feed_istft, feed_angle):
+    stft = Encoder(STFTFB(**fb_config))
+    istft = None if not feed_istft else Decoder(STFTFB(**fb_config))
+    wav = torch.randn(2, 1, 8000)
+    spec = stft(wav)
+    tf_mask = torch.sigmoid(torch.randn_like(spec))
+    masked_spec = spec * tf_mask
+    mag = transforms.take_mag(masked_spec, -2)
+    angles = None if not feed_angle else transforms.angle(masked_spec, -2)
+    griffin_lim(mag, stft, angles=angles, istft_dec=istft, n_iter=3)
