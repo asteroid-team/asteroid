@@ -439,6 +439,8 @@ class DPRNN(nn.Module):
             'num_layers': self.num_layers,
             'dropout': self.dropout
         }
+        return config
+
 
 class ChimeraPP(nn.Module):
     """ Chimera plus plus model used in deep clustering.
