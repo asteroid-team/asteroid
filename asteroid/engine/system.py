@@ -1,7 +1,7 @@
 import torch
 import pytorch_lightning as pl
 from argparse import Namespace
-from ..utils import flatten_dict, sanitize_configs
+from ..utils import flatten_dict
 
 
 class System(pl.LightningModule):
@@ -36,12 +36,12 @@ class System(pl.LightningModule):
         self.val_loader = val_loader
         self.scheduler = scheduler
         config = {} if config is None else config
-        self.config = sanitize_configs(config)
+        self.config = config
         # hparams will be logged to Tensorboard as text variables.
         # torch doesn't support None in the summary writer for now, convert
         # None to strings temporarily.
         # See https://github.com/pytorch/pytorch/issues/33140
-        self.hparams = Namespace(**self.none_to_string(flatten_dict(config)))
+        self.hparams = Namespace(**self.config_to_hparams(config))
 
     def forward(self, *args, **kwargs):
         """ Applies forward pass of the model.
@@ -189,8 +189,10 @@ class System(pl.LightningModule):
         pass
 
     @staticmethod
-    def none_to_string(dic):
-        """ Converts `None` to  ``'None'`` to be handled by torch summary writer.
+    def config_to_hparams(dic):
+        """
+        This function sanitizes the config dict to be handled correctly by torch summary writer.
+        In detail, it flatten the config dict, converts `None` to  ``'None'`` and any list and tuple into torch.Tensors.
 
         Args:
             dic (dict): Dictionary to be transformed.
@@ -198,7 +200,10 @@ class System(pl.LightningModule):
         Returns:
             dict: Transformed dictionary.
         """
+        dic = flatten_dict(dic)
         for k, v in dic.items():
             if v is None:
                 dic[k] = str(v)
+            elif isinstance(v, (list, tuple)):
+                dic[k] = torch.Tensor(v)
         return dic
