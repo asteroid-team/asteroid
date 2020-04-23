@@ -16,7 +16,7 @@ class Conv1DBlock(nn.Module):
         skip_out_chan (int): Number of channels in the skip convolution.
             If 0 or None, `Conv1DBlock` won't have any skip connections.
             Corresponds to the the block in v1 or the paper. The `forward`
-            return [res, res] instead of [res, skip] for consistency.
+            return res instead of [res, skip] in this case.
         kernel_size (int): Size of the depth-wise convolutional kernel.
         padding (int): Padding of the depth-wise convolution.
         dilation (int): Dilation of the depth-wise convolution.
@@ -52,8 +52,7 @@ class Conv1DBlock(nn.Module):
         shared_out = self.shared_block(x)
         res_out = self.res_conv(shared_out)
         if not self.skip_out_chan:
-            # Return it twice to have consistent number of outputs
-            return res_out, res_out
+            return res_out
         skip_out = self.skip_conv(shared_out)
         return res_out, skip_out
 
@@ -141,11 +140,13 @@ class TDConvNet(nn.Module):
         skip_connection = 0.
         for i in range(len(self.TCN)):
             # Common to w. skip and w.o skip architectures
-            residual, skip = self.TCN[i](output)
-            output = output + residual
-            # Only if skip connections
+            tcn_out = self.TCN[i](output)
             if self.skip_chan:
+                residual, skip = tcn_out
                 skip_connection = skip_connection + skip
+            else:
+                residual = tcn_out
+            output = output + residual
         # Use residual output when no skip connection
         mask_inp = skip_connection if self.skip_chan else output
         score = self.mask_net(mask_inp)
