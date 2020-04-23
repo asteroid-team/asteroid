@@ -50,8 +50,10 @@ def mixture_consistency(mixture, est_sources, src_weights=None, dim=1):
 
     # Compute residual mix - sum(est_sources)
     if mixture.ndim == est_sources.ndim - 1:
+        # mixture (batch, *), est_sources (batch, n_src, *)
         residual = (mixture - est_sources.sum(dim=dim)).unsqueeze(dim)
     elif mixture.ndim == est_sources.ndim:
+        # mixture (batch, 1, *), est_sources (batch, n_src, *)
         residual = mixture - est_sources.sum(dim=dim, keepdim=True)
     else:
         n, m = est_sources.ndim, mixture.ndim
