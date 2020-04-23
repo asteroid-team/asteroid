@@ -14,6 +14,9 @@ class Conv1DBlock(nn.Module):
         hid_chan (int): Number of hidden channels in the depth-wise
             convolution.
         skip_out_chan (int): Number of channels in the skip convolution.
+            If 0 or None, `Conv1DBlock` won't have any skip connections.
+            Corresponds to the the block in v1 or the paper. The `forward`
+            return res instead of [res, skip] in this case.
         kernel_size (int): Size of the depth-wise convolutional kernel.
         padding (int): Padding of the depth-wise convolution.
         dilation (int): Dilation of the depth-wise convolution.
@@ -31,6 +34,7 @@ class Conv1DBlock(nn.Module):
     def __init__(self, in_chan, hid_chan, skip_out_chan, kernel_size, padding,
                  dilation, norm_type="gLN"):
         super(Conv1DBlock, self).__init__()
+        self.skip_out_chan = skip_out_chan
         conv_norm = norms.get(norm_type)
         in_conv1d = nn.Conv1d(in_chan, hid_chan, 1)
         depth_conv1d = nn.Conv1d(hid_chan, hid_chan, kernel_size,
@@ -40,12 +44,15 @@ class Conv1DBlock(nn.Module):
                                           conv_norm(hid_chan), depth_conv1d,
                                           nn.PReLU(), conv_norm(hid_chan))
         self.res_conv = nn.Conv1d(hid_chan, in_chan, 1)
-        self.skip_conv = nn.Conv1d(hid_chan, skip_out_chan, 1)
+        if skip_out_chan:
+            self.skip_conv = nn.Conv1d(hid_chan, skip_out_chan, 1)
 
     def forward(self, x):
         """ Input shape [batch, feats, seq]"""
         shared_out = self.shared_block(x)
         res_out = self.res_conv(shared_out)
+        if not self.skip_out_chan:
+            return res_out
         skip_out = self.skip_conv(shared_out)
         return res_out, skip_out
 
@@ -65,10 +72,18 @@ class TDConvNet(nn.Module):
         hid_chan (int, optional): Number of channels in the convolutional
             blocks.
         skip_chan (int, optional): Number of channels in the skip connections.
+            If 0 or None, TDConvNet won't have any skip connections and the
+            masks will be computed from the residual output.
+            Corresponds to the ConvTasnet architecture in v1 or the paper.
         kernel_size (int, optional): Kernel size in convolutional blocks.
         norm_type (str, optional): To choose from ``'BN'``, ``'gLN'``,
             ``'cLN'``.
         mask_act (str, optional): Which non-linear function to generate mask.
+
+    References:
+        [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
+        for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
+        https://arxiv.org/abs/1809.07454
     """
     def __init__(self, in_chan, n_src, out_chan=None, n_blocks=8, n_repeats=3,
                  bn_chan=128, hid_chan=512, skip_chan=128, kernel_size=3,
@@ -98,7 +113,8 @@ class TDConvNet(nn.Module):
                 self.TCN.append(Conv1DBlock(bn_chan, hid_chan, skip_chan,
                                             kernel_size, padding=padding,
                                             dilation=2**x, norm_type=norm_type))
-        mask_conv = nn.Conv1d(skip_chan, n_src*out_chan, 1)
+        mask_conv_inp = skip_chan if skip_chan else bn_chan
+        mask_conv = nn.Conv1d(mask_conv_inp, n_src*out_chan, 1)
         self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
@@ -123,10 +139,17 @@ class TDConvNet(nn.Module):
         output = self.bottleneck(mixture_w)
         skip_connection = 0.
         for i in range(len(self.TCN)):
-            residual, skip = self.TCN[i](output)
+            # Common to w. skip and w.o skip architectures
+            tcn_out = self.TCN[i](output)
+            if self.skip_chan:
+                residual, skip = tcn_out
+                skip_connection = skip_connection + skip
+            else:
+                residual = tcn_out
             output = output + residual
-            skip_connection = skip_connection + skip
-        score = self.mask_net(skip_connection)
+        # Use residual output when no skip connection
+        mask_inp = skip_connection if self.skip_chan else output
+        score = self.mask_net(mask_inp)
         score = score.view(batch, self.n_src, self.out_chan, n_frames)
         est_mask = self.output_act(score)
         return est_mask
