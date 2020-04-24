@@ -158,11 +158,9 @@ class AugmentedWhamDataset(Dataset):
         return examples_hashtab
 
     def __add__(self, wham):
-
         raise NotImplementedError  # It will require different handling of other datasets, I suggest using dicts
 
     def __len__(self):
-
         if self.use_original:
             return len(
                 self.wham_mix)  # same length as original wham (actually if orig_percentage = 1 the data is original wham)
@@ -171,11 +169,9 @@ class AugmentedWhamDataset(Dataset):
                 [len(self.hashtab_synth[x]) for x in self.hashtab_synth.keys()])  # we account only the wsj0 length
 
     def random_data_augmentation(self, signal, c_gain, speed):
-
-        # factor is a tuple
         if self.speed_perturb:
             fx = (AudioEffectsChain().speed(speed).custom(
-            "norm {}".format(c_gain)))  # speed perturb and then apply gain
+                "norm {}".format(c_gain)))  # speed perturb and then apply gain
         else:
             fx = (AudioEffectsChain().custom(
                 "norm {}".format(c_gain)))
@@ -236,12 +232,12 @@ class AugmentedWhamDataset(Dataset):
             tmp, tmp_spk_len = random.choice(self.hashtab_synth[c_speakers[i]])
             # account for sample reduction in speed perturb
             if self.speed_perturb:
-                c_speed =  random.uniform(*self.speed_perturb)
+                c_speed = random.uniform(*self.speed_perturb)
                 target_len = int(np.ceil(c_speed * self.seg_len))
             else:
                 target_len = self.seg_len
             tmp = self.get_random_subsegment(tmp, target_len, tmp_spk_len)
-            if i == 0: # we model the signal level distributions with gaussians
+            if i == 0:  # we model the signal level distributions with gaussians
                 c_lvl = np.clip(random.normalvariate(*self.abs_stats), floor, ceil)
                 first_lvl = c_lvl
             else:
@@ -254,7 +250,7 @@ class AugmentedWhamDataset(Dataset):
             # add also noise
             tmp, tmp_spk_len = random.choice(self.hashtab_synth["noise"])
             if self.speed_perturb:
-                c_speed =  random.uniform(*self.speed_perturb)
+                c_speed = random.uniform(*self.speed_perturb)
                 target_len = int(np.ceil(c_speed * self.seg_len))
             else:
                 target_len = self.seg_len
@@ -272,7 +268,3 @@ class AugmentedWhamDataset(Dataset):
         sources = np.stack(sources)
         sources = sources
         return torch.from_numpy(mix).float(), torch.from_numpy(sources).float()
-
-
-
-

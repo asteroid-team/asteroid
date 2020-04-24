@@ -9,8 +9,8 @@
 
 |   model   |   task    |kernel size|chunk size|batch size|SI-SNRi(dB) | SDRi(dB)|
 |:----:|:---------:|:---------:|:--------:|:--------:|:----------:|:-------:|
-| [DPRNN]() | sep_clean |    16     |     100  |     8    |    TODO    |  18.4   |
-
+| DPRNN + DM | sep_clean |    16     |     100  |     8    |    18.4    |  18.64  |
+| DPRNN | sep_clean |   16     |     100  |     8    |    17.7    |  17.9   |
 
 --- 
 #### References:
