@@ -167,7 +167,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         df.to_csv(file_name_df, index=False)
 
         if audio_set:
-            pd.Series(noises).to_csv("noise_only_" + file_name_df, index=False)
+            pd.Series(noises).to_csv("noise_only.csv", index=False, header=False)
         return df.shape[0]
 
     offset = mix(train_files, "../train.csv", 0)

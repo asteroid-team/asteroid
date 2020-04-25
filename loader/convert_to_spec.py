@@ -24,8 +24,8 @@ def get_list(df):
 
 def main():
     total_files = []
-    total_files += get_list(pd.read_csv("../filtered_train.csv"))
-    total_files += get_list(pd.read_csv("../filtered_val.csv"))
+    total_files += get_list(pd.read_csv("../train.csv"))
+    total_files += get_list(pd.read_csv("../val.csv"))
     convert(total_files[0])
 
     number_files = len(total_files)

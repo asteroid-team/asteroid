@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 from tqdm import trange
 
-from typing import List
 from pathlib import Path
+from typing import List, Union
 from argparse import ArgumentParser
 
 from src.postprocess import filter_audio
@@ -25,7 +25,6 @@ def _preprocess_audio(audio: np.ndarray):
     return audio
 
 def _preprocess_video(videos: np.ndarray):
-    # add code to convert face to embed
     videos = [np.expand_dims(i, axis=0) for i in videos]
     videos = [torch.from_numpy(i) for i in videos]
     return videos
@@ -63,8 +62,9 @@ def predict(model: AVFusion, audio: torch.Tensor, videos: torch.Tensor, device: 
     return spectrograms
 
 
-def generate_audio(model: AVFusion, audio_path: Path, video_paths: List[Path],
-                   device: torch.device, save:bool=True, output_dir:Path=Path("output/"),
+def generate_audio(model: Union[Path, AVFusion], audio_path: Union[np.ndarray, Path],
+                   video_paths: Union[List[np.ndarray], List[Path]], device: torch.device,
+                   save:bool=True, output_dir:Path=Path("output/"),
                    return_spectrograms:bool=False, postprocess:bool=True):
     """
         Separate and generate audio
@@ -80,15 +80,22 @@ def generate_audio(model: AVFusion, audio_path: Path, video_paths: List[Path],
         Returns:
             output_audios: list of numpy array of separated wav
     """
-    if audio_path.suffix.endswith("wav"):
+    if isinstance(audio_path, np.ndarray):
+        audio = convert_to_spectrogram(audio_path)
+    elif audio_path.suffix.endswith("wav"):
         audio = librosa.load(audio_path, sr=16_000)[0]
     elif audio_path.suffix.endswith("npy"):
         audio = np.load(audio_path)
     else:
         raise ValueError("wav or npy only for audio, for now..")
 
-    assert all(i.suffix.endswith("npy") for i in video_paths), "Video embedding only for now"
-    videos = [np.load(i) for i in video_paths]
+    if isinstance(model, Path) or isinstance(model, str):
+        model = load_model(model, device)
+
+    if isinstance(video_paths[0], Path):
+        videos = [np.load(i) for i in video_paths]
+    else:
+        videos = video_paths
 
     audio = _preprocess_audio(audio)
     videos = _preprocess_video(videos)
@@ -105,9 +112,23 @@ def generate_audio(model: AVFusion, audio_path: Path, video_paths: List[Path],
         return output_audios
 
     for i, path in enumerate(video_paths):
-        name = path.stem + ".wav"
+        if not isinstance(path, Path):
+            name = f"{i}.wav"
+        else:
+            name = path.stem + ".wav"
         librosa.output.write_wav(output_dir / name, output_audios[i], sr=16_000)
     return output_audios
+
+def load_model(path: Path, device):
+    model =  AVFusion().to(device)
+    load = torch.load(path)
+    if "model_state_dict" in load:
+        state = load["model_state_dict"]
+    else:
+        state = load
+    model.load_state_dict(state)
+    return model
+
 
 def _predict_row(model, df, row_idx, device):
     row = df.iloc[row_idx]
