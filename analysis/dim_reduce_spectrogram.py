@@ -35,10 +35,11 @@ def plot_pca(generator, generator2, batch_size=50):
     for x in generator:
         X_2d.append(i_pca.transform(x))
     X_2d = np.squeeze(np.vstack(X_2d))
+    print(X_2d.shape)
     plt.scatter(X_2d[:, 0], X_2d[:, 1])
     plt.show()
 
-def generate_data(files, shape):
+def generate_data(files, shape, filter_files):
     # check mem use
     n_floats = np.prod(shape)
     bytes_req = n_floats * 4
@@ -55,23 +56,29 @@ def generate_data(files, shape):
         else:
             X = np.empty((batch, *shape[1:]), dtype=np.float32)
 
+        X = []
         for i, f in tqdm(enumerate(files), total=len(files)):
+            if filter_files == "mixed" and not f.stem.isnumeric():
+                continue
+            elif filter_files == "raw" and f.stem.isnumeric():
+                continue
             x = np.load(f).astype(np.float32)
-            j = i if return_full else (i % batch)
-            X[j, ...] = x
+            X.append(x)
+            length = len(X)
 
-            if i != 0 and i % batch == 0 and not return_full:
-                X = np.reshape(X, (X.shape[0], -1))
+            if length != 0 and length % batch == 0 and not return_full:
+                X = np.reshape(np.array(X), (length, -1))
                 yield X
-                X = np.empty((batch, *shape[1:]), dtype=np.float32)
+                X = []
         if return_full:
-            X = np.reshape(X, (X.shape[0], -1))
+            length = len(X)
+            X = np.reshape(np.array(X), (length, -1))
             yield X
 
     return _yield
 
 def main(args):
-    files = list(args.input_dir.rglob("*npy"))[:1000]
+    files = list(args.input_dir.rglob("*npy"))[:args.total_files]
 
     # get dim
     shape = np.load(files[0]).shape
@@ -79,13 +86,14 @@ def main(args):
 
     X_shape = (total_files, *shape)
 
-    generator = generate_data(files, X_shape)
+    generator = generate_data(files, X_shape, args.filter_files)
     method = args.method
 
     if method == "tsne":
         plot_tsne(generator)
     elif method == "pca":
-        plot_pca(generator, generate_data(files, X_shape))
+        generator2 = generate_data(files, X_shape, args.filter_files)
+        plot_pca(generator, generator2)
     elif method == "umap":
         plot_umap(generator)
 
@@ -94,6 +102,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--input-dir", type=Path, default=Path("../../data/train/spec"), help="Input directory where all the numpy array are stored.")
     parser.add_argument("--method", '-m', type=str, default="tsne", help="Dimensionality Reduction method", choices=["tsne", "pca", "umap"])
+    parser.add_argument("--total-files", '-n', type=int, default=100, help="Total file to use")
+    parser.add_argument("--filter-files", type=str, default="none", help="Select only particular kind of file", choices=["none", "mixed", "raw"])
 
     args = parser.parse_args()
 
