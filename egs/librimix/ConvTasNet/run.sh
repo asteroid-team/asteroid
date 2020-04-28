@@ -16,7 +16,11 @@ python_path=python
 
 # All the parameters
 # General
+stage=0  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
+# You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
+id=
+out_dir=librimix # Controls the directory name associated to the evaluation results inside the experiment directory
 
 # Network config
 n_blocks=8
@@ -40,9 +44,6 @@ sample_rate=8000
 n_src=2
 segment=3
 task=sep_clean
-
-
-stage=0  # Controls from which stage to start
 
 . utils/parse_options.sh
 
@@ -68,7 +69,7 @@ echo "Results from the following experiment will be stored in $exp_dir"
 if [[ $stage -le 1 ]]; then
   echo "Stage 1: Training"
   mkdir -p logs
-  $python_path train.py --exp_dir $exp_dir \
+  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir $exp_dir \
   --n_blocks $n_blocks \
   --n_repeats $n_repeats \
   --mask_act $mask_act \
@@ -86,8 +87,6 @@ if [[ $stage -le 1 ]]; then
   --n_src $n_src \
   --segment $segment
 fi
-
-out_dir=librimix
 
 if [[ $stage -le 2 ]]; then
 	echo "Stage 2 : Evaluation"

@@ -21,12 +21,13 @@ from model import make_model_and_optimizer
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test_dir', type=str, required=True,
-                    help='Test directory including the json files')
+                    help='Test directory including the csv files')
 parser.add_argument('--task', type=str, required=True,
                     help='One of `enh_single`, `enh_both`, '
                          '`sep_clean` or `sep_noisy`')
 parser.add_argument('--out_dir', type=str, required=True,
-                    help='Directory in exp_dir where the va will be stored')
+                    help='Directory in exp_dir where the eval results'
+                         ' will be stored')
 parser.add_argument('--use_gpu', type=int, default=0,
                     help='Whether to use the GPU for model execution')
 parser.add_argument('--exp_dir', default='exp/tmp',
@@ -83,11 +84,6 @@ def main(conf):
         mix_np = mix.cpu().data.numpy()
         sources_np = sources.squeeze().cpu().data.numpy()
         est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
-        # Declipping the sources
-        est_sources_np[0, :] = est_sources_np[0, :] / \
-                               np.max(est_sources_np, axis=1)[0]
-        est_sources_np[1, :] = est_sources_np[1, :] / \
-                               np.max(est_sources_np, axis=1)[1]
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics
         utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
