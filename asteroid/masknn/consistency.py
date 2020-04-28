@@ -46,7 +46,8 @@ def mixture_consistency(mixture, est_sources, src_weights=None, dim=1):
         all_dims.pop(0)  # Remove batch dim
         src_weights = torch.mean(est_sources**2, dim=all_dims, keepdim=True)
     # Make sure that the weights sum up to 1
-    src_weights = src_weights / torch.sum(src_weights, dim=dim, keepdim=True)
+    norm_weights = torch.sum(src_weights, dim=dim, keepdim=True) + 1e-8
+    src_weights = src_weights / norm_weights
 
     # Compute residual mix - sum(est_sources)
     if mixture.ndim == est_sources.ndim - 1:
