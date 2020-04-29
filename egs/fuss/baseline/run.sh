@@ -30,11 +30,13 @@ id=
 
 # Data
 task=sep_reverb  # One of sep_dry, sep_reverb
+
 # Training
-batch_size=16
+batch_size=2
 lr=0.001
 epochs=200
 # Architecture
+improved=y  # TDCN++ or TDCN: true or false
 n_blocks=6
 n_repeats=2
 # Evaluation
@@ -128,7 +130,42 @@ if [[ $stage -le 2 ]]; then
 		done
 fi
 
-# Following stages
-if [ $stage -eq 3 ]; then
-    echo "Proceed with following steps"
+if [[ $stage -le 3 ]]; then
+	echo "Stage 3: Training"
+	mkdir -p logs
+	# Find the data folder. Data augmentation or not
+	if [[ $augment_data == "true" ]]; then
+		exp_data=data/fuss_augment_${augment_random_seed}
+	else
+		exp_data=data/fuss_dev
+	fi
+
+	# Dry or reverberated separation
+	exp_data=${exp_data}/ssdata
+	if [[ $task == "sep_reverb" ]]; then
+		exp_data=${exp_data}_reverb
+	fi
+
+	mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
+	echo "Results from the following experiment will be stored in $expdir"
+
+	CUDA_VISIBLE_DEVICES=$id $python_path train.py \
+		--train_list $exp_data/train_example_list.txt \
+		--valid_list $exp_data/validation_example_list.txt \
+		--lr $lr \
+		--epochs $epochs \
+		--batch_size $batch_size \
+		--improved $improved \
+		--n_blocks $n_blocks \
+		--n_repeats $n_repeats \
+		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
+fi
+
+
+if [[ $stage -le 4 ]]; then
+	echo "Stage 4 : Evaluation"
+	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
+	--test_file $exp_data/eval_example_list.txt \
+	--use_gpu $eval_use_gpu \
+	--exp_dir ${expdir} | tee logs/eval_${tag}.log
 fi
