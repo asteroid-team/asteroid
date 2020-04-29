@@ -1,0 +1,31 @@
+# Filterbank config
+filterbank:
+  fb_name: free
+  n_filters: 512
+  kernel_size: 80
+  stride: 40
+# Network config
+masknet:
+  improved: y
+  n_blocks: 8
+  n_repeats: 3
+  mask_act: relu
+  bn_chan: 128
+  skip_chan: 128
+  hid_chan: 512
+# Training config
+training:
+  epochs: 200
+  batch_size: 2
+  num_workers: 4
+  half_lr: yes
+  early_stop: yes
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.
+# Data config
+data:
+  train_list: data/fuss_dev/ssdata_reverb/train_example_list.txt
+  valid_list: data/fuss_dev/ssdata_reverb/validation_example_list.txt
