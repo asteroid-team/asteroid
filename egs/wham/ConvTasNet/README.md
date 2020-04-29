@@ -3,7 +3,7 @@
 |      |   task    | n_blocks | n_repeats | batch size |SI-SNRi(dB) | SDRi(dB)|
 |:----:|:---------:|:--------:|:---------:|:----------:|:----------:|:-------:|
 | Paper| sep_clean |    8     |     3     |     -      |    15.3    |  15.6   |
-| Here | sep_clean |    8     |     3     |     12     |    15.7    |  16.0   |
+| Here | sep_clean |    8     |     3     |     12     |    16.2    |  16.5   |
 
 
 ### References
