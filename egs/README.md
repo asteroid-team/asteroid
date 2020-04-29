@@ -1,8 +1,10 @@
 ### What is a recipe ? 
-A recipe is a set of scripts that demonstrate how to use 
-`asteroid` to build a source separation system.
+A recipe is a set of scripts that use Asteroid to build a 
+source separation system.
 Each directory corresponds to a dataset and each subdirectory 
 corresponds to a system build on this dataset. 
+You can start by reading [this recipe](wham/ConvTasNet) to 
+get familiar with them.
 
 ### How is it organized ? 
 Most recipes are organized as follows. When you clone the repo, 
