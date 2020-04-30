@@ -23,6 +23,8 @@ class MultiphaseGammatoneFB(Filterbank):
     def __init__(self, n_filters=128, kernel_size=16, sample_rate=8000,
                  stride=None, **kwargs):
         super().__init__(n_filters, kernel_size, stride=stride)
+        self.sample_rate = sample_rate
+        self.n_feats_out = n_filters
         length_in_seconds = kernel_size / sample_rate
         mpgtf = generate_mpgtf(sample_rate, length_in_seconds, n_filters)
         filters = torch.from_numpy(mpgtf).unsqueeze(1).float()
