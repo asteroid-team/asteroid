@@ -5,7 +5,7 @@ from torch.testing import assert_allclose
 
 from asteroid import filterbanks
 from asteroid.filterbanks import Encoder, Decoder
-from asteroid.filterbanks import FreeFB, AnalyticFreeFB, ParamSincFB
+from asteroid.filterbanks import FreeFB, AnalyticFreeFB, ParamSincFB, MultiphaseGammatoneFB
 from asteroid.filterbanks import make_enc_dec
 
 
@@ -20,7 +20,7 @@ def fb_config_list():
     return [dict(zip(keys, values)) for values in param_list]
 
 
-@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB])
+@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB, MultiphaseGammatoneFB])
 @pytest.mark.parametrize("fb_config", fb_config_list())
 def test_fb_def_and_forward_lowdim(fb_class, fb_config):
     """ Test filterbank definition and encoder/decoder forward."""
@@ -47,7 +47,7 @@ def test_fb_def_and_forward_lowdim(fb_class, fb_config):
     assert tf_out.shape[1] == enc.filterbank.n_feats_out
 
 
-@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB])
+@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB, MultiphaseGammatoneFB])
 @pytest.mark.parametrize("fb_config", fb_config_list())
 def test_fb_def_and_forward_all_dims(fb_class, fb_config):
     """ Test encoder/decoder on other shapes than 3D"""
@@ -63,7 +63,7 @@ def test_fb_def_and_forward_all_dims(fb_class, fb_config):
     assert out.shape[:-1] == inp.shape[:-1]  # Time axis can differ
 
 
-@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB])
+@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB, MultiphaseGammatoneFB])
 @pytest.mark.parametrize("fb_config", fb_config_list())
 @pytest.mark.parametrize("ndim", [2, 3, 4])
 def test_fb_forward_multichannel(fb_class, fb_config, ndim):
@@ -96,7 +96,7 @@ def test_paramsinc_shape(kernel_size):
     assert fb.filters.shape[-1] == 2 * (kernel_size // 2) + 1
 
 
-@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB])
+@pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB, MultiphaseGammatoneFB])
 def test_pinv_of(fb_class):
     fb = fb_class(n_filters=500, kernel_size=16, stride=8)
     encoder = Encoder(fb)
