@@ -24,8 +24,6 @@ class MultiphaseGammatoneFB(Filterbank):
     def __init__(self, n_filters=128, kernel_size=16, sample_rate=8000, stride=None):
         super(MultiphaseGammatoneFB, self).__init__(n_filters, kernel_size, stride=stride)
         self.sample_rate = sample_rate
-        self.n_filters = n_filters
-        self.kernel_size = kernel_size
 
     @property
     def filters(self):
@@ -34,8 +32,6 @@ class MultiphaseGammatoneFB(Filterbank):
         filterbank = generate_mpgtf(self.sample_rate, length_in_seconds, self.n_filters)
         filterbank = np.expand_dims(filterbank, axis=1)
         return torch.from_numpy(filterbank).float()
-
-### UTILITY FUNCTIONS ###
 
 def erb_scale_2_freq_hz(freq_erb):
     """ Convert frequency on ERB scale to frequency in Hertz """
@@ -55,8 +51,6 @@ def normalize_filters(filterbank):
     normalized_filterbank = filterbank * rms_normalization_values[:, np.newaxis]
     return normalized_filterbank
 
-### GAMMATONE IMPULSE RESPONSE ###
-
 def gammatone_impulse_response(samplerate_hz, length_in_seconds, center_freq_hz, phase_shift):
     """ Generate single parametrized gammatone filter """
     p = 2 # filter order
@@ -68,8 +62,6 @@ def gammatone_impulse_response(samplerate_hz, length_in_seconds, center_freq_hz,
     t = np.linspace(1./samplerate_hz, length_in_seconds, L)
     gammatone_ir = a * np.power(t, p-1)*np.exp(-2*np.pi*b*t) * np.cos(2*np.pi*center_freq_hz*t + phase_shift)
     return gammatone_ir
-
-### MP-GTF CONSTRUCTION ###
 
 def generate_mpgtf(samplerate_hz, length_in_seconds, N):
     # Set parameters
