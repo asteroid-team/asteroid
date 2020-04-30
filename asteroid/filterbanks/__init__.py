@@ -81,7 +81,7 @@ free = FreeFB
 analytic_free = AnalyticFreeFB
 param_sinc = ParamSincFB
 stft = STFTFB
-multiphase_gammatone_filterbank = MultiphaseGammatoneFB
+multiphase_gammatone = mpgtf = MultiphaseGammatoneFB
 
 # For the docs
 __all__ = ['Filterbank', 'Encoder', 'Decoder', 'FreeFB', 'STFTFB',
