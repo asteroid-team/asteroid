@@ -4,7 +4,7 @@ from .param_sinc_fb import ParamSincFB
 from .stft_fb import STFTFB
 from .enc_dec import Filterbank, Encoder, Decoder
 from .griffin_lim import griffin_lim, misi
-from .multiphase_gammatone import MultiphaseGammatoneFB
+from .multiphase_gammatone_fb import MultiphaseGammatoneFB
 
 
 def make_enc_dec(fb_name, n_filters, kernel_size, stride=None,
