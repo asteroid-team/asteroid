@@ -23,15 +23,14 @@ class MultiphaseGammatoneFB(Filterbank):
     
     def __init__(self, n_filters=128, kernel_size=16, sample_rate=8000, stride=None):
         super(MultiphaseGammatoneFB, self).__init__(n_filters, kernel_size, stride=stride)
-        self.sample_rate = sample_rate
+        length_in_seconds = kernel_size / sample_rate
+        mpgtf = generate_mpgtf(sample_rate, length_in_seconds, n_filters)
+        filters = torch.from_numpy(mpgtf).unsqueeze(1).float()
+        self.register_buffer('_filters', filters)
 
     @property
     def filters(self):
-        """ Compute filters from parameters """
-        length_in_seconds = self.kernel_size / self.sample_rate
-        filterbank = generate_mpgtf(self.sample_rate, length_in_seconds, self.n_filters)
-        filterbank = np.expand_dims(filterbank, axis=1)
-        return torch.from_numpy(filterbank).float()
+        return self._filters
 
 def erb_scale_2_freq_hz(freq_erb):
     """ Convert frequency on ERB scale to frequency in Hertz """
