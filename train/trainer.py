@@ -29,15 +29,11 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
     """
 
     loaders = collections.OrderedDict()
-    #train_loader = torch.utils.data.DataLoader(dataset, config.batch_size,
-    #                                           shuffle=True, num_workers=config.workers)
     # open_fn to specify the individual tensors retrieved from data loader
     train_loader = utils.get_loader(dataset, open_fn=lambda x: {"input_audio": x[-1], "input_video": x[1], "targets": x[0]},
                                     batch_size=config.batch_size, num_workers=config.workers, shuffle=True)
 
     if val_dataset:
-        #val_loader = torch.utils.data.DataLoader(val_dataset, config.batch_size,
-        #                                       shuffle=True, num_workers=config.workers)
         val_loader = utils.get_loader(val_dataset, open_fn=lambda x: {"input_audio": x[-1], "input_video": x[1], "targets": x[0]},
                                     batch_size=config.batch_size, num_workers=config.workers, shuffle=True)
 
@@ -46,8 +42,6 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
     if validate:
         loaders["valid"] = val_loader
 
-    #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5,
-    #                                                       patience=2)
     scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=config.learning_rate,
                                                   max_lr=config.learning_rate * 10, step_size_up=4*len(train_loader),
                                                   mode="triangular", cycle_momentum=False)
@@ -67,4 +61,3 @@ def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,
                  callbacks=collections.OrderedDict({"snr_callback": SNRCallback(), "sched_callback": SchedulerCallback(mode="batch")})
                  )
 
-    #utils.plot_metrics(logdir=logdir, metrics=["loss", "_base/lr"])

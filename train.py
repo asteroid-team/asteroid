@@ -11,6 +11,7 @@ from src.train import train, ParamConfig
 from src.models import Audio_Visual_Fusion as AVFusion
 
 class DiscriminativeLoss(torch.nn.Module):
+    #Reference: https://github.com/bill9800/speech_separation/blob/master/model/lib/model_loss.py
 
     def __init__(self, input_audio_size=2, gamma=0.1):
         super(DiscriminativeLoss, self).__init__()
@@ -33,10 +34,8 @@ class DiscriminativeLoss(torch.nn.Module):
 
 def main(args):
     config = ParamConfig(args.bs, args.epochs, args.workers, args.cuda, args.use_half, args.learning_rate)
-    dataset = AVDataset(args.video_dir,
-                        args.input_df_path, args.input_audio_size, args.cuda)
-    val_dataset = AVDataset(args.video_dir,
-                        args.val_input_df_path, args.input_audio_size, args.cuda)
+    dataset = AVDataset(args.input_df_path, args.input_audio_size)
+    val_dataset = AVDataset(args.val_input_df_path, args.input_audio_size)
 
     if args.cuda:
         device = torch.device("cuda:0")
@@ -50,14 +49,10 @@ def main(args):
 
 
 
-    p = "logdir/checkpoints/last_full.pth"
-    if Path(p).is_file():
-        ckpt = torch.load(p)
-        print(list(ckpt.keys()))
-    print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters())}")
+    print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-    criterion = DiscriminativeLoss()#torch.nn.MSELoss(reduction="mean")
+    criterion = DiscriminativeLoss()
 
     train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, validate=True)
 

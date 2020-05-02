@@ -12,59 +12,16 @@ from src.loader import Signal, input_face_embeddings, convert_to_spectrogram
 
 class AVDataset(torch.utils.data.Dataset):
 
-    def __init__(self, video_base_dir: Path, input_df_path: Path,
-                input_audio_size=2, use_cuda=False, face_embed_cuda=True, use_half=False,
-                all_embed_saved=True):
+    def __init__(self, input_df_path: Path,
+                input_audio_size=2):
         """
 
             Args:
-                video_base_dir: base directory for all the videos
                 input_df_path: path for combination dataset
                 input_audio_size: total audio/video inputs
-                use_cuda: cuda for the dataset
-                face_embed_cuda: cuda for pre-trained models
-                use_half: use_half precision for pre-trained models
-                all_embed_saved: true, if all embeddings are saved, so no
-                                 need to load resnet/mtcnn
         """
         self.input_audio_size = input_audio_size
-
         self.input_df = pd.read_csv(input_df_path.as_posix())
-
-        #Use Cuda for dataset
-        self.use_cuda = use_cuda
-        if self.use_cuda:
-            self.device = torch.device("cuda:0")
-        else:
-            self.device = torch.device("cpu")
-
-        #Use Cuda for pre-trained face processing
-        self.face_embed_cuda = face_embed_cuda
-
-        #Use half precision for pre-trained models
-        self.use_half = use_half
-
-        #Load pre-trained face processing models
-        if not all_embed_saved:
-            self.mtcnn = MTCNN(keep_all=True).eval()
-            self.resnet = InceptionResnetV1(pretrained="vggface2").eval()
-
-            if self.face_embed_cuda:
-                device = torch.device("cuda:0")
-                self.mtcnn = self.mtcnn.to(device)
-                self.resnet = self.resnet.to(device)
-
-                self.mtcnn.device = device
-
-            if self.use_half:
-                self.resnet = self.resnet.half()
-                #mtcnn doesn't support half precision inputs...
-
-            print(f"MTCNN has {sum(np.prod(i.shape) for i in self.mtcnn.parameters())} parameters")
-            print(f"RESNET has {sum(np.prod(i.shape) for i in self.resnet.parameters())} parameters")
-
-        with open("corrupt_frames_list.txt", "a") as f:
-            f.write("New Run\n")
 
     def __len__(self):
         return len(self.input_df)
@@ -77,7 +34,7 @@ class AVDataset(torch.utils.data.Dataset):
             #get audio, video path from combination dataframe
             video_path = row[i]
             audio_path = row[i+self.input_audio_size]
-            
+
             #video length is 3-10 seconds, hence, part index can take values 0-2
             re_match = re.search(r'_part\d', audio_path)
             video_length_idx = 0
@@ -119,7 +76,7 @@ class AVDataset(torch.utils.data.Dataset):
         #   slice out each one , video_input[i] (because this will be of (1024,75,1))
 
         mixed_signal_tensor = torch.Tensor(mixed_signal)  #shape  (257,298,2)
-        mixed_signal_tensor = torch.transpose(mixed_signal_tensor,0,2) #shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257	
+        mixed_signal_tensor = torch.transpose(mixed_signal_tensor,0,2) #shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257
         audio_tensors = [i.transpose(0, 2) for i in audio_tensors]
         audio_tensors = torch.stack(audio_tensors)
         audio_tensors = audio_tensors.permute(1, 2, 3, 0)
@@ -131,15 +88,15 @@ def _check_all_embed_saved(path, num_video):
     files = filter(lambda x: x.contains("npy"), files)
 
     return len(files == num_video)
-    
+
 
 def main(args):
 
-    train_dataset = AVDataset(args.video_dir, args.train_path, all_embed_saved=False)
+    train_dataset = AVDataset(args.train_path, all_embed_saved=False)
     train_df = train_dataset.input_df
     train_video_num = _get_video_num(train_df)
 
-    val_dataset = AVDataset(args.video_dir, args.val_path, all_embed_saved=False)
+    val_dataset = AVDataset(args.val_path, all_embed_saved=False)
     val_df = val_dataset.input_df
     val_video_num = _get_video_num(val_df)
 

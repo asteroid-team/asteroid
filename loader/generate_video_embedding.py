@@ -39,7 +39,6 @@ def cache_embed(path, mtcnn, resnet, args):
         return
 
     video_buffer = get_frames(cv2.VideoCapture(path.as_posix()))
-    print(path, video_buffer.shape)
     total_frames = video_buffer.shape[0]
 
     video_parts = total_frames // FRAMES #(25fps * 3)
@@ -65,7 +64,6 @@ def cache_embed(path, mtcnn, resnet, args):
 
     #save if all parts are not corrupted
     for embed, embed_path in embeddings:
-        print(embed_path)
         np.save(embed_path, embed.cpu().numpy())
 
 def main(args):

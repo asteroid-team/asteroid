@@ -13,8 +13,8 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
     """
         Get the face embedding
 
-        NOTE: If a face is not detected by the detector, 
-        instead of throwing an error it zeros the input 
+        NOTE: If a face is not detected by the detector,
+        instead of throwing an error it zeros the input
         for embedder.
 
         NOTE: Memory hungry function, hence the profiler.
@@ -46,7 +46,7 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
             cropped_tensors = None
             height, width, c = f.shape
             bounding_box, prob = mtcnn.detect(frame)
-                
+
             if bounding_box is not None:
                 for box in bounding_box:
                     x1,y1,x2,y2 = box
@@ -61,7 +61,7 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
                     y *= height
                     if(x >= x1 and y >= y1 and x <= x2 and y <= y2):
                         cropped_tensors = extract_face(frame, box)
-                        print("found", box, x, y, end='\r')
+                        #print("found", box, x, y, end='\r')
                         break
 
         if cropped_tensors is None:
@@ -76,7 +76,7 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
             Image.fromarray(saveimg).save(f"{name}_{i}.png")
 
         result_cropped_tensors.append(cropped_tensors.to(device))
-    
+
     if len(no_face_indices) > 20:
         #few videos start with silence, allow 0.5 seconds of silence else remove
         return None
