@@ -8,10 +8,9 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from asteroid import torch_utils
 from asteroid.data.wham_dataset import WhamDataset
 from system import SystemTwoStep
-from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
+from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr, PairwiseNegSDR
 
 from model import get_encoded_paths
 from model import load_best_filterbank_if_available
@@ -82,7 +81,8 @@ def train_model_part(conf, train_part='filterbank', pretrained_filterbank=None):
         yaml.safe_dump(conf, outfile)
 
     # Define Loss function.
-    loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
+    loss_func = PITLossWrapper(PairwiseNegSDR('sisdr', zero_mean=False),
+                               mode='pairwise')
     system = SystemTwoStep(model=model, loss_func=loss_func,
                            optimizer=optimizer, train_loader=train_loader,
                            val_loader=val_loader, scheduler=scheduler,
