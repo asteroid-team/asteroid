@@ -70,6 +70,7 @@ class TwoStepTDCN(nn.Module):
 
         # Norm before the rest, and apply one more dense layer
         self.ln_in = nn.BatchNorm1d(self.fbank_basis)
+        # self.ln_in = GlobalLayerNorm(self.fbank_basis)
         self.l1 = nn.Conv1d(in_channels=self.fbank_basis,
                             out_channels=self.bn_chan,
                             kernel_size=1)
@@ -94,6 +95,7 @@ class TwoStepTDCN(nn.Module):
                                          out_channels=self.fbank_basis,
                                          kernel_size=1)
         self.ln_mask_in = nn.BatchNorm1d(self.fbank_basis)
+        # self.ln_mask_in = GlobalLayerNorm(self.fbank_basis)
 
     def forward(self, x):
         # Front end
@@ -333,7 +335,8 @@ def load_best_separator_if_available(conf):
     exp_dir, checkpoint_dir = get_encoded_paths(conf, train_part='separator')
     model_available = False
     if os.path.exists(checkpoint_dir):
-        available_models = os.listdir(checkpoint_dir)
+        available_models = [p for p in os.listdir(checkpoint_dir)
+                            if '.ckpt' in p]
         if available_models:
             model_available = True
 
@@ -342,6 +345,7 @@ def load_best_separator_if_available(conf):
                                 ''.format(checkpoint_dir))
 
     model_path = os.path.join(checkpoint_dir, available_models[0])
+    print('Going to load from: {}'.format(model_path))
     checkpoint = torch.load(model_path, map_location='cpu')
     model_c, _ = make_model_and_optimizer(conf, model_part='separator',
                                           pretrained_filterbank=filterbank)
@@ -355,7 +359,8 @@ def load_best_filterbank_if_available(conf):
 
     filterbank_available = False
     if os.path.exists(checkpoint_dir):
-        available_filter_banks = os.listdir(checkpoint_dir)
+        available_filter_banks = [p for p in os.listdir(checkpoint_dir)
+                                  if '.ckpt' in p]
         if available_filter_banks:
            filterbank_available = True
 
@@ -363,6 +368,7 @@ def load_best_filterbank_if_available(conf):
         return None
 
     filterbank_path = os.path.join(checkpoint_dir, available_filter_banks[0])
+    print('Going to load from: {}'.format(filterbank_path))
     checkpoint = torch.load(filterbank_path, map_location='cpu')
     # Update number of source values (It depends on the task)
     conf['masknet'].update(
