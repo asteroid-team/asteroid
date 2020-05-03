@@ -9,15 +9,16 @@ def batch_matrix_norm(matrix, norm_order=2):
     Returns:
         normed matrix: torch.Tensor. 
     """
-    return torch.norm(matrix, p=norm_order, dim=[1,2])
+    return torch.norm(matrix, p=norm_order) ** norm_order
 
-def deep_clustering_loss(embedding, tgt_index, spk_cnt=None):
+def deep_clustering_loss(embedding, tgt_index, spk_cnt=None, binary_mask=None):
     """ Compute the deep clustering loss defined in  
     Args:
         embedding: torch.Tensor. Expected shape  [batch, frame x frequency, embeddingDim]
         tgt_index: torch.LongTensor. Dominating source in each time frequency bin. Expected shape:
             [batch, frequency, frame]
         spk_cnt: int. Number of speakers. Estimated from tgt_index if not given.
+        binary_mask: torch.LongTensor. VAD in time-frequency plane
 
     Returns:
          `torch.Tensor`. Deep clustering loss for every sample
@@ -41,12 +42,23 @@ def deep_clustering_loss(embedding, tgt_index, spk_cnt=None):
         spk_cnt = len(tgt_index.unique())
 
     batch, bins, frame = tgt_index.shape
-    tgt_embedding = torch.zeros(batch, frame*bins, spk_cnt)
+    if binary_mask is None:
+        binary_mask = torch.ones(batch, frame * bins, 1)
+    if len(binary_mask.shape) == 3:
+        binary_mask = binary_mask.view(batch, frame * bins, 1)
+    binary_mask = binary_mask.to(tgt_index.device)
+
+    tgt_embedding = torch.zeros(batch, frame*bins, spk_cnt, device=tgt_index.device)
     tgt_embedding.scatter_(2, tgt_index.view(batch, frame*bins,1),1)
+    tgt_embedding = tgt_embedding * binary_mask
+    embedding = embedding * binary_mask
+
     est_proj = torch.einsum('ijk,ijl->ikl', embedding, embedding)
     true_proj = torch.einsum('ijk,ijl->ikl', tgt_embedding, tgt_embedding)
     true_est_proj = torch.einsum('ijk,ijl->ikl', embedding, tgt_embedding)
-    return batch_matrix_norm(est_proj) + batch_matrix_norm(true_proj) - \
+    cost = batch_matrix_norm(est_proj) + batch_matrix_norm(true_proj) - \
             2*batch_matrix_norm(true_est_proj)
+    cost /= (batch  * bins * frame)
+    return cost
 
 

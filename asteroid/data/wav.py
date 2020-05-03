@@ -95,10 +95,11 @@ class SingleWav(object):
         if duration == -1:
             return self.data
         self.update_info()
-        assert duration < self.info.duration,\
+        assert duration <= self.info.duration,\
                 'Requested duration exceeds signal length'
         max_sample = int((self.info.duration - duration) * self.sampling_rate)
-        start_sample = np.random.randint(0,max_sample)
+        start_sample = np.random.randint(0,max_sample) if \
+                max_sample > 0 else 0
         end_sample = start_sample + int(duration * self.sampling_rate)
         return self.part_data(start_sample, end_sample)
 
