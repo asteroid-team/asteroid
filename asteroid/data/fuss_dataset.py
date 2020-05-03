@@ -30,21 +30,26 @@ class FUSSDataset(Dataset):
 
         # Load the file list as a dataframe
         # FUSS has a maximum of 3 foregrounds, make column names
-        names = ['mix', 'bg'] + [f'fg{i}' for i in range(self.max_n_fg)]
+        self.fg_names = [f'fg{i}' for i in range(self.max_n_fg)]
+        names = ['mix', 'bg'] + self.fg_names
         # Lines with less labels will have nan, replace with empty string
         self.mix_df = pd.read_csv(file_list_path, sep='\t', names=names)
+        # Number of foregrounds (fg) vary from 0 to 3
+        # This can easily be used to remove mixtures with less than x fg
+        # remove_less_than = 1
+        # self.mix_df.dropna(threshold=remove_less_than, inplace=True)
+        # self.mix_df.reset_index(inplace=True)
         self.mix_df.fillna(value='', inplace=True)
 
     def __len__(self):
         return len(self.mix_df)
 
     def __getitem__(self, idx):
-        # Each line has absolute to miture, background and foreground
+        # Each line has absolute to miture, background and foregrounds
         line = self.mix_df.iloc[idx]
-
         mix = sf.read(line['mix'], dtype='float32')[0]
         sources = []
-        for fg_path in line[2:]:
+        for fg_path in [line[fg_n] for fg_n in self.fg_names]:
             if fg_path:
                 sources.append(sf.read(fg_path, dtype='float32')[0])
             else:
