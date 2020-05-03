@@ -77,7 +77,10 @@ class SystemTwoStep(SystemCore):
         mixture_time, true_sources_time = batch
         if self.module == 'filterbank':
             est_sources_time, _ = self(mixture_time, true_sources_time)
-            return self.loss_func(est_sources_time, true_sources_time)
+            est_sources_time_mean = est_sources_time.mean(-1, keepdims=True)
+            true_sources_time_mean = true_sources_time.mean(-1, keepdims=True)
+            return self.loss_func(est_sources_time - est_sources_time_mean,
+                                  true_sources_time - true_sources_time_mean)
 
         # Here we train or validate the separator. In training we need the
         # latent targets to regress on. In validation we just provide the
@@ -94,7 +97,10 @@ class SystemTwoStep(SystemCore):
                 latent_targets.view(batch_size, n_sources, -1))
         else:
             est_sources_time = self.model(mixture_time)
-            return self.loss_func(est_sources_time, true_sources_time)
+            est_sources_time_mean = est_sources_time.mean(-1, keepdims=True)
+            true_sources_time_mean = true_sources_time.mean(-1, keepdims=True)
+            return self.loss_func(est_sources_time - est_sources_time_mean,
+                                  true_sources_time - true_sources_time_mean)
 
     def training_step(self, batch, batch_nb):
         loss = self.common_step(batch, train=True)
