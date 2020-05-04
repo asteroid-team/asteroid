@@ -310,8 +310,7 @@ class DPRNNBlock(nn.Module):
 
 class DPRNN(nn.Module):
     """ Dual-path RNN Network for Single-Channel Source Separation
-
-        Method introduced in [1].
+        introduced in [1].
 
     Args:
         in_chan (int): Number of input filters.
@@ -341,12 +340,12 @@ class DPRNN(nn.Module):
 
     References:
         [1] "Dual-path RNN: efficient long sequence modeling for
-        time-domain single-channel speech separation", Yi Luo, Zhuo Chen
-        and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
+            time-domain single-channel speech separation", Yi Luo, Zhuo Chen
+            and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
     def __init__(self, in_chan, n_src, out_chan=None, bn_chan=128, hid_size=128,
                  chunk_size=100, hop_size=None, n_repeats=6, norm_type="gLN",
-                 mask_act='sigmoid', bidirectional=True, rnn_type="LSTM",
+                 mask_act='relu', bidirectional=True, rnn_type="LSTM",
                  num_layers=1, dropout=0):
         super(DPRNN, self).__init__()
         self.in_chan = in_chan
@@ -377,9 +376,14 @@ class DPRNN(nn.Module):
                                bidirectional=bidirectional, rnn_type=rnn_type,
                                num_layers=num_layers, dropout=dropout)]
         self.net = nn.Sequential(*net)
-
-        mask_conv = nn.Conv2d(bn_chan, n_src*out_chan, 1)
-        self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
+        # Masking in 3D space
+        net_out_conv = nn.Conv2d(bn_chan, n_src*bn_chan, 1)
+        self.first_out = nn.Sequential(nn.PReLU(), net_out_conv)
+        # Gating and masking in 2D space (after fold)
+        self.net_out = nn.Sequential(nn.Conv1d(bn_chan, bn_chan, 1), nn.Tanh())
+        self.net_gate = nn.Sequential(nn.Conv1d(bn_chan, bn_chan, 1),
+                                      nn.Sigmoid())
+        self.mask_net = nn.Conv1d(bn_chan, out_chan, 1, bias=False)
 
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
@@ -406,20 +410,24 @@ class DPRNN(nn.Module):
         output = output.reshape(batch, self.bn_chan, self.chunk_size, n_chunks)
         # Apply stacked DPRNN Blocks sequentially
         output = self.net(output)
-        output = self.mask_net(output)
-        output = output.reshape(batch * self.n_src, self.out_chan,
+        # Map to sources with kind of 2D masks
+        output = self.first_out(output)
+        output = output.reshape(batch * self.n_src, self.bn_chan,
                                 self.chunk_size, n_chunks)
         # Overlap and add:
         # [batch, out_chan, chunk_size, n_chunks] -> [batch, out_chan, n_frames]
-        to_unfold = self.out_chan * self.chunk_size
+        to_unfold = self.bn_chan * self.chunk_size
         output = fold(output.reshape(batch * self.n_src, to_unfold, n_chunks),
                       (n_frames, 1), kernel_size=(self.chunk_size, 1),
                       padding=(self.chunk_size, 0),
                       stride=(self.hop_size, 1))
-        # Normalization
-        output = output.squeeze(-1) / (self.chunk_size / self.hop_size)
-        score = output.view(batch, self.n_src, self.out_chan, n_frames)
+        # Apply gating
+        output = output.reshape(batch * self.n_src, self.bn_chan, -1)
+        output = self.net_out(output) * self.net_gate(output)
+        # Compute mask
+        score = self.mask_net(output)
         est_mask = self.output_act(score)
+        est_mask = est_mask.view(batch, self.n_src, self.out_chan, n_frames)
         return est_mask
 
     def get_config(self):
