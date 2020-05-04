@@ -41,7 +41,7 @@ filterbank_n_basis=128
 filterbank_kernel_size=21
 
 # Training
-f_batch_size=4
+f_batch_size=64
 s_batch_size=4
 f_num_workers=4
 s_num_workers=4
@@ -49,12 +49,12 @@ f_optimizer=adam
 s_optimizer=adam
 f_lr=0.0005
 s_lr=0.001
-f_epochs=50
-s_epochs=200
+f_epochs=500
+s_epochs=400
 
 # Architecture
 n_blocks=8
-n_repeats=3
+n_repeats=4
 
 # Evaluation
 eval_use_gpu=0
