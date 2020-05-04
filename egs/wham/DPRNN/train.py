@@ -3,7 +3,6 @@ import argparse
 import json
 
 import torch
-import warnings
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
@@ -28,7 +27,6 @@ parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Full path to save best validation model')
 
-warnings.simplefilter("ignore", UserWarning)
 
 def main(conf):
     train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
@@ -89,7 +87,7 @@ def main(conf):
                          early_stop_callback=early_stopping,
                          default_save_path=exp_dir,
                          gpus=conf['main_args']['gpus'],
-                         distributed_backend='dp',
+                         distributed_backend='ddp',
                          gradient_clip_val=conf['training']["gradient_clipping"])
     trainer.fit(system)
 
