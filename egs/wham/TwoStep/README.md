@@ -10,8 +10,8 @@ space.
 
 |      |   Task    | n_blocks | n_repeats | batch size |SI-SNRi(dB) | 
 |:----:|:---------:|:--------:|:---------:|:----------:|:----------:|
-| Paper| sep_clean |    8     |     4     |     -      |    16.1    | 
-
+| Paper| sep_clean |    8     |     4     |     -      |    16.10   | 
+| Here | sep_clean |    8     |     4     |     -      |    15.23   |
 
 ### References
 If you use this model, please cite the original work.
