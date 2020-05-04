@@ -8,7 +8,7 @@ masknet:
   n_blocks: 8
   n_repeats: 4
   conv_kernel_size: 3
-  bn_chan: 128
+  bn_chan: 256
   hid_chan: 512
 # Training config for the filterbank
 filterbank_training:
