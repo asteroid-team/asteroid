@@ -28,7 +28,7 @@ training:
 optim:
   optimizer: adam
   lr: 0.001
-  weight_decay: 0.
+  weight_decay: !!float 1e-5
 # Data config
 data:
   train_dir: data/wav8k/min/tr/
@@ -37,4 +37,4 @@ data:
   nondefault_nsrc:
   sample_rate: 8000
   mode: min
-  segment: 4.0
+  segment: 2.0

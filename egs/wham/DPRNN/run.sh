@@ -39,11 +39,16 @@ nondefault_src=  # If you want to train a network with 3 output streams for exam
 # Training
 batch_size=4
 num_workers=8
-kernel_size=2
-stride=1
-#optimizer=adam
+optimizer=adam
 lr=0.001
 epochs=200
+weight_decay=0.00001
+
+# Architecture config
+kernel_size=2
+stride=1
+chunk_size=250
+hop_size=125
 
 # Evaluation
 eval_use_gpu=1
@@ -124,8 +129,12 @@ if [[ $stage -le 3 ]]; then
   --epochs $epochs \
   --batch_size $batch_size \
   --num_workers $num_workers \
+  --optimizer $optimizer \
+  --weight_decay $weight_decay \
   --kernel_size $kernel_size \
   --stride $stride \
+  --chunk_size $chunk_size \
+  --hop_size $hop_size \
   --exp_dir ${expdir}/ | tee logs/train_${tag}.log
 fi
 
