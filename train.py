@@ -48,13 +48,15 @@ def main(args):
         model = torch.nn.DataParallel(model)
 
 
-
     print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     criterion = DiscriminativeLoss()
-
-    train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, validate=True)
+    if args.model_path and args.model_path.is_file():
+        resume = args.model_path.as_posix()
+    else:
+        resume = None
+    train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, resume=resume)
 
 
 if __name__ == "__main__":
@@ -70,6 +72,7 @@ if __name__ == "__main__":
     parser.add_argument("--val-input-df-path", default=Path("val.csv"), type=Path, help="path for combinations dataset")
     parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
     parser.add_argument("--learning-rate", default=3e-4, type=float, help="learning rate for the network")
+    parser.add_argument("--model-path", default=Path("logdir/checkpoints/best_full.pth"), type=Path, help="Partially trained model path")
 
     args = parser.parse_args()
 
