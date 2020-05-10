@@ -9,6 +9,7 @@ get familiar with them.
 ### How is it organized ? 
 Most recipes are organized as follows. When you clone the repo, 
 `data`, `exp` and `logs` won't be there yet, it's normal.
+![alt text](../docs/source/_static/images/code_example_croped.png)
 
 ```
 ├── data/  
