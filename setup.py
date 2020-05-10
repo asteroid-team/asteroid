@@ -31,6 +31,8 @@ setup(
         'tests': ['pytest']
     },
     packages=find_packages(),
+    package_data={'pmsqe_matrices': ['asteroid/losses/*.mat']},
+    include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         "Programming Language :: Python :: 3",
