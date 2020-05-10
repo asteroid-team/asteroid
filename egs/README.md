@@ -9,7 +9,6 @@ get familiar with them.
 ### How is it organized ? 
 Most recipes are organized as follows. When you clone the repo, 
 `data`, `exp` and `logs` won't be there yet, it's normal.
-
 ```
 ├── data/  
 ├── exp/  
@@ -27,6 +26,8 @@ Most recipes are organized as follows. When you clone the repo,
 ├── model.py
 └── eval.py
 ```
+A small graph might help. 
+![alt text](../docs/source/_static/images/code_example_croped.png)
 
 ### How does it work?
 Let's try to summarize how recipes work :
@@ -34,7 +35,7 @@ Let's try to summarize how recipes work :
 - There is a master file, `run.sh`,  from which all the steps are 
 ran (install dependencies, download data, create dataset, train a model 
 evaluate it and so on..). This recipe style is borrowed from 
-[kaldi][kaldi] and [espnet][espnet].
+[Kaldi][kaldi] and [ESPnet][espnet].
   - You usually have to change some variables in the top of 
   the file (comments are around it to help you) like data directory, 
   python path etc..
