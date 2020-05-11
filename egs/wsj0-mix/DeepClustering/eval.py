@@ -14,7 +14,7 @@ from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.metrics import get_metrics
 
 from model import load_best_model
-from wsj0_mix_dataset import Wsj0mixDataset
+from asteroid.data import Wsj0mixDataset
 
 
 parser = argparse.ArgumentParser()

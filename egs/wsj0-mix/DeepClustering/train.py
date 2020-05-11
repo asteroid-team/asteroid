@@ -12,7 +12,7 @@ from asteroid.losses import PITLossWrapper, pairwise_mse
 from asteroid.losses import deep_clustering_loss
 from asteroid.filterbanks.transforms import take_mag, ebased_vad
 
-from wsj0_mix_dataset import make_dataloaders
+from asteroid.data.wsj0_mix import make_dataloaders
 from model import make_model_and_optimizer
 
 EPS = 1e-8
