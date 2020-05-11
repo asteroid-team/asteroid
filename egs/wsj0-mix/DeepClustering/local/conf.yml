@@ -24,7 +24,7 @@ optim:
   optimizer: rmsprop
   lr: 0.00001
   weight_decay: 0.00000
-  momentum: 0.9
+#  momentum: 0.9
 # Data config
 data:
   train_dir: data/wav8k/min/tr/

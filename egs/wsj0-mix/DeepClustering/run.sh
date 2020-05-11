@@ -45,6 +45,7 @@ batch_size=32
 num_workers=8
 optimizer=rmsprop
 lr=0.00001
+weight_decay=0.0
 epochs=200
 loss_alpha=1.0  # DC loss weight : 1.0 => DC, <1.0 => Chimera
 take_log=true  # Whether to input log mag spec to the NN
@@ -128,6 +129,7 @@ if [[ $stage -le 3 ]]; then
 		--sample_rate $sample_rate \
 		--optimizer $optimizer \
 		--lr $lr \
+		--weight_decay $weight_decay \
 		--epochs $epochs \
 		--batch_size $batch_size \
 		--loss_alpha $loss_alpha \
