@@ -9,12 +9,14 @@ storage_dir=/media/sam/cb915f0e-e440-414c-bb74-df66b311d09d/
 
 # If you start from the sphere files, specify the path to the directory and start from stage 0
 sphere_dir=  # Directory containing sphere files
-# If you already have wsj0 wav files, specify the path to the directory here and start from stage 1
+
+# If you already have wsj0 wav files (converted from sphere format).
+#
 wsj0_wav_dir=${storage_dir}/wsj0_wav/
-# If you already have the WHAM mixtures, specify the path to the directory here and start from stage 2
-#wsj0mix_wav_dir=${storage_dir}/wsj0_mix/
-#wsj0mix_wav_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/wsj0_wav
-wsj0mix_wav_dir=/mnt/beegfs/pul51/zaf67/DATA/wsj0-mix
+
+# If you already have the wsj0-2mix and wsj0-3mix mixtures, specify the path to the common directory
+# and start from stage 2.
+wsj0mix_wav_dir=
 
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
@@ -24,7 +26,7 @@ wsj0mix_wav_dir=/mnt/beegfs/pul51/zaf67/DATA/wsj0-mix
 python_path=python
 
 # Example usage
-# ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
+# ./run.sh --stage 3 --tag my_tag --loss_alpha 0.1 --id 0,1
 
 # General
 stage=3  # Controls from which stage to start
@@ -39,13 +41,14 @@ mode=min
 n_src=2  # 2 or 3
 
 # Training
-batch_size=64
+batch_size=32
 num_workers=8
-#optimizer=adam
+optimizer=rmsprop
 lr=0.00001
+weight_decay=0.0
 epochs=200
-loss_alpha=1.0
-take_log=true
+loss_alpha=1.0  # DC loss weight : 1.0 => DC, <1.0 => Chimera
+take_log=true  # Whether to input log mag spec to the NN
 
 # Evaluation
 eval_use_gpu=1
@@ -61,9 +64,21 @@ fi
 
 
 if [[ $stage -le  1 ]]; then
-	echo "Stage 1 : You need to generate the wsj0-mix dataset using the official scripts."
+	echo "Stage 1 : Downloading wsj0-mix mixing scripts"
 	# Link + WHAM is ok for 2 source.
-	exit
+	wget https://www.merl.com/demos/deep-clustering/create-speaker-mixtures.zip -O ./local/
+	unzip ./local/create-speaker-mixtures.zip -d ./local/create-speaker-mixtures
+	mv ./local/create-speaker-mixtures.zip ./local/create-speaker-mixtures
+
+	echo "You need to generate the wsj0-mix dataset using the official MATLAB
+			  scripts (already downloaded into ./local/create-speaker-mixtures).
+			  If you don't have Matlab, you can use Octavve and replace
+				all mkdir(...) in create_wav_2speakers.m with system(['mkdir -p '...]).
+				Note: for 2-speaker separation, the sep_clean task from WHAM is the same as
+				wsj0-2mix and the mixing scripts are in Python.
+				Specify wsj0mix_wav_dir and start from stage 2 when the mixtures have been generated.
+				Exiting now."
+	exit 1
 fi
 
 
@@ -112,7 +127,9 @@ if [[ $stage -le 3 ]]; then
 		--valid_dir $valid_dir \
 		--n_src $n_src \
 		--sample_rate $sample_rate \
+		--optimizer $optimizer \
 		--lr $lr \
+		--weight_decay $weight_decay \
 		--epochs $epochs \
 		--batch_size $batch_size \
 		--loss_alpha $loss_alpha \

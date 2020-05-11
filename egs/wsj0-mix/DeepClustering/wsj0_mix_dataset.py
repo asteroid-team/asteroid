@@ -5,7 +5,26 @@ import os
 import numpy as np
 import soundfile as sf
 
-DATASET = 'WSJ0MIX'
+
+def make_dataloaders(train_dir, valid_dir, n_src=2, sample_rate=8000,
+                     segment=4.0, batch_size=4, num_workers=None,
+                     **kwargs):
+    num_workers = num_workers if num_workers else batch_size
+    train_set = Wsj0mixDataset(train_dir, n_src=n_src,
+                               sample_rate=sample_rate,
+                               segment=segment)
+    val_set = Wsj0mixDataset(valid_dir, n_src=n_src,
+                             sample_rate=sample_rate,
+                             segment=segment)
+    train_loader = data.DataLoader(train_set, shuffle=True,
+                                   batch_size=batch_size,
+                                   num_workers=num_workers,
+                                   drop_last=True)
+    val_loader = data.DataLoader(val_set, shuffle=True,
+                                 batch_size=batch_size,
+                                 num_workers=num_workers,
+                                 drop_last=True)
+    return train_loader, val_loader
 
 
 class Wsj0mixDataset(data.Dataset):
