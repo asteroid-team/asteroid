@@ -86,7 +86,7 @@ More information in [egs/README.md](./egs).
 * [x] [ConvTasnet](./egs/wham/ConvTasNet) ([Luo et al.](https://arxiv.org/abs/1809.07454))
 * [x] [Tasnet](./egs/whamr/TasNet) ([Luo et al.](https://arxiv.org/abs/1711.00541))
 * [x] [Deep clustering](./egs/wsj0-mix/DeepClustering) ([Hershey et al.](https://arxiv.org/abs/1508.04306) and [Isik et al.](https://arxiv.org/abs/1607.02173))
-* [ ] Chimera ++ ([Luo et al.](https://arxiv.org/abs/1611.06265) and [Wang et al.](https://ieeexplore.ieee.org/document/8462507))
+* [x] [Chimera ++](./egs/wsj0-mix/DeepClustering) ([Luo et al.](https://arxiv.org/abs/1611.06265) and [Wang et al.](https://ieeexplore.ieee.org/document/8462507))
 * [x] [DualPathRNN](./egs/wham/DPRNN) ([Luo et al.](https://arxiv.org/abs/1910.06379))
 * [x] [Two step learning](./egs/wham/TwoStep)([Tzinis et al.](https://arxiv.org/abs/1910.09804))
 * [ ] Open-Unmix (coming) ([Stöter et al.](https://sigsep.github.io/open-unmix/))
