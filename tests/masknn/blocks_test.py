@@ -35,18 +35,6 @@ def test_dprnn(mask_act, out_chan, hop_size):
     assert out.shape == (batch, n_src, out_chan, n_frames)
 
     
-@pytest.mark.parametrize("embed_dim", [10, 20, 30])
-def test_chimerapp(embed_dim):
-    in_chan, n_src = 52, 2
-    model = blocks.ChimeraPP(in_chan, n_src, embedding_dim=embed_dim,
-                             hidden_size=50)
-    batch, freq_dim, nframes = 10, in_chan, 10
-    inp = torch.randn(batch, in_chan, nframes)
-    out = model(inp)
-    assert out[0].shape == (batch, freq_dim*nframes, embed_dim)
-    assert out[1].shape == (batch, n_src, in_chan, nframes)
-
-    
 @pytest.mark.parametrize("rnn_type", ["LSTM", "GRU", "RNN"])
 @pytest.mark.parametrize("dropout", [0., 0.2])
 @pytest.mark.parametrize("bidir", [False])
