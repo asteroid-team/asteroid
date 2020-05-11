@@ -15,7 +15,6 @@ wham_wav_dir=
 
 # Path to the python you'll use for the experiment. Defaults to the current python
 # You can run ./utils/prepare_python_env.sh to create a suitable python environment, paste the output here.
-#python_path=${storage_dir}/asteroid_conda/miniconda3/bin/python
 python_path=python
 
 # Example usage
@@ -112,16 +111,12 @@ train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
 test_dir=$dumpdir/tt
 
-#tag=${task}_${sr_string}k${mode}
-#expdir=exp/train_two_step_${tag}
-
 # Generate a random ID for the run if no tag is specified
 uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
 	tag=${task}_${sr_string}k${mode}_${uuid}
 fi
 expdir=exp/train_twostep_${tag}
-
 mkdir -p $expdir
 echo "Results from the following experiment will be stored in $expdir"
 
