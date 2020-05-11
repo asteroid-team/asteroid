@@ -61,7 +61,6 @@ eval_use_gpu=0
 
 . utils/parse_options.sh
 
-
 sr_string=$(($sample_rate/1000))
 suffix=wav${sr_string}k/$mode
 dumpdir=$data_dir/$suffix  # directory to put generated json file
