@@ -2,19 +2,19 @@
 set -e  # Exit on error
 
 # If you haven't generated LibriMix start from stage 0
-
-# Main storage directory. You'll need disk space to store LibriSpeech, WHAM and LibriMix this is about 500 Gb
+# Main storage directory. You'll need disk space to store LibriSpeech, WHAM noises
+# and LibriMix. This is about 500 Gb
 storage_dir=
-
 
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
 # Path to the python you'll use for the experiment. Defaults to the current python
 # You can run ./utils/prepare_python_env.sh to create a suitable python environment, paste the output here.
-#python_path=${storage_dir}/asteroid_conda/miniconda3/bin/python
 python_path=python
 
-# All the parameters
+# Example usage
+# ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
+
 # General
 stage=0  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
@@ -47,8 +47,6 @@ task=sep_clean
 
 . utils/parse_options.sh
 
-# Example usage
-# ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating Librimix dataset"
