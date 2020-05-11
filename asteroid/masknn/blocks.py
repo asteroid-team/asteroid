@@ -466,7 +466,7 @@ class ChimeraPP(nn.Module):
     """
     def __init__(self, in_chan, n_src, rnn_type = 'lstm',
             embedding_dim=20, n_layers=2, hidden_size=600,
-            dropout=0, bidirectional=True):
+            dropout=0, bidirectional=True, log=False):
         super(ChimeraPP, self).__init__()
         self.input_dim = in_chan
         self.n_src = n_src
@@ -479,9 +479,17 @@ class ChimeraPP(nn.Module):
                 in_chan * embedding_dim)
         self.mask_layer = nn.Linear(rnn_out_dim, in_chan * n_src)
         self.non_linearity = nn.Sigmoid()
+        self.log = log
+        self.EPS = torch.finfo(torch.float32).eps
+        if log:
+            #TODO: Use pytorch lightning logger here
+            print('Using log spectrum as input')
+
 
     def forward(self, input_data):
         batches, freq_dim, seq_cnt = input_data.shape
+        if self.log:
+            input_data = torch.log(input_data + self.EPS)
         out = self.rnn(input_data.permute(0,2,1))
         out = self.dropout(out)
         projection = self.embedding_layer(out)
@@ -491,5 +499,8 @@ class ChimeraPP(nn.Module):
                 torch.finfo(torch.float32).eps
         projection_final =  projection/proj_norm
         mask_out = self.mask_layer(out)
-        mask_out = mask_out.view(batches, self.n_src, self.input_dim, seq_cnt)
+        #mask_out = mask_out.view(batches, self.n_src, self.input_dim, seq_cnt)
+        mask_out = mask_out.view(batches, seq_cnt, self.n_src,
+                self.input_dim).permute(0, 2, 3, 1) 
+        mask_out = self.non_linearity(mask_out)
         return projection_final, mask_out

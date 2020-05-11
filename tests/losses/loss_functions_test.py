@@ -45,8 +45,8 @@ def test_sisdr(n_src, function_triplet):
 @pytest.mark.parametrize("spk_cnt", [2, 3, 4])
 def test_dc(spk_cnt):
     embedding = torch.randn(10, 5*400, 20)
-    targets = torch.LongTensor(10, 400, 5).random_(0, spk_cnt)
-    loss = deep_clustering_loss(embedding, targets, spk_cnt)
+    targets = torch.zeros(10, 400, 5).random_(0, spk_cnt).long()
+    loss = deep_clustering_loss(embedding, targets)
     assert loss.shape[0] == 10
 
 
