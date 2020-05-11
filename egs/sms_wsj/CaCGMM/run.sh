@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-storage_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/ # Main storage directory (Need disk space)
-wsj_dir=/net/fastdb/wsj # WSJ DIR (if wsj0 and wsj1 have been merged)
+storage_dir= # Main storage directory (Need disk space)
+wsj_dir= # WSJ DIR (if wsj0 and wsj1 have been merged)
 
 # Following wsj_dirs have to be defined, if wsj0 and wsj1 have not been merged
 wsj0_dir=$wsj_dir
@@ -10,33 +10,16 @@ wsj1_dir=$wsj_dir
 
 num_jobs=$(nproc --all)
 
-stage=-1
+stage=0
 
-data_dir=data  # Local data directory (Not much disk space required)
-python_path=${storage_dir}/asteroid_conda/miniconda3/bin/python
+python_path=python
 . utils/parse_options.sh || exit 1;
 
+data_dir=data  # Local data directory (Not much disk space required)
 sms_wsj=${storage_dir}/DATA/sms_wsj/ # Directory where to save SMS-WSJ wav files
-anaconda_path=${storage_dir}/asteroid_conda/
 
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
-
-if [[ $stage -le  -1 ]]; then
-	echo "Stage -1: Creating python environment to run this"
-	if [[ -x "${python_path}" ]]
-	then
-		echo "The provided python path is executable, don't proceed to installation."
-	else
-		if [[ ! -x "${anaconda_path}" ]]; then
-	  		. utils/prepare_python_env.sh --install_dir $anaconda_path --asteroid_root ../../..
-	  	fi
-	  	python_path=${anaconda_path}/miniconda3/bin/python
-		echo "Miniconda3 install can be found at $python_path"
-		echo -e "\n To use this python version for the next experiments, change"
-		echo -e "python_path=$python_path at the beginning of the file \n"
-	fi
-fi
 
 
 if [[ $stage -le  0 ]]; then
