@@ -1,7 +1,7 @@
 #!/bin/bash
 
-
-storage_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/
+# Main storage directory. You'll need disk space to dump DNS dataset.
+storage_dir=
 # If you want to clone the DNS-Challenge repo somewhere different
 clone_dir=  # optional
 
@@ -20,7 +20,6 @@ eval_use_gpu=1
 . ./utils/parse_options.sh
 
 recipe_dir=$PWD
-
 if [[ -z ${clone_dir} ]]; then
 	clone_dir=$storage_dir
 	echo $clone_dir

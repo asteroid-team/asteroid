@@ -3,19 +3,18 @@
 set -e  # Exit on error
 # Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
 # files if you start from sphere files.
-storage_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/
+storage_dir=
 
 # If you start from the sphere files, specify the path to the directory and start from stage 0
 sphere_dir=  # Directory containing sphere files
 # If you already have wsj0 wav files, specify the path to the directory here and start from stage 1
-wsj0_wav_dir=${storage_dir}/wsj0_wav/
+wsj0_wav_dir=
 # If you already have the WHAM mixtures, specify the path to the directory here and start from stage 2
-wham_wav_dir=${storage_dir}/wham_wav/
+wham_wav_dir=
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
 # Path to the python you'll use for the experiment. Defaults to the current python
 # You can run ./utils/prepare_python_env.sh to create a suitable python environment, paste the output here.
-#python_path=${storage_dir}/asteroid_conda/miniconda3/bin/python
 python_path=python
 
 # Example usage
@@ -28,7 +27,6 @@ tag=""  # Controls the directory name associated to the experiment
 id=
 
 # Data
-data_dir=data  # Local data directory (No disk space needed)
 task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
 sample_rate=8000
 mode=min
