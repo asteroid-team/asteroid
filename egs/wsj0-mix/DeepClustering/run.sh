@@ -48,12 +48,18 @@ eval_use_gpu=1
 
 . utils/parse_options.sh
 
+sr_string=$(($sample_rate/1000))
+suffix=${n_src}speakers/wav${sr_string}k/$mode
+dumpdir=data/$suffix  # directory to put generated json file
+
+train_dir=$dumpdir/tr
+valid_dir=$dumpdir/cv
+test_dir=$dumpdir/tt
 
 if [[ $stage -le  0 ]]; then
   echo "Stage 0: Converting sphere files to wav files"
   . local/convert_sphere2wav.sh --sphere_dir $sphere_dir --wav_dir $wsj0_wav_dir
 fi
-
 
 if [[ $stage -le  1 ]]; then
 	echo "Stage 1 : Downloading wsj0-mix mixing scripts"
@@ -73,7 +79,6 @@ if [[ $stage -le  1 ]]; then
 	exit 1
 fi
 
-
 if [[ $stage -le  2 ]]; then
 	# Make json directories with min/max modes and sampling rates
 	echo "Stage 2: Generating json files including wav path and duration"
@@ -92,15 +97,6 @@ if [[ $stage -le  2 ]]; then
   done
 fi
 
-
-sr_string=$(($sample_rate/1000))
-suffix=${n_src}speakers/wav${sr_string}k/$mode
-dumpdir=data/$suffix  # directory to put generated json file
-
-train_dir=$dumpdir/tr
-valid_dir=$dumpdir/cv
-test_dir=$dumpdir/tt
-
 # Generate a random ID for the run if no tag is specified
 uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
@@ -109,7 +105,6 @@ fi
 expdir=exp/train_chimera_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
-
 
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
