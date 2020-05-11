@@ -1,144 +1,199 @@
-""" Train a deep clustering network
-"""
 import os
 import argparse
 import json
-from ipdb import set_trace
-
 import torch
-from torch.utils.data import DataLoader
+from torch import nn
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from asteroid.data.wsj0_mix import WSJ2mixDataset, BucketingSampler, \
-        collate_fn
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_mse
 from asteroid.losses import deep_clustering_loss
+from asteroid.filterbanks.transforms import take_mag, ebased_vad
 
-import asteroid.filterbanks as fb
-from asteroid.filterbanks.transforms import take_mag
+from wsj0_mix_dataset import make_dataloaders
 from model import make_model_and_optimizer
 
-EPS = torch.finfo(torch.float32).eps
+EPS = 1e-8
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Full path to save best validation model')
 
-pit_loss = PITLossWrapper(pairwise_mse, mode='pairwise')
 
-class DcSystem(System):
-    """ System for deep clustering implementation. 
-        Overwrites the common_step.
-    """
-    def __init__(self, model, optimizer, loss_func, train_loader,
-                 val_loader=None, scheduler=None, config=None):
-        super().__init__(model, optimizer, loss_func, train_loader,
-                 val_loader=val_loader, scheduler=scheduler, config=config)
-        self.enc = fb.Encoder(fb.STFTFB(**config['filterbank']))
+def main(conf):
+    exp_dir = conf['main_args']['exp_dir']
+    # Define Dataloader
+    train_loader, val_loader = make_dataloaders(**conf['data'],
+                                                **conf['training'])
+    conf['masknet'].update({'n_src': conf['data']['n_src']})
+    # Define model, optimizer + scheduler
+    model, optimizer = make_model_and_optimizer(conf)
+    scheduler = None
+    if conf['training']['half_lr']:
+        scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5,
+                                      patience=5)
+
+    # Save config
+    os.makedirs(exp_dir, exist_ok=True)
+    conf_path = os.path.join(exp_dir, 'conf.yml')
+    with open(conf_path, 'w') as outfile:
+        yaml.safe_dump(conf, outfile)
+
+    # Define loss function
+    loss_func = ChimeraLoss(alpha=conf['training']['loss_alpha'])
+    # Put together in System
+    system = ChimeraSystem(model=model, loss_func=loss_func,
+                           optimizer=optimizer, train_loader=train_loader,
+                           val_loader=val_loader, scheduler=scheduler,
+                           config=conf)
+
+    # Callbacks
+    checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
+    checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
+                                 mode='min', save_top_k=5, verbose=1)
+    early_stopping = False
+    if conf['training']['early_stop']:
+        early_stopping = EarlyStopping(monitor='val_loss', patience=10,
+                                       verbose=1)
+    gpus=-1
+    # Don't ask GPU if they are not available.
+    if not torch.cuda.is_available():
+        print('No available GPU were found, set gpus to None')
+        gpus = None
+
+    # Train model
+    trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
+                         checkpoint_callback=checkpoint,
+                         early_stop_callback=early_stopping,
+                         default_save_path=exp_dir,
+                         gpus=gpus,
+                         distributed_backend='dp',
+                         train_percent_check=1.0,  # Useful for fast experiment
+                         gradient_clip_val=200,)
+    trainer.fit(system)
+
+    with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
+        json.dump(checkpoint.best_k_models, f, indent=0)
+    # Save last model for convenience
+    torch.save(system.model.state_dict(),
+               os.path.join(exp_dir, 'checkpoints/final.pth'))
+
+
+class ChimeraSystem(System):
+    def __init__(self, *args, mask_mixture=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.mask_mixture = mask_mixture
 
     def common_step(self, batch, batch_nb, train=False):
         inputs, targets, masks = self.unpack_data(batch)
-        est_targets = self(inputs)
-        spec = take_mag(self.enc(inputs.unsqueeze(1)))
-        loss = self.loss_func(est_targets, targets, masks, spec)
-        return loss
+        embeddings, est_masks = self(inputs)
+        spec = take_mag(self.model.encoder(inputs.unsqueeze(1)))
+        if self.mask_mixture:
+            est_masks = est_masks * spec.unsqueeze(1)
+            masks = masks * spec.unsqueeze(1)
+        loss, loss_dic = self.loss_func(embeddings, targets, est_src=est_masks,
+                                        target_src=masks, mix_spec=spec)
+        return loss, loss_dic
 
-    def unpack_data(self,batch):
+    def training_step(self, batch, batch_nb):
+        loss, loss_dic = self.common_step(batch, batch_nb, train=True)
+        tensorboard_logs = dict(train_loss=loss,
+                                train_dc_loss=loss_dic['dc_loss'],
+                                train_pit_loss=loss_dic['pit_loss'])
+        return {'loss': loss, 'log': tensorboard_logs}
+
+    def validation_step(self, batch, batch_nb):
+        loss, loss_dic = self.common_step(batch, batch_nb, train=False)
+        tensorboard_logs = dict(val_loss=loss,
+                                val_dc_loss=loss_dic['dc_loss'],
+                                val_pit_loss=loss_dic['pit_loss'])
+        return {'val_loss': loss, 'log': tensorboard_logs}
+
+    def validation_end(self, outputs):
+        # Not so pretty for now but it helps.
+        avg_loss = torch.stack([x['val_loss']
+                                for x in outputs]).mean()
+        avg_dc_loss = torch.stack([x['log']['val_dc_loss']
+                                   for x in outputs]).mean()
+        avg_pit_loss = torch.stack([x['log']['val_pit_loss']
+                                    for x in outputs]).mean()
+        tensorboard_logs = dict(val_loss=avg_loss,
+                                val_dc_loss=avg_dc_loss,
+                                val_pit_loss=avg_pit_loss)
+        return {'val_loss': avg_loss, 'log': tensorboard_logs,
+                'progress_bar': {'val_loss': avg_loss}}
+
+    def unpack_data(self, batch):
         mix, sources = batch
-        n_batch, n_src, n_sample = sources.shape
-        new_sources = sources.view(-1, n_sample).unsqueeze(1)
-        src_mag_spec = take_mag(self.enc(new_sources))
-        fft_dim = src_mag_spec.shape[1]
-        src_mag_spec = src_mag_spec.view(n_batch, n_src, fft_dim, -1)
-        src_sum = src_mag_spec.sum(1).unsqueeze(1) + EPS
-        real_mask = src_mag_spec/src_sum
+        # Compute magnitude spectrograms and IRM
+        src_mag_spec = take_mag(self.model.encoder(sources))
+        real_mask = src_mag_spec / (src_mag_spec.sum(1, keepdim=True) + EPS)
         # Get the src idx having the maximum energy
         binary_mask = real_mask.argmax(1)
         return mix, binary_mask, real_mask
 
 
-def handle_multiple_loss(est_heads, targets, true_real_masks, inputs, alpha=1):
-    """ Handles deep clustering loss and the PIT loss
+class ChimeraLoss(nn.Module):
+    """ Combines Deep clustering loss and mask inference loss for ChimeraNet.
+
     Args:
-        est_heads (tuple): Tuple containing embedding and estimated masks
-        targets (np.array): Binary masks with one hot encoding
-        true_real_masks (np.array): True real valued masks
-        inputs(np.array): Spectrogram of the mixture
-        alpha(int): Weight for the pit_loss
-
-    Return:
-        Sum of the deep clustering and PIT loss
+        alpha (float): loss weight. Total loss will be :
+            `alpha` * dc_loss + (1 - `alpha`) * mask_mse_loss.
     """
-    embedding, est_masks = est_heads
-    #dc_loss = deep_clustering_loss(embedding, targets)
-    #pit_loss_batch = pit_loss(est_masks * inputs.unsqueeze(1),
-    #                          true_real_masks * inputs.unsqueeze(1))
-    pit_loss_batch = pit_loss(est_masks, true_real_masks)
-    #return dc_loss.mean() + alpha * pit_loss_batch
-    #return dc_loss.mean()
-    return pit_loss_batch
+    def __init__(self, alpha=0.1):
+        super().__init__()
+        assert alpha >= 0, "Negative alpha values don't make sense."
+        assert alpha <= 1, "Alpha values above 1 don't make sense."
+        # PIT loss
+        self.src_mse = PITLossWrapper(pairwise_mse, pit_from='pw_mtx')
+        self.alpha = alpha
 
-def main(conf):
-    train_set = WSJ2mixDataset(conf['data']['tr_wav_len_list'],
-                               conf['data']['wav_base_path']+'/tr',
-                               sample_rate=conf['data']['sample_rate'])
-    val_set = WSJ2mixDataset(conf['data']['cv_wav_len_list'],
-                             conf['data']['wav_base_path']+'/cv',
-                             sample_rate=conf['data']['sample_rate'])
-    train_sampler = BucketingSampler(train_set,
-                                     batch_size=conf['data']['batch_size'])
-    valid_sampler = BucketingSampler(val_set,
-                                     batch_size=conf['data']['batch_size'])
+    def forward(self, est_embeddings, target_indices, est_src=None,
+                target_src=None, mix_spec=None):
+        """
 
-    train_loader = DataLoader(train_set, 
-                              batch_sampler=train_sampler,
-                              collate_fn=collate_fn,
-                              num_workers=conf['data']['num_workers'])
-    val_loader = DataLoader(val_set, 
-                            batch_sampler=valid_sampler,
-                            collate_fn=collate_fn,
-                            num_workers=conf['data']['num_workers'])
-    model, optimizer = make_model_and_optimizer(conf)
-    exp_dir = conf['main_args']['exp_dir']
-    os.makedirs(exp_dir, exist_ok=True)
-    conf_path = os.path.join(exp_dir, 'conf.yml')
-    with open(conf_path, 'w') as outfile:
-        yaml.safe_dump(conf, outfile)
-    loss_func = handle_multiple_loss
-    checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
-    checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
-                                 mode='min')
-    system = DcSystem(model=model, loss_func=loss_func,
-                      optimizer=optimizer,
-                      train_loader=train_loader, val_loader=val_loader,
-                      config=conf)
-    # Don't ask GPU if they are not available.
-    if not torch.cuda.is_available():
-        print('No available GPU were found, set gpus to None')
-        conf['main_args']['gpus'] = None
-    trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
-                         checkpoint_callback=checkpoint,
-                         default_save_path=exp_dir,
-                         gpus=conf['main_args']['gpus'],
-                         distributed_backend='dp',
-                         train_percent_check=1.0  # Useful for fast experiment
-                        )
-    trainer.fit(system)
-    with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
-        json.dump(checkpoint.best_k_models, f, indent=0)
-    #torch.save(system.model.state_dict(), os.path.join(exp_dir, 'final.pth'))
+        Args:
+            est_embeddings (torch.Tensor): Estimated embedding from the DC head.
+            target_indices (torch.Tensor): Target indices that'll be passed to
+                the DC loss.
+            est_src (torch.Tensor): Estimated magnitude spectrograms (or masks).
+            target_src (torch.Tensor): Target magnitude spectrograms (or masks).
+            mix_spec (torch.Tensor): The magnitude spectrogram of the mixture
+                from which VAD will be computed. If None, no VAD is used.
+
+        Returns:
+            torch.Tensor, the total loss, averaged over the batch.
+            dict with `dc_loss` and `pit_loss` keys, unweighted losses.
+        """
+        if self.alpha != 0 and (est_src is None or target_src is None):
+            raise ValueError('Expected target and estimated spectrograms to '
+                             'compute the PIT loss, found None.')
+        binary_mask = None
+        if mix_spec is not None:
+            binary_mask = ebased_vad(mix_spec)
+        # Dc loss is already divided by VAD in the loss function.
+        dc_loss = deep_clustering_loss(embedding=est_embeddings,
+                                       tgt_index=target_indices,
+                                       binary_mask=binary_mask)
+        src_pit_loss = self.src_mse(est_src, target_src)
+        # Equation (4) from Chimera paper.
+        tot = self.alpha * dc_loss.mean() + (1 - self.alpha) * src_pit_loss
+        # Return unweighted losses as well for logging.
+        loss_dict = dict(dc_loss=dc_loss.mean(),
+                         pit_loss=src_pit_loss)
+        return tot, loss_dict
+
 
 if __name__ == '__main__':
     import yaml
+    from pprint import pprint
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
 
     with open('local/conf.yml') as f:
         def_conf = yaml.safe_load(f)
     parser = prepare_parser_from_dict(def_conf, parser=parser)
     arg_dic, plain_args = parse_args_as_dict(parser, return_plain_args=True)
-    set_trace()
-    print(arg_dic)
+    pprint(arg_dic)
     main(arg_dic)
