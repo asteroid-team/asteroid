@@ -3,17 +3,11 @@
 set -e  # Exit on error
 # Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
 # files if you start from sphere files.
-storage_dir=/media/sam/cb915f0e-e440-414c-bb74-df66b311d09d/
-#storage_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/wsj0_wav
-
-
+storage_dir=
 # If you start from the sphere files, specify the path to the directory and start from stage 0
 sphere_dir=  # Directory containing sphere files
-
 # If you already have wsj0 wav files (converted from sphere format).
-#
-wsj0_wav_dir=${storage_dir}/wsj0_wav/
-
+wsj0_wav_dir=
 # If you already have the wsj0-2mix and wsj0-3mix mixtures, specify the path to the common directory
 # and start from stage 2.
 wsj0mix_wav_dir=
@@ -22,7 +16,6 @@ wsj0mix_wav_dir=
 
 # Path to the python you'll use for the experiment. Defaults to the current python
 # You can run ./utils/prepare_python_env.sh to create a suitable python environment, paste the output here.
-#python_path=${storage_dir}/asteroid_conda/miniconda3/bin/python
 python_path=python
 
 # Example usage
@@ -52,7 +45,6 @@ take_log=true  # Whether to input log mag spec to the NN
 
 # Evaluation
 eval_use_gpu=1
-
 
 . utils/parse_options.sh
 
