@@ -39,6 +39,7 @@ so hop on and help us !
 - [Citing us](#citing)
 
 ## Installation
+([↑up to contents](#contents))  
 In order to install Asteroid, clone the repo and install it using 
 pip or python :
 ```bash
