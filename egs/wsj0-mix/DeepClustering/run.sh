@@ -123,6 +123,7 @@ if [[ $stage -le 3 ]]; then
 		--take_log $take_log \
 		--num_workers $num_workers \
 		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
+	cp logs/train_${tag}.log $expdir/train.log
 fi
 
 if [[ $stage -le 4 ]]; then
@@ -131,5 +132,6 @@ if [[ $stage -le 4 ]]; then
 	  --n_src $n_src \
 		--test_dir $test_dir \
 		--use_gpu $eval_use_gpu \
-		--exp_dir ${expdir}
+		--exp_dir ${expdir} | tee logs/eval_${tag}.log
+	cp logs/eval_${tag}.log $expdir/eval.log
 fi

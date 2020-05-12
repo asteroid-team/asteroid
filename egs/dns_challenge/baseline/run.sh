@@ -70,23 +70,25 @@ if [[ $stage -le  3 ]]; then
   echo "Stage 3 : Train"
   mkdir -p logs
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-  --json_dir $dumpdir \
-  --is_complex $is_complex \
-  --exp_dir ${expdir}/ | tee logs/train_dns_${tag}.log
+		--json_dir $dumpdir \
+		--is_complex $is_complex \
+		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
+	cp logs/train_${tag}.log $expdir/train.log
 fi
 
 if [[ $stage -le  4 ]]; then
   echo "Stage 4 : Evaluate"
   $python_path eval_on_synthetic.py \
-  --test_dir $clone_dir/DNS-Challenge/datasets/test_set/synthetic \
-  --use_gpu $eval_use_gpu \
-  --exp_dir $expdir | tee logs/eval_dns_${tag}.log
+		--test_dir $clone_dir/DNS-Challenge/datasets/test_set/synthetic \
+		--use_gpu $eval_use_gpu \
+		--exp_dir $expdir | tee logs/eval_${tag}.log
+	cp logs/eval_${tag}.log $expdir/eval.log
 fi
 
 if [[ $stage -le  5 ]]; then
   echo "Stage 5 : Separate"
   $python_path denoise.py \
-  --denoise_path $clone_dir/DNS-Challenge/datasets/test_set/real_recordings/ \
-  --use_gpu $eval_use_gpu \
-  --exp_dir $expdir
+		--denoise_path $clone_dir/DNS-Challenge/datasets/test_set/real_recordings/ \
+		--use_gpu $eval_use_gpu \
+		--exp_dir $expdir
 fi
