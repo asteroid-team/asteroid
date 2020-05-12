@@ -72,8 +72,8 @@ if [[ $stage -le  3 ]]; then
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
 		--json_dir $dumpdir \
 		--is_complex $is_complex \
-		--exp_dir ${expdir}/ | tee logs/train_dns_${tag}.log
-	cp logs/train_dns_${tag}.log $expdir/train.log
+		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
+	cp logs/train_${tag}.log $expdir/train.log
 fi
 
 if [[ $stage -le  4 ]]; then
@@ -81,8 +81,8 @@ if [[ $stage -le  4 ]]; then
   $python_path eval_on_synthetic.py \
 		--test_dir $clone_dir/DNS-Challenge/datasets/test_set/synthetic \
 		--use_gpu $eval_use_gpu \
-		--exp_dir $expdir | tee logs/eval_dns_${tag}.log
-	cp logs/eval_dns_${tag}.log $expdir/eval.log
+		--exp_dir $expdir | tee logs/eval_${tag}.log
+	cp logs/eval_${tag}.log $expdir/eval.log
 fi
 
 if [[ $stage -le  5 ]]; then
