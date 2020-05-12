@@ -21,7 +21,7 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
 
 # General
-stage=-1  # Controls from which stage to start
+stage=0  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=
@@ -61,33 +61,23 @@ eval_use_gpu=0
 
 . utils/parse_options.sh
 
+sr_string=$(($sample_rate/1000))
+suffix=wav${sr_string}k/$mode
+dumpdir=$data_dir/$suffix  # directory to put generated json file
 
-if [[ $stage -le  -1 ]]; then
-	echo "Stage -1: Creating python environment to run this"
-	if [[ -x "${python_path}" ]]
-	then
-		echo "The provided python path is executable, don't proceed to installation."
-	else
-	  . utils/prepare_python_env.sh --install_dir $python_path --asteroid_root ../../..
-	  echo "Miniconda3 install can be found at $python_path"
-	  python_path=${python_path}/miniconda3/bin/python
-	  echo -e "\n To use this python version for the next experiments, change"
-	  echo -e "python_path=$python_path at the beginning of the file \n"
-	fi
-fi
-
+train_dir=$dumpdir/tr
+valid_dir=$dumpdir/cv
+test_dir=$dumpdir/tt
 
 if [[ $stage -le  0 ]]; then
   echo "Stage 0: Converting sphere files to wav files"
   . local/convert_sphere2wav.sh --sphere_dir $sphere_dir --wav_dir $wsj0_wav_dir
 fi
 
-
 if [[ $stage -le  1 ]]; then
 	echo "Stage 1: Generating 8k and 16k WHAM dataset"
   . local/prepare_data.sh --wav_dir $wsj0_wav_dir --out_dir $wham_wav_dir --python_path $python_path
 fi
-
 
 if [[ $stage -le  2 ]]; then
 	# Make json directories with min/max modes and sampling rates
@@ -103,14 +93,6 @@ if [[ $stage -le  2 ]]; then
   done
 fi
 
-sr_string=$(($sample_rate/1000))
-suffix=wav${sr_string}k/$mode
-dumpdir=$data_dir/$suffix  # directory to put generated json file
-
-train_dir=$dumpdir/tr
-valid_dir=$dumpdir/cv
-test_dir=$dumpdir/tt
-
 # Generate a random ID for the run if no tag is specified
 uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
@@ -119,7 +101,6 @@ fi
 expdir=exp/train_twostep_${tag}
 mkdir -p $expdir
 echo "Results from the following experiment will be stored in $expdir"
-
 
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
@@ -146,7 +127,6 @@ if [[ $stage -le 3 ]]; then
   --reuse_pretrained_filterbank $reuse_pretrained_filterbank \
   --exp_dir ${expdir}/ | tee logs/train_${tag}.log
 fi
-
 
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4 : Evaluation"
