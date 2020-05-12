@@ -106,33 +106,35 @@ if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   mkdir -p logs
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-  --train_dir $train_dir \
-  --valid_dir $valid_dir \
-  --task $task \
-  --sample_rate $sample_rate \
-  --f_lr $f_lr \
-  --s_lr $s_lr \
-  --f_epochs $f_epochs  \
-  --s_epochs $s_epochs  \
-  --f_optimizer $f_optimizer  \
-  --s_optimizer $s_optimizer  \
-  --f_batch_size $f_batch_size \
-  --s_batch_size $s_batch_size \
-  --f_num_workers $f_num_workers \
-  --s_num_workers $s_num_workers \
-  --n_blocks $n_blocks \
-  --n_repeats $n_repeats \
-  --n_filters $filterbank_n_basis \
-  --kernel_size $filterbank_kernel_size \
-  --reuse_pretrained_filterbank $reuse_pretrained_filterbank \
-  --exp_dir ${expdir}/ | tee logs/train_${tag}.log
+		--train_dir $train_dir \
+		--valid_dir $valid_dir \
+		--task $task \
+		--sample_rate $sample_rate \
+		--f_lr $f_lr \
+		--s_lr $s_lr \
+		--f_epochs $f_epochs  \
+		--s_epochs $s_epochs  \
+		--f_optimizer $f_optimizer  \
+		--s_optimizer $s_optimizer  \
+		--f_batch_size $f_batch_size \
+		--s_batch_size $s_batch_size \
+		--f_num_workers $f_num_workers \
+		--s_num_workers $s_num_workers \
+		--n_blocks $n_blocks \
+		--n_repeats $n_repeats \
+		--n_filters $filterbank_n_basis \
+		--kernel_size $filterbank_kernel_size \
+		--reuse_pretrained_filterbank $reuse_pretrained_filterbank \
+		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
+	cp logs/train_${tag}.log $expdir/train.log
 fi
 
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4 : Evaluation"
 	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
-	--task $task \
-	--test_dir $test_dir \
-	--use_gpu $eval_use_gpu \
-	--exp_dir ${expdir}
+		--task $task \
+		--test_dir $test_dir \
+		--use_gpu $eval_use_gpu \
+		--exp_dir ${expdir} | tee logs/eval_${tag}.log
+	cp logs/eval_${tag}.log $expdir/eval.log
 fi
