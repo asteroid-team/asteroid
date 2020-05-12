@@ -59,34 +59,38 @@ if [[ -z ${tag} ]]; then
 	tag=${uuid}
 fi
 
-exp_dir=exp/train_convtasnet_${tag}
-mkdir -p $exp_dir && echo $uuid >> $exp_dir/run_uuid.txt
-echo "Results from the following experiment will be stored in $exp_dir"
+expdir=exp/train_convtasnet_${tag}
+mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
+echo "Results from the following experiment will be stored in $expdir"
 
 
 if [[ $stage -le 1 ]]; then
   echo "Stage 1: Training"
   mkdir -p logs
-  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir $exp_dir \
-  --n_blocks $n_blocks \
-  --n_repeats $n_repeats \
-  --mask_act $mask_act \
-  --epochs $epochs \
-  --batch_size $batch_size \
-  --num_workers $num_workers \
-  --half_lr $half_lr \
-  --early_stop $early_stop \
-  --optimizer $optimizer \
-  --lr $lr \
-  --weight_decay $weight_decay \
-  --train_dir $train_dir \
-  --valid_dir $valid_dir \
-  --sample_rate $sample_rate \
-  --n_src $n_src \
-  --segment $segment
+  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir $expdir \
+		--n_blocks $n_blocks \
+		--n_repeats $n_repeats \
+		--mask_act $mask_act \
+		--epochs $epochs \
+		--batch_size $batch_size \
+		--num_workers $num_workers \
+		--half_lr $half_lr \
+		--early_stop $early_stop \
+		--optimizer $optimizer \
+		--lr $lr \
+		--weight_decay $weight_decay \
+		--train_dir $train_dir \
+		--valid_dir $valid_dir \
+		--sample_rate $sample_rate \
+		--n_src $n_src \
+		--segment $segment | tee logs/train_${tag}.log
+	cp logs/train_${tag}.log $expdir/train.log
 fi
 
 if [[ $stage -le 2 ]]; then
 	echo "Stage 2 : Evaluation"
-  $python_path eval.py --exp_dir $exp_dir --test_dir $test_dir --out_dir $out_dir --task $task
+  $python_path eval.py --exp_dir $expdir --test_dir $test_dir \
+  	--out_dir $out_dir \
+  	--task $task | tee logs/eval_${tag}.log
+	cp logs/eval_${tag}.log $expdir/eval.log
 fi
