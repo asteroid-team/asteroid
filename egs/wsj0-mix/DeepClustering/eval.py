@@ -39,7 +39,7 @@ def main(conf):
     test_set = Wsj0mixDataset(conf['test_dir'], n_src=conf['n_src'],
                               segment=None)
     # Used to reorder sources only
-    loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
+    loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
 
     # Randomly choose the indexes of sentences to save.
     ex_save_dir = os.path.join(conf['exp_dir'], 'examples/')

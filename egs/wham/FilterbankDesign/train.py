@@ -48,7 +48,7 @@ def main(conf):
         yaml.safe_dump(conf, outfile)
 
     # Define Loss function.
-    loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
+    loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
     # loss_class = PITLossContainer(pairwise_neg_sisdr, n_src=train_set.n_src)
     # Checkpointing callback can monitor any quantity which is returned by
     # validation step, defaults to val_loss here (see System).

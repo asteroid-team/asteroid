@@ -65,7 +65,7 @@ def main(conf):
                         n_src=conf['train_conf']['data']['n_src'],
                         segment=None) # Uses all segment length
     # Used to reorder sources only
-    loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
+    loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
 
     # Randomly choose the indexes of sentences to save.
     eval_save_dir = os.path.join(conf['exp_dir'], conf['out_dir'])

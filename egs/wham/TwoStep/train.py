@@ -82,7 +82,7 @@ def train_model_part(conf, train_part='filterbank', pretrained_filterbank=None):
 
     # Define Loss function.
     loss_func = PITLossWrapper(PairwiseNegSDR('sisdr', zero_mean=False),
-                               mode='pairwise')
+                               pit_from='pw_mtx')
     system = SystemTwoStep(model=model, loss_func=loss_func,
                            optimizer=optimizer, train_loader=train_loader,
                            val_loader=val_loader, scheduler=scheduler,
