@@ -43,7 +43,7 @@ def main(conf):
                            nondefault_nsrc=model.separator.n_sources,
                            segment=None, normalize_audio=True)
     # Used to reorder sources only
-    loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
+    loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
 
     # Randomly choose the indexes of sentences to save.
     ex_save_dir = os.path.join(conf['exp_dir'], 'examples/')
