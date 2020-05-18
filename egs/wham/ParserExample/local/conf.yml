@@ -1,0 +1,26 @@
+# Filterbank config
+filterbank:
+  n_filters: 512
+  kernel_size: 16
+  stride: 8
+# Network config
+masknet:
+  n_blocks: 3
+  n_repeats: 2
+  trial_list: []
+# Training config
+training:
+  epochs: 100
+  batch_size: 16
+  num_workers: 4
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.
+# Data config
+data:
+  task: sep_clean
+  nondefault_nsrc:
+  sample_rate: 8000
+  mode: min
