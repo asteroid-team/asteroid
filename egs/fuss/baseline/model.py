@@ -53,7 +53,7 @@ class TDCNpp(nn.Module):
     """
     def __init__(self, in_chan, n_src, out_chan=None, n_blocks=8, n_repeats=3,
                  bn_chan=128, hid_chan=512, skip_chan=128, kernel_size=3,
-                 norm_type="cLN", mask_act='relu'):
+                 norm_type="cLN", mask_act='relu', learnable_scaling=False):
         super().__init__()
         self.in_chan = in_chan
         self.n_src = n_src
@@ -67,6 +67,7 @@ class TDCNpp(nn.Module):
         self.kernel_size = kernel_size
         self.norm_type = norm_type
         self.mask_act = mask_act
+        self.learnable_scaling = learnable_scaling
 
         layer_norm = norms.get(norm_type)(in_chan)
         bottleneck_conv = nn.Conv1d(in_chan, bn_chan, 1)
@@ -98,6 +99,9 @@ class TDCNpp(nn.Module):
             self.output_act = mask_nl_class(dim=1)
         else:
             self.output_act = mask_nl_class()
+
+        if learnable_scaling:
+            self.scaling = nn.Linear(bn_chan, n_src)
 
     def forward(self, mixture_w):
         """
@@ -140,22 +144,32 @@ class TDCNpp(nn.Module):
         score = self.mask_net(mask_inp)
         score = score.view(batch, self.n_src, self.out_chan, n_frames)
         est_mask = self.output_act(score)
-        return est_mask
+
+        if self.learnable_scaling:
+            weights = self.scaling(mask_inp.mean(-1)) # mean pool
+            weights = torch.nn.functional.softmax(weights, -1)
+            return est_mask, weights
+
+        return est_mask,
 
 
 class Model(nn.Module):
-    def __init__(self, encoder, masker, decoder):
+    def __init__(self, encoder, masker, decoder, learnable_scaling=False):
         super().__init__()
         self.encoder = encoder
         self.masker = masker
         self.decoder = decoder
+        self.learnable_scaling = learnable_scaling
 
     def forward(self, x, bg=None):
         if len(x.shape) == 2:
             x = x.unsqueeze(1)
         tf_rep = self.encoder(x)
         # Concat ReIm and Mag input
-        est_masks = self.masker(transforms.take_cat(tf_rep))
+        if self.learnable_scaling:
+            est_masks, weights = self.masker(transforms.take_cat(tf_rep))
+        else:
+            est_masks = self.masker(transforms.take_cat(tf_rep))
         # Note : this is equivalent to ReIm masking for STFT
         masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
         out_wavs = self.decoder(masked_tf_rep)
@@ -165,7 +179,10 @@ class Model(nn.Module):
             return pad_x_to_y(out_wavs, x)
         if len(bg.shape) == 2:
             bg = bg.unsqueeze(1)
-        out_wavs = consistency.mixture_consistency(x - bg, out_wavs)
+        if self.learnable_scaling:
+            out_wavs = consistency.mixture_consistency(x - bg, out_wavs, src_weights=weights)
+        else:
+            out_wavs = consistency.mixture_consistency(x - bg, out_wavs)
         return pad_x_to_y(out_wavs, x)
 
 
@@ -195,7 +212,7 @@ def make_model_and_optimizer(conf):
                            n_src=3,  # Hardcoded here because of FUSS
                            **mask_conf)
 
-    model = Model(enc, masker, dec)
+    model = Model(enc, masker, dec, learnable_scaling=mask_conf["learnable_scaling"])
     # Define optimizer of this model
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
     return model, optimizer
