@@ -103,8 +103,14 @@ def prepare_parser_from_dict(dic, parser=None):
         group = parser.add_argument_group(k)
         for kk in dic[k].keys():
             entry_type = standardized_entry_type(dic[k][kk])
-            group.add_argument('--' + kk, default=dic[k][kk],
-                               type=entry_type)
+            if entry_type is list:
+                # '*': 0 or more args into list
+                group.add_argument('--' + kk, default=dic[k][kk],
+                                   type=str_int_float, nargs='*')
+            else:
+                # '?' : 0 or 1 arg can be parsed
+                group.add_argument('--' + kk, default=dic[k][kk],
+                                   type=entry_type, nargs='?')
     return parser
 
 
