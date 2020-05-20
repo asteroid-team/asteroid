@@ -106,7 +106,7 @@ class TDConvNet(nn.Module):
                           '`conv_kernel_size` instead',
                           VisibleDeprecationWarning)
             conv_kernel_size = kernel_size
-        self.kernel_size = conv_kernel_size
+        self.conv_kernel_size = conv_kernel_size
         self.norm_type = norm_type
         self.mask_act = mask_act
 
