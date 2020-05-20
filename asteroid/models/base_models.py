@@ -6,6 +6,13 @@ from .. import torch_utils
 
 
 class BaseTasNet(nn.Module):
+    """ Base class for encoder-masker-decoder separation models.
+
+    Args:
+        encoder (Encoder): Encoder instance.
+        masker (nn.Module): masker network.
+        decoder (Decoder): Decoder instance.
+    """
     def __init__(self, encoder, masker, decoder):
         super().__init__()
         self.encoder = encoder
@@ -13,6 +20,14 @@ class BaseTasNet(nn.Module):
         self.decoder = decoder
 
     def forward(self, wav):
+        """ Enc/Mask/Dec model forward
+
+        Args:
+            wav (torch.Tensor): waveform tensor. 1D, 2D or 3D tensor, time last.
+
+        Returns:
+            torch.Tensor, of shape (batch, n_src, time) or (n_src, time).
+        """
         # Handle 1D, 2D or n-D inputs
         was_one_d = False
         if wav.ndim == 1:
@@ -30,6 +45,29 @@ class BaseTasNet(nn.Module):
         return out_wavs
 
     def separate(self, wav):
+        """ Infer separated sources from input waveforms.
+
+        Args:
+            wav (Union[torch.Tensor, numpy.ndarray]): waveform array/tensor.
+                Shape: 1D, 2D or 3D tensor, time last.
+
+        Returns:
+            Union[torch.Tensor, numpy.ndarray], the estimated sources.
+                (batch, n_src, time) or (n_src, time) w/o batch dim.
+        """
+        return self._separate(wav)
+
+    def _separate(self, wav):
+        """ Hidden separation method
+
+        Args:
+            wav (Union[torch.Tensor, numpy.ndarray]): waveform array/tensor.
+                Shape: 1D, 2D or 3D tensor, time last.
+
+        Returns:
+            Union[torch.Tensor, numpy.ndarray], the estimated sources.
+                (batch, n_src, time) or (n_src, time) w/o batch dim.
+        """
         # Handle numpy inputs
         was_numpy = False
         if isinstance(wav, np.ndarray):
