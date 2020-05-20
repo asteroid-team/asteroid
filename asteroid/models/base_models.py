@@ -98,7 +98,7 @@ class BaseTasNet(nn.Module):
         Returns:
             Instance of BaseTasNet
         """
-        if os.path.isfile(pretrained_model_conf_or_path):
+        if isinstance(pretrained_model_conf_or_path, str):
             conf = torch.load(pretrained_model_conf_or_path, map_location='cpu')
         else:
             conf = pretrained_model_conf_or_path
@@ -108,7 +108,7 @@ class BaseTasNet(nn.Module):
 
     def serialize(self):
         model_conf = dict()
-        model_conf['fb_conf'] = self.encoder.get_config()
+        model_conf['fb_conf'] = self.encoder.filterbank.get_config()
         model_conf['masker_conf'] = self.masker.get_config()
         model_conf['state_dict'] = self.state_dict()
         return model_conf
