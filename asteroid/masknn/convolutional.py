@@ -1,5 +1,7 @@
 import torch
 from torch import nn
+import warnings
+from numpy import VisibleDeprecationWarning
 
 from . import norms, activations
 from ..utils import has_arg
@@ -85,8 +87,8 @@ class TDConvNet(nn.Module):
         https://arxiv.org/abs/1809.07454
     """
     def __init__(self, in_chan, n_src, out_chan=None, n_blocks=8, n_repeats=3,
-                 bn_chan=128, hid_chan=512, skip_chan=128, kernel_size=3,
-                 norm_type="gLN", mask_act='relu'):
+                 bn_chan=128, hid_chan=512, skip_chan=128, conv_kernel_size=3,
+                 norm_type="gLN", mask_act='relu', kernel_size=None):
         super(TDConvNet, self).__init__()
         self.in_chan = in_chan
         self.n_src = n_src
@@ -97,7 +99,14 @@ class TDConvNet(nn.Module):
         self.bn_chan = bn_chan
         self.hid_chan = hid_chan
         self.skip_chan = skip_chan
-        self.kernel_size = kernel_size
+        if kernel_size is not None:
+            # warning
+            warnings.warn('`kernel_size` argument is deprecated since v0.2.1 '
+                          'and will be remove in v0.3.0. Use argument '
+                          '`conv_kernel_size` instead',
+                          VisibleDeprecationWarning)
+            conv_kernel_size = kernel_size
+        self.conv_kernel_size = conv_kernel_size
         self.norm_type = norm_type
         self.mask_act = mask_act
 
@@ -108,9 +117,9 @@ class TDConvNet(nn.Module):
         self.TCN = nn.ModuleList()
         for r in range(n_repeats):
             for x in range(n_blocks):
-                padding = (kernel_size - 1) * 2**x // 2
+                padding = (conv_kernel_size - 1) * 2**x // 2
                 self.TCN.append(Conv1DBlock(bn_chan, hid_chan, skip_chan,
-                                            kernel_size, padding=padding,
+                                            conv_kernel_size, padding=padding,
                                             dilation=2**x, norm_type=norm_type))
         mask_conv_inp = skip_chan if skip_chan else bn_chan
         mask_conv = nn.Conv1d(mask_conv_inp, n_src*out_chan, 1)
@@ -160,7 +169,7 @@ class TDConvNet(nn.Module):
             'bn_chan': self.bn_chan,
             'hid_chan': self.hid_chan,
             'skip_chan': self.skip_chan,
-            'kernel_size': self.kernel_size,
+            'conv_kernel_size': self.conv_kernel_size,
             'n_blocks': self.n_blocks,
             'n_repeats': self.n_repeats,
             'n_src': self.n_src,
