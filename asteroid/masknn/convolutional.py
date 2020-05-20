@@ -76,7 +76,7 @@ class TDConvNet(nn.Module):
             If 0 or None, TDConvNet won't have any skip connections and the
             masks will be computed from the residual output.
             Corresponds to the ConvTasnet architecture in v1 or the paper.
-        kernel_size (int, optional): Kernel size in convolutional blocks.
+        conv_kernel_size (int, optional): Kernel size in convolutional blocks.
         norm_type (str, optional): To choose from ``'BN'``, ``'gLN'``,
             ``'cLN'``.
         mask_act (str, optional): Which non-linear function to generate mask.
