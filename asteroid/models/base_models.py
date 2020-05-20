@@ -1,3 +1,5 @@
+import os
+
 import torch
 from torch import nn
 import numpy as np
@@ -86,5 +88,27 @@ class BaseTasNet(nn.Module):
         return out_wavs
 
     @classmethod
-    def from_pretrained(cls):
-        raise NotImplementedError
+    def from_pretrained(cls, pretrained_model_conf_or_path):
+        """ Instantiate separation model from a model config (file or dict).
+
+        Args:
+            pretrained_model_conf_or_path (Union[dict, str]): model conf as
+                returned by `serialize` or path to it.
+
+        Returns:
+            Instance of BaseTasNet
+        """
+        if os.path.isfile(pretrained_model_conf_or_path):
+            conf = torch.load(pretrained_model_conf_or_path, map_location='cpu')
+        else:
+            conf = pretrained_model_conf_or_path
+        model = cls(**conf['fb_conf'], **conf['masker_conf'])
+        model.load_state_dict(conf['state_dict'])
+        return model
+
+    def serialize(self):
+        model_conf = dict()
+        model_conf['fb_conf'] = self.encoder.get_config()
+        model_conf['masker_conf'] = self.masker.get_config()
+        model_conf['state_dict'] = self.state_dict()
+        return model_conf
