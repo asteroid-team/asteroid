@@ -7,7 +7,7 @@ class ConvTasNet(BaseTasNet):
     """ ConvTasNet separation model, as described in [1].
 
     Args:
-        n_src (int): Number of masks to estimate.
+        n_src (int): Number of sources in the input mixtures.
         out_chan (int, optional): Number of bins in the estimated masks.
             If ``None``, `out_chan = in_chan`.
         n_blocks (int, optional): Number of convolutional blocks in each
