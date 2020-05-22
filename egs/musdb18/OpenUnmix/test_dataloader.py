@@ -79,13 +79,13 @@ if __name__ == "__main__":
         split='train',
         source_augmentations=source_augmentations,
         random_track_mix=args.random_track_mix,
-        random_chunks=True,
-        seq_duration=args.seq_dur,
+        segment=args.seq_dur,
+        random_segments=True,
         samples_per_track=64,
         **dataset_kwargs
     )
 
-    # List of MUSDB18 validation tracks
+    # List of MUSDB18 validation tracks as being used in the `musdb` package
     # See https://github.com/sigsep/sigsep-mus-db/blob/master/musdb/configs/mus.yaml#L41
     validation_tracks = [
         'Actions - One Minute Smile',
@@ -107,14 +107,14 @@ if __name__ == "__main__":
     valid_dataset = MUSDB18Dataset(
         split='train',
         subset=validation_tracks,
-        seq_duration=None,
+        segment=None,
         **dataset_kwargs
     )
 
     test_dataset = MUSDB18Dataset(
         split='test',
         subset=None,
-        seq_duration=None,
+        segment=None,
         **dataset_kwargs
     )
 

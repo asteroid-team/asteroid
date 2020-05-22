@@ -113,36 +113,51 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         # assemble the mixture of target and interferers
         audio_sources = {}
-        # load interferers
+
+        # get track_id
+        track_id = index // self.samples_per_track
+        if self.random_segments:
+            start = random.uniform(
+                0, self.tracks[track_id]['min_duration'] - self.segment
+            )
+        else:
+            start = 0
+
+        # load sources
         for source in self.sources:
             # optionally select a random track for each source
             if self.random_track_mix:
+                # load a different track
                 track_id = random.choice(range(len(self.tracks)))
-            else:
-                track_id = index // self.samples_per_track
-
-            track_path = self.tracks[track_id]['path']
-            if self.random_segments:
-                min_duration = self.tracks[track_id]['min_duration']
-                start = random.uniform(0, min_duration - self.segment)
+                if self.random_segments:
+                    start = random.uniform(
+                        0, self.tracks[track_id]['min_duration'] - self.segment
+                    )
 
             # loads the full track duration
-            start = int(start * self.sample_rate)
+            start_sample = int(start * self.sample_rate)
             # check if dur is none
             if self.segment:
                 # stop in soundfile is calc in samples, not seconds
-                stop = start + int(self.segment * self.sample_rate)
+                stop_sample = start_sample + int(
+                    self.segment * self.sample_rate
+                )
             else:
                 # set to None for reading complete file
-                stop = None
+                stop_sample = None
 
+            # load actual audio
             audio, _ = sf.read(
-                Path(track_path / source).with_suffix(self.suffix),
+                Path(
+                    self.tracks[track_id]['path'] / source
+                ).with_suffix(self.suffix),
                 always_2d=True,
-                start=start,
-                stop=stop
+                start=start_sample,
+                stop=stop_sample
             )
+            # convert to torch tensor
             audio = torch.tensor(audio.T, dtype=torch.float)
+            # apply source-wise augmentations
             audio = self.source_augmentations(audio)
             audio_sources[source] = audio
 
