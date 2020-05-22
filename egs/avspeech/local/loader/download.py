@@ -20,7 +20,7 @@ def download(link, path, final_name=None):
 
 
 def crop(path, start, end, resolution, downloaded_name):
-    command = "ffmpeg -y -i {}.mp4 -ss {} -t {} -c:v libx264 -crf 18 -preset veryfast -pix_fmt yuv420p -c:a aac -b:a 128k -strict experimental -r 25 {}" 
+    command = "ffmpeg -y -i {}.mp4 -ss {} -t {} -c:v libx264 -crf 18 -preset veryfast -pix_fmt yuv420p -c:a aac -b:a 128k -strict experimental -r 25 {}"
 
     start_minute, start_second = int(start // 60), int(start % 60)
     end_minute, end_second = int(end // 60) - start_minute, int(end % 60) - start_second
@@ -59,18 +59,13 @@ def main(args):
     end_times = df.iloc[:, 2][args.start:args.end]
     pos_x = df.iloc[:, 3][args.start:args.end]
     pos_y = df.iloc[:, 4][args.start:args.end]
-    
+
     yt_links = ["https://youtube.com/watch\?v\="+l for l in links]
     paths = [Path(os.path.join(args.vid_dir, f)) for f in links]
 
     link_path = zip(yt_links, paths, start_times, end_times, pos_x, pos_y)
-    [save_video(l, p, s, e, args.resolution, x, y) for l, p, s, e, x, y, in link_path]
     with concurrent.futures.ThreadPoolExecutor(args.jobs) as executor:
-        futures = [executor.submit(save_video, l, p, s, e, args.resolution, x, y) for l, p, s, e, x, y in link_path]
-
-        for f in concurrent.futures.as_completed(futures):
-            pass
-
+        results = list(tqdm(executor.map(save_video, (l, p, s, e, args.resolution, x, y)), total=len(links)))
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Download parameters")
@@ -82,4 +77,4 @@ if __name__ == "__main__":
     parse.add_argument("--end", type=int, default=10_000)
     args = parse.parse_args()
     main(args)
-    
+

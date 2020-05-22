@@ -94,11 +94,11 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--video-dir", default="../../data/train/", type=Path)
     parser.add_argument("--embed-dir", default="../../data/train/embed/", type=Path)
-    parser.add_argument("--train-path", default="train.csv", type=Path)
-    parser.add_argument("--val-path", default="val.csv", type=Path)
-    parser.add_argument("--cuda", default=1, type=int)
-    parser.add_argument("--use_half", default=False, type=bool)
-    parser.add_argument("--corrupt-file", default=Path("corrupt_frames_list.txt"), type=Path)
+    parser.add_argument("--train-path", default=Path("../../data/train.csv"), type=Path)
+    parser.add_argument("--val-path", default=Path("../../data/val.csv"), type=Path)
+    parser.add_argument("--cuda", dest="cuda", action="store_true")
+    parser.add_argument("--use-half", dest="use_half", action="store_true")
+    parser.add_argument("--corrupt-file", default=Path("../../data/corrupt_frames_list.txt"), type=Path)
 
     args = parser.parse_args()
 

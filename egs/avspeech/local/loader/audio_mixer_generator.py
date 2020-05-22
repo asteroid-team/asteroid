@@ -13,17 +13,15 @@ import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
 
+from argparse import ArgumentParser
 
 AUDIO_MIX_COMMAND_PREFIX = "ffmpeg -y -t 00:00:03 -ac 1 "
 AUDIO_DIR = "../../data/train/audio"
 MIXED_AUDIO_DIR = "../../data/train/mixed"
-REL_AUDIO_DIR = "../data/train/mixed"
 VIDEO_DIR = "../../data/train"
-REL_VIDEO_DIR = "../data/train"
 AUDIO_SET_DIR = "./../../data/audio_set/audio"
 
 STORAGE_LIMIT = 5_000_000_000
-REMOVE_RANDOM_CHANCE = 0.9
 
 def sample_audio_set():
     """
@@ -50,10 +48,12 @@ def requires_excess_storage_space(n, r):
     return storage_space, False
 
 
-def nCr(n, r): 
-    return (math.factorial(n) / (math.factorial(r) * math.factorial(n - r))) 
+def nCr(n, r):
+    return (math.factorial(n) / (math.factorial(r) * math.factorial(n - r)))
 
-def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav", file_name="temp.csv", audio_set=False, validation_size=0.3) -> None:
+def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_ext=".wav",
+                file_name="temp.csv", audio_set=False, validation_size=0.3,
+                remove_random_chance=0.9) -> None:
     """
         generate the combination dataframe used in data_loader.py
 
@@ -68,7 +68,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
     audio_mix_command_suffix = "-filter_complex amix=inputs={}:duration=longest "
     audio_files = glob.glob(os.path.join(AUDIO_DIR, "*"))
     total_audio_files = len(audio_files)
-    
+
     total_val_files = int(total_audio_files * validation_size)
     total_train_files = total_audio_files - total_val_files
 
@@ -78,7 +78,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
     def retrieve_name(f):
         f = os.path.splitext(os.path.basename(f))[0]
         return re.sub(r'_part\d', '', f)
-    
+
     def mix(audio_filtered_files, file_name_df, offset):
         #Generate all combinations and trim total possibilities
         audio_combinations = itertools.combinations(audio_filtered_files, input_audio_size)
@@ -87,7 +87,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         storage_space, excess_storage = requires_excess_storage_space(len(audio_filtered_files), input_audio_size)
 
         if excess_storage:
-            storage_space = (1 - REMOVE_RANDOM_CHANCE) * storage_space
+            storage_space = (1 - remove_random_chance) * storage_space
             print(f"Removing {REMOVE_RANDOM_CHANCE * 100} percent of combinations")
             print(f"Saving total space: {storage_space - storage_space * REMOVE_RANDOM_CHANCE:,} Kbytes")
 
@@ -99,12 +99,12 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         audio_inputs = []
         mixed_audio = []
         noises = []
-        
+
         total_comb_size = nCr(len(audio_filtered_files), input_audio_size)
         for indx, audio_comb in tqdm(enumerate(audio_combinations), total=total_comb_size):
             #skip few combinations if required storage is very high
             try:
-                if excess_storage and random.random() < REMOVE_RANDOM_CHANCE:
+                if excess_storage and random.random() < remove_random_chance:
                     continue
 
                 base_names = [os.path.basename(fname)[:11] for fname in audio_comb]
@@ -125,7 +125,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
                 for audio in audio_comb:
                     audio_mix_input += f"-i {audio} "
 
-                
+
                 mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx+offset}{audio_ext}")
                 audio_command = AUDIO_MIX_COMMAND_PREFIX + audio_mix_input + audio_mix_command_suffix.format(len(audio_comb)) + mixed_audio_name
 
@@ -135,7 +135,7 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
             except KeyboardInterrupt as e:
                 print("Caught Interrupt!")
                 break
-        
+
         combinations = {}
         for i in range(input_audio_size):
             combinations[f"video_{i+1}"] = []
@@ -153,11 +153,11 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
 
         for videos, audios, mixed in zip(video_inputs, audio_inputs, mixed_audio):
             #fix proper path issue
-            mixed = re.sub(r'../../', '../', mixed)
+            mixed = re.sub(r'../../', '', mixed)
             for i in range(input_audio_size):
-                v = re.sub(r'../../', '../', videos[i])
-                a = re.sub(r'../../', '../', audios[i])
-                
+                v = re.sub(r'../../', '', videos[i])
+                a = re.sub(r'../../', '', audios[i])
+
                 combinations[f"video_{i+1}"].append(v)
                 combinations[f"audio_{i+1}"].append(a)
             combinations["mixed_audio"].append(mixed)
@@ -167,13 +167,24 @@ def audio_mixer(dataset_size: int, input_audio_size=2, video_ext=".mp4", audio_e
         df.to_csv(file_name_df, index=False)
 
         if audio_set:
-            pd.Series(noises).to_csv("noise_only.csv", index=False, header=False)
+            pd.Series(noises).to_csv("../../data/noise_only.csv", index=False, header=False)
         return df.shape[0]
 
-    offset = mix(train_files, "../train.csv", 0)
-    mix(val_files, "../val.csv", offset)
+    offset = mix(train_files, "../../data/train.csv", 0)
+    mix(val_files, "../../data/val.csv", offset)
 
 
 if __name__ == "__main__":
-    audio_mixer(100_000_000, audio_set=False)
+    parser = ArgumentParser()
+
+    parser.add_argument("--remove-random", '-r', default=0.9, type=float, help="ratio of combination to remove")
+    parser.add_argument("--use-audio-set", '-u', dest="use_audio", action="store_true")
+    parser.add_argument("--file-limit", '-l', default=100_000_000, type=int, help="restrict total number of files generated")
+    parser.add_argument("--validation-size", '-v', default=0.3, type=float, help="ratio of files to use in validation data")
+
+    args = parser.parse_args()
+
+    audio_mixer(args.file_limit, audio_set=args.use_audio_set,
+                validation_size=args.validation_size,
+                remove_random_chance=args.remove_random)
 

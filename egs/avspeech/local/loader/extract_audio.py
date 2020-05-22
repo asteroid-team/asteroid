@@ -28,19 +28,15 @@ def extract(path):
 
 
 def main(args):
-    file_names = [Path(os.path.join(args.vid_dir, i)) for i in os.listdir(args.path) if i.endswith("_final.mp4")]
+    file_names = [Path(os.path.join(args.vid_dir, i)) for i in os.listdir(args.vid_dir) if i.endswith("_final.mp4")]
 
     with concurrent.futures.ThreadPoolExecutor(args.jobs) as executor:
-        futures = [executor.submit(extract, f) for f in file_names]
-
-        for f in tqdm(concurrent.futures.as_completed(futures), total=len(file_names)):
-            pass
+        results = list(tqdm(executor.map(extract, (f, )), total=len(file_names)))
 
 
 if __name__ == "__main__":
-    parse = argparse.ArgumentParser(description="Download parameters")
+    parse = argparse.ArgumentParser(description="Extract parameters")
     parse.add_argument("--jobs", type=int, default=2)
-    parse.add_argument("--path", type=str, default="../../data/train/")
     parse.add_argument("--aud-dir", type=str, default="../../data/train/audio/")
     parse.add_argument("--vid-dir", type=str, default="../../data/train/")
     parse.add_argument("--sampling-rate", type=int, default=16_000)

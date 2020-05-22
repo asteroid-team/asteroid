@@ -7,10 +7,10 @@ import numpy as np
 import pandas as pd
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
-from src.loader import Signal, input_face_embeddings, convert_to_spectrogram
+from src.loader import Signal, convert_to_spectrogram
 
 
-class AVDataset(torch.utils.data.Dataset):
+class AVSpeechDataset(torch.utils.data.Dataset):
 
     def __init__(self, input_df_path: Path,
                 input_audio_size=2):
@@ -67,13 +67,6 @@ class AVDataset(torch.utils.data.Dataset):
                 embeddings = torch.from_numpy(all_signals[i].get_embed())
                 video_tensors.append(embeddings)
                 continue
-
-        # video tensors are expected to be (75,1,1024) (h,w,c)
-        # list of video tensors where len(list) == num_person
-        # so transpose to be of form video_input = list of video tensors (1024,75,1)
-        # we will do
-        # for i in range(num_person):
-        #   slice out each one , video_input[i] (because this will be of (1024,75,1))
 
         mixed_signal_tensor = torch.Tensor(mixed_signal)  #shape  (257,298,2)
         mixed_signal_tensor = torch.transpose(mixed_signal_tensor,0,2) #shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257
