@@ -46,7 +46,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         split (str, optional): Dataset subfolder, defaults to `train`.
         subset (:obj:`list` of :obj:`str`, optional): Selects a specific of
             list of tracks to be loaded, defaults to `None` (loads all tracks).
-        seq_duration (float, optional): Duration of segments in seconds,
+        segment (float, optional): Duration of segments in seconds,
             defaults to ``None`` which loads the full-length audio tracks.
         samples_per_track (int, optional):
             Number of samples yielded from each track, can be used to increase 
@@ -67,7 +67,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         split (str, optional): Dataset subfolder, defaults to `train`.
         subset (:obj:`list` of :obj:`str`, optional): Selects a specific of
             list of tracks to be loaded, defaults to `None` (loads all tracks).
-        seq_duration (float, optional): Duration of segments in seconds,
+        segment (float, optional): Duration of segments in seconds,
             defaults to ``None`` which loads the full-length audio tracks.
         samples_per_track (int, optional):
             Number of samples yielded from each track, can be used to increase 
@@ -88,7 +88,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                  suffix='.wav',
                  split='train',
                  subset=None,
-                 seq_duration=None,
+                 segment=None,
                  samples_per_track=1,
                  random_segments=False,
                  random_track_mix=False,
@@ -98,7 +98,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         self.root = Path(root).expanduser()
         self.split = split
         self.sample_rate = sample_rate
-        self.seq_duration = seq_duration
+        self.segment = segment
         self.random_track_mix = random_track_mix
         self.random_segments = random_segments
         self.source_augmentations = source_augmentations
@@ -124,14 +124,14 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
             track_path = self.tracks[track_id]['path']
             if self.random_segments:
                 min_duration = self.tracks[track_id]['min_duration']
-                start = random.uniform(0, min_duration - self.seq_duration)
+                start = random.uniform(0, min_duration - self.segment)
 
             # loads the full track duration
             start = int(start * self.sample_rate)
             # check if dur is none
-            if self.seq_duration:
+            if self.segment:
                 # stop in soundfile is calc in samples, not seconds
-                stop = start + int(self.seq_duration * self.sample_rate)
+                stop = start + int(self.segment * self.sample_rate)
             else:
                 # set to None for reading complete file
                 stop = None
@@ -183,10 +183,10 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                     )
                     continue
 
-                if self.seq_duration is not None:
+                if self.segment is not None:
                     # get minimum duration of track
                     min_duration = min(i.duration for i in infos)
-                    if min_duration > self.seq_duration:
+                    if min_duration > self.segment:
                         yield({
                             'path': track_path,
                             'min_duration': min_duration
