@@ -86,7 +86,7 @@ class BaseTasNet(nn.Module):
         return out_wavs
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_conf_or_path):
+    def from_pretrained(cls, pretrained_model_conf_or_path, *args, **kwargs):
         """ Instantiate separation model from a model config (file or dict).
 
         Args:
@@ -100,7 +100,7 @@ class BaseTasNet(nn.Module):
             conf = torch.load(pretrained_model_conf_or_path, map_location='cpu')
         else:
             conf = pretrained_model_conf_or_path
-        model = cls(**conf['model_args'])
+        model = cls(**conf['model_args'], *args, **kwargs)
         model.load_state_dict(conf['state_dict'])
         return model
 
