@@ -20,7 +20,7 @@ def conv_tasnet(name_url_or_file=None, *args, **kwargs):
     Examples:
         >>> from torch import hub
         >>> # Instantiate without pretrained weights
-        >>> model = hub.load('mpariente/asteroid', 'conv_tasnet')
+        >>> model = hub.load('mpariente/asteroid', 'conv_tasnet', n_src=2)
         >>> # Use pretrained weights
         >>> URL = "TOCOME"
         >>> model = hub.load('mpariente/asteroid', 'conv_tasnet', URL)
