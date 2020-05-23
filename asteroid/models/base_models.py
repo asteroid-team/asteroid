@@ -86,12 +86,12 @@ class BaseTasNet(nn.Module):
         return out_wavs
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_conf_or_path):
+    def from_pretrained(cls, pretrained_model_conf_or_path, *args, **kwargs):
         """ Instantiate separation model from a model config (file or dict).
 
         Args:
             pretrained_model_conf_or_path (Union[dict, str]): model conf as
-                returned by `serialize` or path to it.
+                returned by `serialize`, or path to it.
 
         Returns:
             Instance of BaseTasNet
@@ -100,13 +100,24 @@ class BaseTasNet(nn.Module):
             conf = torch.load(pretrained_model_conf_or_path, map_location='cpu')
         else:
             conf = pretrained_model_conf_or_path
-        model = cls(**conf['fb_conf'], **conf['masker_conf'])
+        model = cls(*args, **conf['model_args'], **kwargs)
         model.load_state_dict(conf['state_dict'])
         return model
 
     def serialize(self):
+        """ Serialize model and output dictionary.
+
+        Returns:
+            dict, serialized model with keys `model_args` and `state_dict`.
+        """
         model_conf = dict()
-        model_conf['fb_conf'] = self.encoder.filterbank.get_config()
-        model_conf['masker_conf'] = self.masker.get_config()
+        fb_config = self.encoder.filterbank.get_config()
+        masknet_config = self.masker.get_config()
+        # Assert both dict are disjoint
+        if not all(k not in fb_config for k in masknet_config):
+            raise AssertionError("Filterbank and Mask network config share"
+                                 "common keys. Merging them is not safe.")
+        # Merge all args under model_args.
+        model_conf['model_args'] = {**fb_config, **masknet_config}
         model_conf['state_dict'] = self.state_dict()
         return model_conf
