@@ -4,7 +4,6 @@ import yaml
 import torch
 import numpy as np
 from pathlib import Path
-from memory_profiler import profile
 from argparse import ArgumentParser
 
 from asteroid.data import AVSpeechDataset

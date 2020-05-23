@@ -1,10 +1,8 @@
 #!/bin/bash
 
-set -e
-
 root_dir=$(pwd)
 loader_dir=$root_dir/local/loader
-stage=2
+stage=0
 gpu_ids=0
 exp_dir=data/logdir
 
@@ -28,6 +26,7 @@ if [[ $stage -le 0 ]]; then
 	echo "Stage 0: Setting up structure and downloading files."
 	pushd $loader_dir > /dev/null
 	# Setup the structure for data downloading, pre-processing
+	#pip install -r ./local/requirements.txt
 	mkdir -p ../../data/{train,val}/{audio,embed,spec,mixed} ../../data/{audio_set,audio_visual}
 
 	n_jobs=$(get_attribute "download_jobs")
@@ -95,9 +94,9 @@ if [[ $stage -le 2 ]]; then
 	use_cuda=$(parse_boolean $use_cuda '--cuda')
 	use_half=$(parse_boolean $use_half '--use-half')
 
-	#python3 generate_video_embedding.py --video-dir $vid_dir \
-	#				    --corrupt-file $corrupt_file_path $use_cuda $use_half
-	
+	python3 generate_video_embedding.py --video-dir $vid_dir \
+					    --corrupt-file $corrupt_file_path $use_cuda $use_half
+
 	python3 remove_corrupt.py
 	cd $root_dir
 fi

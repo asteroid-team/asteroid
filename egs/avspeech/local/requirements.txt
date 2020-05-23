@@ -1,0 +1,12 @@
+librosa
+numpy
+pandas
+catalyst===20.1
+facenet-pytorch
+pysndfx
+matplotlib
+opencv-python
+torchvision
+Pillow
+mir_eval
+pytorch-lightning

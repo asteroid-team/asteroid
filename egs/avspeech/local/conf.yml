@@ -18,7 +18,7 @@ data:
 download:
     # keeping all path w.r.t. file location
     download_jobs: 1
-    download_path: "./../../data/audio_visual/avspeech_train.csv"
+    download_path: "../../data/audio_visual/avspeech_train.csv"
     download_vid_dir: "../../data/train"
     download_start: 0
     download_end: 10000

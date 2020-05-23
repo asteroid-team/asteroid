@@ -2,11 +2,9 @@ from PIL import Image
 import torch
 import numpy as np
 from typing import Union, List
-from memory_profiler import profile
 from facenet_pytorch import MTCNN, InceptionResnetV1, extract_face
 
 cpu_device = torch.device("cpu")
-#@profile
 def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
                          mtcnn: MTCNN, resnet: InceptionResnetV1,
                          face_embed_cuda: bool, use_half: bool, coord: List, name: str=None, save_frames:bool=False) -> torch.Tensor:

@@ -1,4 +1,5 @@
 import sys
+import yaml
 
 import collections
 from pathlib import Path
@@ -11,6 +12,7 @@ from catalyst.dl.runner import SupervisedRunner
 
 from asteroid.data import AVSpeechDataset
 
+from local import Signal, convert_to_spectrogram
 from model import (make_model_and_optimizer,
                    load_best_model)
 from train import SNRCallback, SDRCallback, ParamConfig
@@ -30,12 +32,13 @@ def validate(model, dataset, val_dataset, config):
                  callbacks=collections.OrderedDict({"snr_callback": SNRCallback(), "sdr_callback": SDRCallback()}),
                  verbose=True)
 
-def main(args):
-    config = ParamConfig(args.bs, args.epochs, args.workers, args.cuda, args.use_half, args.learning_rate)
-    dataset = AVSpeechDataset(args.input_df_path, args.input_audio_size)
-    val_dataset = AVSpeechDataset(args.val_input_df_path, args.input_audio_size)
+def main(conf):
+    config = ParamConfig(conf["training"]["batch_size"], conf["training"]["epochs"],
+                         conf["training"]["num_workers"], True, False, conf["optim"]["lr"])
+    dataset = AVSpeechDataset(Path("data/train.csv"), Signal, convert_to_spectrogram, conf["data"]["input_audio_size"])
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Signal, convert_to_spectrogram, conf["data"]["input_audio_size"])
 
-    model, optimizer = load_best_model(conf)
+    model, optimizer = make_model_and_optimizer(conf)
 
     print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters())}")
 
@@ -43,7 +46,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
     parser.add_argument('--exp_dir', default='exp/logdir',
                         help='Full path to save best validation model')
