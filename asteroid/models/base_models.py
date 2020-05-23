@@ -100,7 +100,7 @@ class BaseTasNet(nn.Module):
             conf = torch.load(pretrained_model_conf_or_path, map_location='cpu')
         else:
             conf = pretrained_model_conf_or_path
-        model = cls(**conf['model_args'], *args, **kwargs)
+        model = cls(*args, **conf['model_args'], **kwargs)
         model.load_state_dict(conf['state_dict'])
         return model
 
