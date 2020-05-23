@@ -341,8 +341,10 @@ def make_model_and_optimizer(conf, gpu_ids=[0]):
     Returns:
         model, optimizer
     """
-    model = Audio_Visual_Fusion(conf["input_num_person"],
-                                conf["device"])
+    device = torch.device(conf["training"]["device"])
+    model = Audio_Visual_Fusion(conf["data"]["input_audio_size"],
+                                device)
+    model = model.to(device)
     device_count = torch.cuda.device_count()
     if len(gpu_ids) > 1 and device_count > 1:
         if len(gpu_ids) != device_count:
@@ -351,7 +353,7 @@ def make_model_and_optimizer(conf, gpu_ids=[0]):
             print(f"Using all {device_count} GPUs")
         model = torch.nn.DataParallel(model, device_ids=gpu_ids)
 
-    optimizer = make_optimizer(model.parameters(), **config["optim"])
+    optimizer = make_optimizer(model.parameters(), **conf["optim"])
     return model, optimizer
 
 def load_best_model(train_conf, exp_dir):

@@ -178,7 +178,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     parser.add_argument("--remove-random", '-r', default=0.9, type=float, help="ratio of combination to remove")
-    parser.add_argument("--use-audio-set", '-u', dest="use_audio", action="store_true")
+    parser.add_argument("--use-audio-set", '-u', dest="use_audio_set", action="store_true")
     parser.add_argument("--file-limit", '-l', default=100_000_000, type=int, help="restrict total number of files generated")
     parser.add_argument("--validation-size", '-v', default=0.3, type=float, help="ratio of files to use in validation data")
 

@@ -8,7 +8,7 @@ import librosa
 import librosa.display
 from pysndfx import AudioEffectsChain
 
-from src.loader import convert_to_spectrogram
+from local import convert_to_spectrogram
 
 afc = AudioEffectsChain()
 

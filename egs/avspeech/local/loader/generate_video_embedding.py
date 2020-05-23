@@ -8,7 +8,8 @@ from pathlib import Path
 
 from facenet_pytorch import MTCNN, InceptionResnetV1, extract_face
 
-from src.loader import input_face_embeddings, get_frames
+from data import get_frames
+from frames import input_face_embeddings
 
 FRAMES = 75
 
@@ -25,17 +26,20 @@ def store_corrupt(path):
         f.write(path.as_posix()+'\n')
 
 def cache_embed(path, mtcnn, resnet, args):
+    orig_path = path
+    if not path.is_file():
+        path = "../.." / path
     video_file_name = path.stem.split("_")
 
     if len(video_file_name) < 3:
-        store_corrupt(path)
+        store_corrupt(orig_path)
         return
 
     try:
         pos_x, pos_y = int(video_file_name[-3])/10000, int(video_file_name[-2])/10000
     except ValueError as e:
         print(str(e))
-        store_corrupt(path)
+        store_corrupt(orig_path)
         return
 
     video_buffer = get_frames(cv2.VideoCapture(path.as_posix()))
@@ -56,7 +60,7 @@ def cache_embed(path, mtcnn, resnet, args):
                                       use_half=args.use_half, coord=[pos_x, pos_y])
 
         if embed is None:
-            store_corrupt(path)
+            store_corrupt(orig_path)
             print("Corrupt", path)
             return
 
@@ -81,10 +85,9 @@ def main(args):
     resnet = InceptionResnetV1(pretrained="vggface2").eval().to(device)
 
     video_paths = _get_video(train_df)
-    print(f"total: {len(video_paths)}")
     video_paths += _get_video(val_df)
 
-    print(f"total: {len(video_paths)}")
+    print(f"Total embeddings: {len(video_paths)}")
     for path in tqdm(video_paths, total=len(video_paths)):
         cache_embed(Path(path), mtcnn, resnet, args)
 

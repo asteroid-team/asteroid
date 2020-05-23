@@ -7,12 +7,11 @@ import numpy as np
 import pandas as pd
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
-from src.loader import Signal, convert_to_spectrogram
-
 
 class AVSpeechDataset(torch.utils.data.Dataset):
 
     def __init__(self, input_df_path: Path,
+                signal_constructor, convert_to_spectrogram,
                 input_audio_size=2):
         """
 
@@ -22,6 +21,8 @@ class AVSpeechDataset(torch.utils.data.Dataset):
         """
         self.input_audio_size = input_audio_size
         self.input_df = pd.read_csv(input_df_path.as_posix())
+        self.signal_constructor = signal_constructor
+        self.convert_to_spectrogram = convert_to_spectrogram
 
     def __len__(self):
         return len(self.input_df)
@@ -41,14 +42,14 @@ class AVSpeechDataset(torch.utils.data.Dataset):
             if re_match:
                 video_length_idx = int(re_match.group(0)[-1])
 
-            signal = Signal(video_path, audio_path, video_start_length=video_length_idx)
+            signal = self.signal_constructor(video_path, audio_path, video_start_length=video_length_idx)
             all_signals.append(signal)
 
         #input audio signal is the last column.
-        mixed_signal, is_spec, spec_path = Signal.load_audio(row[-1])
+        mixed_signal, is_spec, spec_path = self.signal_constructor.load_audio(row[-1])
 
         if not is_spec:
-            mixed_signal = convert_to_spectrogram(mixed_signal)
+            mixed_signal = self.convert_to_spectrogram(mixed_signal)
 
         audio_tensors = []
         video_tensors = []
@@ -58,7 +59,7 @@ class AVSpeechDataset(torch.utils.data.Dataset):
             if all_signals[i].spec_path.is_file():
                 spectrogram =  all_signals[i].get_spec()
             else:
-                spectrogram = convert_to_spectrogram(all_signals[i].get_audio())
+                spectrogram = self.convert_to_spectrogram(all_signals[i].get_audio())
             #convert to tensor
             audio_tensors.append(torch.from_numpy(spectrogram))
 

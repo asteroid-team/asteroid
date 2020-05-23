@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Callable, Tuple, List
 
 
-EMBED_DIR = [Path("../data/train/embed")]
-SPEC_DIR = [Path("../data/train/spec")]
+EMBED_DIR = [Path("data/train/embed")]
+SPEC_DIR = [Path("data/train/spec")]
 
 def get_frames(video):
     frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -86,7 +86,7 @@ class Signal:
                 embed_dir = Path("..", *embed_dir.parts)
             if not embed_dir.is_dir():
                 print(embed_dir)
-                print("use this file from src/ or src/loader")
+                print("Run this file from root directory avspeech/")
                 continue
             self.embed_path = Path(embed_dir, video_name_stem + f"_part{self.video_start_length}" + embed_ext)
             if self.embed_path.is_file():
@@ -99,7 +99,7 @@ class Signal:
 
     def get_embed(self):
         return self.embed
-    
+
     def get_video(self):
         #retrieve slice of video, if video > 75 frames
         buffer_video = self.buffer_video[self.video_start_length*75: (self.video_start_length+1)*75]
@@ -107,10 +107,10 @@ class Signal:
 
     def get_audio(self):
         return self.audio
-    
+
     def get_spec(self):
             return np.load(self.spec_path)
-    
+
     def is_spec(self):
         return self._is_spec
 

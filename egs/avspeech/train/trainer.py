@@ -5,8 +5,8 @@ import torch
 import collections
 from pathlib import Path
 
-from src.train import ParamConfig
-from src.train import SNRCallback
+from train import ParamConfig
+from train import SNRCallback
 
 from catalyst.dl import utils
 from catalyst.dl.runner import SupervisedRunner

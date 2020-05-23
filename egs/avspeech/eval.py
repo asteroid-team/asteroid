@@ -10,7 +10,9 @@ from catalyst.dl import utils
 from catalyst.dl.runner import SupervisedRunner
 
 from asteroid.data import AVSpeechDataset
-from ..model import Audio_Visual_Fusion as AVFusion
+
+from model import (make_model_and_optimizer,
+                   load_best_model)
 from train import SNRCallback, SDRCallback, ParamConfig
 
 def validate(model, dataset, val_dataset, config):
@@ -24,7 +26,7 @@ def validate(model, dataset, val_dataset, config):
     loaders["valid"] = val_loader
 
     runner = SupervisedRunner(input_key=["input_audio", "input_video"]) # parameters of the model in forward(...)
-    runner.infer(model, loaders, 
+    runner.infer(model, loaders,
                  callbacks=collections.OrderedDict({"snr_callback": SNRCallback(), "sdr_callback": SDRCallback()}),
                  verbose=True)
 
@@ -33,19 +35,8 @@ def main(args):
     dataset = AVSpeechDataset(args.input_df_path, args.input_audio_size)
     val_dataset = AVSpeechDataset(args.val_input_df_path, args.input_audio_size)
 
-    if args.cuda:
-        device = torch.device("cuda:0")
-        model = AVFusion(num_person=args.input_audio_size, device=device).train()
-        model = model.to(device)
-    else:
-        model = AVFusion(num_person=args.input_audio_size).eval()
+    model, optimizer = load_best_model(conf)
 
-    if Path(args.model_path).is_file():
-        ckpt = torch.load(args.model_path)
-        model.load_state_dict(ckpt["model_state_dict"])
-    else:
-        print(f"Model doesn't exist at {args.model_path}")
-        return
     print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters())}")
 
     validate(model, dataset, val_dataset, config)

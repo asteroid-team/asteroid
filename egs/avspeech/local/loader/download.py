@@ -1,5 +1,6 @@
 import os
 import time
+import tqdm
 import argparse
 import subprocess
 import pandas as pd
@@ -11,13 +12,13 @@ def download(link, path, final_name=None):
     command = "youtube-dl {} --output {}.mp4 -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'"
     if os.path.exists(path) and os.path.isfile(path):
         print("File already downloaded")
-        return
+        return False
     if final_name is not None and os.path.isfile(final_name):
         print("File already cropped")
-        return
+        return True
     print(command.format(link, path))
-    p = subprocess.Popen(command.format(link, path), shell=True, stdout=subprocess.PIPE, cwd=args.vid_dir).communicate()
-
+    p = subprocess.Popen(command.format(link, path), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=args.vid_dir).communicate()
+    return False
 
 def crop(path, start, end, resolution, downloaded_name):
     command = "ffmpeg -y -i {}.mp4 -ss {} -t {} -c:v libx264 -crf 18 -preset veryfast -pix_fmt yuv420p -c:a aac -b:a 128k -strict experimental -r 25 {}"
@@ -35,22 +36,24 @@ def crop(path, start, end, resolution, downloaded_name):
     command = command.format(downloaded_name, f"{start_minute}:{start_second}", f"{end_minute}:{end_second}", new_filepath)
     print(command)
 
-    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).communicate()
+    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
     remove_orig_file = f"rm -f {downloaded_name}.mp4"
     print(f"Removing {remove_orig_file}")
-    subprocess.Popen(remove_orig_file, shell=True, stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(remove_orig_file, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
     #downsample = f"avconv -i {new_filepath} -s {resolution} {low_res_filepath} -y"
     #p = subprocess.Popen(downsample, shell=True, stdout=subprocess.PIPE).communicate()
 
 
-def save_video(link, path, start, end, resolution, pos_x, pos_y):
+def save_video(zargs, resolution=None):
+    link, path, start, end, pos_x, pos_y = zargs
     x = int(pos_x*10000)
     y = int(pos_y*10000)
     downloaded_name = path.as_posix() + f"_{x}_{y}"
-    download(link, downloaded_name, final_name=downloaded_name + "_final.mp4")
-    crop(path, start, end, resolution, downloaded_name)
+    cropped = download(link, downloaded_name, final_name=downloaded_name + "_final.mp4")
+    if not cropped:
+        crop(path, start, end, resolution, downloaded_name)
 
 def main(args):
     df = pd.read_csv(args.path)
@@ -65,7 +68,7 @@ def main(args):
 
     link_path = zip(yt_links, paths, start_times, end_times, pos_x, pos_y)
     with concurrent.futures.ThreadPoolExecutor(args.jobs) as executor:
-        results = list(tqdm(executor.map(save_video, (l, p, s, e, args.resolution, x, y)), total=len(links)))
+        results = list(tqdm.tqdm(executor.map(save_video, link_path), total=len(links)))
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Download parameters")
@@ -76,5 +79,8 @@ if __name__ == "__main__":
     parse.add_argument("--start", type=int, default=0)
     parse.add_argument("--end", type=int, default=10_000)
     args = parse.parse_args()
+    print(type(args.path), args.path)
+    print(os.listdir())
+    print(os.getcwd())
     main(args)
 

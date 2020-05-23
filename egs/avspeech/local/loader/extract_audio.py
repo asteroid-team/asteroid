@@ -31,7 +31,7 @@ def main(args):
     file_names = [Path(os.path.join(args.vid_dir, i)) for i in os.listdir(args.vid_dir) if i.endswith("_final.mp4")]
 
     with concurrent.futures.ThreadPoolExecutor(args.jobs) as executor:
-        results = list(tqdm(executor.map(extract, (f, )), total=len(file_names)))
+        results = list(tqdm(executor.map(extract, file_names), total=len(file_names)))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 import sys
+import yaml
 
 import torch
 import numpy as np
@@ -8,6 +9,7 @@ from argparse import ArgumentParser
 
 from asteroid.data import AVSpeechDataset
 
+from local import Signal, convert_to_spectrogram
 from train import train, ParamConfig
 from model import (make_model_and_optimizer,
                    load_best_model)
@@ -34,26 +36,28 @@ class DiscriminativeLoss(torch.nn.Module):
         return sum_mtr
 
 
-def main(args):
-    config = ParamConfig(args.bs, args.epochs, args.workers, args.cuda, args.use_half, args.learning_rate)
-    dataset = AVSpeechDataset(args.input_df_path, args.input_audio_size)
-    val_dataset = AVSpeechDataset(args.val_input_df_path, args.input_audio_size)
+def main(conf):
+    config = ParamConfig(conf["training"]["batch_size"], conf["training"]["epochs"],
+                         conf["training"]["num_workers"], True, False, conf["optim"]["lr"])
+    dataset = AVSpeechDataset(Path("data/train.csv"), Signal, convert_to_spectrogram, conf["data"]["input_audio_size"])
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Signal, convert_to_spectrogram, conf["data"]["input_audio_size"])
 
     model, optimizer = make_model_and_optimizer(conf)
     print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
 
     criterion = DiscriminativeLoss()
 
-    if args.model_path and args.model_path.is_file():
-        resume = args.model_path.as_posix()
-    else:
-        resume = None
+    #if args.model_path and args.model_path.is_file():
+    #    resume = args.model_path.as_posix()
+    #else:
+    resume = None
 
-    train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, resume=resume)
+    train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, resume=resume,
+          logdir=conf["training"]["logdir"])
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
     parser.add_argument('--exp_dir', default='exp/logdir',
                         help='Full path to save best validation model')
