@@ -3,7 +3,7 @@ from torch import nn, optim
 from torch.utils import data
 from pytorch_lightning import Trainer
 
-from asteroid import System
+from asteroid.engine.system import System
 
 
 class DummyDataset(data.Dataset):
