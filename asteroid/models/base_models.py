@@ -91,15 +91,26 @@ class BaseTasNet(nn.Module):
 
         Args:
             pretrained_model_conf_or_path (Union[dict, str]): model conf as
-                returned by `serialize`, or path to it.
+                returned by `serialize`, or path to it. Need to contain
+                `model_args` and `state_dict` keys.
 
         Returns:
             Instance of BaseTasNet
+
+        Raises:
+            ValueError if the input config file doesn't contain the keys
+                `model_args` and `state_dict`.
         """
         if isinstance(pretrained_model_conf_or_path, str):
             conf = torch.load(pretrained_model_conf_or_path, map_location='cpu')
         else:
             conf = pretrained_model_conf_or_path
+        if 'model_args' not in conf.keys():
+            raise ValueError('Expected config dictionary to have field '
+                             'model_args`. Found only: {}'.format(conf.keys()))
+        if 'state_dict' not in conf.keys():
+            raise ValueError('Expected config dictionary to have field '
+                             'state_dict`. Found only: {}'.format(conf.keys()))
         model = cls(*args, **conf['model_args'], **kwargs)
         model.load_state_dict(conf['state_dict'])
         return model
