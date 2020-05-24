@@ -30,6 +30,7 @@ setup(
         'visualize': ['seaborn>=0.9.0'],
         'tests': ['pytest'],
     },
+    scripts=['bin/parse_options.sh'],
     packages=find_packages(),
     include_package_data=True,
     classifiers=[
