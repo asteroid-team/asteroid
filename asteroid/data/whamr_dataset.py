@@ -60,6 +60,8 @@ class WhamRDataset(data.Dataset):
             If None, defaults to one for enhancement tasks and two for
             separation tasks.
     """
+    dataset_name = 'WHAMR!'
+
     def __init__(self, json_dir, task, sample_rate=8000, segment=4.0,
                  nondefault_nsrc=None):
         super(WhamRDataset, self).__init__()

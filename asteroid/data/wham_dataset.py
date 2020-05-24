@@ -64,6 +64,8 @@ class WhamDataset(data.Dataset):
         normalize_audio (bool): If True then both sources and the mixture are
             normalized with the standard deviation of the mixture.
     """
+    dataset_name = 'WHAM!'
+
     def __init__(self, json_dir, task, sample_rate=8000, segment=4.0,
                  nondefault_nsrc=None, normalize_audio=False):
         super(WhamDataset, self).__init__()

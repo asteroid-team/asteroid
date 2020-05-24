@@ -28,6 +28,8 @@ def make_dataloaders(train_dir, valid_dir, n_src=2, sample_rate=8000,
 
 
 class Wsj0mixDataset(data.Dataset):
+    dataset_name = 'wsj0-mix'
+
     def __init__(self, json_dir, n_src=2, sample_rate=8000, segment=4.0):
         super().__init__()
         # Task setting
