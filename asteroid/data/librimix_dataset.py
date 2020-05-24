@@ -24,6 +24,7 @@ class LibriMix(Dataset):
         n_src (int) : The number of sources in the mixture
         segment (int) : The desired sources and mixtures length in s
     """
+    dataset_name = 'LibriMix'
 
     def __init__(self, csv_dir, task, sample_rate=16000,
                  n_src=2, segment=4):

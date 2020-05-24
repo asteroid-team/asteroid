@@ -82,6 +82,8 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         tracks (:obj:`list` of :obj:`Dict`): List of track metadata
 
     """
+    dataset_name = 'MUSDB18'
+
     def __init__(self,
                  root,
                  sources=['vocals', 'bass', 'drums', 'other'],

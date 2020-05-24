@@ -6,6 +6,8 @@ import soundfile as sf
 
 
 class DNSDataset(data.Dataset):
+    dataset_name = 'DNS'
+
     def __init__(self, json_dir):
         super(DNSDataset, self).__init__()
         self.json_dir = json_dir
