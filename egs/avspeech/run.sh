@@ -30,6 +30,7 @@ stage=0
 gpu_ids=0
 exp_dir=exp/logdir
 input_audio_size=$(get_attribute "input_audio_size")
+tag=
 
 if [ "$install_flag" = true ]; then
 	echo "installing python dependencies"
@@ -119,9 +120,9 @@ if [[ $stage -le 2 ]]; then
 	cd $root_dir
 fi
 
-# Generate a random ID for the run if no tag is specified
-uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
+	# Generate a random ID for the run if no tag is specified
+	uuid=$($python_path -c 'import uuid; print(str(uuid.uuid4())[:8])')
 	tag=${input_audio_size}_${uuid}
 	exp_dir="${exp_dir}_${tag}"
 fi
