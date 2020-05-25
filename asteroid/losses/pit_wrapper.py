@@ -10,8 +10,6 @@ class PITLossWrapper(nn.Module):
 
     Args:
         loss_func: function with signature (targets, est_targets, **kwargs).
-        mode (str): Determines how PIT is applied (deprecated,
-            use `expects` instead.)
         pit_from (str): Determines how PIT is applied.
 
             * ``'pw_mtx'`` (pairwise matrix): `loss_func` computes pairwise
@@ -61,22 +59,11 @@ class PITLossWrapper(nn.Module):
         >>> loss_val = loss_func(est_sources, sources,
         >>>                      reduce_kwargs=reduce_kwargs)
     """
-    def __init__(self, loss_func, pit_from='pw_mtx', mode=None,
-                 perm_reduce=None):
+    def __init__(self, loss_func, pit_from='pw_mtx', perm_reduce=None):
         super().__init__()
         self.loss_func = loss_func
         self.pit_from = pit_from
-        self.mode = mode
         self.perm_reduce = perm_reduce
-        if self.mode is not None:
-            warnings.warn('`mode` argument is deprecated since v0.1.0 and'
-                          'will be remove in v0.2.0. Use argument `pit_from`'
-                          'instead', VisibleDeprecationWarning)
-            mapping = dict(pairwise='pw_mtx',
-                           wo_src='pw_pt',
-                           w_src='perm_avg')
-            self.pit_from = mapping.get(mode, None)  # Avoid KeyError here.
-
         if self.pit_from not in ['pw_mtx', 'pw_pt', 'perm_avg']:
             raise ValueError('Unsupported loss function type for now. Expected'
                              'one of [`pw_mtx`, `pw_pt`, `perm_avg`]')
