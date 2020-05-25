@@ -21,7 +21,7 @@ setup(
                       'soundfile',
                       'scipy',
                       'torch',
-                      'pytorch-lightning==0.6.0',
+                      'pytorch-lightning',
                       'pb_bss_eval',
                       'asranger',
                       'torch_stoi'
