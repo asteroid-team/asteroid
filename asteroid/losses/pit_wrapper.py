@@ -1,5 +1,3 @@
-import warnings
-from numpy import VisibleDeprecationWarning
 from itertools import permutations
 import torch
 from torch import nn
