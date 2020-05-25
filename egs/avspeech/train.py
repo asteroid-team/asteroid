@@ -52,7 +52,7 @@ def main(conf):
     resume = None
 
     train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, resume=resume,
-          logdir=conf["training"]["logdir"])
+          logdir=conf["main_args"]["exp_dir"])
 
 
 if __name__ == "__main__":
@@ -79,22 +79,3 @@ if __name__ == "__main__":
     print(arg_dic)
     main(arg_dic)
 
-    """
-    parser = ArgumentParser()
-    parser.add_argument("--bs", default=2, type=int, help="batch size of dataset")
-    parser.add_argument("--epochs", default=40, type=int, help="max epochs to train")
-    parser.add_argument("--cuda", default=True, type=bool, help="cuda for training")
-    parser.add_argument("--workers", default=0, type=int, help="total workers for dataset")
-    parser.add_argument("--input-audio-size", default=2, type=int, help="total input size")
-    parser.add_argument("--dataset-path", default=Path("../data/audio_visual/avspeech_train.csv"), type=Path, help="path for avspeech training data")
-    parser.add_argument("--video-dir", default=Path("../data/train"), type=Path, help="directory where all videos are stored")
-    parser.add_argument("--input-df-path", default=Path("train.csv"), type=Path, help="path for combinations dataset")
-    parser.add_argument("--val-input-df-path", default=Path("val.csv"), type=Path, help="path for combinations dataset")
-    parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
-    parser.add_argument("--learning-rate", default=3e-4, type=float, help="learning rate for the network")
-    parser.add_argument("--model-path", default=Path("logdir/checkpoints/best_full.pth"), type=Path, help="Partially trained model path")
-
-    args = parser.parse_args()
-
-    main(args)
-    """

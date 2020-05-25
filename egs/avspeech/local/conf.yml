@@ -4,7 +4,6 @@ training:
     batch_size: 2
     num_workers: 2
     device: "cuda:0"
-    logdir: "local/logdir"
 # Optimizer config
 optim:
     optimizer: adam

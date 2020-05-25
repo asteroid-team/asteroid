@@ -79,8 +79,5 @@ if __name__ == "__main__":
     parse.add_argument("--start", type=int, default=0)
     parse.add_argument("--end", type=int, default=10_000)
     args = parse.parse_args()
-    print(type(args.path), args.path)
-    print(os.listdir())
-    print(os.getcwd())
     main(args)
 
