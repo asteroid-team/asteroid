@@ -132,4 +132,7 @@ def test_negstoi_pit(n_src, sample_rate, use_vad, extended):
                                          extended=extended)
     loss_func = PITLossWrapper(singlesrc_negstoi, pit_from='pw_pt')
     # Assert forward ok.
-    loss_value = loss_func(est, ref)
+    with pytest.warns(DeprecationWarning):
+        # torchaudio: DeprecationWarning: fractions.gcd() is deprecated.Use
+        # math.gcd() instead.
+        loss_value = loss_func(est, ref)
