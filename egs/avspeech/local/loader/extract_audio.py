@@ -22,17 +22,18 @@ def extract(path):
     length = int(length_orig_video) // 25 // 3
     for i in range(length):
         t = i*3
-        command = f"ffmpeg -y -i {path.as_posix()} -f {args.audio_extension} -ab 64000 -vn -ar {args.sampling_rate} -ac {args.audio_channel} - | sox -t {args.audio_extension} - -r 16000 -c 1 -b 8 {audio_path}_part{i}.{args.audio_extension} trim {t} 00:{args.duration:02d}"
+        command = (f"ffmpeg -y -i {path.as_posix()} -f {args.audio_extension} -ab 64000 "
+                   f"-vn -ar {args.sampling_rate} -ac {args.audio_channel} - | sox -t "
+                   f"{args.audio_extension} - -r 16000 -c 1 -b 8 "
+                   f"{audio_path}_part{i}.{args.audio_extension} trim {t} 00:{args.duration:02d}")
 
-        p = subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)#.communicate()
-
+        subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).communicate()
 
 def main(args):
     file_names = [Path(os.path.join(args.vid_dir, i)) for i in os.listdir(args.vid_dir) if i.endswith("_final.mp4")]
 
     with concurrent.futures.ThreadPoolExecutor(args.jobs) as executor:
         results = list(tqdm(executor.map(extract, file_names), total=len(file_names)))
-
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Extract parameters")

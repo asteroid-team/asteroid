@@ -3,6 +3,9 @@
 set -e
 
 parse_boolean() {
+	# parses yaml boolean to flag.
+	# e.g. audio_set=True to --use-audio-set for argparse
+
         var=$1
         flag=$2
         var=$(echo $var | awk '{print tolower($0)}')
@@ -11,6 +14,8 @@ parse_boolean() {
 }
 
 get_attribute() {
+	# get an attribute from local/conf.yml
+
 	pushd $root_dir > /dev/null
 	attribute=$1
 	value=$(grep  $attribute local/conf.yml | awk  '{print $2}' | sed 's/"//g')
@@ -19,7 +24,10 @@ get_attribute() {
 }
 
 check_dependency() {
+	# check if dependeny exists for
+	# ffmpeg, sox, youtube-dl
 	cmd=$1
+
 	type $cmd  >/dev/null 2>&1 || { echo >&2 "$cmd is required but it's not installed. Aborting."; exit 1; }
 }
 
@@ -36,8 +44,9 @@ install_flag=false
 . utils/parse_options.sh
 
 if [ "$install_flag" = true ]; then
+	# install python dependencies
 	echo "installing python dependencies"
-	pip install -r local/requirements.txt > /dev/null
+	$python_path -m pip install -r local/requirements.txt > /dev/null
 fi
 
 if [[ $stage -le 0 ]]; then
@@ -91,7 +100,6 @@ if [[ $stage -le 1 ]]; then
 	validation_size=$(get_attribute "mix_validation_size")
 
 	use_audio_set=$(parse_boolean $use_audio_set '--use-audio-set')
-	echo $use_audio_set
 
 	echo "Mixing audio...(Interruptible)"
 	[ "$use_audio_set" = "--use-audio-set" ] && check_dependency sox
@@ -135,13 +143,13 @@ if [[ $stage -le 3 ]]; then
 	echo "Stage 3: Training"
 
 	mkdir -p $exp_dir
-	python3 train.py --gpus $gpu_ids --exp_dir $exp_dir
+	python3 train.py --gpus $gpu_ids --exp_dir $exp_dir | tee logs/train_${tag}.log
 fi
 
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4: Validation"
 
 	mkdir -p $exp_dir
-	python3 eval.py --gpus $gpu_ids --exp_dir $exp_dir
+	python3 eval.py --gpus $gpu_ids --exp_dir $exp_dir | tee logs/val_${tag}.log
 fi
 
