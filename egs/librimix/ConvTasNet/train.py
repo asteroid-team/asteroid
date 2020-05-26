@@ -44,7 +44,7 @@ def main(conf):
                               num_workers=conf['training']['num_workers'],
                               drop_last=True)
 
-    val_loader = DataLoader(val_set, shuffle=True,
+    val_loader = DataLoader(val_set, shuffle=False,
                             batch_size=conf['training']['batch_size'],
                             num_workers=conf['training']['num_workers'],
                             drop_last=True)
