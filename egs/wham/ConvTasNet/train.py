@@ -9,10 +9,10 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid.data.wham_dataset import WhamDataset
+from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-
-from model import make_model_and_optimizer
+from asteroid.models import ConvTasNet
 
 
 # Keys which are not in the conf.yml file can be added here.
@@ -47,10 +47,9 @@ def main(conf):
     # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': train_set.n_src})
 
-    # Define model and optimizer in a local function (defined in the recipe).
-    # Two advantages to this : re-instantiating the model and optimizer
-    # for retraining and evaluating is straight-forward.
-    model, optimizer = make_model_and_optimizer(conf)
+    # Define model and optimizer
+    model = ConvTasNet(**conf['filterbank'], **conf['masknet'])
+    optimizer = make_optimizer(model.parameters(), **conf['optim'])
     # Define scheduler
     scheduler = None
     if conf['training']['half_lr']:
@@ -89,12 +88,20 @@ def main(conf):
                          gpus=conf['main_args']['gpus'],
                          distributed_backend='dp',
                          train_percent_check=1.0,  # Useful for fast experiment
-                         gradient_clip_val=5.)
+                         gradient_clip_val=5., fast_dev_run=True)
     trainer.fit(system)
 
     best_k = {k: v.item() for k, v in checkpoint.best_k_models.items()}
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
         json.dump(best_k, f, indent=0)
+
+    # Save best model
+    best_path = [b for b, v in best_k.items() if v == min(best_k.values())][0]
+    state_dict = torch.load(best_path)
+    system.load_state_dict(state_dict=state_dict['state_dict'])
+    system.cpu()
+    torch.save(system.model.serialize(),
+               os.path.join(exp_dir, 'best_model.pth'))
 
 
 if __name__ == '__main__':
