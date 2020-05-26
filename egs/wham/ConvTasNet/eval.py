@@ -12,9 +12,9 @@ from pprint import pprint
 
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
+from asteroid.models import ConvTasNet
 from asteroid.utils import tensors_to_device
 
-from model import load_best_model
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--task', type=str, required=True,
@@ -33,7 +33,8 @@ compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi']
 
 
 def main(conf):
-    model = load_best_model(conf['train_conf'], conf['exp_dir'])
+    model_path = os.path.join(conf['exp_dir'], 'best_model.pth')
+    model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
