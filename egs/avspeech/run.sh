@@ -24,13 +24,16 @@ check_dependency() {
 }
 
 root_dir=$(pwd)
+
 python_path=python
 loader_dir=$root_dir/local/loader
 stage=0
 gpu_ids=0
 exp_dir=exp/logdir
-input_audio_size=$(get_attribute "input_audio_size")
 tag=
+install_flag=false
+
+. utils/parse_options.sh
 
 if [ "$install_flag" = true ]; then
 	echo "installing python dependencies"
@@ -122,6 +125,7 @@ fi
 
 if [[ -z ${tag} ]]; then
 	# Generate a random ID for the run if no tag is specified
+	input_audio_size=$(get_attribute "input_audio_size")
 	uuid=$($python_path -c 'import uuid; print(str(uuid.uuid4())[:8])')
 	tag=${input_audio_size}_${uuid}
 	exp_dir="${exp_dir}_${tag}"
