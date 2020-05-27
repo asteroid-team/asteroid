@@ -88,7 +88,7 @@ def main(conf):
                          gpus=conf['main_args']['gpus'],
                          distributed_backend='dp',
                          train_percent_check=1.0,  # Useful for fast experiment
-                         gradient_clip_val=5., fast_dev_run=True)
+                         gradient_clip_val=5.)
     trainer.fit(system)
 
     best_k = {k: v.item() for k, v in checkpoint.best_k_models.items()}
