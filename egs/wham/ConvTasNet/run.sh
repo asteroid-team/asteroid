@@ -108,6 +108,10 @@ if [[ $stage -le 3 ]]; then
 		--n_repeats $n_repeats \
 		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
+
+	# Get ready to publish
+	mkdir -p $expdir/publish_dir
+	echo "wham/ConvTasNet" > $expdir/publish_dir/recipe_name.txt
 fi
 
 if [[ $stage -le 4 ]]; then
