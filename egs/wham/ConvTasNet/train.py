@@ -95,13 +95,15 @@ def main(conf):
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
         json.dump(best_k, f, indent=0)
 
-    # Save best model
+    # Save best model (next PL version will make this easier)
     best_path = [b for b, v in best_k.items() if v == min(best_k.values())][0]
     state_dict = torch.load(best_path)
     system.load_state_dict(state_dict=state_dict['state_dict'])
     system.cpu()
-    torch.save(system.model.serialize(),
-               os.path.join(exp_dir, 'best_model.pth'))
+
+    to_save = system.model.serialize()
+    to_save.update(train_set.get_infos())
+    torch.save(to_save, os.path.join(exp_dir, 'best_model.pth'))
 
 
 if __name__ == '__main__':
