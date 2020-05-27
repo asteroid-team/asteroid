@@ -2,10 +2,13 @@
 Extremely fast mixing (100+ audio files per second)
 generates a lot of empty/corrupted files
 """
+import os
 import pandas as pd
 
 from pathlib import Path
 from argparse import ArgumentParser
+
+from constants import MIXED_AUDIO_DIR
 
 def remove_corrupt_audio(audio_dir, df, path, expected_audio_size=96_000):
     files = audio_dir.rglob("*wav")
@@ -27,7 +30,7 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
 
-    parser.add_argument("--mixed-dir", default=Path("../../data/train/mixed"), type=Path)
+    parser.add_argument("--mixed-dir", default=Path(MIXED_AUDIO_DIR), type=Path)
     parser.add_argument("--train-df", default=Path("../../data/train.csv"), type=Path)
     parser.add_argument("--val-df", default=Path("../../data/val.csv"), type=Path)
 

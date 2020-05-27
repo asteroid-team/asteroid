@@ -15,13 +15,9 @@ from pathlib import Path
 
 from argparse import ArgumentParser
 
-AUDIO_MIX_COMMAND_PREFIX = "ffmpeg -y -t 00:00:03 -ac 1 "
-AUDIO_DIR = "../../data/train/audio"
-MIXED_AUDIO_DIR = "../../data/train/mixed"
-VIDEO_DIR = "../../data/train"
-AUDIO_SET_DIR = "./../../data/audio_set/audio"
-
-STORAGE_LIMIT = 5_000_000_000
+from constants import (AUDIO_MIX_COMMAND_PREFIX, AUDIO_DIR,
+                       MIXED_AUDIO_DIR, VIDEO_DIR, AUDIO_SET_DIR,
+                       STORAGE_LIMIT)
 
 def sample_audio_set():
     """

@@ -10,6 +10,7 @@ from facenet_pytorch import MTCNN, InceptionResnetV1, extract_face
 
 from data import get_frames
 from frames import input_face_embeddings
+from constants import VIDEO_DIR, EMBED_DIR
 
 FRAMES = 75
 
@@ -95,8 +96,8 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
-    parser.add_argument("--video-dir", default="../../data/train/", type=Path)
-    parser.add_argument("--embed-dir", default="../../data/train/embed/", type=Path)
+    parser.add_argument("--video-dir", default=Path(VIDEO_DIR), type=Path)
+    parser.add_argument("--embed-dir", default=Path(EMBED_DIR), type=Path)
     parser.add_argument("--train-path", default=Path("../../data/train.csv"), type=Path)
     parser.add_argument("--val-path", default=Path("../../data/val.csv"), type=Path)
     parser.add_argument("--cuda", dest="cuda", action="store_true")

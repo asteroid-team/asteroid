@@ -9,6 +9,7 @@ import concurrent.futures
 
 from tqdm import tqdm
 
+from constants import AUDIO_DIR, VIDEO_DIR
 
 def extract(path):
     name = path.stem
@@ -38,8 +39,8 @@ def main(args):
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Extract parameters")
     parse.add_argument("--jobs", type=int, default=2)
-    parse.add_argument("--aud-dir", type=str, default="../../data/train/audio/")
-    parse.add_argument("--vid-dir", type=str, default="../../data/train/")
+    parse.add_argument("--aud-dir", type=str, default=AUDIO_DIR)
+    parse.add_argument("--vid-dir", type=str, default=VIDEO_DIR)
     parse.add_argument("--sampling-rate", type=int, default=16_000)
     parse.add_argument("--audio-channel", type=int, default=2)
     parse.add_argument("--audio-extension", type=str, default="wav")

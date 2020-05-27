@@ -38,8 +38,8 @@ class DiscriminativeLoss(torch.nn.Module):
 def main(conf):
     config = ParamConfig(conf["training"]["batch_size"], conf["training"]["epochs"],
                          conf["training"]["num_workers"], True, False, conf["optim"]["lr"])
-    dataset = AVSpeechDataset(Path("data/train.csv"), Signal, convert_to_spectrogram, conf["data"]["input_audio_size"])
-    val_dataset = AVSpeechDataset(Path("data/val.csv"), Signal, convert_to_spectrogram, conf["data"]["input_audio_size"])
+    dataset = AVSpeechDataset(Path("data/train.csv"), Signal, convert_to_spectrogram, conf["main_args"]["input_audio_size"])
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Signal, convert_to_spectrogram, conf["main_args"]["input_audio_size"])
 
     model, optimizer = make_model_and_optimizer(conf)
     print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
@@ -58,6 +58,8 @@ def main(conf):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
+    parser.add_argument('--input-audio-size', type=int,
+                        help='number of inputs to neural network', default=2)
     parser.add_argument('--exp_dir', default='exp/logdir',
                         help='Full path to save best validation model')
 

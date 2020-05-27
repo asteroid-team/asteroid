@@ -342,7 +342,7 @@ def make_model_and_optimizer(conf, gpu_ids=[0]):
         model, optimizer
     """
     device = torch.device(conf["training"]["device"])
-    model = Audio_Visual_Fusion(conf["data"]["input_audio_size"],
+    model = Audio_Visual_Fusion(conf["main_args"]["input_audio_size"],
                                 device)
     model = model.to(device)
     device_count = torch.cuda.device_count()

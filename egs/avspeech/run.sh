@@ -18,7 +18,7 @@ get_attribute() {
 
 	pushd $root_dir > /dev/null
 	attribute=$1
-	value=$(grep  $attribute local/conf.yml | awk  '{print $2}' | sed 's/"//g')
+	value=$(grep  $attribute local/data_prep.yml | awk  '{print $2}' | sed 's/"//g')
 	popd > /dev/null
 	echo $value
 }
@@ -40,6 +40,7 @@ gpu_ids=0
 exp_dir=exp/logdir
 tag=
 install_flag=false
+storage_dir=${STORAGE_DIR:-"storage_dir"}
 
 . utils/parse_options.sh
 
@@ -54,11 +55,10 @@ if [[ $stage -le 0 ]]; then
 	echo "Stage 0: Setting up structure and downloading files."
 	pushd $loader_dir > /dev/null
 	# Setup the structure for data downloading, pre-processing
-	mkdir -p ../../data/{train,val}/{audio,embed,spec,mixed} ../../data/{audio_set,audio_visual}
+	mkdir -p ../../$storage_dir/storage/{video,audio,embed,spec,mixed} ../../data/{audio_set,audio_visual}
 
 	n_jobs=$(get_attribute "download_jobs")
 	path=$(get_attribute "download_path")
-	vid_dir=$(get_attribute "download_vid_dir")
 	download_start=$(get_attribute "download_start")
 	download_end=$(get_attribute "download_end")
 
@@ -66,7 +66,7 @@ if [[ $stage -le 0 ]]; then
 	check_dependency ffmpeg
 	check_dependency youtube-dl
 	python3 download.py --jobs $n_jobs --path $path \
-			    --vid-dir $vid_dir --start $download_start \
+			    --start $download_start \
 			    --end $download_end
 
 	n_files=$(ls -1q $vid_dir/*_final.mp4 | wc -l)
@@ -80,8 +80,6 @@ if [[ $stage -le 1 ]]; then
 	cd $loader_dir
 
 	n_jobs=$(get_attribute "extract_jobs")
-	vid_dir=$(get_attribute "download_vid_dir") # extract from download path
-	audio_dir=$(get_attribute "extract_audio_dir")
 	sampling_rate=$(get_attribute "extract_sampling_rate")
 	input_audio_channel=$(get_attribute "extract_input_audio_channel")
 	audio_extension=$(get_attribute "extract_audio_extension")
@@ -89,8 +87,8 @@ if [[ $stage -le 1 ]]; then
 
 	echo "Extracting audio..."
 	check_dependency ffmpeg
-	python3 extract_audio.py --jobs $n_jobs --aud-dir $audio_dir \
-				 --vid-dir $vid_dir --sampling-rate $sampling_rate \
+	python3 extract_audio.py --jobs $n_jobs \
+				 --sampling-rate $sampling_rate \
 				 --audio-channel $input_audio_channel \
 				 --audio-extension $audio_extension --duration $duration
 
@@ -116,7 +114,6 @@ if [[ $stage -le 2 ]]; then
 	echo "Stage 2: Preprocessing video. Extracting faces."
 	cd $loader_dir
 
-	vid_dir=$(get_attribute "download_vid_dir") # extract from download path
 	use_cuda=$(get_attribute "face_cuda")
 	use_half=$(get_attribute "face_use_half")
 	corrupt_file_path=$(get_attribute "face_corrupt_file_path")
@@ -124,18 +121,17 @@ if [[ $stage -le 2 ]]; then
 	use_cuda=$(parse_boolean $use_cuda '--cuda')
 	use_half=$(parse_boolean $use_half '--use-half')
 
-	python3 generate_video_embedding.py --video-dir $vid_dir \
-					    --corrupt-file $corrupt_file_path $use_cuda $use_half
+	python3 generate_video_embedding.py --corrupt-file $corrupt_file_path $use_cuda $use_half
 
 	python3 remove_corrupt.py
 	cd $root_dir
 fi
 
+input_audio_size=$(get_attribute "input_audio_size")
 if [[ -z ${tag} ]]; then
 	# Generate a random ID for the run if no tag is specified
-	input_audio_size=$(get_attribute "input_audio_size")
 	uuid=$($python_path -c 'import uuid; print(str(uuid.uuid4())[:8])')
-	tag=${input_audio_size}_${uuid}
+	tag=${input_audio_size}_${storage_dir}_${uuid}
 	exp_dir="${exp_dir}_${tag}"
 fi
 
@@ -143,13 +139,15 @@ if [[ $stage -le 3 ]]; then
 	echo "Stage 3: Training"
 
 	mkdir -p $exp_dir
-	python3 train.py --gpus $gpu_ids --exp_dir $exp_dir | tee logs/train_${tag}.log
+	python3 train.py --gpus $gpu_ids --exp_dir $exp_dir \
+			 --input-audio-size $input_audio_size | tee logs/train_${tag}.log
 fi
 
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4: Validation"
 
 	mkdir -p $exp_dir
-	python3 eval.py --gpus $gpu_ids --exp_dir $exp_dir | tee logs/val_${tag}.log
+	python3 eval.py --gpus $gpu_ids --exp_dir $exp_dir \
+			 --input-audio-size $input_audio_size | tee logs/val_${tag}.log
 fi
 

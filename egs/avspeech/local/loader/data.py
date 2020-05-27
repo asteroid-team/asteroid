@@ -6,10 +6,6 @@ from pathlib import Path
 
 from typing import Callable, Tuple, List
 
-
-EMBED_DIR = [Path("data/train/embed")]
-SPEC_DIR = [Path("data/train/spec")]
-
 def get_frames(video):
     frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
     frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -80,19 +76,18 @@ class Signal:
         self.buffer_video = get_frames(self.video)
 
     def _check_video_embed(self, embed_ext=".npy"):
+        from local.loader.constants import EMBED_DIR, SPEC_DIR
+
         video_name_stem = self.video_path.stem
-        for embed_dir in EMBED_DIR:
-            if not embed_dir.is_dir():
-                embed_dir = Path("..", *embed_dir.parts)
-            if not embed_dir.is_dir():
-                print(embed_dir)
-                print("Run this file from root directory avspeech/")
-                continue
-            self.embed_path = Path(embed_dir, video_name_stem + f"_part{self.video_start_length}" + embed_ext)
-            if self.embed_path.is_file():
-                self.embed_saved = True
-                self.embed = np.load(self.embed_path.as_posix())
-                break
+
+        embed_dir = Path(EMBED_DIR)
+        if not embed_dir.is_dir():
+            embed_dir = Path(*embed_dir.parts[2:])
+
+        self.embed_path = Path(embed_dir, video_name_stem + f"_part{self.video_start_length}" + embed_ext)
+        if self.embed_path.is_file():
+            self.embed_saved = True
+            self.embed = np.load(self.embed_path.as_posix())
 
     def embed_is_saved(self):
         return self.embed_saved

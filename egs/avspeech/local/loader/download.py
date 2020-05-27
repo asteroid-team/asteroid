@@ -7,6 +7,7 @@ import pandas as pd
 from pathlib import Path
 import concurrent.futures
 
+from constants import VIDEO_DIR
 
 def download(link, path, final_name=None):
     command = "youtube-dl {} --output {}.mp4 -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'"
@@ -18,7 +19,7 @@ def download(link, path, final_name=None):
         return True
 
     p = subprocess.Popen(command.format(link, path), shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, cwd=args.vid_dir).communicate()
+                         stderr=subprocess.PIPE).communicate()
     return False
 
 def crop(path, start, end, downloaded_name):
@@ -67,7 +68,7 @@ if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Download parameters")
     parse.add_argument("--jobs", type=int, default=1)
     parse.add_argument("--path", type=str, default="../../data/audio_visual/avspeech_train.csv")
-    parse.add_argument("--vid-dir", type=str, default="../../data/train/")
+    parse.add_argument("--vid-dir", type=str, default=VIDEO_DIR)
     parse.add_argument("--start", type=int, default=0)
     parse.add_argument("--end", type=int, default=10_000)
     args = parse.parse_args()
