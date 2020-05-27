@@ -30,6 +30,9 @@ setup(
         'visualize': ['seaborn'],
         'tests': ['pytest'],
     },
+    entry_points={
+        'console_scripts': ['asteroid-upload=asteroid.scripts.asteroid_cli:upload'],
+    },
     packages=find_packages(),
     include_package_data=True,
     classifiers=[
