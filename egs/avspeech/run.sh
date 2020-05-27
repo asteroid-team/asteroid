@@ -55,7 +55,7 @@ if [[ $stage -le 0 ]]; then
 	echo "Stage 0: Setting up structure and downloading files."
 	pushd $loader_dir > /dev/null
 	# Setup the structure for data downloading, pre-processing
-	mkdir -p ../../$storage_dir/storage/{video,audio,embed,spec,mixed} ../../data/{audio_set,audio_visual}
+	mkdir -p ../../$storage_dir/storage/{video,audio,embed,spec,mixed} ../../data/{audio_set,audio_visual} ../../exp ../../logs
 
 	n_jobs=$(get_attribute "download_jobs")
 	path=$(get_attribute "download_path")
