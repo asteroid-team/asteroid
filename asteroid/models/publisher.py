@@ -42,8 +42,11 @@ def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None):
     assert 'licenses' in model_dict.keys(), "`licenses` not found in model dict."
     assert isinstance(metrics, dict), "Cannot upload a model without metrics."
     # Additional infos.
-    recipe_name = next(open(os.path.join(publish_dir, 'recipe_name.txt')))
-    recipe_name.replace('\n', '')  # remove next line
+    if os.path.exists(os.path.join(publish_dir, 'recipe_name.txt')):
+        recipe_name = next(open(os.path.join(publish_dir, 'recipe_name.txt')))
+        recipe_name.replace('\n', '')  # remove next line
+    else:
+        recipe_name = 'Unknown'
     model_dict['infos']['recipe_name'] = recipe_name
     model_dict['infos']['training_config'] = train_conf
     model_dict['infos']['final_metrics'] = metrics
@@ -54,7 +57,7 @@ def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None):
 
 def upload_publishable(publish_dir, uploader=None, affiliation=None,
                        git_username=None, token=None, force_publish=False,
-                       use_sandbox=False):
+                       use_sandbox=False, unit_test=False):
     """ Entry point to upload publishable model.
 
     Args:
@@ -68,6 +71,7 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
             asking confirmation before. Defaults to False.
         use_sandbox (bool): Whether to use Zenodo's sandbox instead of
             the official Zenodo.
+        unit_test (bool): If True, we do not ask user input and do not publish.
 
     """
     def get_answer():
@@ -116,13 +120,17 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
         r_publish = zen.publish_deposition(dep_id)
         pprint(r_publish.json())
         print("You can also visit it at {}".format(address))
-        return
+        return r_publish
     # Give choice
     current = zen.get_deposition(dep_id)
     print(f"\n\n This is the current state of the deposition "
           f"(see here {address}): ")
     pprint(current.json())
-    inp = get_answer()
+    # Patch to run unit test
+    if unit_test:
+        return zen, current
+    else:
+        inp = get_answer()
     if inp == 'y':
         _ = zen.publish_deposition(dep_id)
         print("Visit it at {}".format(address))
