@@ -166,3 +166,40 @@ class WhamDataset(data.Dataset):
             mixture = normalize_tensor_wav(mixture, eps=EPS, std=m_std)
             sources = normalize_tensor_wav(sources, eps=EPS, std=m_std)
         return mixture, sources
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos['dataset'] = self.dataset_name
+        infos['task'] = self.task
+        if self.task == 'sep_clean':
+            data_license = [wsj0_license]
+        else:
+            data_license = [wsj0_license, wham_noise_license]
+        infos['licenses'] = data_license
+        return infos
+
+
+wsj0_license = dict(
+    title='CSR-I (WSJ0) Complete',
+    title_link='https://catalog.ldc.upenn.edu/LDC93S6A',
+    author='LDC',
+    author_link='https://www.ldc.upenn.edu/',
+    license='LDC User Agreement for Non-Members',
+    license_link='https://catalog.ldc.upenn.edu/license/ldc-non-members-agreement.pdf',
+    non_commercial=True
+)
+
+wham_noise_license = dict(
+    title='The WSJ0 Hipster Ambient Mixtures dataset',
+    title_link='http://wham.whisper.ai/',
+    author='Whisper.ai',
+    author_link='https://whisper.ai/',
+    license='CC BY-NC 4.0',
+    license_link='https://creativecommons.org/licenses/by-nc/4.0/',
+    non_commercial=True,
+)

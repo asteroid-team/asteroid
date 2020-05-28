@@ -3,6 +3,7 @@ from torch import nn
 import numpy as np
 
 from .. import torch_utils
+from .. import __version__ as asteroid_version
 
 
 class BaseTasNet(nn.Module):
@@ -121,6 +122,7 @@ class BaseTasNet(nn.Module):
         Returns:
             dict, serialized model with keys `model_args` and `state_dict`.
         """
+        import pytorch_lightning as pl  # Not used in torch.hub
         model_conf = dict()
         fb_config = self.encoder.filterbank.get_config()
         masknet_config = self.masker.get_config()
@@ -129,6 +131,15 @@ class BaseTasNet(nn.Module):
             raise AssertionError("Filterbank and Mask network config share"
                                  "common keys. Merging them is not safe.")
         # Merge all args under model_args.
+        model_conf['model_name'] = self.__class__.__name__
         model_conf['model_args'] = {**fb_config, **masknet_config}
         model_conf['state_dict'] = self.state_dict()
+        # Additional infos
+        infos = dict()
+        infos['software_versions'] = dict(
+            torch_version=torch.__version__,
+            pytorch_lightning_version=pl.__version__,
+            asteroid_version=asteroid_version,
+        )
+        model_conf['infos'] = infos
         return model_conf
