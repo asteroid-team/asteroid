@@ -75,9 +75,8 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
 
     """
     def get_answer():
-        out = input('\n\nDo you want to publish it now (irreversible)? y/n\n'
-                    'Note: if you dont publish it now, you can publish it '
-                    'online. If you publish it now, you can edit it later. \n')
+        out = input('\n\nDo you want to publish it now (irreversible)? y/n'
+                    '(Recommended: n).\n')
         if out not in ['y', 'n']:
             print(f'\nExpected one of [`y`, `n`], received {out}, please retry.')
             return get_answer()
@@ -131,11 +130,13 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
         return zen, current
     else:
         inp = get_answer()
+    # Get user input
     if inp == 'y':
         _ = zen.publish_deposition(dep_id)
         print("Visit it at {}".format(address))
     else:
-        print(f'Did not finalize the upload, please visit {address} to finalize it.')
+        print(f'Did not finalize the upload, please visit {address} to finalize '
+              f'it.')
 
 
 def _populate_publishable(model, uploader=None, affiliation=None,
