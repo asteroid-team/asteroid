@@ -123,7 +123,7 @@ class Zenodo(object):
         print("Zenodo received : {}".format(r.content))
         return r
 
-    def publish_deposition(self, dep_id):
+    def publish_deposition(self, dep_id):  # pragma: no cover (Cannot publish)
         """ Publish given deposition (Cannot be deleted) !
 
         Args:
