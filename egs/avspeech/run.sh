@@ -52,10 +52,11 @@ fi
 
 if [[ $stage -le 0 ]]; then
 
+	# Setup the structure for data downloading, pre-processing
+	mkdir -p $storage_dir/storage/{video,audio,embed,spec,mixed} data/{audio_set,audio_visual} exp logs
+
 	echo "Stage 0: Setting up structure and downloading files."
 	pushd $loader_dir > /dev/null
-	# Setup the structure for data downloading, pre-processing
-	mkdir -p ../../$storage_dir/storage/{video,audio,embed,spec,mixed} ../../data/{audio_set,audio_visual} ../../exp ../../logs
 
 	n_jobs=$(get_attribute "download_jobs")
 	path=$(get_attribute "download_path")
@@ -69,6 +70,7 @@ if [[ $stage -le 0 ]]; then
 			    --start $download_start \
 			    --end $download_end
 
+	vid_dir=$storage_dir/storage/video
 	n_files=$(ls -1q $vid_dir/*_final.mp4 | wc -l)
 	echo "Total files: $n_files"
 	cd $root_dir
@@ -131,7 +133,8 @@ input_audio_size=$(get_attribute "input_audio_size")
 if [[ -z ${tag} ]]; then
 	# Generate a random ID for the run if no tag is specified
 	uuid=$($python_path -c 'import uuid; print(str(uuid.uuid4())[:8])')
-	tag=${input_audio_size}_${storage_dir}_${uuid}
+	clean_dir_name=$(echo $storage_dir | sed 's/\//_/g')
+	tag=${input_audio_size}_${clean_dir_name}_${uuid}
 	exp_dir="${exp_dir}_${tag}"
 fi
 
