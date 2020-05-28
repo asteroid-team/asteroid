@@ -244,6 +244,10 @@ def zenodo_upload(model, token, model_path=None, use_sandbox=False):
     zen = Zenodo(token, use_sandbox=use_sandbox)
     metadata = make_metadata_from_model(model)
     r = zen.create_new_deposition(metadata=metadata)
+    if r.status_code != 200:
+        print(r.json())
+        raise RuntimeError('Could not create the deposition, check the '
+                           'provided token.')
     dep_id = r.json()["id"]
     _ = zen.upload_new_file_to_deposition(dep_id, model_path, name='model.pth')
     if model_path_was_none:
