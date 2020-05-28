@@ -53,7 +53,8 @@ def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None):
 
 
 def upload_publishable(publish_dir, uploader=None, affiliation=None,
-                       git_username=None, token=None, force_publish=False):
+                       git_username=None, token=None, force_publish=False,
+                       use_sandbox=False):
     """ Entry point to upload publishable model.
 
     Args:
@@ -65,6 +66,8 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
         token (str): Access token generated to upload depositions.
         force_publish (bool): Whether to directly publish without
             asking confirmation before. Defaults to False.
+        use_sandbox (bool): Whether to use Zenodo's sandbox instead of
+            the official Zenodo.
 
     """
     def get_answer():
@@ -106,7 +109,8 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
             )
 
     # Do the actual upload
-    zen, dep_id = zenodo_upload(model, token, model_path=publish_model_path)
+    zen, dep_id = zenodo_upload(model, token, model_path=publish_model_path,
+                                use_sandbox=use_sandbox)
     address = os.path.join(zen.zenodo_address, 'deposit', str(dep_id))
     if force_publish:
         r_publish = zen.publish_deposition(dep_id)
@@ -204,13 +208,15 @@ def make_license_notice(model_name, licenses, uploader=None):
     return note
 
 
-def zenodo_upload(model, token, model_path=None):
+def zenodo_upload(model, token, model_path=None, use_sandbox=False):
     """ Create deposit and upload metadata + model
 
     Args:
         model (dict):
         token (str): Access token.
         model_path (str): Saved model path.
+        use_sandbox (bool): Whether to use Zenodo's sandbox instead of
+            the official Zenodo.
 
     Returns:
         Zenodo (Zenodo instance with access token)
@@ -227,7 +233,7 @@ def zenodo_upload(model, token, model_path=None):
         torch.save(model, model_path)
         # raise ValueError("Need path")
 
-    zen = Zenodo(token)
+    zen = Zenodo(token, use_sandbox=use_sandbox)
     metadata = make_metadata_from_model(model)
     r = zen.create_new_deposition(metadata=metadata)
     dep_id = r.json()["id"]

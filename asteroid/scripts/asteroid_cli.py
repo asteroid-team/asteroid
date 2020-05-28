@@ -20,6 +20,8 @@ def upload():
                         help='Access token for Zenodo (or sandbox)')
     parser.add_argument('--force_publish', default=False, type=bool,
                         help='Whether to  without asking confirmation')
+    parser.add_argument('--use_sandbox', default=True, type=bool,
+                        help='Whether to use Zenodo sandbox.')
     args = parser.parse_args()
     args_as_dict = dict(vars(args))
     # Load uploader info if present
