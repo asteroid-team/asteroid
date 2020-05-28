@@ -18,9 +18,9 @@ def upload():
                         help='Username in GitHub')
     parser.add_argument('--token', default=None, type=str,
                         help='Access token for Zenodo (or sandbox)')
-    parser.add_argument('--force_publish', default=False, type=bool,
+    parser.add_argument('--force_publish', default=False, action='store_true',
                         help='Whether to  without asking confirmation')
-    parser.add_argument('--use_sandbox', default=True, type=bool,
+    parser.add_argument('--use_sandbox', default=False, action='store_true',
                         help='Whether to use Zenodo sandbox.')
     args = parser.parse_args()
     args_as_dict = dict(vars(args))
@@ -32,6 +32,7 @@ def upload():
         for k, v in uploader_info.items():
             if args_as_dict[k] == parser.get_default(k):
                 args_as_dict[k] = v
+
     upload_publishable(**args_as_dict)
     # Suggest creating uploader_infos.yml
     if not os.path.exists(info_file):
