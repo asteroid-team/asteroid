@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit on error
 
 # Main storage directory. You'll need disk space to dump DNS dataset.
 storage_dir=
