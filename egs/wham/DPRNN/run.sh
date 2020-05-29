@@ -24,7 +24,7 @@ python_path=python
 stage=3  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=0
+id=$CUDA_VISIBLE_DEVICES
 
 # Data
 task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
