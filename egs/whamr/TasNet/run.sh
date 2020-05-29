@@ -1,6 +1,6 @@
 #!/bin/bash
-
 set -e  # Exit on error
+
 # Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
 # files if you start from sphere files.
 storage_dir=
