@@ -4,6 +4,7 @@ import numpy as np
 
 from .. import torch_utils
 from .. import __version__ as asteroid_version
+from ..utils.hub_utils import cached_download
 
 
 class BaseTasNet(nn.Module):
@@ -103,7 +104,8 @@ class BaseTasNet(nn.Module):
                 `model_args` and `state_dict`.
         """
         if isinstance(pretrained_model_conf_or_path, str):
-            conf = torch.load(pretrained_model_conf_or_path, map_location='cpu')
+            cached_model = cached_download(pretrained_model_conf_or_path)
+            conf = torch.load(cached_model, map_location='cpu')
         else:
             conf = pretrained_model_conf_or_path
         if 'model_args' not in conf.keys():
