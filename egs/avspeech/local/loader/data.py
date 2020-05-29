@@ -118,9 +118,8 @@ class Signal:
             spec_exists = True
             audio = np.load(spec_path)
         else:
-            audio = librosa.load(audio_path, sr=sr)[0]
+            audio = librosa.load(str(audio_path), sr=sr)[0]
         return audio, spec_exists, spec_path
 
 if __name__ == "__main__":
     signal = Signal("../../data/train/AvWWVOgaMlk_cropped.mp4", "../../data/train/audio/AvWWVOgaMlk_cropped.mp3")
-
