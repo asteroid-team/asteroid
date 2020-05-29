@@ -35,6 +35,7 @@ so hop on and help us !
 - [Running a recipe](#running-a-recipe)
 - [Available recipes](#available-recipes)
 - [Supported datasets](#supported-datasets)
+- [Pretrained models](#pretrained-models)
 - [Calls for contributions](#contributing)
 - [Citing us](#citing)
 
@@ -102,6 +103,42 @@ More information in [egs/README.md](./egs).
 * [x] MUSDB18 (egs coming) ([Raffi et al.](https://hal.inria.fr/hal-02190845)) 
 * [x] FUSS (egs coming) ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
 * [ ] AVSpeech ([Ephrat et al.](https://arxiv.org/abs/1804.03619))
+
+## Pretrained models
+([↑up to contents](#contents))  
+Asteroid provides pretrained models through the [Asteroid community]() in Zenodo. 
+Loading a pretrained model is super simple !
+```python
+from asteroid import ConvTasNet
+model = ConvTasNet.from_pretrained('mpariente/ConvTasNet_WHAM!_sepclean')
+```
+Have a look at the Zenodo page or at [the model cards](./model_cards) to choose which model you want to load.
+
+You can also load it with Hub
+```python
+from torch import hub
+model = hub.load('mpariente/asteroid', 'conv_tasnet', 'mpariente/ConvTasNet_WHAM!_sepclean')
+```
+Enjoy having pretrained models? **Please share your models** if you train some, we made it simple 
+with the `asteroid-upload` CLI, check the next sections.
+
+## Share your models
+At the end of each sharing-enabled recipe, all the necessary infos are gathered into a file, the only thing 
+that's left to do is to run 
+```bash
+asteroid-upload exp/your_exp_dir/publish_dir --uploader "Name Here"
+``` 
+Ok, not really. First you need to register to [Zenodo](https://zenodo.org/) (Sign in with GitHub ok), 
+[create a token](https://zenodo.org/account/settings/applications/tokens/new/) and use it with 
+the `--token` option of the CLI, or by setting the `ACCESS_TOKEN` environment variable. 
+If you plan to upload more models (and you should :innocent:), you can fill in your infos in 
+`uploader_info.yml` at the root, like this.
+```yaml
+uploader: Manuel Pariente
+affiliation: INRIA
+git_username: mpariente
+token: TOKEN_HERE
+``` 
 
 ## Contributing
 ([↑up to contents](#contents))  
