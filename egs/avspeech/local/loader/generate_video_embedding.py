@@ -75,7 +75,7 @@ def main(args):
     train_df = pd.read_csv(args.train_path)
     val_df = pd.read_csv(args.val_path)
 
-    if args.cuda:
+    if args.cuda and torch.cuda.is_available():
         device = torch.device("cuda:0")
     else:
         device = torch.device("cpu")

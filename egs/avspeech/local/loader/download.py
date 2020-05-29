@@ -10,7 +10,7 @@ import concurrent.futures
 from constants import VIDEO_DIR
 
 def download(link, path, final_name=None):
-command = "youtube-dl {} --no-check-certificate --output {}.mp4 -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'"
+    command = "youtube-dl {} --no-check-certificate --output {}.mp4 -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'"
     if os.path.exists(path) and os.path.isfile(path):
         print("File already downloaded")
         return False

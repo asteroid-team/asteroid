@@ -1,14 +1,11 @@
 import re
 from pathlib import Path
-
-import tqdm
 import torch
-import numpy as np
+from torch.utils import data
 import pandas as pd
-from facenet_pytorch import MTCNN, InceptionResnetV1
 
 
-class AVSpeechDataset(torch.utils.data.Dataset):
+class AVSpeechDataset(data.Dataset):
 
     def __init__(self, input_df_path: Path,
                 signal_constructor, convert_to_spectrogram,

@@ -28,7 +28,7 @@ def input_face_embeddings(frames: Union[List[str], np.ndarray], is_path: bool,
         Returns:
             emb: Embedding for all input frames
     """
-    if face_embed_cuda:
+    if face_embed_cuda and torch.cuda.is_available():
         device = torch.device("cuda:0")
     else:
         device = torch.device("cpu")
