@@ -33,7 +33,10 @@ def cached_download(filename_or_url):
         # Give a chance to direct URL, torch.hub will handle exceptions
         url = filename_or_url
     cached_filename = url_to_filename(url)
-    cached_path = os.path.join(get_cache_dir(), cached_filename, 'model.pth')
+    cached_dir = os.path.join(get_cache_dir(), cached_filename)
+    cached_path = os.path.join(cached_dir, 'model.pth')
+
+    os.makedirs(cached_dir, exist_ok=True)
     if not os.path.isfile(cached_path):
         hub.download_url_to_file(url, cached_path)
         return cached_path
