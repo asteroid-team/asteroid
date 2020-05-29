@@ -16,7 +16,7 @@ python_path=python
 stage=0
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=
+id=$CUDA_VISIBLE_DEVICES
 
 # Experiment config
 is_complex=1  # If we use a complex network for training.

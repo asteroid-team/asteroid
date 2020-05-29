@@ -30,7 +30,7 @@ python_path=python
 stage=3  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=0
+id=$CUDA_VISIBLE_DEVICES
 
 # Data
 data_dir=data  # Local data directory (No disk space needed)
