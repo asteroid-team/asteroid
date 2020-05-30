@@ -101,3 +101,26 @@ class Wsj0mixDataset(data.Dataset):
             source_arrays.append(s)
         sources = torch.from_numpy(np.vstack(source_arrays))
         return torch.from_numpy(x), sources
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos['dataset'] = self.dataset_name
+        infos['task'] = 'sep_clean'
+        infos['licenses'] = [wsj0_license]
+        return infos
+
+
+wsj0_license = dict(
+    title='CSR-I (WSJ0) Complete',
+    title_link='https://catalog.ldc.upenn.edu/LDC93S6A',
+    author='LDC',
+    author_link='https://www.ldc.upenn.edu/',
+    license='LDC User Agreement for Non-Members',
+    license_link='https://catalog.ldc.upenn.edu/license/ldc-non-members-agreement.pdf',
+    non_commercial=True
+)

@@ -4,6 +4,8 @@ import json
 import os
 import numpy as np
 import soundfile as sf
+from .wsj0_mix import wsj0_license
+from .wham_dataset import wham_noise_license
 
 DATASET = 'WHAMR'
 
@@ -155,3 +157,19 @@ class WhamRDataset(data.Dataset):
             source_arrays.append(s)
         sources = torch.from_numpy(np.vstack(source_arrays))
         return torch.from_numpy(x), sources
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos['dataset'] = self.dataset_name
+        infos['task'] = self.task
+        if self.task == 'sep_clean':
+            data_license = [wsj0_license]
+        else:
+            data_license = [wsj0_license, wham_noise_license]
+        infos['licenses'] = data_license
+        return infos

@@ -213,3 +213,19 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                         'path': track_path,
                         'min_duration': None
                     })
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos['dataset'] = self.dataset_name
+        infos['task'] = 'enhancement'
+        infos['licenses'] = [musdb_license]
+        return infos
+
+
+musdb_license = dict(
+)

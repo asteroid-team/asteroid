@@ -5,6 +5,7 @@ import torch
 from torch.utils.data.dataset import Dataset
 import random as random
 import os
+from .wham_dataset import wham_noise_license
 
 
 class LibriMix(Dataset):
@@ -101,3 +102,34 @@ class LibriMix(Dataset):
         # Convert sources to tensor
         sources = torch.from_numpy(sources)
         return mixture, sources
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos['dataset'] = self._dataset_name()
+        infos['task'] = self.task
+        if self.task == 'sep_clean':
+            data_license = [librispeech_license]
+        else:
+            data_license = [librispeech_license, wham_noise_license]
+        infos['licenses'] = data_license
+        return infos
+
+    def _dataset_name(self):
+        """ Differentiate between 2 and 3 sources."""
+        return f'Libri{self.task}Mix'
+
+
+librispeech_license = dict(
+    title='LibriSpeech ASR corpus',
+    title_link='http://www.openslr.org/12',
+    author='Vassil Panayotov',
+    author_link='https://github.com/vdp',
+    license='CC BY 4.0',
+    license_link='https://creativecommons.org/licenses/by/4.0/',
+    non_commercial=False
+)

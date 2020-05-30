@@ -34,3 +34,26 @@ class DNSDataset(data.Dataset):
         noise = torch.from_numpy(sf.read(utt_info['noise'],
                                          dtype='float32')[0])
         return x, speech, noise
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos['dataset'] = self.dataset_name
+        infos['task'] = 'enhancement'
+        infos['licenses'] = [dns_license]
+        return infos
+
+
+dns_license = dict(
+    title='Deep Noise Suppression (DNS) Challenge',
+    title_link='https://github.com/microsoft/DNS-Challenge',
+    author='Microsoft',
+    author_link='https://www.microsoft.com/fr-fr/',
+    license='CC BY-NC 4.0',
+    license_link='https://creativecommons.org/licenses/by-nc/4.0/',
+    non_commercial=False,
+)
