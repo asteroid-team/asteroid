@@ -109,7 +109,7 @@ More information in [egs/README.md](./egs).
 Asteroid provides pretrained models through the [Asteroid community]() in Zenodo. 
 Loading a pretrained model is super simple !
 ```python
-from asteroid import ConvTasNet
+from asteroid.models import ConvTasNet
 model = ConvTasNet.from_pretrained('mpariente/ConvTasNet_WHAM!_sepclean')
 ```
 Have a look at the Zenodo page or at [the model cards](./model_cards) to choose which model you want to load.
