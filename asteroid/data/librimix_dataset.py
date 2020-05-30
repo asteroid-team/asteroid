@@ -127,8 +127,8 @@ class LibriMix(Dataset):
 librispeech_license = dict(
     title='LibriSpeech ASR corpus',
     title_link='http://www.openslr.org/12',
-    author='Open SLR',
-    author_link='http://www.openslr.org/',
+    author='Vassil Panayotov',
+    author_link='https://github.com/vdp',
     license='CC BY 4.0',
     license_link='https://creativecommons.org/licenses/by/4.0/',
     non_commercial=False
