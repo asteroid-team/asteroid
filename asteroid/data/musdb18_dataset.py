@@ -213,3 +213,26 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                         'path': track_path,
                         'min_duration': None
                     })
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos['dataset'] = self.dataset_name
+        infos['task'] = 'enhancement'
+        infos['licenses'] = [musdb_license]
+        return infos
+
+
+musdb_license = dict(
+    title='MUSDB18',
+    title_link='https://sigsep.github.io/datasets/musdb.html',
+    author='SigSep',
+    author_link='',
+    license='CC BY-NC-SA 4.0',
+    license_link='https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    non_commercial=True,
+)
