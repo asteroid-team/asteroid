@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-asteroid_version = "0.2.0"
+asteroid_version = "0.2.1"
 
 with open("README.md", encoding='utf-8') as fh:
     long_description = fh.read()
@@ -17,24 +17,30 @@ setup(
     license='MIT',
     python_requires='>=3.6',
     install_requires=['numpy',
-                      'pyyaml',
-                      'soundfile',
                       'scipy',
+                      'soundfile',
+                      'pyyaml',
                       'torch',
-                      'pytorch-lightning==0.6.0',
+                      'pytorch-lightning',
+                      'torch_optimizer',
                       'pb_bss_eval',
-                      'asranger',
-                      'torch_stoi'
+                      'torch_stoi',
                       ],
     extras_require={
-        'visualize': ['seaborn>=0.9.0'],
+        'visualize': ['seaborn'],
         'tests': ['pytest'],
+    },
+    entry_points={
+        'console_scripts': ['asteroid-upload=asteroid.scripts.asteroid_cli:upload'],
     },
     packages=find_packages(),
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         "Programming Language :: Python :: 3",
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
