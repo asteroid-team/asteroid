@@ -4,6 +4,7 @@ import json
 import os
 import numpy as np
 import soundfile as sf
+from .wsj0_mix import wsj0_license
 EPS = 1e-8
 
 DATASET = 'WHAM'
@@ -183,16 +184,6 @@ class WhamDataset(data.Dataset):
         infos['licenses'] = data_license
         return infos
 
-
-wsj0_license = dict(
-    title='CSR-I (WSJ0) Complete',
-    title_link='https://catalog.ldc.upenn.edu/LDC93S6A',
-    author='LDC',
-    author_link='https://www.ldc.upenn.edu/',
-    license='LDC User Agreement for Non-Members',
-    license_link='https://catalog.ldc.upenn.edu/license/ldc-non-members-agreement.pdf',
-    non_commercial=True
-)
 
 wham_noise_license = dict(
     title='The WSJ0 Hipster Ambient Mixtures dataset',
