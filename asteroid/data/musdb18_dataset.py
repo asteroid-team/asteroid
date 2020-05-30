@@ -228,11 +228,4 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
 
 
 musdb_license = dict(
-    title='MUSDB18',
-    title_link='https://sigsep.github.io/datasets/musdb.html',
-    author='SigSep',
-    author_link='',
-    license='CC BY-NC-SA 4.0',
-    license_link='https://creativecommons.org/licenses/by-nc-sa/4.0/',
-    non_commercial=True,
 )
