@@ -3,7 +3,6 @@ from torch import nn
 import numpy as np
 
 from .. import torch_utils
-from .. import __version__ as asteroid_version
 from ..utils.hub_utils import cached_download
 
 
@@ -124,6 +123,7 @@ class BaseTasNet(nn.Module):
         Returns:
             dict, serialized model with keys `model_args` and `state_dict`.
         """
+        from .. import __version__ as asteroid_version  # Avoid circular imports
         import pytorch_lightning as pl  # Not used in torch.hub
         model_conf = dict()
         fb_config = self.encoder.filterbank.get_config()
