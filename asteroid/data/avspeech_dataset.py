@@ -14,7 +14,7 @@ from typing import Callable, Tuple, List
 from asteroid.filterbanks import (Encoder, Decoder,
                                   STFTFB, transforms)
 
-EPS = 1e-6
+EPS = 1e-8
 
 def get_frames(video):
     frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -236,4 +236,3 @@ class AVSpeechDataset(data.Dataset):
         audio_tensors = audio_tensors.permute(1, 2, 3, 0)
 
         return audio_tensors, video_tensors, mixed_signal_tensor
-
