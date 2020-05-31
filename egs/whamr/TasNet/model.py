@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 from asteroid import torch_utils
-from asteroid.torch_utils import pad_x_to_y
+from asteroid import torch_utils
 from asteroid.filterbanks import Encoder, Decoder, FreeFB
 from asteroid.masknn.blocks import SingleRNN
 from asteroid.engine.optimizers import make_optimizer
@@ -53,7 +53,7 @@ class TasNet(nn.Module):
         est_masks = self.masker(to_sep.transpose(-1, -2)).transpose(-1, -2)
         est_masks = est_masks.view(batch_size, self.n_src, self.n_filters, -1)
         masked_tf_rep = tf_rep.unsqueeze(1) * est_masks
-        return pad_x_to_y(self.decoder(masked_tf_rep), x)
+        return torch_utils.pad_x_to_y(self.decoder(masked_tf_rep), x)
 
     def encode(self, x):
         relu_out = torch.relu(self.encoder_relu(x))

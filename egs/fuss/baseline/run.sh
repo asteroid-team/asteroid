@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit on error
 
 # Main storage directory
 storage_dir=
@@ -30,7 +31,7 @@ python_path=python
 stage=0  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=
+id=$CUDA_VISIBLE_DEVICES
 
 
 # Data

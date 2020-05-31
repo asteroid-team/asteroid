@@ -92,6 +92,7 @@ class SingleSrcPMSQE(nn.Module):
         self.mask_sll = None
         self.populate_constants(self.sample_rate)
         self.sqrt_total_width = torch.sqrt(torch.sum(self.width_of_band_bark))
+        self.EPS = 1e-8
 
     def forward(self, est_targets, targets, pad_mask=None):
         """
@@ -134,7 +135,7 @@ class SingleSrcPMSQE(nn.Module):
             pad_mask = pad_mask.transpose(1, 2) if freq_idx == 1 else pad_mask
         else:
             # Suppose no padding if no pad_mask is provided.
-            pad_mask = torch.ones(est_targets.shape[0], est_targets.shape[1], 1)
+            pad_mask = torch.ones(est_targets.shape[0], est_targets.shape[1], 1, device=est_targets.device)
         # SLL equalization
         ref_spectra = self.magnitude_at_sll(targets, pad_mask)
         deg_spectra = self.magnitude_at_sll(est_targets, pad_mask)
@@ -246,7 +247,7 @@ class SingleSrcPMSQE(nn.Module):
         # Masking effect computation
         m = 0.25 * torch.min(original_loudness, distorted_loudness)
         # Center clipping using masking effect
-        sym_d = torch.max(r - m, torch.zeros_like(r))
+        sym_d = torch.max(r - m, torch.ones_like(r)*self.EPS)
         # Asymmetry factor computation
         asym = torch.pow((deg_bark_spec + 50.0) / (ref_bark_spec + 50.0), 1.2)
         cond = asym < 3.0 * torch.ones_like(asym)
@@ -259,8 +260,13 @@ class SingleSrcPMSQE(nn.Module):
     def per_frame_distortion(self, sym_d, asym_d, total_power_ref):
         # Computation of the norms over bark bands for each frame
         # 2 and 1 for sym_d and asym_d, respectively
-        d_frame = torch.sum(torch.pow(sym_d * self.width_of_band_bark, 2.0),
+        d_frame = torch.sum(torch.pow(sym_d * self.width_of_band_bark, 2.0)+self.EPS,
                             dim=-1, keepdim=True)
+#        a = torch.pow(sym_d * self.width_of_band_bark, 2.0)
+#        b = sym_d
+#        print(a.min(),a.max(),b.min(),b.max(), d_frame.min(), d_frame.max())
+#        print(self.width_of_band_bark.requires_grad)
+#        print(d_frame.requires_grad)
         d_frame = torch.sqrt(d_frame) * self.sqrt_total_width
         da_frame = torch.sum(asym_d * self.width_of_band_bark,
                              dim=-1, keepdim=True)

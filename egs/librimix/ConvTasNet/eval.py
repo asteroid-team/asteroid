@@ -13,7 +13,7 @@ import numpy as np
 from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid.torch_utils import load_state_dict_in
+from asteroid import torch_utils
 from asteroid.utils import tensors_to_device
 
 from model import make_model_and_optimizer
@@ -54,11 +54,11 @@ def main(conf):
         if keys.startswith('loss'):
             del state_copy[keys]
             print(keys)
-    model = load_state_dict_in(state_copy, model)
+    model = torch_utils.load_state_dict_in(state_copy, model)
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
-    model_device = next(model.parameters()).device
+    model_device = next(model.parameterss()).device
     test_set = LibriMix(csv_dir=conf['test_dir'],
                         task=conf['task'],
                         sample_rate=conf['sample_rate'],

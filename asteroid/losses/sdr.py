@@ -1,6 +1,6 @@
 import torch
 from torch.nn.modules.loss import _Loss
-from ..deprecation_utils import DeprecationMixin
+from ..utils.deprecation_utils import DeprecationMixin
 
 EPS = 1e-8
 

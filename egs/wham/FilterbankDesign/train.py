@@ -30,7 +30,7 @@ def main(conf):
     train_loader = DataLoader(train_set, shuffle=True,
                               batch_size=conf['training']['batch_size'],
                               num_workers=conf['training']['num_workers'])
-    val_loader = DataLoader(val_set, shuffle=True,
+    val_loader = DataLoader(val_set, shuffle=False,
                             batch_size=conf['training']['batch_size'],
                             num_workers=conf['training']['num_workers'])
     conf['masknet'].update({'n_src': train_set.n_src})

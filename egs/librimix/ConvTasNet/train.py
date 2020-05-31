@@ -44,7 +44,7 @@ def main(conf):
                               num_workers=conf['training']['num_workers'],
                               drop_last=True)
 
-    val_loader = DataLoader(val_set, shuffle=True,
+    val_loader = DataLoader(val_set, shuffle=False,
                             batch_size=conf['training']['batch_size'],
                             num_workers=conf['training']['num_workers'],
                             drop_last=True)
@@ -95,8 +95,9 @@ def main(conf):
                          gradient_clip_val=5.)
     trainer.fit(system)
 
+    best_k = {k: v.item() for k, v in checkpoint.best_k_models.items()}
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
-        json.dump(checkpoint.best_k_models, f, indent=0)
+        json.dump(best_k, f, indent=0)
 
 
 if __name__ == '__main__':

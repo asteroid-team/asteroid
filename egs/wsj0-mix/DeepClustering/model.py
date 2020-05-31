@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from sklearn.cluster import KMeans
 
-from asteroid.torch_utils import pad_x_to_y, load_state_dict_in
+from asteroid import torch_utils
 import asteroid.filterbanks as fb
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.filterbanks.transforms import take_mag, apply_mag_mask, ebased_vad
@@ -97,7 +97,7 @@ class Model(nn.Module):
         tf_rep = self.encoder(x)
         proj, mask_out = self.masker(take_mag(tf_rep))
         masked = apply_mag_mask(tf_rep.unsqueeze(1), mask_out)
-        wavs = pad_x_to_y(self.decoder(masked), x)
+        wavs = torch_utils.pad_x_to_y(self.decoder(masked), x)
         dic_out = dict(tfrep=tf_rep, mask=mask_out, masked_tfrep=masked,
                        proj=proj)
         return wavs, dic_out
@@ -156,6 +156,6 @@ def load_best_model(train_conf, exp_dir):
     # Load checkpoint
     checkpoint = torch.load(best_model_path, map_location='cpu')
     # Load state_dict into model.
-    model = load_state_dict_in(checkpoint['state_dict'], model)
+    model = torch_utils.load_state_dict_in(checkpoint['state_dict'], model)
     model.eval()
     return model

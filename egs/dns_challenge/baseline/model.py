@@ -4,7 +4,7 @@ import os
 import torch
 from torch import nn
 
-from asteroid import System
+from asteroid.engine.system import System
 from asteroid.filterbanks import make_enc_dec
 from asteroid.filterbanks.transforms import take_cat, take_mag
 from asteroid.filterbanks.transforms import apply_real_mask
