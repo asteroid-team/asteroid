@@ -103,6 +103,7 @@ More information in [egs/README.md](./egs).
 * [x] MUSDB18 (egs coming) ([Raffi et al.](https://hal.inria.fr/hal-02190845)) 
 * [x] FUSS (egs coming) ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
 * [ ] AVSpeech ([Ephrat et al.](https://arxiv.org/abs/1804.03619))
+* [x] Kinect-WSJ ([Sivasankaran et al.](https://github.com/sunits/Reverberated_WSJ_2MIX))
 
 ## Pretrained models
 ([↑up to contents](#contents))  
