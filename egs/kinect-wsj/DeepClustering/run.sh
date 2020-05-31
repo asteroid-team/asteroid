@@ -60,7 +60,7 @@ valid_dir=$dumpdir/cv
 test_dir=$dumpdir/tt
 
 if [[ $stage -le  0 ]]; then
-    echo "Create wsj0-mix files"
+    echo "Create wsj0-mix files and start again from stage 1" || exit 1
 fi
 
 if [[ $stage -le  1 ]]; then
@@ -82,7 +82,7 @@ if [[ $stage -le  2 ]]; then
                 echo "Generating json files in $tmp_dumpdir"
                 [[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
                 local_kinect_dir=$kinect_wsj_path//wav${sr_string}k/$mode_option/
-                $python_path local/preprocess_wsj0mix.py --in_dir $local_kinect_dir\
+                $python_path local/preprocess_kinect_wsj.py --in_dir $local_kinect_dir\
                     --n_src $tmp_nsrc \
                     --out_dir $tmp_dumpdir
                 done

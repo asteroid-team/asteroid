@@ -101,6 +101,7 @@ More information in [egs/README.md](./egs).
 * [x] [SMS_WSJ](./egs/sms_wsj) ([Drude et al.](https://arxiv.org/abs/1910.13934))
 * [ ] MUSDB18 (Coming) ([Raffi et al.](https://hal.inria.fr/hal-02190845)) 
 * [ ] FUSS (Coming) ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
+* [x] Kinect-WSJ ([Sivasankaran et al.](https://github.com/sunits/Reverberated_WSJ_2MIX))
 
 ## Contributing
 ([↑up to contents](#contents))  

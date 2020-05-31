@@ -33,7 +33,7 @@ def preprocess(inp_args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("WHAM data preprocessing")
+    parser = argparse.ArgumentParser("Kinect-WSJ data preprocessing")
     parser.add_argument('--in_dir', type=str, default=None,
                         help='Directory path of wham including tr, cv and tt')
     parser.add_argument('--n_src', type=int, default=2,
