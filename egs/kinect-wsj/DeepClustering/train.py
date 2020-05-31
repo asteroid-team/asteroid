@@ -81,7 +81,7 @@ def main(conf):
                os.path.join(exp_dir, 'checkpoints/final.pth'))
 
 
-    # TODO:Should ideally be inherited from wsj0-mix
+# TODO:Should ideally be inherited from wsj0-mix
 class ChimeraSystem(System):
     def __init__(self, *args, mask_mixture=True, **kwargs):
         super().__init__(*args, **kwargs)
