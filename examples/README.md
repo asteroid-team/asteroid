@@ -1,5 +1,5 @@
-This folder contains usage examples of `asteroid` building blocks. 
-
+## Asteroid notebooks 
+You can find here a list of Asteroid's notebooks that explain some concepts, design choices and basic usage.
 
 | Notebook     |      Description      |   |
 |:----------|:-------------|------:|
@@ -8,15 +8,5 @@ This folder contains usage examples of `asteroid` building blocks.
 | [PITLossWrapper](https://github.com/mpariente/asteroid/blob/master/examples/.ipynb)  |  Permutation invariant losses explained + how to extend your losses |[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/mpariente/asteroid/blob/master/examples/03_PITLossWrapper.ipynb) |
 | [](https://github.com/mpariente/asteroid/blob/master/examples/03_PITLossWrapper.ipynb)  |   |[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/mpariente/asteroid/blob/master/examples/) |
 
-### Basics
-- Filterbank definitions.
-- Filterbank visualization.
-- Understanding the loss classes
 
-### Towards building a system
-- Mask estimation with asteroid
-- Writing a completely new model, what needs to be writen? 
-
-
-Make a toy waveform and spec dataset that can be 
-used in all the examples.
+If you wrote some notebook(s) using Asteroid, we'd love to have it here, open a PR ! :star:
