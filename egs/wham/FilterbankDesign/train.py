@@ -1,5 +1,7 @@
 import os
 import argparse
+
+import torch
 from torch.utils.data import DataLoader
 from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.system import System
@@ -10,7 +12,6 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Full path to save best validation model')
 
@@ -59,10 +60,12 @@ def main(conf):
     system = System(model=model, loss_func=loss_func, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
                     config=conf)
+    # Don't ask GPU if they are not available.
+    gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
                          checkpoint_callback=checkpoint,
                          default_save_path=exp_dir,
-                         gpus=conf['main_args']['gpus'],
+                         gpus=gpus,
                          distributed_backend='dp')
     trainer.fit(system)
 
