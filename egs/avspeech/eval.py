@@ -10,40 +10,43 @@ import numpy as np
 from catalyst.dl import utils
 from catalyst.dl.runner import SupervisedRunner
 
-from asteroid.data import AVSpeechDataset
+from asteroid.data.avspeech_dataset import AVSpeechDataset
 
 from local.loader.constants import EMBED_DIR
 from model import (make_model_and_optimizer,
                    load_best_model)
 from train import SNRCallback, SDRCallback, ParamConfig
 
-def validate(model, dataset, val_dataset, config):
+def validate(model, val_dataset, config):
     loaders = collections.OrderedDict()
-    train_loader = utils.get_loader(dataset, open_fn=lambda x: {"input_audio": x[-1], "input_video": x[1], "targets": x[0]},
-                                    batch_size=config.batch_size, num_workers=config.workers, shuffle=True)
-
-    val_loader = utils.get_loader(val_dataset, open_fn=lambda x: {"input_audio": x[-1], "input_video": x[1], "targets": x[0]},
-                                    batch_size=config.batch_size, num_workers=config.workers, shuffle=False)
+    val_loader = utils.get_loader(val_dataset,
+                                  open_fn=lambda x: {"input_audio": x[-1],
+                                                     "input_video": x[1],
+                                                     "targets": x[0]},
+                                  batch_size=config.batch_size,
+                                  num_workers=config.workers, shuffle=False)
 
     loaders["valid"] = val_loader
 
     runner = SupervisedRunner(input_key=["input_audio", "input_video"]) # parameters of the model in forward(...)
     runner.infer(model, loaders,
-                 callbacks=collections.OrderedDict({"snr_callback": SNRCallback(), "sdr_callback": SDRCallback()}),
+                 callbacks=collections.OrderedDict({"snr_callback": SNRCallback(),
+                                                    "sdr_callback": SDRCallback()}),
                  verbose=True)
 
 def main(conf):
     config = ParamConfig(conf["training"]["batch_size"], conf["training"]["epochs"],
-                         conf["training"]["num_workers"], True, False, conf["optim"]["lr"])
-    dataset = AVSpeechDataset(Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"])
-    val_dataset = AVSpeechDataset(Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"])
+                         conf["training"]["num_workers"], cuda=True, use_half=False,
+                         learning_rate=conf["optim"]["lr"])
 
-    model, optimizer = make_model_and_optimizer(conf)
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Path(EMBED_DIR),
+                                  conf["main_args"]["input_audio_size"])
 
-    print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters())}")
+    model = load_best_model(conf, conf["main_args"]["exp_dir"])
 
-    validate(model, dataset, val_dataset, config)
+    print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
 
+    validate(model, val_dataset, config)
 
 if __name__ == "__main__":
     parser = ArgumentParser()

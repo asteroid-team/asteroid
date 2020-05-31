@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
 
-from asteroid.data import get_frames
+from asteroid.data.avspeech_dataset import get_frames
 from facenet_pytorch import MTCNN, InceptionResnetV1, extract_face
 
 from frames import input_face_embeddings

@@ -6,7 +6,7 @@ import numpy as np
 from pathlib import Path
 from argparse import ArgumentParser
 
-from asteroid.data import AVSpeechDataset
+from asteroid.data.avspeech_dataset import AVSpeechDataset
 
 from local.loader.constants import EMBED_DIR
 from train import train, ParamConfig
@@ -37,23 +37,28 @@ class DiscriminativeLoss(torch.nn.Module):
 
 def main(conf):
     config = ParamConfig(conf["training"]["batch_size"], conf["training"]["epochs"],
-                         conf["training"]["num_workers"], True, False, conf["optim"]["lr"])
-    dataset = AVSpeechDataset(Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"])
-    val_dataset = AVSpeechDataset(Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"])
+                         conf["training"]["num_workers"], cuda=True, use_half=False,
+                         learning_rate=conf["optim"]["lr"])
+
+    dataset = AVSpeechDataset(Path("data/train.csv"), Path(EMBED_DIR),
+                              conf["main_args"]["input_audio_size"])
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Path(EMBED_DIR),
+                                  conf["main_args"]["input_audio_size"])
 
     model, optimizer = make_model_and_optimizer(conf)
     print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
 
     criterion = DiscriminativeLoss()
 
-    #if args.model_path and args.model_path.is_file():
-    #    resume = args.model_path.as_posix()
-    #else:
-    resume = None
+    model_path = Path(conf["main_args"]["exp_dir"]) / "checkpoints" / "best_full.pth"
+    if model_path.is_file():
+        print("Loading saved model...")
+        resume = model_path.as_posix()
+    else:
+        resume = None
 
     train(model, dataset, optimizer, criterion, config, val_dataset=val_dataset, resume=resume,
           logdir=conf["main_args"]["exp_dir"])
-
 
 if __name__ == "__main__":
     parser = ArgumentParser()

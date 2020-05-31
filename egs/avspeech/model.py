@@ -358,7 +358,7 @@ def make_model_and_optimizer(conf, gpu_ids=[0]):
 
 def load_best_model(train_conf, exp_dir):
     """Load best model.
-    NOTE: This function is not needed. Catalyst has
+    NOTE: This function is not needed during training. Catalyst has
     a `resume` parameter that takes in the logdir location.
     Args:
         train_conf: Configuration used during training.
@@ -372,9 +372,10 @@ def load_best_model(train_conf, exp_dir):
     exp_dir = Path(exp_dir) if isinstance(exp_dir, str) else exp_dir
     best_model_path = exp_dir / "checkpoints" / "best_full.pth"
     if not best_model_path.is_file():
-        raise ValueError(f"No best path in logdir: {exp_dir}")
+        print(f"No best path in logdir: {exp_dir}. Initializing model...")
+        return model
 
     checkpoint = torch.load(best_model_path)
-    model = torch_utils.load_state_dict_in(checkpoint["state_dict"],
+    model = torch_utils.load_state_dict_in(checkpoint["model_state_dict"],
                                            model)
     return model

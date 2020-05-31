@@ -12,7 +12,9 @@ import pandas as pd
 from typing import Callable, Tuple, List
 
 from asteroid.filterbanks import (Encoder, Decoder,
-                                  STFTFB)
+                                  STFTFB, transforms)
+
+EPS = 1e-6
 
 def get_frames(video):
     frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -39,7 +41,7 @@ class Signal:
 
     def __init__(self, video_path: str, audio_path: str, embed_dir: Path,
                  audio_ext=".mp3", sr=16_000, video_start_length=0,
-                 load_spec=True):
+                 load_spec=True, fps=25, signal_len=3):
         self.video_path = Path(video_path)
         self.audio_path = Path(audio_path)
         self.video_start_length = video_start_length
@@ -52,12 +54,19 @@ class Signal:
         self.load_spec = load_spec
         self._is_spec = False
 
-        self.spec_path = Path(*self.audio_path.parts[:-2], "spec", self.audio_path.stem + ".npy")
+        self.fps = fps
+        self.signal_len = signal_len
+        self.total_frames = self.fps * self.signal_len
+        
+        self.sr = sr
+        self.total_audio_frame = self.sr * self.signal_len
+
+        self.spec_path = Path(*self.audio_path.parts[:-2], "spec",
+                              self.audio_path.stem + ".npy")
 
         self._load(sr=sr)
         self._check_video_embed()
         self._convert_video()
-
 
     def _load(self, sr: int):
         self.audio = None
@@ -69,18 +78,6 @@ class Signal:
             self._is_spec = False
         self.video = cv2.VideoCapture(self.video_path.as_posix())
 
-    def augment_audio(self, augmenter: Callable, *args, **kwargs):
-        '''
-            Change the audio via the augmenter method.
-        '''
-        self.audio = augmenter(self.audio, *args, **kwargs)
-
-    def augment_video(self, augmenter: Callable, *args, **kwargs):
-        '''
-            Change the video via the augmenter method.
-        '''
-        self.video = augmenter(self.video, *args, **kwargs)
-
     def _convert_video(self):
         if self.embed_saved:
             return
@@ -91,9 +88,10 @@ class Signal:
 
         embed_dir = self.embed_dir
         if not embed_dir.is_dir():
+            # check embed_dir="../../dir" or embed_dir="dir"
             embed_dir = Path(*embed_dir.parts[2:])
 
-        self.embed_path = Path(embed_dir, video_name_stem + f"_part{self.video_start_length}" + embed_ext)
+        self.embed_path = Path(embed_dir, f"{video_name_stem}_part{self.video_start_length}{embed_ext}")
         if self.embed_path.is_file():
             self.embed_saved = True
             self.embed = np.load(self.embed_path.as_posix())
@@ -106,7 +104,8 @@ class Signal:
 
     def get_video(self):
         #retrieve slice of video, if video > 75 frames
-        buffer_video = self.buffer_video[self.video_start_length*75: (self.video_start_length+1)*75]
+        buffer_video = self.buffer_video[self.video_start_length*self.total_frames:\
+                                        (self.video_start_length+1)*self.total_frames]
         return buffer_video
 
     def get_audio(self):
@@ -145,6 +144,8 @@ class AVSpeechDataset(data.Dataset):
         self.input_audio_size = input_audio_size
         self.embed_dir = embed_dir
         self.input_df = pd.read_csv(input_df_path.as_posix())
+        self.stft_encoder = Encoder(STFTFB(n_filters=512, kernel_size=400,
+                                           stride=160))
 
     @staticmethod
     def encode(x: np.ndarray, p=0.3, stft_encoder=None):
@@ -155,11 +156,11 @@ class AVSpeechDataset(data.Dataset):
         x = torch.from_numpy(x).float()
 
         # time domain to time-frequency representation
-        tf_rep = stft_encoder(x).squeeze(0).unsqueeze(2)
+        tf_rep = stft_encoder(x).squeeze(0) + EPS
         # power law on complex numbers
         tf_rep = (torch.abs(tf_rep) ** p) * torch.sign(tf_rep)
         # (514, 298) -> (257, 298, 2)
-        tf_rep = torch.cat((tf_rep[:257], tf_rep[257:]), axis=2)
+        tf_rep = transforms.to_torchaudio(tf_rep)
         return tf_rep
 
     @staticmethod
@@ -171,7 +172,7 @@ class AVSpeechDataset(data.Dataset):
         tf_rep = torch.from_numpy(tf_rep).float()
 
         # (257, 298, 2) -> (514, 298)
-        tf_rep = torch.cat((tf_rep[..., 0], tf_rep[..., 1]), axis=0)
+        tf_rep = transforms.from_torchaudio(tf_rep) + EPS
         # power law on complex numbers
         tf_rep = (torch.abs(tf_rep) ** (1/p)) * torch.sign(tf_rep)
         # time domain to time-frequency representation
@@ -200,14 +201,15 @@ class AVSpeechDataset(data.Dataset):
             if re_match:
                 video_length_idx = int(re_match.group(0)[-1])
 
-            signal = Signal(video_path, audio_path, self.embed_dir, video_start_length=video_length_idx)
+            signal = Signal(video_path, audio_path, self.embed_dir,
+                            video_start_length=video_length_idx)
             all_signals.append(signal)
 
         #input audio signal is the last column.
         mixed_signal, is_spec, spec_path = Signal.load_audio(row[-1])
 
         if not is_spec:
-            mixed_signal = self.encode(mixed_signal)
+            mixed_signal = self.encode(mixed_signal, stft_encoder=self.stft_encoder)
 
         audio_tensors = []
         video_tensors = []
@@ -217,7 +219,8 @@ class AVSpeechDataset(data.Dataset):
             if all_signals[i].spec_path.is_file():
                 spectrogram =  all_signals[i].get_spec()
             else:
-                spectrogram = self.encode(all_signals[i].get_audio())
+                spectrogram = self.encode(all_signals[i].get_audio(),
+                                          stft_encoder=self.stft_encoder)
             #convert to tensor
             audio_tensors.append(spectrogram)
 

@@ -36,7 +36,7 @@ def requires_excess_storage_space(n, r):
     # r will be very small anyway
     total = n**r / math.factorial(r)
     #total bytes
-    storage_space = total * 90 # approximate storage requirement is (600K for spec and 90K for audio)
+    storage_space = total * 96 # approximate storage requirement is (600K for spec and 90K for audio)
 
     if storage_space > STORAGE_LIMIT:
         return storage_space, True
