@@ -3,4 +3,4 @@ from .whamr_dataset import WhamRDataset
 from .dns_dataset import DNSDataset
 from .librimix_dataset import LibriMix
 from .wsj0_mix import Wsj0mixDataset
-from .avspeech_dataset import AVSpeechDataset
+from .avspeech_dataset import AVSpeechDataset, get_frames

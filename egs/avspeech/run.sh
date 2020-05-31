@@ -151,6 +151,6 @@ if [[ $stage -le 4 ]]; then
 
 	mkdir -p $exp_dir
 	python3 eval.py --gpus $gpu_ids --exp_dir $exp_dir \
-			 --input-audio-size $input_audio_size | tee logs/val_${tag}.log
+        		--input-audio-size $input_audio_size | tee logs/val_${tag}.log
 fi
 

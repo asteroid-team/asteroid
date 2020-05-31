@@ -12,7 +12,7 @@ from catalyst.dl.runner import SupervisedRunner
 
 from asteroid.data import AVSpeechDataset
 
-from local import Signal, convert_to_spectrogram
+from local.loader.constants import EMBED_DIR
 from model import (make_model_and_optimizer,
                    load_best_model)
 from train import SNRCallback, SDRCallback, ParamConfig
@@ -35,8 +35,8 @@ def validate(model, dataset, val_dataset, config):
 def main(conf):
     config = ParamConfig(conf["training"]["batch_size"], conf["training"]["epochs"],
                          conf["training"]["num_workers"], True, False, conf["optim"]["lr"])
-    dataset = AVSpeechDataset(Path("data/train.csv"), Signal, convert_to_spectrogram, conf["data"]["input_audio_size"])
-    val_dataset = AVSpeechDataset(Path("data/val.csv"), Signal, convert_to_spectrogram, conf["data"]["input_audio_size"])
+    dataset = AVSpeechDataset(Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"])
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"])
 
     model, optimizer = make_model_and_optimizer(conf)
 
@@ -48,6 +48,8 @@ def main(conf):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
+    parser.add_argument('--input-audio-size', type=int,
+                        help='number of inputs to neural network', default=2)
     parser.add_argument('--exp_dir', default='exp/logdir',
                         help='Full path to save best validation model')
 
@@ -69,23 +71,3 @@ if __name__ == "__main__":
     print(arg_dic)
     main(arg_dic)
 
-    """
-    parser = ArgumentParser()
-    parser.add_argument("--bs", default=2, type=int, help="batch size of dataset")
-    parser.add_argument("--epochs", default=40, type=int, help="max epochs to train")
-    parser.add_argument("--cuda", default=True, type=bool, help="cuda for training")
-    parser.add_argument("--workers", default=0, type=int, help="total workers for dataset")
-    parser.add_argument("--input-audio-size", default=2, type=int, help="total input size")
-    parser.add_argument("--dataset-path", default=Path("../data/audio_visual/avspeech_train.csv"), type=Path, help="path for avspeech training data")
-    parser.add_argument("--video-dir", default=Path("../data/train"), type=Path, help="directory where all videos are stored")
-    parser.add_argument("--input-df-path", default=Path("train.csv"), type=Path, help="path for combinations dataset")
-    parser.add_argument("--val-input-df-path", default=Path("val.csv"), type=Path, help="path for combinations dataset")
-    parser.add_argument("--use-half", default=False, type=bool, help="halves the precision")
-    parser.add_argument("--learning-rate", default=3e-4, type=float, help="learning rate for the network")
-    parser.add_argument("--model-path", default="last_full.pth", type=str, help="trained model path")
-
-    args = parser.parse_args()
-
-    main(args)
-
-    """

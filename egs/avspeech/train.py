@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 
 from asteroid.data import AVSpeechDataset
 
-from local import Signal, convert_to_spectrogram
+from local.loader.constants import EMBED_DIR
 from train import train, ParamConfig
 from model import (make_model_and_optimizer,
                    load_best_model)
@@ -38,8 +38,8 @@ class DiscriminativeLoss(torch.nn.Module):
 def main(conf):
     config = ParamConfig(conf["training"]["batch_size"], conf["training"]["epochs"],
                          conf["training"]["num_workers"], True, False, conf["optim"]["lr"])
-    dataset = AVSpeechDataset(Path("data/train.csv"), Signal, convert_to_spectrogram, conf["main_args"]["input_audio_size"])
-    val_dataset = AVSpeechDataset(Path("data/val.csv"), Signal, convert_to_spectrogram, conf["main_args"]["input_audio_size"])
+    dataset = AVSpeechDataset(Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"])
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"])
 
     model, optimizer = make_model_and_optimizer(conf)
     print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
