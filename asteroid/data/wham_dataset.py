@@ -4,6 +4,7 @@ import json
 import os
 import numpy as np
 import soundfile as sf
+from .wsj0_mix import wsj0_license
 EPS = 1e-8
 
 DATASET = 'WHAM'
@@ -64,6 +65,8 @@ class WhamDataset(data.Dataset):
         normalize_audio (bool): If True then both sources and the mixture are
             normalized with the standard deviation of the mixture.
     """
+    dataset_name = 'WHAM!'
+
     def __init__(self, json_dir, task, sample_rate=8000, segment=4.0,
                  nondefault_nsrc=None, normalize_audio=False):
         super(WhamDataset, self).__init__()
@@ -164,3 +167,30 @@ class WhamDataset(data.Dataset):
             mixture = normalize_tensor_wav(mixture, eps=EPS, std=m_std)
             sources = normalize_tensor_wav(sources, eps=EPS, std=m_std)
         return mixture, sources
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos['dataset'] = self.dataset_name
+        infos['task'] = self.task
+        if self.task == 'sep_clean':
+            data_license = [wsj0_license]
+        else:
+            data_license = [wsj0_license, wham_noise_license]
+        infos['licenses'] = data_license
+        return infos
+
+
+wham_noise_license = dict(
+    title='The WSJ0 Hipster Ambient Mixtures dataset',
+    title_link='http://wham.whisper.ai/',
+    author='Whisper.ai',
+    author_link='https://whisper.ai/',
+    license='CC BY-NC 4.0',
+    license_link='https://creativecommons.org/licenses/by-nc/4.0/',
+    non_commercial=True,
+)

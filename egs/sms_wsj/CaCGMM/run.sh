@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit on error
 
 
 storage_dir= # Main storage directory (Need disk space)

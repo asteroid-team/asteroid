@@ -6,15 +6,16 @@ import yaml
 import json
 import argparse
 import pandas as pd
-from asteroid.metrics import get_metrics
 from tqdm import tqdm
 from pprint import pprint
 
+from asteroid.metrics import get_metrics
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
+from asteroid.models import ConvTasNet
 from asteroid.utils import tensors_to_device
+from asteroid.models import save_publishable
 
-from model import load_best_model
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--task', type=str, required=True,
@@ -33,7 +34,8 @@ compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi']
 
 
 def main(conf):
-    model = load_best_model(conf['train_conf'], conf['exp_dir'])
+    model_path = os.path.join(conf['exp_dir'], 'best_model.pth')
+    model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
@@ -98,6 +100,12 @@ def main(conf):
     pprint(final_results)
     with open(os.path.join(conf['exp_dir'], 'final_metrics.json'), 'w') as f:
         json.dump(final_results, f, indent=0)
+
+    model_dict = torch.load(model_path, map_location='cpu')
+    publishable = save_publishable(
+        os.path.join(conf['exp_dir'], 'publish_dir'), model_dict,
+        metrics=final_results, train_conf=train_conf
+    )
 
 
 if __name__ == '__main__':

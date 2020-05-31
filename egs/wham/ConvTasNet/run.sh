@@ -1,6 +1,6 @@
 #!/bin/bash
-
 set -e  # Exit on error
+
 # Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
 # files if you start from sphere files.
 storage_dir=
@@ -24,7 +24,7 @@ python_path=python
 stage=0  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=
+id=$CUDA_VISIBLE_DEVICES
 
 # Data
 task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
@@ -108,6 +108,10 @@ if [[ $stage -le 3 ]]; then
 		--n_repeats $n_repeats \
 		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
+
+	# Get ready to publish
+	mkdir -p $expdir/publish_dir
+	echo "wham/ConvTasNet" > $expdir/publish_dir/recipe_name.txt
 fi
 
 if [[ $stage -le 4 ]]; then

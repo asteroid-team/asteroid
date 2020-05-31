@@ -1,4 +1,4 @@
-from ..deprecation_utils import DeprecationMixin
+from ..utils.deprecation_utils import DeprecationMixin
 from torch.nn.modules.loss import _Loss
 
 

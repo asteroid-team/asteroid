@@ -3,6 +3,56 @@ from torch import nn
 from collections import OrderedDict
 
 
+def to_cuda(tensors):  # pragma: no cover (No CUDA on travis)
+    """ Transfer tensor, dict or list of tensors to GPU.
+
+    Args:
+        tensors (:class:`torch.Tensor`, list or dict): May be a single, a
+            list or a dictionary of tensors.
+
+    Returns:
+        :class:`torch.Tensor`:
+            Same as input but transferred to cuda. Goes through lists and dicts
+            and transfers the torch.Tensor to cuda. Leaves the rest untouched.
+    """
+    if isinstance(tensors, torch.Tensor):
+        return tensors.cuda()
+    if isinstance(tensors, list):
+        return [to_cuda(tens) for tens in tensors]
+    if isinstance(tensors, dict):
+        for key in tensors.keys():
+            tensors[key] = to_cuda(tensors[key])
+        return tensors
+    raise TypeError('tensors must be a tensor or a list or dict of tensors. '
+                    ' Got tensors of type {}'.format(type(tensors)))
+
+
+def tensors_to_device(tensors, device):
+    """ Transfer tensor, dict or list of tensors to device.
+
+    Args:
+        tensors (:class:`torch.Tensor`): May be a single, a list or a
+            dictionary of tensors.
+        device (:class: `torch.device`): the device where to place the tensors.
+
+    Returns:
+        Union [:class:`torch.Tensor`, list, tuple, dict]:
+            Same as input but transferred to device.
+            Goes through lists and dicts and transfers the torch.Tensor to
+            device. Leaves the rest untouched.
+    """
+    if isinstance(tensors, torch.Tensor):
+        return tensors.to(device)
+    elif isinstance(tensors, (list, tuple)):
+        return [tensors_to_device(tens, device) for tens in tensors]
+    elif isinstance(tensors, dict):
+        for key in tensors.keys():
+            tensors[key] = tensors_to_device(tensors[key], device)
+        return tensors
+    else:
+        return tensors
+
+
 def pad_x_to_y(x, y, axis=-1):
     """  Pad first argument to have same size as second argument
 

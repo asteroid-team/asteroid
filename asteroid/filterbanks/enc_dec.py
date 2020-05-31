@@ -34,6 +34,7 @@ class Filterbank(nn.Module):
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class. """
         config = {
+            'fb_name': self.__class__.__name__,
             'n_filters': self.n_filters,
             'kernel_size': self.kernel_size,
             'stride': self.stride
