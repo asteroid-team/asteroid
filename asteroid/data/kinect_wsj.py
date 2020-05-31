@@ -28,6 +28,8 @@ def make_dataloaders(train_dir, valid_dir, n_src=2, sample_rate=16000,
 
 
 class KinectWsjMixDataset(Wsj0mixDataset):
+    dataset_name = 'Kinect-WSJ'
+
     def __init__(self, json_dir, n_src=2, sample_rate=16000, segment=4.0):
         super().__init__(
             json_dir, n_src=n_src, sample_rate=sample_rate, segment=segment
@@ -76,3 +78,24 @@ class KinectWsjMixDataset(Wsj0mixDataset):
             source_arrays.append(s)
         sources = torch.from_numpy(np.stack(source_arrays))
         return torch.from_numpy(x), sources, torch.from_numpy(noise)
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = super().get_infos()
+        infos['licenses'].append(chime5_license)
+        return infos
+
+
+chime5_license = dict(
+    title='The CHiME-5 speech corpus',
+    title_link='http://spandh.dcs.shef.ac.uk/chime_challenge/CHiME5/index.html',
+    author='Jon Barker, Shinji Watanabe and Emmanuel Vincent',
+    author_link='http://spandh.dcs.shef.ac.uk/chime_challenge/chime2018/contact.html',
+    license='CHiME-5 data licence - non-commercial 1.00',
+    license_link='https://licensing.sheffield.ac.uk/i/data/chime5.html',
+    non_commercial=True
+)
