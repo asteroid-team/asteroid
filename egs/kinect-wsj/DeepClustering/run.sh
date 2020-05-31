@@ -60,7 +60,7 @@ valid_dir=$dumpdir/cv
 test_dir=$dumpdir/tt
 
 if [[ $stage -le  0 ]]; then
-    echo "Create wsj0-mix files and start again from stage 1" || exit 1
+    echo "Create wsj0-mix files and start again from stage 1"; exit 1
 fi
 
 if [[ $stage -le  1 ]]; then
