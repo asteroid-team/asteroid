@@ -85,6 +85,10 @@ if [[ $stage -le 1 ]]; then
 		--n_src $n_src \
 		--segment $segment | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
+
+	# Get ready to publish
+	mkdir -p $expdir/publish_dir
+	echo "librimix/ConvTasNet" > $expdir/publish_dir/recipe_name.txt
 fi
 
 if [[ $stage -le 2 ]]; then

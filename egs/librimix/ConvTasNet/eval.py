@@ -13,7 +13,8 @@ import numpy as np
 from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid import torch_utils
+from asteroid import torch_utils, ConvTasNet
+from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
 
 from model import make_model_and_optimizer
@@ -39,22 +40,8 @@ compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi']
 
 
 def main(conf):
-    # Make the model
-    model, _ = make_model_and_optimizer(conf['train_conf'])
-    # Load best model
-    with open(os.path.join(conf['exp_dir'], 'best_k_models.json'), "r") as f:
-        best_k = json.load(f)
-    best_model_path = min(best_k, key=best_k.get)
-    # Load checkpoint
-    checkpoint = torch.load(best_model_path, map_location='cpu')
-    state = checkpoint['state_dict']
-    state_copy = state.copy()
-    # Remove unwanted keys
-    for keys, values in state.items():
-        if keys.startswith('loss'):
-            del state_copy[keys]
-            print(keys)
-    model = torch_utils.load_state_dict_in(state_copy, model)
+    model_path = os.path.join(conf['exp_dir'], 'best_model.pth')
+    model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
@@ -63,7 +50,7 @@ def main(conf):
                         task=conf['task'],
                         sample_rate=conf['sample_rate'],
                         n_src=conf['train_conf']['data']['n_src'],
-                        segment=None) # Uses all segment length
+                        segment=None)  # Uses all segment length
     # Used to reorder sources only
     loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
 
@@ -124,6 +111,11 @@ def main(conf):
     with open(os.path.join(eval_save_dir, 'final_metrics.json'), 'w') as f:
         json.dump(final_results, f, indent=0)
 
+    model_dict = torch.load(model_path, map_location='cpu')
+    publishable = save_publishable(
+        os.path.join(conf['exp_dir'], 'publish_dir'), model_dict,
+        metrics=final_results, train_conf=train_conf
+    )
 
 if __name__ == '__main__':
     args = parser.parse_args()
