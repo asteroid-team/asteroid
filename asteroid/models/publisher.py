@@ -272,7 +272,7 @@ def make_metadata_from_model(model):
     infos = model['infos']
     # Description section
     description = '<p><strong>Description: </strong></p>'
-    tmp = 'This model was trained by {} using the {} recipe in {}.'
+    tmp = 'This model was trained by {} using the {} recipe in {}. '
     description += tmp.format(infos['uploader'], infos['recipe_name'],
                               ASTEROID_REF)
     tmp = '</a>It was trained on the <code>{}</code> task of the {} dataset.</p>'
