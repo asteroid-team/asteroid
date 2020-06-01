@@ -16,7 +16,6 @@ from model import make_model_and_optimizer, SimpleSystem, distance
 torch.manual_seed(17)  # Reproducibility on the dataset spliting
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Full path to save best validation model')
 parser.add_argument('--is_complex', default=True, type=str2bool_arg)
@@ -69,15 +68,12 @@ def main(conf):
                                        verbose=1)
 
     # Don't ask GPU if they are not available.
-    if not torch.cuda.is_available():
-        print('No available GPU were found, set gpus to None')
-        conf['main_args']['gpus'] = None
-
+    gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
                          checkpoint_callback=checkpoint,
                          early_stop_callback=early_stopping,
                          default_save_path=exp_dir,
-                         gpus=conf['main_args']['gpus'],
+                         gpus=gpus,
                          distributed_backend='dp',
                          train_percent_check=1.0,  # Useful for fast experiment
                          gradient_clip_val=5.,)
