@@ -217,10 +217,6 @@ If you loved using Asteroid and you want to cite us, use this :
 [slack-badge]: https://img.shields.io/badge/slack-chat-green.svg?logo=slack
 [slack-invite]: https://join.slack.com/t/asteroid-dev/shared_invite/zt-cn9y85t3-QNHXKD1Et7qoyzu1Ji5bcA
 
-[comment]: <> (Notebooks)
-[fb_nb]: https://github.com/mpariente/asteroid/blob/master/examples/Filterbank.ipynb
-[pitwrapper_nb]: https://github.com/mpariente/asteroid/blob/master/examples/PITLossWrapper.ipynb
-
 [comment]: <> (Others)
 [issue]: https://github.com/mpariente/asteroid/issues/new
 [pr]: https://github.com/mpariente/asteroid/compare
