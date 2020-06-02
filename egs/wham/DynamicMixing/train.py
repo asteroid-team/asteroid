@@ -73,7 +73,7 @@ def main(conf):
         yaml.safe_dump(conf, outfile)
 
     # Define Loss function.
-    loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
+    loss_func = PITLossWrapper(pairwise_neg_sisdr, mode='pairwise')
     system = System(model=model, loss_func=loss_func, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
                     scheduler=scheduler, config=conf)
