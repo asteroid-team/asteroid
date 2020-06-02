@@ -1,20 +1,18 @@
-import os
 import argparse
 import json
+import os
 
+import pytorch_lightning as pl
 import torch
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from asteroid.models import ConvTasNet
 from asteroid.data import LibriMix
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-
-from model import make_model_and_optimizer
+from asteroid.models import ConvTasNet
 
 # Keys which are not in the conf.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be
