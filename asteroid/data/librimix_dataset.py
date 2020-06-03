@@ -121,7 +121,7 @@ class LibriMix(Dataset):
 
     def _dataset_name(self):
         """ Differentiate between 2 and 3 sources."""
-        return f'Libri{self.task}Mix'
+        return f'Libri{self.n_src}Mix'
 
 
 librispeech_license = dict(
