@@ -64,7 +64,8 @@ def main(conf):
         sources_np = sources.squeeze().cpu().data.numpy()
         est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
         utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
-                                  sample_rate=conf['sample_rate'])
+                                  sample_rate=conf['sample_rate'],
+                                  metrics_list=compute_metrics)
         utt_metrics['mix_path'] = test_set.mix[idx][0]
         series_list.append(pd.Series(utt_metrics))
 
@@ -102,6 +103,7 @@ def main(conf):
         json.dump(final_results, f, indent=0)
 
     model_dict = torch.load(model_path, map_location='cpu')
+    os.makedirs(os.path.join(conf['exp_dir'], 'publish_dir'), exist_ok=True)
     publishable = save_publishable(
         os.path.join(conf['exp_dir'], 'publish_dir'), model_dict,
         metrics=final_results, train_conf=train_conf

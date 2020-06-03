@@ -8,16 +8,13 @@ import argparse
 import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
-import numpy as np
 
 from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid import torch_utils, ConvTasNet
+from asteroid import ConvTasNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
-
-from model import make_model_and_optimizer
 
 
 parser = argparse.ArgumentParser()
@@ -45,7 +42,7 @@ def main(conf):
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
-    model_device = next(model.parameterss()).device
+    model_device = next(model.parameters()).device
     test_set = LibriMix(csv_dir=conf['test_dir'],
                         task=conf['task'],
                         sample_rate=conf['sample_rate'],
@@ -74,7 +71,8 @@ def main(conf):
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics
         utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
-                                  sample_rate=conf['sample_rate'])
+                                  sample_rate=conf['sample_rate'],
+                                  metrics_list=compute_metrics)
         utt_metrics['mix_path'] = test_set.mixture_path
         series_list.append(pd.Series(utt_metrics))
 
@@ -112,10 +110,12 @@ def main(conf):
         json.dump(final_results, f, indent=0)
 
     model_dict = torch.load(model_path, map_location='cpu')
+    os.makedirs(os.path.join(conf['exp_dir'], 'publish_dir'), exist_ok=True)
     publishable = save_publishable(
         os.path.join(conf['exp_dir'], 'publish_dir'), model_dict,
         metrics=final_results, train_conf=train_conf
     )
+
 
 if __name__ == '__main__':
     args = parser.parse_args()
