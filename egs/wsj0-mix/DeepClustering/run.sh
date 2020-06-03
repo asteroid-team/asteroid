@@ -37,7 +37,7 @@ n_src=2  # 2 or 3
 batch_size=32
 num_workers=8
 optimizer=rmsprop
-lr=0.00001
+lr=0.0001
 weight_decay=0.0
 epochs=200
 loss_alpha=1.0  # DC loss weight : 1.0 => DC, <1.0 => Chimera
