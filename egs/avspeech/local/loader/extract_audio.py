@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 from constants import AUDIO_DIR, VIDEO_DIR
 
+
 def extract(path):
     name = path.stem
 
@@ -19,22 +20,32 @@ def extract(path):
     audio_path = os.path.join(audio_dir, name)
     video = cv2.VideoCapture(path.as_posix())
     length_orig_video = video.get(cv2.CAP_PROP_FRAME_COUNT)
-    #already pre-processed at 25 fps for 3 or more seconds
+    # already pre-processed at 25 fps for 3 or more seconds
     length = int(length_orig_video) // 25 // 3
     for i in range(length):
-        t = i*3
-        command = (f"ffmpeg -y -i {path.as_posix()} -f {args.audio_extension} -ab 64000 "
-                   f"-vn -ar {args.sampling_rate} -ac {args.audio_channel} - | sox -t "
-                   f"{args.audio_extension} - -r 16000 -c 1 -b 8 "
-                   f"{audio_path}_part{i}.{args.audio_extension} trim {t} 00:{args.duration:02d}")
+        t = i * 3
+        command = (
+            f"ffmpeg -y -i {path.as_posix()} -f {args.audio_extension} -ab 64000 "
+            f"-vn -ar {args.sampling_rate} -ac {args.audio_channel} - | sox -t "
+            f"{args.audio_extension} - -r 16000 -c 1 -b 8 "
+            f"{audio_path}_part{i}.{args.audio_extension} trim {t} 00:{args.duration:02d}"
+        )
 
-        subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).communicate()
+        subprocess.Popen(
+            command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ).communicate()
+
 
 def main(args):
-    file_names = [Path(os.path.join(args.vid_dir, i)) for i in os.listdir(args.vid_dir) if i.endswith("_final.mp4")]
+    file_names = [
+        Path(os.path.join(args.vid_dir, i))
+        for i in os.listdir(args.vid_dir)
+        if i.endswith("_final.mp4")
+    ]
 
     with concurrent.futures.ThreadPoolExecutor(args.jobs) as executor:
         results = list(tqdm(executor.map(extract, file_names), total=len(file_names)))
+
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Extract parameters")

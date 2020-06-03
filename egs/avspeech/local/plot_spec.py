@@ -1,3 +1,4 @@
+#TODO: make it compatible with current changes
 import sys
 
 import librosa
@@ -8,7 +9,7 @@ import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-from src import generate_audio
+from predict import generate_audio
 from src.models import Audio_Visual_Fusion as AVFusion
 from src.loader import convert_to_spectrogram
 

@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 
 from constants import MIXED_AUDIO_DIR
 
+
 def remove_corrupt_audio(audio_dir, df, path, expected_audio_size=96_000):
     files = audio_dir.rglob("*wav")
 
@@ -25,6 +26,7 @@ def remove_corrupt_audio(audio_dir, df, path, expected_audio_size=96_000):
     filtered_df = df[~df["mixed_audio"].isin(corrupt_audio)]
 
     filtered_df.to_csv(path, index=False)
+
 
 if __name__ == "__main__":
 

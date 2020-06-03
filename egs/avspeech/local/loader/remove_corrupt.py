@@ -29,4 +29,3 @@ print(df_val.shape)
 df_train.to_csv("../../data/train.csv", index=False)
 
 df_val.to_csv("../../data/val.csv", index=False)
-
