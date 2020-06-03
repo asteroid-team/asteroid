@@ -110,7 +110,7 @@ def main(conf):
         json.dump(final_results, f, indent=0)
 
     model_dict = torch.load(model_path, map_location='cpu')
-    os.makedirs(os.path.join(conf['exp_dir'], 'publish_dir'),exist_ok=True)
+    os.makedirs(os.path.join(conf['exp_dir'], 'publish_dir'), exist_ok=True)
     publishable = save_publishable(
         os.path.join(conf['exp_dir'], 'publish_dir'), model_dict,
         metrics=final_results, train_conf=train_conf
