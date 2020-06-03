@@ -42,9 +42,10 @@ def upload():
         affiliation: Universite Lorraine, CNRS, Inria, LORIA, France
         git_username: mpariente
         token: XXX
-        force_upload: n
         ```
         """
         print('You can create a `uploader_infos.yml` file in `Asteroid` root'
               f'to stop passing your name, affiliation etc. to the CLI. '
               f'Here is an example {example}')
+        print("Thanks a lot for sharing your model! Don't forget to create"
+              "a model card in the repo! ")
