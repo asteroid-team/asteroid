@@ -1,21 +1,21 @@
-import argparse
-import json
 import os
 import random
-from pprint import pprint
-
-import pandas as pd
 import soundfile as sf
 import torch
 import yaml
+import json
+import argparse
+import pandas as pd
 from tqdm import tqdm
+from pprint import pprint
 
-from asteroid import ConvTasNet
+from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid.metrics import get_metrics
+from asteroid import ConvTasNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test_dir', type=str, required=True,
