@@ -11,6 +11,7 @@ MODELS_URLS_HASHTABLE = {
     'mpariente/ConvTasNet_WHAM!_sepclean': 'https://zenodo.org/record/3862942/files/model.pth?download=1',
     'mpariente/DPRNNTasNet_WHAM!_sepclean': 'https://zenodo.org/record/3873670/files/model.pth?download=1',
     'Cosentino/ConvTasNet_LibriMix_sep_clean': 'https://zenodo.org/record/3873572/files/model.pth?download=1',
+    'Cosentino/ConvTasNet_LibriMix_sep_noisy': 'https://zenodo.org/record/3874420/files/model.pth?download=1',
 }
 
 
