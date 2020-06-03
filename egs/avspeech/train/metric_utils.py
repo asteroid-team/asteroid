@@ -4,7 +4,7 @@ import torch
 import mir_eval
 import numpy as np
 
-from local import convert_to_wave
+from asteroid.data.avspeech_dataset import AVSpeechDataset
 
 def snr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTensor:
     """
@@ -39,8 +39,8 @@ def sdr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTens
     y_wav = np.zeros((n_sources, 48_000))
 
     for i in range(n_sources):
-        y_pred_wav[i] = convert_to_wave(pred_signal[..., i])[:48000]
-        y_wav[i] = convert_to_wave(true_signal[..., i])[:48000]
+        y_pred_wav[i] = AVSpeechDataset.decode(pred_signal[..., i]).numpy()
+        y_wav[i] = AVSpeechDataset.decode(true_signal[..., i]).numpy()
     sdr, sir, sar, _ = mir_eval.separation.bss_eval_sources(y_wav, y_pred_wav)
 
     return sdr

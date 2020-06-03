@@ -1,5 +1,4 @@
 import sys
-from local import convert_to_wave
 
 import torch
 import numpy as np
@@ -8,42 +7,6 @@ from pathlib import Path
 from train import snr, sdr
 from catalyst.dl.core import Callback, MetricCallback, CallbackOrder
 
-
-class SaveAudioCallback(Callback):
-
-    def __init__(self, directory: Path=Path("/kaggle/working"), output_key="logits"):
-        self.directory = directory
-        self.predictions = []
-        self.output_key = output_key
-
-        super().__init__(CallbackOrder.External)
-
-    def batch_spec_to_wave(self, batch_spectrogram, num_person, batch_size):
-        wave = np.zeros((batch_size, 48000, num_person))
-        for n in range(num_person):
-            for b in range(batch_size):
-                wave[b, :, n] = convert_to_wave(batch_spectrogram[b, ..., n].transpose(2, 1, 0))[:48000]
-        return wave
-
-    def on_batch_end(self, state):
-        with torch.no_grad():
-            self.predictions.append(state.output[self.output_key].cpu().detach().numpy())
-
-    def on_epoch_start(self, state):
-        self.predictions = []
-
-    def on_epoch_end(self, state):
-
-        num_person = state.model.num_person
-        batch_size = self.predictions[0].shape[0]
-
-        waves = np.zeros((len(self.predictions), batch_size, 48000, num_person)) # 3 second audio at 16khz
-
-        for i, prediction in enumerate(self.predictions):
-            batch_size = prediction.shape[0]
-            waves[i, :batch_size, ...] = self.batch_spec_to_wave(prediction, num_person, batch_size)
-
-        np.save(self.directory / f"{state.epoch_log}.npy", waves)
 
 class SNRCallback(MetricCallback):
     """
