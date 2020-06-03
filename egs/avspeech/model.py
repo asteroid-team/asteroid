@@ -271,7 +271,9 @@ class Audio_Model(nn.Module):
         batch_size = output_layer.size(0)  # N
         height = output_layer.size(2)  # 298
 
-        output_layer = output_layer.view(batch_size, -1, height, 1)
+        output_layer = output_layer.transpose(-1, -2).reshape(
+            (batch_size, -1, height, 1)
+        )
         return output_layer
 
 
