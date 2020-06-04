@@ -60,7 +60,7 @@ def main(conf):
                                             return_est=True)
         mix_np = mix[None].cpu().data.numpy()
         sources_np = sources.cpu().data.numpy()
-        est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
+        est_sources_np = reordered_sources.squeeze(0).cpu().data.numpy()
         utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
                                   sample_rate=conf['sample_rate'])
         utt_metrics['mix_path'] = test_set.mix[idx][0]
