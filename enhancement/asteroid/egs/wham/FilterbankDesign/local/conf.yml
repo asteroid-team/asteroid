@@ -1,0 +1,36 @@
+# Filterbank config
+filterbank:
+  fb_name: analytic_free
+  n_filters: 512
+  kernel_size: 16
+  stride: 8
+  inp_mode: reim
+  mask_mode: reim
+# Network config
+masknet:
+  n_blocks: 3
+  n_repeats: 2
+  mask_act: relu
+  bn_chan: 128
+  skip_chan: 128
+  hid_chan: 512
+# Training config
+training:
+  epochs: 100
+  batch_size: 16
+  num_workers: 4
+  half_lr: yes
+  early_stop: yes
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.
+# Data config
+data:
+  train_dir: data/2speakers_wham/wav8k/min/tr/
+  valid_dir: data/2speakers_wham/wav8k/min/cv/
+  task: sep_clean
+  nondefault_nsrc:
+  sample_rate: 8000
+  mode: min
