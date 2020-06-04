@@ -40,8 +40,13 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
 
     Args:
         root (str): Root path of dataset
-        sources (:obj:`list` of :obj:`str`, optional): List of source names.
+        sources (:obj:`list` of :obj:`str`, optional): List of source names
+            that composes the mixture.
             Defaults to MUSDB18 4 stem scenario: `vocals`, `drums`, `bass`, `other`.
+        targets (list or None, optional): List of source names to be used as
+            targets. If None, a dict with the 4 stems is returned.
+             If e.g [`vocals`, `drums`], a tensor with stacked `vocals` and
+             `drums` is returned instead of a dict. Defaults to None.
         suffix (str, optional): Filename suffix, defaults to `.wav`.
         split (str, optional): Dataset subfolder, defaults to `train`.
         subset (:obj:`list` of :obj:`str`, optional): Selects a specific of
@@ -70,7 +75,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         segment (float, optional): Duration of segments in seconds,
             defaults to ``None`` which loads the full-length audio tracks.
         samples_per_track (int, optional):
-            Number of samples yielded from each track, can be used to increase 
+            Number of samples yielded from each track, can be used to increase
             dataset size, defaults to `1`.
         random_segments (boolean, optional): Enables random offset for track segments.
         random_track_mix boolean: enables mixing of random sources from
@@ -87,6 +92,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
     def __init__(self,
                  root,
                  sources=['vocals', 'bass', 'drums', 'other'],
+                 targets=None,
                  suffix='.wav',
                  split='train',
                  subset=None,
@@ -105,6 +111,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         self.random_segments = random_segments
         self.source_augmentations = source_augmentations
         self.sources = sources
+        self.targets = targets
         self.suffix = suffix
         self.subset = subset
         self.samples_per_track = samples_per_track
@@ -165,6 +172,10 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
 
         # apply linear mix over source index=0
         audio_mix = torch.stack(list(audio_sources.values())).sum(0)
+        if self.targets:
+            audio_sources = torch.stack([
+                wav for src, wav in audio_sources.items() if src in self.targets
+            ], dim=0)
         return audio_mix, audio_sources
 
     def __len__(self):
