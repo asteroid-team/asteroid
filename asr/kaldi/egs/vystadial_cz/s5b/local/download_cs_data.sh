@@ -1,1 +1,0 @@
-../../s5/local/download_cs_data.sh

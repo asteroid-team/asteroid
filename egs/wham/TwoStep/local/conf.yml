@@ -1,0 +1,39 @@
+# Filterbank config
+filterbank:
+  n_filters: 128
+  kernel_size: 21
+  stride: 10
+# Network config
+masknet:
+  n_blocks: 8
+  n_repeats: 4
+  conv_kernel_size: 3
+  bn_chan: 256
+  hid_chan: 512
+# Training config for the filterbank
+filterbank_training:
+  reuse_pretrained_filterbank: yes
+  f_epochs: 50
+  f_batch_size: 4
+  f_num_workers: 4
+  f_half_lr: yes
+  f_early_stop: yes
+  f_optimizer: adam
+  f_lr: 0.0005
+# Training config for the separation module
+separator_training:
+  s_epochs: 200
+  s_batch_size: 4
+  s_num_workers: 4
+  s_half_lr: yes
+  s_early_stop: yes
+  s_optimizer: adam
+  s_lr: 0.001
+# Data config
+data:
+  train_dir: data/wav8k/min/tr/
+  valid_dir: data/wav8k/min/cv/
+  task: sep_clean
+  nondefault_nsrc:
+  sample_rate: 8000
+  mode: min

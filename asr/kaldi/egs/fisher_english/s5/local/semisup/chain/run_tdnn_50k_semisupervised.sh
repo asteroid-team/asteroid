@@ -1,1 +1,0 @@
-tuning/run_tdnn_50k_semisupervised_1a.sh

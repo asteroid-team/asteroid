@@ -1,1 +1,0 @@
-../../../../scripts/wakeword/compute_metrics.py

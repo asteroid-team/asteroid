@@ -1,1 +1,0 @@
-../../../../scripts/wakeword/copy_lat_dir.sh

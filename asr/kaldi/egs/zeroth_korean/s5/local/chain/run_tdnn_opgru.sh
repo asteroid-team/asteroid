@@ -1,1 +1,0 @@
-tuning/run_tdnn_opgru_1a.sh

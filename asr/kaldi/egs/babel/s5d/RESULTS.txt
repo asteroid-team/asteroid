@@ -1,2 +1,0 @@
-Some of the results are in the results/ directory
-

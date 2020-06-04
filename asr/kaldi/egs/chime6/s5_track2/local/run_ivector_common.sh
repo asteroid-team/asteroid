@@ -1,1 +1,0 @@
-../../s5_track1/local/nnet3/run_ivector_common.sh

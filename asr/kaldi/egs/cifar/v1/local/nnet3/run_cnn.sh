@@ -1,1 +1,0 @@
-tuning/run_cnn_aug_1d.sh

@@ -1,1 +1,0 @@
-../../../babel/s5d/local/score_stm.sh

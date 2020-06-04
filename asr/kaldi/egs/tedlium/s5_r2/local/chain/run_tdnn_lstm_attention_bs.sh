@@ -1,1 +1,0 @@
-tuning/run_tdnn_lstm_attention_bs_1b.sh

@@ -1,1 +1,0 @@
-../../../../scripts/wakeword/get_random_subsegments.py

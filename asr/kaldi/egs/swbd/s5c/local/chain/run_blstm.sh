@@ -1,1 +1,0 @@
-tuning/run_blstm_6k.sh

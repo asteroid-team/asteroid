@@ -1,0 +1,15 @@
+mm_config:
+# stft config
+  stft_size: 512
+  stft_shift: 128
+  stft_window_length: null
+  stft_window: 'hann'
+# Mask config
+  out: 'mm_mvdr_souden'
+  Observation: 'Observation'
+  mask_estimator: 'cacgmm'
+  weight_constant_axis: -3  # pi_tk
+# Beamformer config
+  beamformer: 'mvdr_souden'
+  postfilter: null
+

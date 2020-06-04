@@ -1,0 +1,30 @@
+# Filterbank config
+filterbank:
+  n_filters: 512
+  kernel_size: 40
+  stride: 20
+# Network config
+masknet:
+  n_layers: 4
+  n_units: 500
+  dropout: 0.3
+# Training config
+training:
+  epochs: 200
+  half_lr: yes
+  early_stop: yes
+  batch_size: 16
+  num_workers: 16
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.
+# Data config
+data:
+  train_dir: data/wav8k/min/tr/
+  valid_dir: data/wav8k/min/cv/
+  task: sep_reverb_noisy
+  nondefault_nsrc:
+  sample_rate: 8000
+  mode: min

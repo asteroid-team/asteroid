@@ -1,1 +1,0 @@
-tuning/run_cnn_chainali_1a.sh

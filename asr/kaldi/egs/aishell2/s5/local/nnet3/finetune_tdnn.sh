@@ -1,1 +1,0 @@
-tuning/finetune_tdnn_1a.sh

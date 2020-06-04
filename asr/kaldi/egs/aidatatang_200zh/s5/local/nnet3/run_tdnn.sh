@@ -1,1 +1,0 @@
-tuning/run_tdnn.sh

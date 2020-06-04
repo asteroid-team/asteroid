@@ -1,1 +1,0 @@
-../../../../wsj/s5/steps/conf/get_ctm_conf.sh

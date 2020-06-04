@@ -1,1 +1,0 @@
-../../../aishell/s5/local/aishell_data_prep.sh

@@ -1,1 +1,0 @@
-multi_condition/run_tdnn_aug_1a.sh

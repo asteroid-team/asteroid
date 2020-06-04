@@ -1,1 +1,0 @@
-../../s5_track1/local/extract_vad_weights.sh

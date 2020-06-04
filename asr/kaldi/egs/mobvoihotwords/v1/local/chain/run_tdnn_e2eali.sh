@@ -1,1 +1,0 @@
-tuning/run_tdnn_e2eali_1a.sh
