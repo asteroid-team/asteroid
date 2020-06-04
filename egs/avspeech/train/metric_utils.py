@@ -1,10 +1,9 @@
 import sys
-
 import torch
 import mir_eval
 import numpy as np
-
 from asteroid.data.avspeech_dataset import AVSpeechDataset
+
 
 def snr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTensor:
     """

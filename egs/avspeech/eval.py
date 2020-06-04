@@ -1,15 +1,12 @@
 import sys
 import yaml
-
 import collections
 from pathlib import Path
 from argparse import ArgumentParser
-
 import torch
 import numpy as np
 from catalyst.dl import utils
 from catalyst.dl.runner import SupervisedRunner
-
 from asteroid.data.avspeech_dataset import AVSpeechDataset
 
 from local.loader.constants import EMBED_DIR

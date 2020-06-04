@@ -1,17 +1,14 @@
 from typing import Union
-
 import torch
-
 import collections
 from pathlib import Path
-
-from train import ParamConfig
-from train import SNRCallback
-
 from catalyst.dl import utils
 from catalyst.dl.runner import SupervisedRunner
 from catalyst.dl.callbacks import EarlyStoppingCallback
 from catalyst.dl.callbacks.scheduler import SchedulerCallback
+
+from train import ParamConfig
+from train import SNRCallback
 
 
 def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset,

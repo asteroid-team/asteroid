@@ -8,9 +8,7 @@ import torch
 from torch.utils import data
 from torch.nn import functional as F
 import pandas as pd
-
 from typing import Callable, Tuple, List, Union
-
 from asteroid.filterbanks import Encoder, Decoder, STFTFB, transforms
 
 EPS = 1e-8
@@ -113,11 +111,6 @@ class Signal:
     def get_audio(self):
         return self.audio
 
-    @staticmethod
-    def load_audio(audio_path: Union[str, Path], sr=16_000):
-        audio, _ = librosa.load(audio_path, sr=sr)
-        return audio
-
 
 class AVSpeechDataset(data.Dataset):
     """Audio Visual Speech Separation dataset as described in [1].
@@ -125,7 +118,7 @@ class AVSpeechDataset(data.Dataset):
         Args:
             input_df_path (str,Path): path for combination dataset.
             embed_dir (str,Path): path where embeddings are stored.
-            input_audio_size (int): total audio/video inputs.
+            input_audio_size (int): number of sources.
 
         References:
             [1]: 'Looking to Listen at the Cocktail Party:
@@ -206,7 +199,7 @@ class AVSpeechDataset(data.Dataset):
             all_signals.append(signal)
 
         # input audio signal is the last column.
-        mixed_signal = Signal.load_audio(row.loc["mixed_audio"])
+        mixed_signal, _ = librosa.load(row.loc["mixed_audio"], sr=16_000)
         mixed_signal = self.encode(mixed_signal, stft_encoder=self.stft_encoder)
 
         audio_tensors = []
@@ -227,8 +220,7 @@ class AVSpeechDataset(data.Dataset):
             mixed_signal, 0, 2
         )  # shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257
         audio_tensors = [i.transpose(0, 2) for i in audio_tensors]
-        audio_tensors = torch.stack(audio_tensors)
-        audio_tensors = audio_tensors.permute(1, 2, 3, 0)
+        audio_tensors = torch.stack(audio_tensors, dim=-1)
 
         return audio_tensors, video_tensors, mixed_signal_tensor
 

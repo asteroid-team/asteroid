@@ -1,7 +1,3 @@
-"""
-    This files samples (n=2) audio files and creates another audio file with mixed audio.
-    It stores the mixed audio in data/train/mixed directory.
-"""
 import os
 import re
 import math
@@ -12,7 +8,6 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
-
 from argparse import ArgumentParser
 
 from constants import (

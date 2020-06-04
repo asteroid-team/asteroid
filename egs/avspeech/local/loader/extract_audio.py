@@ -6,7 +6,6 @@ import subprocess
 import pandas as pd
 from pathlib import Path
 import concurrent.futures
-
 from tqdm import tqdm
 
 from constants import AUDIO_DIR, VIDEO_DIR

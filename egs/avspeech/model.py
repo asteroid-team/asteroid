@@ -3,19 +3,22 @@ import numpy as np
 from torch import nn
 import torchvision
 import torch.nn.functional as F
-
 from pathlib import Path
-
 from asteroid import torch_utils
 from asteroid.engine.optimizers import make_optimizer
 
 
 # Reference: https://github.com/bill9800/speech_separation/blob/master/model/lib/utils.py
 def generate_cRM(Y, S):
-    """
-    :param Y: mixed/noisy stft  (N,H,W,C)
-    :param S: clean stft (N,H,W,C)
-    :return: structed cRM
+    """Generate CRM.
+
+    Args:
+        Y (torch.Tensor): mixed/noisy stft.
+        S (torch.Tensor): clean stft.
+
+    Returns:
+        M (torch.Tensor): structed cRM.
+
     """
     M = torch.zeros(Y.shape)
     epsilon = 1e-8
@@ -33,12 +36,16 @@ def generate_cRM(Y, S):
 
 
 def cRM_tanh_compress(M, K=10, C=0.1):
-    """
-    Recall that the irm takes on vlaues in the range[0,1],compress the cRM with hyperbolic tangent
-    :param M: crm (298,257,2)
-    :param K: parameter to control the compression
-    :param C: parameter to control the compression
-    :return crm: compressed crm
+    """CRM tanh compress.
+
+    Args:
+        M (torch.Tensor): crm.
+        K (torch.Tensor): parameter to control the compression.
+        C (torch.Tensor): parameter to control the compression.
+
+    Returns:
+        crm (torch.Tensor): compressed crm.
+
     """
 
     numerator = 1 - torch.exp(-C * M)
@@ -53,11 +60,16 @@ def cRM_tanh_compress(M, K=10, C=0.1):
 
 
 def cRM_tanh_recover(O, K=10, C=0.1):
-    """
-    :param O: predicted compressed crm
-    :param K: parameter to control the compression
-    :param C: parameter to control the compression
-    :return M : uncompressed crm
+    """CRM tanh recover.
+
+    Args:
+        O (torch.Tensor): predicted compressed crm.
+        K (torch.Tensor): parameter to control the compression.
+        C (torch.Tensor): parameter to control the compression.
+
+    Returns:
+        M (torch.Tensor): uncompressed crm.
+
     """
 
     numerator = K - O
@@ -68,12 +80,17 @@ def cRM_tanh_recover(O, K=10, C=0.1):
 
 
 def fast_cRM(Fclean, Fmix, K=10, C=0.1):
-    """
-    :param Fmix: mixed/noisy stft
-    :param Fclean: clean stft
-    :param K: parameter to control the compression
-    :param C: parameter to control the compression
-    :return crm: compressed crm
+    """Fast CRM.
+
+    Args:
+        Fmix (torch.Tensor): mixed/noisy stft.
+        Fclean (torch.Tensor): clean stft.
+        K (torch.Tensor): parameter to control the compression.
+        C (torch.Tensor): parameter to control the compression.
+
+    Returns:
+        crm (torch.Tensor): compressed crm.
+
     """
     M = generate_cRM(Fmix, Fclean)
     crm = cRM_tanh_compress(M, K, C)
@@ -81,12 +98,17 @@ def fast_cRM(Fclean, Fmix, K=10, C=0.1):
 
 
 def fast_icRM(Y, crm, K=10, C=0.1):
-    """
-    :param Y: mixed/noised stft
-    :param crm: DNN output of compressed crm
-    :param K: parameter to control the compression
-    :param C: parameter to control the compression
-    :return S: clean stft
+    """fast iCRM.
+
+    Args:
+        Y (torch.Tensor): mixed/noised stft.
+        crm (torch.Tensor): DNN output of compressed crm.
+        K (torch.Tensor): parameter to control the compression.
+        C (torch.Tensor): parameter to control the compression.
+
+    Returns:
+        S (torch.Tensor): clean stft.
+
     """
     M = cRM_tanh_recover(crm, K, C)
     S = torch.zeros(M.shape)
@@ -531,3 +553,4 @@ def load_best_model(train_conf, exp_dir):
     checkpoint = torch.load(best_model_path)
     model = torch_utils.load_state_dict_in(checkpoint["model_state_dict"], model)
     return model
+

@@ -1,11 +1,9 @@
 import sys
 import yaml
-
 import torch
 import numpy as np
 from pathlib import Path
 from argparse import ArgumentParser
-
 from asteroid.data.avspeech_dataset import AVSpeechDataset
 
 from local.loader.constants import EMBED_DIR

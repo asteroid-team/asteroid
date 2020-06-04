@@ -2,10 +2,8 @@ import cv2
 import torch
 import numpy as np
 import pandas as pd
-
 from tqdm import tqdm
 from pathlib import Path
-
 from asteroid.data.avspeech_dataset import get_frames
 from facenet_pytorch import MTCNN, InceptionResnetV1, extract_face
 
