@@ -1,0 +1,27 @@
+# Filterbank config
+filterbank:
+  n_filters: 512
+  kernel_size: 512
+  stride: 256
+# Network config
+masknet:
+  hidden_size: 500
+  rnn_type: gru
+  n_layers: 3
+  dropout: 0.3
+# Training config
+training:
+  epochs: 200
+  batch_size: 64
+  num_workers: 32
+  half_lr: y
+  early_stop: y
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.
+# Data config
+data:
+  json_dir: data/
+  val_prop: 0.2
