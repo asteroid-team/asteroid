@@ -44,8 +44,8 @@ class SNRCallback(MetricCallback):
 
         avg_snr = 0
         for n in range(num_person):
-            output_audio = output_audios[..., n]
-            true_audio = true_audios[..., n]
+            output_audio = output_audios[:, n, ...]
+            true_audio = true_audios[:, n, ...]
 
             snr_value = snr(output_audio, true_audio).item()
             avg_snr += snr_value
@@ -92,8 +92,8 @@ class SDRCallback(MetricCallback):
             output_audio = output_audios[n, ...]
             true_audio = true_audios[n, ...]
 
-            output_audio = output_audio.detach().cpu().numpy().transpose(2, 1, 0, 3)
-            true_audio = true_audio.detach().cpu().numpy().transpose(2, 1, 0, 3)
+            output_audio = output_audio.detach().cpu().numpy()
+            true_audio = true_audio.detach().cpu().numpy()
 
             sdr_value = sdr(output_audio, true_audio)
             sdr_value = np.mean(sdr_value)

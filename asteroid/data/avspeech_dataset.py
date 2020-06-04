@@ -149,8 +149,6 @@ class AVSpeechDataset(data.Dataset):
         tf_rep = stft_encoder(x).squeeze(0) + EPS
         # power law on complex numbers
         tf_rep = (torch.abs(tf_rep) ** p) * torch.sign(tf_rep)
-        # (514, 298) -> (257, 298, 2)
-        tf_rep = transforms.to_torchaudio(tf_rep)
         return tf_rep
 
     @staticmethod
@@ -160,8 +158,6 @@ class AVSpeechDataset(data.Dataset):
 
         tf_rep = torch.from_numpy(tf_rep).float()
 
-        # (257, 298, 2) -> (514, 298)
-        tf_rep = transforms.from_torchaudio(tf_rep) + EPS
         # power law on complex numbers
         tf_rep = (torch.abs(tf_rep) ** (1 / p)) * torch.sign(tf_rep)
         # time domain to time-frequency representation
@@ -200,7 +196,7 @@ class AVSpeechDataset(data.Dataset):
 
         # input audio signal is the last column.
         mixed_signal, _ = librosa.load(row.loc["mixed_audio"], sr=16_000)
-        mixed_signal = self.encode(mixed_signal, stft_encoder=self.stft_encoder)
+        mixed_signal_tensor = self.encode(mixed_signal, stft_encoder=self.stft_encoder)
 
         audio_tensors = []
         video_tensors = []
@@ -216,11 +212,7 @@ class AVSpeechDataset(data.Dataset):
             embeddings = torch.from_numpy(all_signals[i].get_embed())
             video_tensors.append(embeddings)
 
-        mixed_signal_tensor = torch.transpose(
-            mixed_signal, 0, 2
-        )  # shape (2,298,257)  , therefore , 2 channels , height = 298 , width = 257
-        audio_tensors = [i.transpose(0, 2) for i in audio_tensors]
-        audio_tensors = torch.stack(audio_tensors, dim=-1)
+        audio_tensors = torch.stack(audio_tensors)
 
         return audio_tensors, video_tensors, mixed_signal_tensor
 

@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from pathlib import Path
 from asteroid import torch_utils
 from asteroid.engine.optimizers import make_optimizer
+from asteroid.filterbanks import transforms
 
 
 # Reference: https://github.com/bill9800/speech_separation/blob/master/model/lib/utils.py
@@ -463,9 +464,10 @@ class Audio_Visual_Fusion(nn.Module):
         self.batch_norm3 = nn.BatchNorm1d(298)
 
     def forward(self, input_audio, input_video):
-        # input_audio will be (N,2,298,257)
+        # input_audio will be (N,514,298)
         # input_video will be list of size = num_person , so each item of list will be of (N,512,75,1)
 
+        input_audio = transforms.to_torchaudio(input_audio).transpose(1, 3)
         audio_out = self.audio_output(input_audio)
         # audio_out will be (N,256,298,1)
         AVFusion = [audio_out]
@@ -498,10 +500,13 @@ class Audio_Visual_Fusion(nn.Module):
         batch_size = complex_mask.size(0)  # N
         complex_mask = complex_mask.view(batch_size, 2, 298, 257, self.num_person)
 
-        output_audio = torch.zeros(complex_mask.shape).to(self.device)
+        output_audio = torch.zeros_like(complex_mask, device=self.device)
         for i in range(self.num_person):
             output_audio[..., i] = fast_icRM(input_audio, complex_mask[..., i])
 
+        output_audio = output_audio.permute(0, 4, 1, 3, 2).reshape(
+            batch_size, self.num_person, 514, 298
+        )
         return output_audio
 
 
@@ -553,4 +558,3 @@ def load_best_model(train_conf, exp_dir):
     checkpoint = torch.load(best_model_path)
     model = torch_utils.load_state_dict_in(checkpoint["model_state_dict"], model)
     return model
-
