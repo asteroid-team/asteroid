@@ -107,7 +107,7 @@ More information in [egs/README.md](./egs).
 
 ## Pretrained models
 ([↑up to contents](#contents))  
-Asteroid provides pretrained models through the [Asteroid community]() in Zenodo. 
+Asteroid provides pretrained models through the [Asteroid community](https://zenodo.org/communities/asteroid-models) in Zenodo. 
 Loading a pretrained model is super simple !
 ```python
 from asteroid.models import ConvTasNet
