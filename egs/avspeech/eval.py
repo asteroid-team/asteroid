@@ -50,7 +50,7 @@ def main(conf):
     )
 
     val_dataset = AVSpeechDataset(
-        Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"]
+        Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"]
     )
 
     model = load_best_model(conf, conf["main_args"]["exp_dir"])
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--gpus", type=str, help="list of GPUs", default="-1")
     parser.add_argument(
-        "--input-audio-size",
+        "--n-src",
         type=int,
         help="number of inputs to neural network",
         default=2,

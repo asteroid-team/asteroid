@@ -102,8 +102,10 @@ class Signal:
         if self.embed_path.is_file():
             self.embed = np.load(self.embed_path.as_posix())
         else:
-            raise ValueError(f"Embeddings not found in {self.embed_dir} for {self.video_path} "
-                             f"for part: {self.video_start_length}")
+            raise ValueError(
+                f"Embeddings not found in {self.embed_dir} for {self.video_path} "
+                f"for part: {self.video_start_length}"
+            )
 
     def get_embed(self):
         return self.embed
@@ -118,22 +120,25 @@ class AVSpeechDataset(data.Dataset):
         Args:
             input_df_path (str,Path): path for combination dataset.
             embed_dir (str,Path): path where embeddings are stored.
-            input_audio_size (int): number of sources.
+            n_src (int): number of sources.
 
         References:
             [1]: 'Looking to Listen at the Cocktail Party:
             A Speaker-Independent Audio-Visual Model for Speech Separation' Ephrat et. al
             https://arxiv.org/abs/1804.03619
     """
+
     dataset_name = "AVSpeech"
 
-    def __init__(self, input_df_path: Union[str, Path], embed_dir: Union[str, Path], input_audio_size=2):
+    def __init__(
+        self, input_df_path: Union[str, Path], embed_dir: Union[str, Path], n_src=2
+    ):
         if isinstance(input_df_path, str):
             input_df_path = Path(input_df_path)
         if isinstance(embed_dir, str):
             embed_dir = Path(embed_dir)
 
-        self.input_audio_size = input_audio_size
+        self.n_src = n_src
         self.embed_dir = embed_dir
         self.input_df = pd.read_csv(input_df_path.as_posix())
         self.stft_encoder = Encoder(STFTFB(n_filters=512, kernel_size=400, stride=160))
@@ -175,7 +180,7 @@ class AVSpeechDataset(data.Dataset):
         row = self.input_df.iloc[idx, :]
         all_signals = []
 
-        for i in range(self.input_audio_size):
+        for i in range(self.n_src):
             # get audio, video path from combination dataframe
             video_path = row.loc[f"video_{i+1}"]
             audio_path = row.loc[f"audio_{i+1}"]
@@ -201,7 +206,7 @@ class AVSpeechDataset(data.Dataset):
         audio_tensors = []
         video_tensors = []
 
-        for i in range(self.input_audio_size):
+        for i in range(self.n_src):
             # audio to spectrogram
             spectrogram = self.encode(
                 all_signals[i].get_audio(), stft_encoder=self.stft_encoder
@@ -215,4 +220,3 @@ class AVSpeechDataset(data.Dataset):
         audio_tensors = torch.stack(audio_tensors)
 
         return audio_tensors, video_tensors, mixed_signal_tensor
-

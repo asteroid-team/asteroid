@@ -520,7 +520,7 @@ def make_model_and_optimizer(conf, gpu_ids=[0]):
         model, optimizer
     """
     device = torch.device(conf["training"]["device"])
-    model = Audio_Visual_Fusion(conf["main_args"]["input_audio_size"], device)
+    model = Audio_Visual_Fusion(conf["main_args"]["n_src"], device)
     model = model.to(device)
     device_count = torch.cuda.device_count()
     if len(gpu_ids) > 1 and device_count > 1:

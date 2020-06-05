@@ -54,7 +54,7 @@ def nCr(n, r):
 
 def audio_mixer(
     dataset_size: int,
-    input_audio_size=2,
+    n_src=2,
     video_ext=".mp4",
     audio_ext=".wav",
     file_name="temp.csv",
@@ -67,7 +67,7 @@ def audio_mixer(
 
         Args:
             dataset_size: restrict total possible combinations
-            input_audio_size: input size
+            n_src: input size
             video_ext: extension of video
             audio_ext: extension of audio
             file_name: file name of combination dataframe to save
@@ -89,13 +89,11 @@ def audio_mixer(
 
     def mix(audio_filtered_files, file_name_df, offset):
         # Generate all combinations and trim total possibilities
-        audio_combinations = itertools.combinations(
-            audio_filtered_files, input_audio_size
-        )
+        audio_combinations = itertools.combinations(audio_filtered_files, n_src)
         audio_combinations = itertools.islice(audio_combinations, dataset_size)
 
         storage_space, excess_storage = requires_excess_storage_space(
-            len(audio_filtered_files), input_audio_size
+            len(audio_filtered_files), n_src
         )
 
         if excess_storage:
@@ -107,14 +105,14 @@ def audio_mixer(
 
         print(f"Occupying space: {storage_space:,} Kbytes")
 
-        # Store list of tuples, consisting of `input_audio_size`
+        # Store list of tuples, consisting of `n_src`
         # Audio and their corresponding video path
         video_inputs = []
         audio_inputs = []
         mixed_audio = []
         noises = []
 
-        total_comb_size = nCr(len(audio_filtered_files), input_audio_size)
+        total_comb_size = nCr(len(audio_filtered_files), n_src)
         for indx, audio_comb in tqdm(
             enumerate(audio_combinations), total=total_comb_size
         ):
@@ -168,7 +166,7 @@ def audio_mixer(
                 break
 
         combinations = {}
-        for i in range(input_audio_size):
+        for i in range(n_src):
             combinations[f"video_{i+1}"] = []
             combinations[f"audio_{i+1}"] = []
         combinations["mixed_audio"] = []
@@ -185,7 +183,7 @@ def audio_mixer(
         for videos, audios, mixed in zip(video_inputs, audio_inputs, mixed_audio):
             # fix proper path issue
             mixed = re.sub(r"../../", "", mixed)
-            for i in range(input_audio_size):
+            for i in range(n_src):
                 v = re.sub(r"../../", "", videos[i])
                 a = re.sub(r"../../", "", audios[i])
 
@@ -194,8 +192,8 @@ def audio_mixer(
             combinations["mixed_audio"].append(mixed)
 
         columns = (
-            [f"video_{i+1}" for i in range(input_audio_size)]
-            + [f"audio_{i+1}" for i in range(input_audio_size)]
+            [f"video_{i+1}" for i in range(n_src)]
+            + [f"audio_{i+1}" for i in range(n_src)]
             + ["mixed_audio"]
         )
         df = pd.DataFrame(combinations).reindex(columns=columns)

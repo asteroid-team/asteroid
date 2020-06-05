@@ -1,6 +1,6 @@
 # Dataset config
 data:
-    input_audio_size: 2
+    n_src: 2
     train_input_df_path: "local/train.csv"
     val_input_df_path: "local/val.csv"
 # Download config:

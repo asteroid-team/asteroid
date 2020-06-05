@@ -14,18 +14,18 @@ from model import make_model_and_optimizer, load_best_model
 class DiscriminativeLoss(torch.nn.Module):
     # Reference: https://github.com/bill9800/speech_separation/blob/master/model/lib/model_loss.py
 
-    def __init__(self, input_audio_size=2, gamma=0.1):
+    def __init__(self, n_src=2, gamma=0.1):
         super(DiscriminativeLoss, self).__init__()
 
-        self.input_audio_size = input_audio_size
+        self.n_src = n_src
         self.gamma = gamma
 
     def forward(self, input, target):
 
         sum_mtr = torch.zeros_like(input[:, 0, ...])
-        for i in range(self.input_audio_size):
+        for i in range(self.n_src):
             sum_mtr += (target[:, i, ...] - input[:, i, ...]) ** 2
-            for j in range(self.input_audio_size):
+            for j in range(self.n_src):
                 if i != j:
                     sum_mtr -= self.gamma * (
                         (target[:, i, ...] - input[:, j, ...]) ** 2
@@ -46,10 +46,10 @@ def main(conf):
     )
 
     dataset = AVSpeechDataset(
-        Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"]
+        Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"]
     )
     val_dataset = AVSpeechDataset(
-        Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["input_audio_size"]
+        Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"]
     )
 
     model, optimizer = make_model_and_optimizer(conf)
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--gpus", type=str, help="list of GPUs", default="-1")
     parser.add_argument(
-        "--input-audio-size",
+        "--n-src",
         type=int,
         help="number of inputs to neural network",
         default=2,

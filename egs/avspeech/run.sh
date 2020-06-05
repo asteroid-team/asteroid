@@ -129,12 +129,12 @@ if [[ $stage -le 2 ]]; then
 	cd $root_dir
 fi
 
-input_audio_size=$(get_attribute "input_audio_size")
+n_src=$(get_attribute "n_src")
 if [[ -z ${tag} ]]; then
 	# Generate a random ID for the run if no tag is specified
 	uuid=$($python_path -c 'import uuid; print(str(uuid.uuid4())[:8])')
 	clean_dir_name=$(echo $storage_dir | sed 's/\//_/g')
-	tag=${input_audio_size}_${clean_dir_name}_${uuid}
+	tag=${n_src}_${clean_dir_name}_${uuid}
 	exp_dir="${exp_dir}_${tag}"
 fi
 
@@ -143,7 +143,7 @@ if [[ $stage -le 3 ]]; then
 
 	mkdir -p $exp_dir
 	python3 train.py --gpus $gpu_ids --exp_dir $exp_dir \
-			 --input-audio-size $input_audio_size | tee logs/train_${tag}.log
+			 --n-src $n_src | tee logs/train_${tag}.log
 fi
 
 if [[ $stage -le 4 ]]; then
@@ -151,6 +151,6 @@ if [[ $stage -le 4 ]]; then
 
 	mkdir -p $exp_dir
 	python3 eval.py --gpus $gpu_ids --exp_dir $exp_dir \
-        		--input-audio-size $input_audio_size | tee logs/val_${tag}.log
+        		--n-src $n_src | tee logs/val_${tag}.log
 fi
 
