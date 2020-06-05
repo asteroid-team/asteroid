@@ -63,8 +63,9 @@ pip install asteroid
 ## Tutorials
 ([↑up to contents](#contents))  
 Here is a list of notebooks showing example usage of Asteroid's features.
-- [Permutation invariant training wrapper `PITLossWrapper`](https://github.com/mpariente/asteroid/blob/master/examples/03_PITLossWrapper.ipynb)
-- [Filterbank API](https://github.com/mpariente/asteroid/blob/master/examples/02_Filterbank.ipynb)
+- [Getting started with Asteroid](./notebooks/01_AsteroidGettingStarted.ipynb)
+- [Filterbank API](./notebooks/02_Filterbank.ipynb)
+- [Permutation invariant training wrapper `PITLossWrapper`](./notebooks/03_PITLossWrapper.ipynb)
 
 
 ## Running a recipe
