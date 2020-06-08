@@ -88,6 +88,63 @@ class StackedResidualRNN(nn.Module):
         return x
 
 
+class StackedResidualBiRNN(nn.Module):
+    """ Stacked Bidirectional RNN with builtin residual connection.
+    Residual connections are applied on both RNN directions.
+    Only supports bidiriectional RNNs.
+    See StackedResidualRNN for unidirectional ones.
+
+    Args:
+        rnn_type (str): Select from ``'RNN'``, ``'LSTM'``, ``'GRU'``. Can
+            also be passed in lowercase letters.
+        n_units (int): Number of units in recurrent layers. This will also be
+            the expected input size.
+        n_layers (int): Number of recurrent layers.
+        dropout (float): Dropout value, between 0. and 1. (Default: 0.)
+        bidirectional (bool): If True, use bidirectional RNN, else
+            unidirectional. (Default: False)
+    """
+
+    def __init__(self, rnn_type, n_units, n_layers=4, dropout=0.,
+                 bidirectional=True):
+        super().__init__()
+        self.rnn_type = rnn_type
+        self.n_units = n_units
+        self.n_layers = n_layers
+        self.dropout = dropout
+        assert bidirectional is True, "Only bidirectional not supported yet"
+        self.bidirectional = bidirectional
+
+        # The first layer has as many units as input size
+        self.first_layer = SingleRNN(rnn_type, input_size=n_units,
+                                     hidden_size=n_units,
+                                     bidirectional=bidirectional)
+        # As the first layer outputs 2*n_units, the following layers need
+        # 2*n_units as input size
+        self.layers = nn.ModuleList()
+        for i in range(n_layers - 1):
+            input_size = 2 * n_units
+            self.layers.append(SingleRNN(rnn_type, input_size=input_size,
+                                         hidden_size=n_units,
+                                         bidirectional=bidirectional))
+        self.dropout_layer = nn.Dropout(self.dropout)
+
+    def forward(self, x):
+        """ Builtin residual connections + dropout applied before residual.
+            Input shape : [batch, time_axis, feat_axis]
+        """
+        # First layer
+        rnn_out = self.first_layer(x)
+        dropped_out = self.dropout_layer(rnn_out)
+        x = torch.cat([x, x], dim=-1) + dropped_out
+        # Rest of the layers
+        for rnn in self.layers:
+            rnn_out = rnn(x)
+            dropped_out = self.dropout_layer(rnn_out)
+            x = x + dropped_out
+        return x
+
+
 class DPRNNBlock(nn.Module):
     """ Dual-Path RNN Block as proposed in [1].
 
