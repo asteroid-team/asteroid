@@ -308,7 +308,7 @@ def make_metadata_from_model(model):
                         {'identifier': 'asteroid-models'}],
         'keywords': ['Asteroid', 'audio source separation', model['dataset'],
                      model['task'], model['model_name'], 'pretrained model'],
-        'license': 'other-at'
+        'license': 'CC-BY-SA-3.0'
     }
     return metadata
 
