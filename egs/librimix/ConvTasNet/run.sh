@@ -83,6 +83,7 @@ if [[ $stage -le 1 ]]; then
 		--valid_dir $valid_dir \
 		--sample_rate $sample_rate \
 		--n_src $n_src \
+        --task $task \
 		--segment $segment | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
 
