@@ -21,12 +21,23 @@ def test_dprnn(mask_act, out_chan, hop_size):
 
 @pytest.mark.parametrize("rnn_type", ["LSTM", "GRU", "RNN"])
 @pytest.mark.parametrize("dropout", [0., 0.2])
-@pytest.mark.parametrize("bidir", [False])
-def test_res_rnn(rnn_type, dropout, bidir):
+def test_res_rnn(rnn_type, dropout):
     n_units, n_layers = 20, 3
     model = rec.StackedResidualRNN(rnn_type, n_units, n_layers=n_layers,
-                                   dropout=dropout, bidirectional=bidir)
+                                   dropout=dropout, bidirectional=False)
     batch, n_frames = 2, 78
     inp = torch.randn(batch, n_frames, n_units)
     out = model(inp)
     assert out.shape == (batch, n_frames, n_units)
+
+
+@pytest.mark.parametrize("rnn_type", ["LSTM", "GRU", "RNN"])
+@pytest.mark.parametrize("dropout", [0., 0.2])
+def test_res_birnn(rnn_type, dropout):
+    n_units, n_layers = 20, 3
+    model = rec.StackedResidualBiRNN(rnn_type, n_units, n_layers=n_layers,
+                                     dropout=dropout, bidirectional=True)
+    batch, n_frames = 2, 78
+    inp = torch.randn(batch, n_frames, n_units)
+    out = model(inp)
+    assert out.shape == (batch, n_frames, 2 * n_units)
