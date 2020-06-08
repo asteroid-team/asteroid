@@ -48,6 +48,8 @@ class SingleRNN(nn.Module):
 
 class StackedResidualRNN(nn.Module):
     """ Stacked RNN with builtin residual connection.
+    Only supports forward RNNs.
+    See StackedResidualBiRNN for bidirectional ones.
 
     Args:
         rnn_type (str): Select from ``'RNN'``, ``'LSTM'``, ``'GRU'``. Can
