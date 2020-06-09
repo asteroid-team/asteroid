@@ -1,6 +1,7 @@
 #!/bin/bash
 
 storage_dir=
+n_src=
 python_path=python
 
 . ./utils/parse_options.sh
@@ -14,5 +15,5 @@ cd LibriMix
 . generate_librimix.sh $storage_dir
 
 cd $current_dir
-$python_path local/create_local_metadata.py --librimix_dir $storage_dir/LibriMix
+$python_path local/create_local_metadata.py --librimix_dir $storage_dir/Libri$n_src"Mix"
 

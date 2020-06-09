@@ -50,7 +50,7 @@ task=sep_clean  # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating Librimix dataset"
-  . local/prepare_data.sh --storage_dir $storage_dir
+  . local/prepare_data.sh --storage_dir $storage_dir --n_src $n_src
 fi
 
 # Generate a random ID for the run if no tag is specified
