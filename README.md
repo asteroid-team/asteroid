@@ -63,8 +63,9 @@ pip install asteroid
 ## Tutorials
 ([↑up to contents](#contents))  
 Here is a list of notebooks showing example usage of Asteroid's features.
-- [Permutation invariant training wrapper `PITLossWrapper`](https://github.com/mpariente/asteroid/blob/master/examples/03_PITLossWrapper.ipynb)
-- [Filterbank API](https://github.com/mpariente/asteroid/blob/master/examples/02_Filterbank.ipynb)
+- [Getting started with Asteroid](./notebooks/01_AsteroidGettingStarted.ipynb)
+- [Filterbank API](./notebooks/02_Filterbank.ipynb)
+- [Permutation invariant training wrapper `PITLossWrapper`](./notebooks/03_PITLossWrapper.ipynb)
 
 
 ## Running a recipe
@@ -102,12 +103,12 @@ More information in [egs/README.md](./egs).
 * [x] [SMS_WSJ](./egs/sms_wsj) ([Drude et al.](https://arxiv.org/abs/1910.13934))
 * [x] MUSDB18 (egs coming) ([Raffi et al.](https://hal.inria.fr/hal-02190845)) 
 * [x] FUSS (egs coming) ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
-* [ ] AVSpeech ([Ephrat et al.](https://arxiv.org/abs/1804.03619))
+* [x] AVSpeech ([Ephrat et al.](https://arxiv.org/abs/1804.03619))
 * [x] Kinect-WSJ ([Sivasankaran et al.](https://github.com/sunits/Reverberated_WSJ_2MIX))
 
 ## Pretrained models
 ([↑up to contents](#contents))  
-Asteroid provides pretrained models through the [Asteroid community]() in Zenodo. 
+Asteroid provides pretrained models through the [Asteroid community](https://zenodo.org/communities/asteroid-models) in Zenodo. 
 Loading a pretrained model is super simple !
 ```python
 from asteroid.models import ConvTasNet

@@ -1,0 +1,30 @@
+# Dataset config
+data:
+    n_src: 2
+    train_input_df_path: "local/train.csv"
+    val_input_df_path: "local/val.csv"
+# Download config:
+download:
+    # keeping all path w.r.t. file location
+    download_jobs: 4
+    download_path: "../../data/audio_visual/avspeech_train.csv"
+    download_start: 0
+    download_end: 10000
+# Extract audio config
+extract:
+    extract_jobs: 4
+    extract_sampling_rate: 16000
+    extract_input_audio_channel: 2
+    extract_audio_extension: "wav"
+    extract_duration: 3
+# Mix audio config
+mix:
+    mix_remove_random_chance: 0.9
+    mix_use_audio_set: False
+    mix_file_limit: 100_000_000
+    mix_validation_size: 0.3
+# Extract face config
+face:
+    face_cuda: True
+    face_use_half: False
+    face_corrupt_file_path: "../../data/corrupt_frames_list.txt"

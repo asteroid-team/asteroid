@@ -2,10 +2,15 @@ import numpy as np
 import pandas as pd
 import soundfile as sf
 import torch
-from torch.utils.data.dataset import Dataset
+from torch import hub
+from torch.utils.data import Dataset
 import random as random
 import os
+import shutil
+import zipfile
+
 from .wham_dataset import wham_noise_license
+MINI_URL = 'https://zenodo.org/record/3871592/files/MiniLibriMix.zip?download=1'
 
 
 class LibriMix(Dataset):
@@ -27,8 +32,8 @@ class LibriMix(Dataset):
     """
     dataset_name = 'LibriMix'
 
-    def __init__(self, csv_dir, task, sample_rate=16000,
-                 n_src=2, segment=4):
+    def __init__(self, csv_dir, task='sep_clean', sample_rate=16000, n_src=2,
+                 segment=3):
         self.csv_dir = csv_dir
         self.task = task
         # Get the csv corresponding to the task
@@ -102,6 +107,69 @@ class LibriMix(Dataset):
         # Convert sources to tensor
         sources = torch.from_numpy(sources)
         return mixture, sources
+
+    @classmethod
+    def mini_from_download(cls, **kwargs):
+        """ Downloads MiniLibriMix and returns train and validation Dataset.
+        If you want to instantiate the Dataset by yourself, call
+        `mini_download` that returns the path to the path to the metadata files.
+
+        Args:
+            **kwargs: keyword arguments to pass the `LibriMix`, see `__init__`.
+                The kwargs will be fed to both the training set and validation
+                set
+
+        Returns:
+            train_set, val_set: training and validation instances of
+                `LibriMix` (data.Dataset).
+
+        Examples:
+            >>> from asteroid.data import LibriMix
+            >>> train_set, val_set = LibriMix.mini_from_download(task='sep_clean')
+        """
+        # kwargs checks
+        assert 'csv_dir' not in kwargs, 'Cannot specify csv_dir when downloading.'
+        assert kwargs.get('task', 'sep_clean') in ['sep_clean', 'sep_noisy'], (
+            'Only clean and noisy separation are supported in MiniLibriMix.'
+        )
+        assert kwargs.get('sample_rate', 8000) == 8000, (
+            'Only 8kHz sample rate is supported in MiniLibriMix.'
+        )
+        # Download LibriMix in current directory
+        meta_path = cls.mini_download()
+        # Create dataset instances
+        train_set = cls(os.path.join(meta_path, 'train'), sample_rate=8000, **kwargs)
+        val_set = cls(os.path.join(meta_path, 'val'), sample_rate=8000, **kwargs)
+        return train_set, val_set
+
+    @staticmethod
+    def mini_download():
+        """ Downloads MiniLibriMix from Zenodo in current directory
+
+        Returns:
+            The path to the metadata directory.
+        """
+        mini_dir = './MiniLibriMix/'
+        os.makedirs(mini_dir, exist_ok=True)
+        # Download zip (or cached)
+        zip_path = mini_dir + 'MiniLibriMix.zip'
+        if not os.path.isfile(zip_path):
+            hub.download_url_to_file(MINI_URL, zip_path)
+        # Unzip zip
+        cond = all([os.path.isdir('MiniLibriMix/' + f)
+                    for f in ['train', 'val', 'metadata']])
+        if not cond:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall('./')  # Will unzip in MiniLibriMix
+        # Reorder metadata
+        src = 'MiniLibriMix/metadata/'
+        for mode in ['train', 'val']:
+            dst = f'MiniLibriMix/metadata/{mode}/'
+            os.makedirs(dst, exist_ok=True)
+            [shutil.copyfile(src + f, dst + f) for f in os.listdir(src)
+             if mode in f and os.path.isfile(src + f)]
+        return './MiniLibriMix/metadata'
+
 
     def get_infos(self):
         """ Get dataset infos (for publishing models).

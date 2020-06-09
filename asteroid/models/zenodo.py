@@ -27,7 +27,14 @@ class Zenodo(object):
         A Zenodo deposit has not yet been published, is private and can be
         deleted.
     """
-    def __init__(self, api_key, use_sandbox=True):
+    def __init__(self, api_key=None, use_sandbox=True):
+        if api_key is None:
+            api_key = os.getenv('ACCESS_TOKEN', None)
+        if api_key is None:
+            raise ValueError(
+                'Need to set `api_key` somehow. Either through the functions'
+                'arguments or by setting ACCESS_TOKEN env variable in bash.'
+            )
         self.use_sandbox = use_sandbox
         if use_sandbox is True:
             self.zenodo_address = 'https://sandbox.zenodo.org'

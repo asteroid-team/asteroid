@@ -1,0 +1,9 @@
+catalyst==20.1
+facenet-pytorch>=2.2.9
+librosa>=0.7.2
+mir-eval>=0.6
+opencv-python==4.2.0.34
+pysndfx>=0.3.6
+threadpoolctl>=2.0.0
+torchvision>=0.6.0
+zipp>=3.1.0

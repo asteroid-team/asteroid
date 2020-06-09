@@ -1,0 +1,10 @@
+# Training config
+training:
+    epochs: 40
+    batch_size: 2
+    num_workers: 2
+    device: "cuda:0"
+# Optimizer config
+optim:
+    optimizer: adam
+    lr: 0.0003
