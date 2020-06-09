@@ -43,7 +43,7 @@ test_dir=data/wav8k/min/test
 sample_rate=8000
 n_src=2
 segment=3
-task=sep_clean
+task=sep_clean  # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
 
 . utils/parse_options.sh
 
@@ -83,6 +83,7 @@ if [[ $stage -le 1 ]]; then
 		--valid_dir $valid_dir \
 		--sample_rate $sample_rate \
 		--n_src $n_src \
+		--task $task \
 		--segment $segment | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
 
