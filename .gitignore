@@ -114,3 +114,6 @@ venv.bak/
 /.idea/dictionaries/mparient.xml
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/vcs.xml
+
+# Egs
+egs/**/exp
