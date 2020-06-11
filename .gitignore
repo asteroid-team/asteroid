@@ -1,5 +1,6 @@
 # Project specific
 uploader_info.yml
+egs/**/exp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
