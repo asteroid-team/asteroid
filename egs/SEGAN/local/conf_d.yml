@@ -1,0 +1,7 @@
+training:
+  half_lr: yes
+optim:
+  optimizer: adam
+  lr: 0.0001
+  betas:  [0.0, 0.9]
+  weight_decay: 0.
