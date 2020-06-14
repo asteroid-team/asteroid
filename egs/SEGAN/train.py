@@ -28,13 +28,13 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf_g, conf_d):
-    train_set = LibriMix(csv_dir=conf_g['data']['train_dir'],
+    train_set = SEGAN(csv_dir=conf_g['data']['train_dir'],
                          task=conf_g['data']['task'],
                          sample_rate=conf_g['data']['sample_rate'],
                          n_src=conf_g['data']['n_src'],
                          segment=conf_g['data']['segment'])
 
-    val_set = LibriMix(csv_dir=conf_g['data']['valid_dir'],
+    val_set = SEGAN(csv_dir=conf_g['data']['valid_dir'],
                        task=conf_g['data']['task'],
                        sample_rate=conf_g['data']['sample_rate'],
                        n_src=conf_g['data']['n_src'],
