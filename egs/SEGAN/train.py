@@ -120,9 +120,9 @@ if __name__ == '__main__':
     # We start with opening the conf_gig file conf_g.yml as a dictionary from
     # which we can create parsers. Each top level key in the dictionary defined
     # by the YAML file creates a group in the parser.
-    with open('../../../../Desktop/SEGAN/SEGAN/local/conf_d.yml') as f:
+    with open('local/conf_d.yml') as f:
         def_conf_d = yaml.safe_load(f)
-    with open('../../../../Desktop/SEGAN/SEGAN/local/conf_g.yml') as f:
+    with open('local/conf_g.yml') as f:
         def_conf_g = yaml.safe_load(f)
     parser = prepare_parser_from_dict(def_conf_g, parser=parser)
     # Arguments are then parsed into a hierarchical dictionary (instead of
