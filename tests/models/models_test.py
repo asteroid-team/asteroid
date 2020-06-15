@@ -18,7 +18,7 @@ def test_convtasnet_sep():
     out = nnet.separate(wav)
     assert isinstance(out, np.ndarray)
     # Test str input
-    sf.write('tmp.wav', wav, 8000)
+    sf.write('tmp.wav', wav[0], 8000)
     nnet.separate('tmp.wav')
 
 
