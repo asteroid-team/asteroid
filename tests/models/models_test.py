@@ -2,6 +2,7 @@ import torch
 import pytest
 from torch.testing import assert_allclose
 import numpy as np
+import soundfile as sf
 from asteroid.models import ConvTasNet, DPRNNTasNet
 
 
@@ -16,6 +17,9 @@ def test_convtasnet_sep():
     wav = np.random.randn(1, 800).astype('float32')
     out = nnet.separate(wav)
     assert isinstance(out, np.ndarray)
+    # Test str input
+    sf.write('tmp.wav', wav[0], 8000)
+    nnet.separate('tmp.wav')
 
 
 @pytest.mark.parametrize('fb', ['free', 'stft', 'analytic_free', 'param_sinc'])
