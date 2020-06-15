@@ -59,10 +59,11 @@ def main(conf):
         loss, reordered_sources = loss_func(est_sources, sources[None],
                                             return_est=True)
         mix_np = mix[None].cpu().data.numpy()
-        sources_np = sources.squeeze().cpu().data.numpy()
-        est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
+        sources_np = sources.cpu().data.numpy()
+        est_sources_np = reordered_sources.squeeze(0).cpu().data.numpy()
         utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
-                                  sample_rate=conf['sample_rate'])
+                                  sample_rate=conf['sample_rate'],
+                                  metrics_list=compute_metrics)
         utt_metrics['mix_path'] = test_set.mix[idx][0]
         series_list.append(pd.Series(utt_metrics))
 

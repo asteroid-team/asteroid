@@ -9,10 +9,10 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid.data.wham_dataset import WhamDataset
+from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-
-from model import make_model_and_optimizer
+from asteroid.models import ConvTasNet
 
 
 # Keys which are not in the conf.yml file can be added here.
@@ -21,9 +21,7 @@ from model import make_model_and_optimizer
 
 # By default train.py will use all available GPUs. The `id` option in run.sh
 # will limit the number of available GPUs for train.py .
-# This can be changed: `python train.py --gpus 0,1` will only train on 2 GPUs.
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Full path to save best validation model')
 
@@ -40,17 +38,16 @@ def main(conf):
                               batch_size=conf['training']['batch_size'],
                               num_workers=conf['training']['num_workers'],
                               drop_last=True)
-    val_loader = DataLoader(val_set, shuffle=True,
+    val_loader = DataLoader(val_set, shuffle=False,
                             batch_size=conf['training']['batch_size'],
                             num_workers=conf['training']['num_workers'],
                             drop_last=True)
     # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': train_set.n_src})
 
-    # Define model and optimizer in a local function (defined in the recipe).
-    # Two advantages to this : re-instantiating the model and optimizer
-    # for retraining and evaluating is straight-forward.
-    model, optimizer = make_model_and_optimizer(conf)
+    # Define model and optimizer
+    model = ConvTasNet(**conf['filterbank'], **conf['masknet'])
+    optimizer = make_optimizer(model.parameters(), **conf['optim'])
     # Define scheduler
     scheduler = None
     if conf['training']['half_lr']:
@@ -79,21 +76,30 @@ def main(conf):
                                        verbose=1)
 
     # Don't ask GPU if they are not available.
-    if not torch.cuda.is_available():
-        print('No available GPU were found, set gpus to None')
-        conf['main_args']['gpus'] = None
+    gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(max_epochs=conf['training']['epochs'],
                          checkpoint_callback=checkpoint,
                          early_stop_callback=early_stopping,
                          default_save_path=exp_dir,
-                         gpus=conf['main_args']['gpus'],
+                         gpus=gpus,
                          distributed_backend='dp',
                          train_percent_check=1.0,  # Useful for fast experiment
                          gradient_clip_val=5.)
     trainer.fit(system)
 
+    best_k = {k: v.item() for k, v in checkpoint.best_k_models.items()}
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
-        json.dump(checkpoint.best_k_models, f, indent=0)
+        json.dump(best_k, f, indent=0)
+
+    # Save best model (next PL version will make this easier)
+    best_path = [b for b, v in best_k.items() if v == min(best_k.values())][0]
+    state_dict = torch.load(best_path)
+    system.load_state_dict(state_dict=state_dict['state_dict'])
+    system.cpu()
+
+    to_save = system.model.serialize()
+    to_save.update(train_set.get_infos())
+    torch.save(to_save, os.path.join(exp_dir, 'best_model.pth'))
 
 
 if __name__ == '__main__':

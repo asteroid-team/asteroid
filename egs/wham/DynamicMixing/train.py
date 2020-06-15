@@ -22,9 +22,7 @@ from model import make_model_and_optimizer
 
 # By default train.py will use all available GPUs. The `id` option in run.sh
 # will limit the number of available GPUs for train.py .
-# This can be changed: `python train.py --gpus 0,1` will only train on 2 GPUs.
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpus', type=str, help='list of GPUs', default='-1')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Full path to save best validation model')
 
@@ -49,7 +47,7 @@ def main(conf):
                               batch_size=conf['training']['batch_size'],
                               num_workers=conf['training']['num_workers'],
                               drop_last=True)
-    val_loader = DataLoader(val_set, shuffle=True,
+    val_loader = DataLoader(val_set, shuffle=False,
                             batch_size=conf['training']['batch_size'],
                             num_workers=conf['training']['num_workers'],
                             drop_last=True)
@@ -88,20 +86,19 @@ def main(conf):
                                        verbose=1)
 
     # Don't ask GPU if they are not available.
-    if not torch.cuda.is_available():
-        print('No available GPU were found, set gpus to None')
-        conf['main_args']['gpus'] = None
+    gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
                          checkpoint_callback=checkpoint,
                          early_stop_callback=early_stopping,
                          default_save_path=exp_dir,
-                         gpus=conf['main_args']['gpus'],
+                         gpus=gpus,
                          distributed_backend='dp',
                          gradient_clip_val=conf['training']["gradient_clipping"])
     trainer.fit(system)
 
+    best_k = {k: v.item() for k, v in checkpoint.best_k_models.items()}
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
-        json.dump(checkpoint.best_k_models, f, indent=0)
+        json.dump(best_k, f, indent=0)
 
 
 if __name__ == '__main__':

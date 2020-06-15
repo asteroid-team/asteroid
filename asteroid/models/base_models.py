@@ -3,6 +3,7 @@ from torch import nn
 import numpy as np
 
 from .. import torch_utils
+from ..utils.hub_utils import cached_download
 
 
 class BaseTasNet(nn.Module):
@@ -46,28 +47,38 @@ class BaseTasNet(nn.Module):
 
     def separate(self, wav):
         """ Infer separated sources from input waveforms.
+        Also supports filenames.
 
         Args:
-            wav (Union[torch.Tensor, numpy.ndarray]): waveform array/tensor.
+            wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
 
         Returns:
-            Union[torch.Tensor, numpy.ndarray], the estimated sources.
+            Union[torch.Tensor, numpy.ndarray, None], the estimated sources.
                 (batch, n_src, time) or (n_src, time) w/o batch dim.
         """
-        return self._separate(wav)
+        with torch.no_grad():
+            return self._separate(wav)
 
     def _separate(self, wav):
         """ Hidden separation method
 
         Args:
-            wav (Union[torch.Tensor, numpy.ndarray]): waveform array/tensor.
+            wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
 
         Returns:
-            Union[torch.Tensor, numpy.ndarray], the estimated sources.
+            Union[torch.Tensor, numpy.ndarray, None], the estimated sources.
                 (batch, n_src, time) or (n_src, time) w/o batch dim.
         """
+        # Handle filename inputs
+        was_file = False
+        if isinstance(wav, str):
+            import soundfile as sf
+            was_file = True
+            filename = wav
+            wav, fs = sf.read(wav, dtype='float32')
+            wav = torch.from_numpy(wav)
         # Handle numpy inputs
         was_numpy = False
         if isinstance(wav, np.ndarray):
@@ -83,6 +94,14 @@ class BaseTasNet(nn.Module):
         out_wavs = out_wavs.to(input_device)
         if was_numpy:
             return out_wavs.cpu().data.numpy()
+        if was_file:
+            # Save wav files to filename_est1.wav etc...
+            to_save = out_wavs.cpu().data.numpy()
+            for src_idx, est_src in enumerate(to_save):
+                base = '.'.join(filename.split('.')[:-1])
+                save_name = base + '_est{}.'.format(src_idx+1) + filename.split('.')[-1]
+                sf.write(save_name, est_src, fs)
+            return
         return out_wavs
 
     @classmethod
@@ -102,7 +121,8 @@ class BaseTasNet(nn.Module):
                 `model_args` and `state_dict`.
         """
         if isinstance(pretrained_model_conf_or_path, str):
-            conf = torch.load(pretrained_model_conf_or_path, map_location='cpu')
+            cached_model = cached_download(pretrained_model_conf_or_path)
+            conf = torch.load(cached_model, map_location='cpu')
         else:
             conf = pretrained_model_conf_or_path
         if 'model_args' not in conf.keys():
@@ -121,6 +141,8 @@ class BaseTasNet(nn.Module):
         Returns:
             dict, serialized model with keys `model_args` and `state_dict`.
         """
+        from .. import __version__ as asteroid_version  # Avoid circular imports
+        import pytorch_lightning as pl  # Not used in torch.hub
         model_conf = dict()
         fb_config = self.encoder.filterbank.get_config()
         masknet_config = self.masker.get_config()
@@ -129,6 +151,15 @@ class BaseTasNet(nn.Module):
             raise AssertionError("Filterbank and Mask network config share"
                                  "common keys. Merging them is not safe.")
         # Merge all args under model_args.
+        model_conf['model_name'] = self.__class__.__name__
         model_conf['model_args'] = {**fb_config, **masknet_config}
         model_conf['state_dict'] = self.state_dict()
+        # Additional infos
+        infos = dict()
+        infos['software_versions'] = dict(
+            torch_version=torch.__version__,
+            pytorch_lightning_version=pl.__version__,
+            asteroid_version=asteroid_version,
+        )
+        model_conf['infos'] = infos
         return model_conf

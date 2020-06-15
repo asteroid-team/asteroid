@@ -35,6 +35,7 @@ so hop on and help us !
 - [Running a recipe](#running-a-recipe)
 - [Available recipes](#available-recipes)
 - [Supported datasets](#supported-datasets)
+- [Pretrained models](#pretrained-models)
 - [Calls for contributions](#contributing)
 - [Citing us](#citing)
 
@@ -62,8 +63,9 @@ pip install asteroid
 ## Tutorials
 ([↑up to contents](#contents))  
 Here is a list of notebooks showing example usage of Asteroid's features.
-- [Permutation invariant training wrapper `PITLossWrapper`][pitwrapper_nb]
-- [Filterbank API][fb_nb]
+- [Getting started with Asteroid](./notebooks/01_AsteroidGettingStarted.ipynb)
+- [Filterbank API](./notebooks/02_Filterbank.ipynb)
+- [Permutation invariant training wrapper `PITLossWrapper`](./notebooks/03_PITLossWrapper.ipynb)
 
 
 ## Running a recipe
@@ -99,8 +101,46 @@ More information in [egs/README.md](./egs).
 * [x] [WHAMR](./egs/whamr) ([Maciejewski et al.](https://arxiv.org/abs/1910.10279))
 * [x] [Microsoft DNS Challenge](./egs/dns_challenge) ([Chandan et al.](https://arxiv.org/abs/2001.08662))
 * [x] [SMS_WSJ](./egs/sms_wsj) ([Drude et al.](https://arxiv.org/abs/1910.13934))
-* [ ] MUSDB18 (Coming) ([Raffi et al.](https://hal.inria.fr/hal-02190845)) 
-* [ ] FUSS (Coming) ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
+* [x] MUSDB18 (egs coming) ([Raffi et al.](https://hal.inria.fr/hal-02190845)) 
+* [x] FUSS (egs coming) ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
+* [x] AVSpeech ([Ephrat et al.](https://arxiv.org/abs/1804.03619))
+* [x] Kinect-WSJ ([Sivasankaran et al.](https://github.com/sunits/Reverberated_WSJ_2MIX))
+
+## Pretrained models
+([↑up to contents](#contents))  
+Asteroid provides pretrained models through the [Asteroid community](https://zenodo.org/communities/asteroid-models) in Zenodo. 
+Loading a pretrained model is super simple !
+```python
+from asteroid.models import ConvTasNet
+model = ConvTasNet.from_pretrained('mpariente/ConvTasNet_WHAM!_sepclean')
+```
+Have a look at the Zenodo page or at [the model cards](./model_cards) to choose which model you want to load.
+
+You can also load it with Hub
+```python
+from torch import hub
+model = hub.load('mpariente/asteroid', 'conv_tasnet', 'mpariente/ConvTasNet_WHAM!_sepclean')
+```
+Enjoy having pretrained models? **Please share your models** if you train some, we made it simple 
+with the `asteroid-upload` CLI, check the next sections.
+
+## Share your models
+At the end of each sharing-enabled recipe, all the necessary infos are gathered into a file, the only thing 
+that's left to do is to run 
+```bash
+asteroid-upload exp/your_exp_dir/publish_dir --uploader "Name Here"
+``` 
+Ok, not really. First you need to register to [Zenodo](https://zenodo.org/) (Sign in with GitHub ok), 
+[create a token](https://zenodo.org/account/settings/applications/tokens/new/) and use it with 
+the `--token` option of the CLI, or by setting the `ACCESS_TOKEN` environment variable. 
+If you plan to upload more models (and you should :innocent:), you can fill in your infos in 
+`uploader_info.yml` at the root, like this.
+```yaml
+uploader: Manuel Pariente
+affiliation: INRIA
+git_username: mpariente
+token: TOKEN_HERE
+``` 
 
 ## Contributing
 ([↑up to contents](#contents))  
@@ -177,10 +217,6 @@ If you loved using Asteroid and you want to cite us, use this :
 [codecov]: https://codecov.io/gh/mpariente/asteroid
 [slack-badge]: https://img.shields.io/badge/slack-chat-green.svg?logo=slack
 [slack-invite]: https://join.slack.com/t/asteroid-dev/shared_invite/zt-cn9y85t3-QNHXKD1Et7qoyzu1Ji5bcA
-
-[comment]: <> (Notebooks)
-[fb_nb]: https://github.com/mpariente/asteroid/blob/master/examples/Filterbank.ipynb
-[pitwrapper_nb]: https://github.com/mpariente/asteroid/blob/master/examples/PITLossWrapper.ipynb
 
 [comment]: <> (Others)
 [issue]: https://github.com/mpariente/asteroid/issues/new

@@ -1,6 +1,6 @@
 #!/bin/bash
-
 set -e  # Exit on error
+
 # Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
 # files if you start from sphere files.
 storage_dir=
@@ -25,7 +25,7 @@ python_path=python
 stage=3  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=
+id=$CUDA_VISIBLE_DEVICES
 
 # Data
 #data_dir=data  # Local data directory (No disk space needed)
@@ -37,7 +37,7 @@ n_src=2  # 2 or 3
 batch_size=32
 num_workers=8
 optimizer=rmsprop
-lr=0.00001
+lr=0.0001
 weight_decay=0.0
 epochs=200
 loss_alpha=1.0  # DC loss weight : 1.0 => DC, <1.0 => Chimera

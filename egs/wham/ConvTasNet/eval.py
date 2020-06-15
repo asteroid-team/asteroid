@@ -6,15 +6,16 @@ import yaml
 import json
 import argparse
 import pandas as pd
-from asteroid.metrics import get_metrics
 from tqdm import tqdm
 from pprint import pprint
 
+from asteroid.metrics import get_metrics
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
+from asteroid.models import ConvTasNet
 from asteroid.utils import tensors_to_device
+from asteroid.models import save_publishable
 
-from model import load_best_model
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--task', type=str, required=True,
@@ -33,7 +34,8 @@ compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi']
 
 
 def main(conf):
-    model = load_best_model(conf['train_conf'], conf['exp_dir'])
+    model_path = os.path.join(conf['exp_dir'], 'best_model.pth')
+    model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
@@ -59,10 +61,11 @@ def main(conf):
         loss, reordered_sources = loss_func(est_sources, sources[None],
                                             return_est=True)
         mix_np = mix[None].cpu().data.numpy()
-        sources_np = sources.squeeze().cpu().data.numpy()
-        est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
+        sources_np = sources.cpu().data.numpy()
+        est_sources_np = reordered_sources.squeeze(0).cpu().data.numpy()
         utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
-                                  sample_rate=conf['sample_rate'])
+                                  sample_rate=conf['sample_rate'],
+                                  metrics_list=compute_metrics)
         utt_metrics['mix_path'] = test_set.mix[idx][0]
         series_list.append(pd.Series(utt_metrics))
 
@@ -98,6 +101,13 @@ def main(conf):
     pprint(final_results)
     with open(os.path.join(conf['exp_dir'], 'final_metrics.json'), 'w') as f:
         json.dump(final_results, f, indent=0)
+
+    model_dict = torch.load(model_path, map_location='cpu')
+    os.makedirs(os.path.join(conf['exp_dir'], 'publish_dir'), exist_ok=True)
+    publishable = save_publishable(
+        os.path.join(conf['exp_dir'], 'publish_dir'), model_dict,
+        metrics=final_results, train_conf=train_conf
+    )
 
 
 if __name__ == '__main__':

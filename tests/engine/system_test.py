@@ -23,7 +23,7 @@ def test_system():
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer)
     dataset = DummyDataset()
-    loader = data.DataLoader(dataset, batch_size=2)
+    loader = data.DataLoader(dataset, batch_size=2, num_workers=4)
     system = System(model, optimizer, loss_func=nn.MSELoss(),
                     train_loader=loader, val_loader=loader,
                     scheduler=scheduler)

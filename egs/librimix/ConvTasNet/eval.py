@@ -5,18 +5,17 @@ import torch
 import yaml
 import json
 import argparse
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
-import numpy as np
 
 from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid.torch_utils import load_state_dict_in
+from asteroid import ConvTasNet
+from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
-
-from model import make_model_and_optimizer
 
 
 parser = argparse.ArgumentParser()
@@ -39,22 +38,8 @@ compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi']
 
 
 def main(conf):
-    # Make the model
-    model, _ = make_model_and_optimizer(conf['train_conf'])
-    # Load best model
-    with open(os.path.join(conf['exp_dir'], 'best_k_models.json'), "r") as f:
-        best_k = json.load(f)
-    best_model_path = min(best_k, key=best_k.get)
-    # Load checkpoint
-    checkpoint = torch.load(best_model_path, map_location='cpu')
-    state = checkpoint['state_dict']
-    state_copy = state.copy()
-    # Remove unwanted keys
-    for keys, values in state.items():
-        if keys.startswith('loss'):
-            del state_copy[keys]
-            print(keys)
-    model = load_state_dict_in(state_copy, model)
+    model_path = os.path.join(conf['exp_dir'], 'best_model.pth')
+    model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
     if conf['use_gpu']:
         model.cuda()
@@ -63,7 +48,7 @@ def main(conf):
                         task=conf['task'],
                         sample_rate=conf['sample_rate'],
                         n_src=conf['train_conf']['data']['n_src'],
-                        segment=None) # Uses all segment length
+                        segment=None)  # Uses all segment length
     # Used to reorder sources only
     loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
 
@@ -82,12 +67,13 @@ def main(conf):
         loss, reordered_sources = loss_func(est_sources, sources[None],
                                             return_est=True)
         mix_np = mix.cpu().data.numpy()
-        sources_np = sources.squeeze().cpu().data.numpy()
-        est_sources_np = reordered_sources.squeeze().cpu().data.numpy()
+        sources_np = sources.cpu().data.numpy()
+        est_sources_np = reordered_sources.squeeze(0).cpu().data.numpy()
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics
         utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
-                                  sample_rate=conf['sample_rate'])
+                                  sample_rate=conf['sample_rate'],
+                                  metrics_list=compute_metrics)
         utt_metrics['mix_path'] = test_set.mixture_path
         series_list.append(pd.Series(utt_metrics))
 
@@ -102,6 +88,7 @@ def main(conf):
                 sf.write(local_save_dir + "s{}.wav".format(src_idx), src,
                          conf['sample_rate'])
             for src_idx, est_src in enumerate(est_sources_np):
+                est_src *= np.max(np.abs(mix_np))/np.max(np.abs(est_src))
                 sf.write(local_save_dir + "s{}_estimate.wav".format(src_idx),
                          est_src, conf['sample_rate'])
             # Write local metrics to the example folder.
@@ -123,6 +110,13 @@ def main(conf):
     pprint(final_results)
     with open(os.path.join(eval_save_dir, 'final_metrics.json'), 'w') as f:
         json.dump(final_results, f, indent=0)
+
+    model_dict = torch.load(model_path, map_location='cpu')
+    os.makedirs(os.path.join(conf['exp_dir'], 'publish_dir'), exist_ok=True)
+    publishable = save_publishable(
+        os.path.join(conf['exp_dir'], 'publish_dir'), model_dict,
+        metrics=final_results, train_conf=train_conf
+    )
 
 
 if __name__ == '__main__':
