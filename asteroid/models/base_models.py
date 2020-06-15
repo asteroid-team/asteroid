@@ -47,28 +47,38 @@ class BaseTasNet(nn.Module):
 
     def separate(self, wav):
         """ Infer separated sources from input waveforms.
+        Also supports filenames.
 
         Args:
-            wav (Union[torch.Tensor, numpy.ndarray]): waveform array/tensor.
+            wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
 
         Returns:
-            Union[torch.Tensor, numpy.ndarray], the estimated sources.
+            Union[torch.Tensor, numpy.ndarray, None], the estimated sources.
                 (batch, n_src, time) or (n_src, time) w/o batch dim.
         """
-        return self._separate(wav)
+        with torch.no_grad():
+            return self._separate(wav)
 
     def _separate(self, wav):
         """ Hidden separation method
 
         Args:
-            wav (Union[torch.Tensor, numpy.ndarray]): waveform array/tensor.
+            wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
 
         Returns:
-            Union[torch.Tensor, numpy.ndarray], the estimated sources.
+            Union[torch.Tensor, numpy.ndarray, None], the estimated sources.
                 (batch, n_src, time) or (n_src, time) w/o batch dim.
         """
+        # Handle filename inputs
+        was_file = False
+        if isinstance(wav, str):
+            import soundfile as sf
+            was_file = True
+            filename = wav
+            wav, fs = sf.read(wav, dtype='float32')
+            wav = torch.from_numpy(wav)
         # Handle numpy inputs
         was_numpy = False
         if isinstance(wav, np.ndarray):
@@ -84,6 +94,14 @@ class BaseTasNet(nn.Module):
         out_wavs = out_wavs.to(input_device)
         if was_numpy:
             return out_wavs.cpu().data.numpy()
+        if was_file:
+            # Save wav files to filename_est1.wav etc...
+            to_save = out_wavs.cpu().data.numpy()
+            for src_idx, est_src in enumerate(to_save):
+                base = '.'.join(filename.split('.')[:-1])
+                save_name = base + '_est{}.'.format(src_idx+1) + filename.split('.')[-1]
+                sf.write(save_name, est_src, fs)
+            return
         return out_wavs
 
     @classmethod
