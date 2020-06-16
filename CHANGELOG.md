@@ -4,12 +4,47 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Next release] - YYYY-MM-DD
+## [0.3.0] - 2020-06-16
 
 #### Added 
+2a996b4 [src & egs] Publishing pretrained models !! (wham/ConvTasNet) (#125)
+9aa6bf2 [src] Add License info on all (but MUSDB) supported datasets (#130)
+b172619 [src & egs] Kinect-WSJ  Dataset and Single channel DC Recipe (#131)
+3875610 [src] Add licenses info and dataset name for model publishing
+cf0e466 [docs] Add getting started notebook
+18e2389 [docs] Add notebook summary table
+9fbf6a4 [egs] Enable pretrained models sharing on LibriMix (#132)
+9db7454 [egs] Enable wham/DPRNN model sharing (#135)
+4196851 [model_cards] Add message to create model card after publishing
+c1596cf [model_cards] Add ConvTasNet_LibriMix_sepnoisy.md model card (Thanks @JorisCos)
+24f1344 [src & egs] Adding AVSpeech AudioVisual source separation (#127)
+b697b4e [src] Instantiate LibriMix from download with class method (#144)
+9668f35 [src] Add show_available_models in asteroid init
+0f3ede0 [src & tests] Bidirectional residual RNN (#146)
+630e231 [src & tests] Support filenames at the input of `separate` (#154)
 #### Changed
+357da83 [src & hub] Remove System to reduce torch.hub deps (back to #112)
+a0b1d5e [src & tests & egs] Refactor utils files into folder (#120)
+7c1cf78 [egs] GPU `id` defaults to $CUDA_VISIBLE_DEVICES in all recipes (#128)
+e603ce6 [egs] set -e in all recipes to exit or errors (#129)
+f63b7ce [egs] Remove gpus args in all train.py (--id controls that in run.sh)  (#134)
+ab805ff [hub] Change dataset name in LibriMix (fix)
+6ee2282 [src] Add targets argument (to stack sources) to MUSDB18 (#143)
+e0f5214 [notebooks] Rename examples to notebooks
+d487683 [src] Enable using Zenodo without api_key argument (set ACCESS_TOKEN env variable)
 #### Deprecated
+747f10d [src] Deprecate inputs_and_masks.py (#117)
+c843996 [src] Deprecate PITLossWrapper `mode` argument (#119)
 #### Fixed
+bb36b54 [src] Fix PMSQE loss (NAN backward + device placement) (#121)
+a7c7a49 [egs] Fix checkpoint.best_k_models in new PL version (#123)
+631ef15 [egs] Fix: remove shuffle=True in validation Loader (lightning error) (#124)
+07f44ce [egs] Corrections on LibriMix eval and train and evals scripts  (#137)
+aa4b0aa [egs] Fix wavfiles saving in eval.py for enh_single and enh_both tasks (closes #139)
+ce5c345 [egs] Fix wavfiles saving in eval.py for enh tasks (estimates)
+fccf9d0 [egs] Fix #139 : correct squeeze for enhancement tasks (#142)
+9c9d470 [egs] Fix librimix run.sh and eval.py (#148)
+
 
 ## [0.2.1] - 25/05/2020
 #### Added 
