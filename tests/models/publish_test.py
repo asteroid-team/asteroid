@@ -3,7 +3,7 @@ import json
 import shutil
 
 from asteroid.models import save_publishable, upload_publishable, ConvTasNet
-from asteroid.data import WhamDataset
+from asteroid.data.wham_dataset import WhamDataset
 
 
 def populate_wham_dir(path):

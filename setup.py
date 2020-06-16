@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-asteroid_version = "0.3.0rc0"
+asteroid_version = "0.3.0rc1"
 
 with open("README.md", encoding='utf-8') as fh:
     long_description = fh.read()
@@ -16,10 +16,11 @@ setup(
     long_description_content_type="text/markdown",
     license='MIT',
     python_requires='>=3.6',
-    install_requires=['numpy',
+    install_requires=['pyyaml',
+                      'numpy',
                       'scipy',
+                      'pandas',
                       'soundfile',
-                      'pyyaml',
                       'torch',
                       'pytorch-lightning',
                       'torch_optimizer',
