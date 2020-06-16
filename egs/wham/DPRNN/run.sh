@@ -33,18 +33,18 @@ mode=min
 nondefault_src=  # If you want to train a network with 3 output streams for example.
 
 # Training
-batch_size=4
-num_workers=8
+batch_size=6
+num_workers=6
 optimizer=adam
 lr=0.001
 epochs=200
 weight_decay=0.00001
 
 # Architecture config
-kernel_size=2
-stride=1
-chunk_size=250
-hop_size=125
+kernel_size=16
+stride=8
+chunk_size=100
+hop_size=50
 
 # Evaluation
 eval_use_gpu=1
