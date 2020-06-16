@@ -3,7 +3,7 @@ from .utils import deprecation_utils, torch_utils
 from .models import ConvTasNet, DPRNNTasNet
 
 project_root = str(pathlib.Path(__file__).expanduser().absolute().parent.parent)
-__version__ = '0.3.0rc1'
+__version__ = '0.3.0'
 
 
 def show_available_models():

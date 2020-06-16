@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-asteroid_version = "0.3.0rc1"
+asteroid_version = "0.3.0"
 
 with open("README.md", encoding='utf-8') as fh:
     long_description = fh.read()
