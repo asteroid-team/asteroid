@@ -30,24 +30,24 @@ def test_upload():
     model_conf.update(train_set.get_infos())
     save_publishable('tmp/publish_dir', model_conf, metrics={}, train_conf={})
 
-    if False:
-        # Upload
-        zen, current = upload_publishable(
-            'tmp/publish_dir',
-            uploader="Manuel Pariente",
-            affiliation="INRIA",
-            use_sandbox=True,
-            unit_test=True,  # Remove this argument and monkeypatch `input()`
-        )
+    # if False:
+    # Upload
+    zen, current = upload_publishable(
+        'tmp/publish_dir',
+        uploader="Manuel Pariente",
+        affiliation="INRIA",
+        use_sandbox=True,
+        unit_test=True,  # Remove this argument and monkeypatch `input()`
+    )
 
-        # Assert metadata is correct
-        meta = current.json()['metadata']
-        assert meta['creators'][0]['name'] == "Manuel Pariente"
-        assert meta['creators'][0]['affiliation'] == "INRIA"
-        assert 'asteroid-models' in [d['identifier'] for d in meta['communities']]
+    # Assert metadata is correct
+    meta = current.json()['metadata']
+    assert meta['creators'][0]['name'] == "Manuel Pariente"
+    assert meta['creators'][0]['affiliation'] == "INRIA"
+    assert 'asteroid-models' in [d['identifier'] for d in meta['communities']]
 
-        # Clean up
-        zen.remove_deposition(current.json()['id'])
+    # Clean up
+    zen.remove_deposition(current.json()['id'])
     shutil.rmtree('tmp/wham')
 
 
