@@ -31,7 +31,7 @@ class Zenodo(object):
             api_key = os.getenv('ACCESS_TOKEN', None)
         if api_key is None:
             raise ValueError(
-                'Need to set `api_key` somehow. Either through the functions'
+                'Need to set `api_key` somehow. Either through the class'
                 'arguments or by setting ACCESS_TOKEN env variable in bash.'
             )
         self.use_sandbox = use_sandbox
