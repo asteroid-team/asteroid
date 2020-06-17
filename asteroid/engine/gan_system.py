@@ -9,7 +9,7 @@ class GanSystem(pl.LightningModule):
 
     def __init__(self, routine, discriminator, generator, opt_d, opt_g,
                  scheduler_d, scheduler_g, discriminator_loss, validation_loss,
-                 train_loader, special_g_loss=None, val_loader=None):
+                 train_loader, special_g_loss=None, val_loader=None, conf=None):
 
         super(GanSystem, self).__init__()
         self.routine = routine
@@ -23,6 +23,7 @@ class GanSystem(pl.LightningModule):
         self.val_loader = val_loader
         self.scheduler_d = scheduler_d
         self.scheduler_g = scheduler_g
+        self.conf = conf
         if special_g_loss is None:
             self.adversarial_loss = discriminator_loss
         else:
@@ -37,7 +38,6 @@ class GanSystem(pl.LightningModule):
 
             # Get data from data_loader
             inputs, targets = batch
-            inputs = inputs.unsqueeze(1)
             # Forward inputs
             generated_sounds = self(inputs)
             # The discriminator is basically a binary classifier
@@ -99,7 +99,6 @@ class GanSystem(pl.LightningModule):
             ``'val_loss'``: loss
         """
         inputs, targets = batch
-        inputs = inputs.unsqueeze(1)
         est_targets = self(inputs)
         val_loss = self.validation_loss(est_targets, targets)
         # return {'val_loss': val_loss}
@@ -160,21 +159,6 @@ class GanSystem(pl.LightningModule):
         """ Overwrite if needed. Called by pytorch-lightning"""
         pass
 
-    def on_epoch_end(self):
-        """ Overwrite if needed. Called by pytorch-lightning"""
-        sample_rate = 16000
-        inputs, targets = next(iter(self.val_loader))
-        inputs = inputs.unsqueeze(1)
-        generated_outputs = self(inputs.cuda())
-        noisy = inputs[1].cpu().squeeze().numpy()
-        clean = targets[1].cpu().squeeze().numpy()
-        generated = generated_outputs[1].detach().cpu().squeeze().numpy()
-        path = os.path.join("res/", f"{self.current_epoch}")
-        os.makedirs(path)
-        sf.write(os.path.join(path, "clean.wav"), clean, sample_rate)
-        sf.write(os.path.join(path, "noisy.wav"), noisy, sample_rate)
-        sf.write(os.path.join(path, "generated.wav"), generated, sample_rate)
-        return
 
     @pl.data_loader
     def train_dataloader(self):

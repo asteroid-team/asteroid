@@ -109,7 +109,6 @@ class Discriminator(nn.Module):
         # in : 16384 x 2
         self.ref_x = next(iter(train_loader))
         ref_inputs, ref_targets = self.ref_x
-        ref_inputs = ref_inputs.unsqueeze(1)
         self.ref_x = torch.cat((ref_inputs, ref_targets), dim=1)
         negative_slope = 0.03
         self.conv1 = nn.Conv1d(in_channels=2, out_channels=32, kernel_size=31, stride=2, padding=15)   # out : 8192 x 32

@@ -16,10 +16,10 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
 
 # General
-stage=0  # Controls from which stage to start
+stage=1  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=$CUDA_VISIBLE_DEVICES
+test_dir=data/wav16k/min/test/
 . ../wham/ConvTasNet/utils/parse_options.sh
 
 
@@ -34,7 +34,7 @@ if [[ -z ${tag} ]]; then
 	tag=${uuid}
 fi
 
-expdir=exp/train_convtasnet_${tag}
+expdir=exp/train_SEGAN_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
@@ -42,14 +42,15 @@ echo "Results from the following experiment will be stored in $expdir"
 if [[ $stage -le 1 ]]; then
   echo "Stage 1: Training"
   mkdir -p logs
-  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir $expdir \
-		 | tee logs/train_${tag}.log
+  $python_path train.py  \
+    --exp_dir $expdir/ | tee logs/train_${tag}.log \
 	cp logs/train_${tag}.log $expdir/train.log
 fi
 
 if [[ $stage -le 2 ]]; then
 	echo "Stage 2 : Evaluation"
-  $python_path eval.py --exp_dir $expdir --test_dir $test_dir \
-
+  $python_path eval.py --test_dir $test_dir \
+    --exp_dir ${expdir} | tee logs/eval_${tag}.log
 	cp logs/eval_${tag}.log $expdir/eval.log
+
 fi
