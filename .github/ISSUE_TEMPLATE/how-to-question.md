@@ -1,6 +1,6 @@
 ---
-name: How to question
-about: Asking how-to questions
+name: \U0001F914 \uFF1F Asking a question
+about: Asking a question
 title: ''
 labels: question
 assignees: ''
