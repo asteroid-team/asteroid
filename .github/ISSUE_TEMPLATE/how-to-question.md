@@ -1,5 +1,5 @@
 ---
-name: "\U0001F914 \uFF1F Asking a question"
+name: "\U0001F914 \u003F Asking a question"
 about: Asking a question
 title: ''
 labels: question
