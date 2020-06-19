@@ -76,7 +76,7 @@ def main(conf):
         # Forward the network on the mixture.
         mix, sources = tensors_to_device(test_set[idx], device=model_device)
         est_sources = torch.zeros_like(mix)
-        for n_slice in range(mix.size()[0]):
+        for n_slice in range(mix.size(1)):
             est_sources[0,n_slice,:] = model(mix[0,n_slice,:].unsqueeze(0).unsqueeze(0))
         est_sources = de_slicer(est_sources, sources)
         sources = sources.unsqueeze(0)
