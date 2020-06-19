@@ -47,7 +47,7 @@ class SEGAN(LibriMix):
         # Convert sources to tensor
         sources = torch.from_numpy(sources)
         if self.segment is None or self.seg_len > 16384 :
-            return self.slicer(mixture), sources
+            return self.slicer(mixture), self.slicer(sources)
         return mixture, sources
 
     def slicer(self,sources, window=16384):
@@ -56,14 +56,11 @@ class SEGAN(LibriMix):
             nb_slices = int(len_s // window) + 1
             sliced = torch.zeros((sources.size()[0], nb_slices * window))
             sliced = sliced.reshape((sources.size()[0], nb_slices, window))
-            for nb_source in range(sources.size()[0]):
+            for n in range(sources.size(0)):
                 for j in range(nb_slices - 1):
-                    sliced[nb_source, j, :] = sources[nb_source,
-                                              j * window: (j + 1) * window]
-                sliced[nb_source, -1, : len_s - (j + 1) * window] = sources[
-                                                                    nb_source,
-                                                                    (
-                                                                                j + 1) * window:]
+                    sliced[n, j, :] = sources[n,j * window: (j + 1) * window]
+                sliced[n, -1, : len_s - (j + 1) * window] = sources[n,
+                                                            (j + 1) * window:]
             return sliced
         return sources.unsqueeze(1)
 
