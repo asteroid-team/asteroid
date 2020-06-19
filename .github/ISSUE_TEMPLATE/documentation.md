@@ -1,5 +1,5 @@
 ---
-name: \U0001F4DD Typos and doc fixes
+name: "\U0001F4DD Typos and doc fixes"
 about: Typos and doc fixes
 title: ''
 labels: typo, documentation
