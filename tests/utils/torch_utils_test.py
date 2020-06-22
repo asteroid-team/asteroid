@@ -36,9 +36,11 @@ def test_loader_module():
 def test_loader_submodule():
     class SuperModule(nn.Module):
         """ nn.Module subclass that holds a model under self.whoever """
+
         def __init__(self, sub_model):
             super().__init__()
             self.whoever = sub_model
+
     model = SuperModule(nn.Sequential(nn.Linear(10, 10)))
     # Keys in state_dict will be whoever.0.weight, whoever.0.bias
     state_dict = model.state_dict()
@@ -53,3 +55,13 @@ def test_loader_submodule():
     # Apply our workaround torch_utils.load_state_dict_in and assert True.
     model_2 = torch_utils.load_state_dict_in(state_dict, model_2)
     assert torch_utils.are_models_equal(model, model_2)
+
+
+def test_slicer():
+    x = torch.randn(10, 2, 16384)
+    sliced = torch_utils.slice(x)
+    unsliced = torch_utils.unslice(sliced, x.shape)
+    result = False
+    if torch.mean(x - unsliced) < 1E-6:
+        result = True
+    assert result

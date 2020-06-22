@@ -123,3 +123,107 @@ def are_models_equal(model1, model2):
         if p1.data.ne(p2.data).sum() > 0:
             return False
     return True
+
+
+def slice(sources, w_size=16384, h_size=16384 // 2):
+    """  Slice a signal in slices of size w_size
+
+     Args:
+         sources (torch.Tensor): sources of shape [nb_sources,channels,samples]
+         w_size (int): size of the window
+         h_size (int): size of the stride
+     Returns:
+         sliced signal (torch.Tensor): shape [nb_sources,nb_slices,channels,
+                                              samples]
+     """
+    # stride must be shorter than window
+    if h_size < w_size / 2:
+        raise ValueError(
+            f"You can't have a stride smaller than half the window")
+    # stride must be shorter than window
+    if h_size > w_size:
+        raise ValueError(
+            f"You can't have a stride larger than the window")
+    # Get source length
+    len_s = sources.size(-1)
+    # If source is longer than w_size slice
+    if len_s > w_size:
+        padding = 0
+        # Automatic padding
+        if (len_s - w_size) % h_size != 0:
+            padded = torch.zeros((sources.size(0), sources.size(1),
+                                  sources.size(2) + w_size - (len_s - w_size) %
+                                  h_size))
+            padded[:, :, :len_s] = sources
+            sources = padded
+            len_s = sources.size(-1)
+        nb_slices = int((len_s - w_size) // h_size) + 1
+        sliced = torch.zeros((sources.size(0),  nb_slices, sources.size(1),
+                              w_size))
+        for j in range(nb_slices):
+            sliced[:, j, :, :] = sources[:, :, j * h_size: j * h_size + w_size]
+        return sliced
+    # If source is smaller then pad it to w_size
+    if len_s < w_size:
+        new_size = list(sources.size()[:-1]) + [w_size]
+        padded = torch.zeros(new_size)
+        padded[:, :, :len_s] = sources
+        return padded.unsqueeze(1)
+    # Else source equal window just unsqueeze
+    return sources.unsqueeze(1)
+
+
+def unslice(sources, original_shape, w_size=16384, h_size=16384 // 2):
+    """  Reconstruct signal from sliced signal
+
+     Args:
+         sources (torch.Tensor): sources of shape [nb_sources, nb_slices,
+                                                   channels, samples]
+         original_shape (torch.size): size of the original signal
+         w_size (int): size of the window
+         h_size (int): size of the stride
+     Returns:
+         reconstructed (torch.Tensor): reconstruced signal
+          of shape [nb_sources,channels,samples]
+     """
+
+    # Define Hanning windows
+    w = torch.hann_window((w_size - h_size) * 2,dtype=sources.dtype)
+    # Ascending part
+    w_up = w[:w.size(0) // 2]
+    # Descending part
+    w_down = w[w.size(0) // 2:]
+    # Number of slices
+    n_slices = sources.size(1)
+    # Create output
+    reconstructed = torch.zeros((sources.size(0),sources.size(2),
+                                 w_size + h_size * (n_slices - 1)))
+    # Apply w_down to beginning of the first slice
+    reconstructed[:, :, : w_size - h_size] += sources[:, 0, :, :w_size - h_size] \
+                                           * w_down
+    # Reconstruct the signal from the slice
+    for n_slice in range(n_slices):
+        start = n_slice * h_size
+        end = start + w_size - h_size
+        reconstructed[:, :, start:end] += sources[:,  n_slice, :,
+                                       :w_size - h_size] * w_up
+        start = end
+        end = start + w_size - 2 * (w_size - h_size)
+        reconstructed[:, :, start:end] += sources[:, n_slice, :,
+                                       w_size - h_size: h_size]
+        start = end
+        end = start + w_size - h_size
+        reconstructed[:, :, start:end] += sources[:, n_slice, :, h_size:] \
+                                          * w_down
+    # Correct the end of the signal with w_up
+    reconstructed[:, :, h_size * (n_slice + 1):] += sources[:, -1, :, h_size:] \
+                                                    * w_up
+    # Cut unwanted padding
+    reconstructed = reconstructed[:, :, :original_shape[-1]]
+    return reconstructed
+
+import torch
+x = torch.randn(10, 1, 16384)
+sliced = slice(x)
+unsliced = unslice(sliced, x.shape)
+assert torch.mean(x-unsliced) < 1E-6
