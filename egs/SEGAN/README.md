@@ -26,6 +26,6 @@ All the models were trained on [LibriMix](../librimix) train-360 with task enh_s
 |  Generator loss | SI-SNRi(dB) | SI-SNR(dB) | STOI | STOIi | PESQ | PESQi |
 |:---------------:|:-----------:|:----------:|:----:|:-----:|:----:|:-----:|
 | ConvTasnet      | 10.5        | 13.9        |0.92 |0.12   | 2.1  |  0.91 |
-| Adversarial + L1| 4.2         | 7.66        |0.83 |0.03   | 1.4  |  0.21 |
+| Adversarial + L1| 4.2         | 7.66        |0.83 |0.03   | 1.37  |  0.21 |
 |  L1             | 4.1         | 7.59        |0.83  |0.03  |1.39  |  0.23 |
 | SNR             | 4.6         | 8.0         |0.84  |0.05  |1.5   |  0.3  |
