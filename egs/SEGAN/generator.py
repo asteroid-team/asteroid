@@ -3,14 +3,18 @@ from torch import nn
 from asteroid.engine.optimizers import make_optimizer
 from torch.nn.modules.loss import _Loss
 
+from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
+
 
 class Generator(nn.Module):
     """G"""
+
     def __init__(self):
         super().__init__()
         # size notations = [batch_size x feature_maps x width] (height omitted - 1D convolutions)
         # encoder gets a noisy signal as input
-        self.enc1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=32, stride=2, padding=15)   # out : [B x 16 x 8192]
+        self.enc1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=32,
+                              stride=2, padding=15)  # out : [B x 16 x 8192]
         self.enc1_nl = nn.PReLU()  # non-linear transformation after encoder layer 1
         self.enc2 = nn.Conv1d(16, 32, 32, 2, 15)  # [B x 32 x 4096]
         self.enc2_nl = nn.PReLU()
@@ -36,7 +40,8 @@ class Generator(nn.Module):
         # decoder generates an enhanced signal
         # each decoder output are concatenated with homolgous encoder output,
         # so the feature map sizes are doubled
-        self.dec10 = nn.ConvTranspose1d(in_channels=2048, out_channels=512, kernel_size=32, stride=2, padding=15)
+        self.dec10 = nn.ConvTranspose1d(in_channels=2048, out_channels=512,
+                                        kernel_size=32, stride=2, padding=15)
         self.dec10_nl = nn.PReLU()  # out : [B x 512 x 16] -> (concat) [B x 1024 x 16]
         self.dec9 = nn.ConvTranspose1d(1024, 256, 32, 2, 15)  # [B x 256 x 32]
         self.dec9_nl = nn.PReLU()
@@ -56,7 +61,8 @@ class Generator(nn.Module):
         self.dec2_nl = nn.PReLU()
         self.dec1 = nn.ConvTranspose1d(64, 16, 32, 2, 15)  # [B x 16 x 8192]
         self.dec1_nl = nn.PReLU()
-        self.dec_final = nn.ConvTranspose1d(32, 1, 32, 2, 15)  # [B x 1 x 16384]
+        self.dec_final = nn.ConvTranspose1d(32, 1, 32, 2,
+                                            15)  # [B x 1 x 16384]
         self.dec_tanh = nn.Tanh()
 
         # initialize weights
@@ -124,14 +130,36 @@ class Generator(nn.Module):
 
 class GeneratorLoss(_Loss):
 
-    def __init__(self, l=100):
+    def __init__(self, l=100, method='classic'):
         super().__init__()
-        self.l=l
+        self.L = l
+        self.method = method
 
-    def forward(self, estimates,targets,est_labels):
-        loss = 0.5 * torch.mean((est_labels - torch.ones_like(est_labels)) ** 2) + \
-               self.l * torch.mean(torch.abs(torch.add(estimates,torch.neg(targets))))
+    def classic_loss(self, estimates, targets, est_labels):
+        loss = 0.5 * torch.mean(
+            (est_labels - torch.ones_like(est_labels)) ** 2) + \
+               self.L * torch.mean(
+            torch.abs(torch.add(estimates, torch.neg(targets))))
         return loss
+
+    def only_L1_loss(self, estimates, targets):
+        loss = self.L * torch.mean(torch.abs(torch.add(estimates,
+                                                       torch.neg(targets))))
+        return loss
+
+    def only_SNR_loss(self, estimates, targets):
+        loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
+        loss = loss_func(estimates, targets)
+        return loss
+
+    def forward(self, estimates, targets, est_labels, method):
+
+        if method == 'classic':
+            return self.classic_loss(estimates, targets, est_labels)
+        elif method == 'only_SNR':
+            return self.only_SNR_loss(estimates, targets)
+        elif method == 'only_L1':
+            return self.only_L1_loss(estimates, targets)
 
 
 def make_generator_and_optimizer(conf):
@@ -148,5 +176,3 @@ def make_generator_and_optimizer(conf):
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
     g_loss = GeneratorLoss(conf['g_loss']['l'])
     return model, optimizer, g_loss
-
-
