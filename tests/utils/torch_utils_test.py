@@ -2,6 +2,7 @@ import torch
 import pytest
 from torch import nn
 from asteroid import torch_utils
+from torch.testing import assert_allclose
 
 
 def test_pad():
@@ -58,10 +59,7 @@ def test_loader_submodule():
 
 
 def test_slicer():
-    x = torch.randn(10, 2, 16384)
+    x = torch.randn(10, 2, 16384 + 200)
     sliced = torch_utils.slice(x)
     unsliced = torch_utils.unslice(sliced, x.shape)
-    result = False
-    if torch.mean(x - unsliced) < 1E-6:
-        result = True
-    assert result
+    assert_allclose(x, unsliced, rtol=0, atol=1E-6)
