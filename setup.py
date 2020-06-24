@@ -22,7 +22,7 @@ setup(
                       'pandas',
                       'soundfile',
                       'torch',
-                      'pytorch-lightning',
+                      'pytorch-lightning>=0.7.5,<0.8',
                       'torch_optimizer',
                       'pb_bss_eval',
                       'torch_stoi',
