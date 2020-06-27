@@ -1,0 +1,1 @@
+git+git://github.com/path/to/package-two@master
