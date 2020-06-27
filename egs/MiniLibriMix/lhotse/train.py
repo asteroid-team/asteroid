@@ -9,13 +9,14 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid.masknn.recurrent import DPRNN
+from asteroid import DPRNNTasNet
 from lhotse.dataset.source_separation import PreMixedSourceSeparationDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 
 from lhotse.cut import CutSet
-from local.dataset_wrapper import LhotseDataset
+from local.dataset_wrapper import LhotseDataset, OnTheFlyMixing
 
 # Keys which are not in the conf.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be
@@ -29,10 +30,9 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf):
-    train_set = LhotseDataset(PreMixedSourceSeparationDataset(sources_set=CutSet.from_yaml('data/cuts_sources.yml.gz'),
-                                                mixtures_set=CutSet.from_yaml('data/cuts_mix.yml.gz'),
-                                                root_dir="."), 300, 0)
 
+
+    train_set = LhotseDataset(OnTheFlyMixing(), 300, 0)
 
     val_set = LhotseDataset(PreMixedSourceSeparationDataset(sources_set=CutSet.from_yaml('data/cuts_sources.yml.gz'),
                                                 mixtures_set=CutSet.from_yaml('data/cuts_mix.yml.gz'),
@@ -49,7 +49,20 @@ def main(conf):
     # Update number of source values (It depends on the task)
     #conf['masknet'].update({'n_src': train_set.n_src})
 
-    model = DPRNN(**conf['masknet']) # no filterbanks we just mask the features
+    class Model(torch.nn.Module):
+        def __init__(self, net):
+            super(Model, self).__init__()
+            #self.transf = torch.nn.Conv1d(23, 32, 1, bias=True)
+            self.net = net
+            #self.back = torch.nn.Conv1d(32, 23, 1, bias=True)
+        def forward(self, x):
+            #x = self.transf(x)
+            mask = self.net(x)
+            masked = x.unsqueeze(1)*mask
+            #b, s, ch, frames = masked.size()
+            return masked #self.back(masked.reshape(b*s, ch, frames)).reshape(b, s, -1, frames)
+
+    model = Model(DPRNN(**conf['masknet'])) # no filterbanks we just mask the features
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
     # Define scheduler
     scheduler = None

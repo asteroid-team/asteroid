@@ -14,7 +14,7 @@ python_path=python
 
 # General
 stage=2  # Controls from which stage to start
-tag="test"  # Controls the directory name associated to the experiment
+tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=$CUDA_VISIBLE_DEVICES
 

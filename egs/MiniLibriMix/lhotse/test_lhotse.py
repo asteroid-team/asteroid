@@ -3,45 +3,18 @@ import numpy as np
 from lhotse.dataset.source_separation import PreMixedSourceSeparationDataset, DynamicallyMixedSourceSeparationDataset
 from lhotse.cut import CutSet
 import torch
+from local.dataset_wrapper import LhotseDataset, OnTheFlyMixing
 
-train_set_static = PreMixedSourceSeparationDataset(sources_set=CutSet.from_yaml('data/cuts_sources.yml.gz'),
-                                                mixtures_set=CutSet.from_yaml('data/cuts_mix.yml.gz'),
-                                                root_dir=".")
-
-from torch.utils.data import DataLoader, Dataset
-
-
-class LhotseDataset(Dataset):
-    def __init__(self, dataset, target_length, frames_dim=0):
-        self.dataset = dataset # dataset which return feats of unequal length.
-        self.target_length = target_length # target length (samples or frames)
-        self.frames_dim = frames_dim # tensor dimension for sequence length.
-
-    def __len__(self):
-        return len(self.dataset)
-
-    def __getitem__(self, item):
-        # if longer than self.target_length --> we take a random chunk
-        # if shorter we may want to pad it. In feature domain it makes sense (we have losses mainly on a per-frame
-        # basis, in time domain no).
-        out = self.dataset[item]
-        # we iterate over the outputs and select random chunks
-        for k in out.keys():
-            if k in ["real_mask", "binary_mask"]:
-                continue
-            tmp = out[k]
-            frames_dim = self.frames_dim if len(tmp.shape) == 2 else self.frames_dim + 1 # handle sources
-            if tmp.shape[frames_dim] < self.target_length:
-                raise NotImplementedError # TODO
-            elif tmp.shape[frames_dim] > self.target_length:
-                # we chunk
-                offset = np.random.randint(0, tmp.shape[frames_dim] - self.target_length)
-                tmp = tmp.narrow(dim=frames_dim,
-                                       start=offset, length= self.target_length)
-            out[k] = tmp
-        return out["mixture"], out["sources"]
+#train_set_static = PreMixedSourceSeparationDataset(sources_set=CutSet.from_yaml('data/cuts_sources.yml.gz'),
+   #                                             mixtures_set=CutSet.from_yaml('data/cuts_mix.yml.gz'),
+              #                                  root_dir=".")
+#
+#train_set_static[0]
+#from torch.utils.data import DataLoader, Dataset
 
 
-train_set = LhotseDataset(train_set_static, 300, 0)
-for i in DataLoader(train_set, batch_size=1, shuffle=True):
-    print(i)
+
+train_set = OnTheFlyMixing() #LhotseDataset(train_set_static, 300, 0)
+train_set[0]
+#for i in DataLoader(train_set, batch_size=1, shuffle=True):
+ #   print(i)

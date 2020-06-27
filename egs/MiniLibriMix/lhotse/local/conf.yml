@@ -4,7 +4,7 @@ masknet:
   in_chan: 23
   n_src: 2
   out_chan: 23
-  bn_chan: 32
+  bn_chan: 64
   hid_size: 128
   chunk_size: 20
   hop_size: 10
