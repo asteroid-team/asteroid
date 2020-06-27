@@ -9,12 +9,13 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid.masknn.recurrent import DPRNN
-from lhotse.dataset.source_separation import PreMixedSourceSeparationDataset, DynamicallyMixedSourceSeparationDataset
+from lhotse.dataset.source_separation import PreMixedSourceSeparationDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 
 from lhotse.cut import CutSet
+from local.dataset_wrapper import LhotseDataset
 
 # Keys which are not in the conf.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be
@@ -28,15 +29,14 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf):
-    train_set = PreMixedSourceSeparationDataset(sources_set=CutSet.from_yaml('data/cuts_sources.yml.gz'),
+    train_set = LhotseDataset(PreMixedSourceSeparationDataset(sources_set=CutSet.from_yaml('data/cuts_sources.yml.gz'),
                                                 mixtures_set=CutSet.from_yaml('data/cuts_mix.yml.gz'),
-                                                root_dir=".")
-    import ipdb
-    ipdb.set_trace()
+                                                root_dir="."), 300, 0)
 
-    val_set = PreMixedSourceSeparationDataset(sources_set=CutSet.from_yaml('data/cuts_sources.yml.gz'),
+
+    val_set = LhotseDataset(PreMixedSourceSeparationDataset(sources_set=CutSet.from_yaml('data/cuts_sources.yml.gz'),
                                                 mixtures_set=CutSet.from_yaml('data/cuts_mix.yml.gz'),
-                                                root_dir=".")
+                                                root_dir="."), 300, 0)
 
     train_loader = DataLoader(train_set, shuffle=True,
                               batch_size=conf['training']['batch_size'],
@@ -47,7 +47,7 @@ def main(conf):
                             num_workers=conf['training']['num_workers'],
                             drop_last=True)
     # Update number of source values (It depends on the task)
-    conf['masknet'].update({'n_src': train_set.n_src})
+    #conf['masknet'].update({'n_src': train_set.n_src})
 
     model = DPRNN(**conf['masknet']) # no filterbanks we just mask the features
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
@@ -65,7 +65,7 @@ def main(conf):
 
     # Define Loss function.
 
-    loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
+    loss_func = PITLossWrapper(lambda x, y: pairwise_neg_sisdr(x, y).mean(-1), pit_from='pw_mtx')
     system = System(model=model, loss_func=loss_func, optimizer=optimizer,
                     train_loader=train_loader, val_loader=val_loader,
                     scheduler=scheduler, config=conf)

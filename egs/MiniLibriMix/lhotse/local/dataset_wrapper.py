@@ -1,15 +1,5 @@
-## for debugging purposes only
+from torch.utils.data import Dataset
 import numpy as np
-from lhotse.dataset.source_separation import PreMixedSourceSeparationDataset, DynamicallyMixedSourceSeparationDataset
-from lhotse.cut import CutSet
-import torch
-
-train_set_static = PreMixedSourceSeparationDataset(sources_set=CutSet.from_yaml('data/cuts_sources.yml.gz'),
-                                                mixtures_set=CutSet.from_yaml('data/cuts_mix.yml.gz'),
-                                                root_dir=".")
-
-from torch.utils.data import DataLoader, Dataset
-
 
 class LhotseDataset(Dataset):
     def __init__(self, dataset, target_length, frames_dim=0):
@@ -39,9 +29,4 @@ class LhotseDataset(Dataset):
                 tmp = tmp.narrow(dim=frames_dim,
                                        start=offset, length= self.target_length)
             out[k] = tmp
-        return out["mixture"], out["sources"]
-
-
-train_set = LhotseDataset(train_set_static, 300, 0)
-for i in DataLoader(train_set, batch_size=1, shuffle=True):
-    print(i)
+        return out["mixture"].transpose(0, -1), out["sources"].transpose(1, -1)
