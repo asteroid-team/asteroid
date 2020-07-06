@@ -42,7 +42,7 @@ class GanSystem(pl.LightningModule):
         if optimizer_idx == 0:
             # Compute D loss for targets (labels = 1)
             est_true_labels = self.discriminator(targets, inputs, targets)
-            true_loss = self.d_loss(inputs, targets, estimates.detach(),
+            true_loss = self.d_loss(inputs, targets, estimates,
                                     est_true_labels, true_labels)
             # Compute D loss for estimates (labels = 0)
             est_false_labels = self.discriminator(estimates.detach(), inputs,
