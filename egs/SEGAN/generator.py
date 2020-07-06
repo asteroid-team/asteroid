@@ -152,13 +152,13 @@ class GeneratorLoss(_Loss):
         loss = loss_func(estimates, targets)
         return loss
 
-    def forward(self, estimates, targets, est_labels, method):
+    def forward(self, estimates, targets, est_labels):
 
-        if method == 'classic':
+        if self.method == 'classic':
             return self.classic_loss(estimates, targets, est_labels)
-        elif method == 'only_SNR':
+        elif self.method == 'only_SNR':
             return self.only_SNR_loss(estimates, targets)
-        elif method == 'only_L1':
+        elif self.method == 'only_L1':
             return self.only_L1_loss(estimates, targets)
 
 

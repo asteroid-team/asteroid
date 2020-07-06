@@ -164,7 +164,7 @@ class Discriminator(nn.Module):
             if isinstance(m, nn.Conv1d):
                 nn.init.xavier_normal_(m.weight.data)
 
-    def forward(self, x):
+    def forward(self, x, y ,z):
         """
         Forward pass of discriminator.
         Args:
@@ -209,6 +209,7 @@ class Discriminator(nn.Module):
         # further pass no longer needed
 
         # train pass
+        x = torch.cat((x, z), dim=1)
         x = self.conv1(x)
         x, _, _ = self.vbn1(x, mean1, meansq1)
         x = self.lrelu1(x)
@@ -261,7 +262,7 @@ class DiscriminatorLoss(_Loss):
     def __init__(self):
         super().__init__()
 
-    def forward(self, est_labels, labels):
+    def forward(self, inputs, targets, estimates, est_labels, labels):
         # Behaves differently if estimates come from  the generated data or not
         #
         if labels:
