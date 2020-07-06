@@ -45,8 +45,8 @@ class GanSystem(pl.LightningModule):
             true_loss = self.d_loss(inputs, targets, estimates.detach(),
                                     est_true_labels, true_labels)
             # Compute D loss for estimates (labels = 0)
-            est_false_labels = self.discriminator(estimates, inputs, targets)
-            fake_loss = self.d_loss(inputs, targets, estimates.detach(),
+            est_false_labels = self.discriminator(estimates.detach(), inputs, targets)
+            fake_loss = self.d_loss(inputs, targets, estimates,
                                     est_false_labels, false_labels)
             # Overall, the loss is the mean of these
             d_loss = (true_loss + fake_loss) * 0.5
