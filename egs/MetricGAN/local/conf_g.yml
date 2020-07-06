@@ -1,0 +1,28 @@
+# filterbank config
+filterbank:
+  fb_name: 'STFTFB'
+  n_filters: 512
+  kernel_size: 512
+  stride: 256
+training:
+  epochs: 200
+  batch_size: 64
+  num_workers: 4
+  half_lr: yes
+  early_stop: yes
+g_loss:
+  l: 1
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.0001
+  betas:  [0.9, 0.999]
+  weight_decay: 0.
+# Data config
+data:
+  task: enh_single
+  train_dir: data/wav16k/min/train-360
+  valid_dir: data/wav16k/min/dev
+  sample_rate: 16000
+  n_src: 1
+  segment: 3
