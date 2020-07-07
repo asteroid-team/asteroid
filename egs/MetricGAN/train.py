@@ -75,17 +75,12 @@ def main(conf_g, conf_d):
 
     validation_loss = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
 
-    # gan = GanSystem(discriminator=discriminator, generator=generator,
-    #                 opt_d=opt_d, opt_g=opt_g, scheduler_d=scheduler_d,
-    #                 scheduler_g=scheduler_g, discriminator_loss=d_loss,
-    #                 generator_loss=g_loss, validation_loss=validation_loss,
-    #                 train_loader=train_loader, val_loader=val_loader,
-    #                 conf=conf_g)
-    from asteroid.engine.system import System
-
-    gan = System(model=generator, loss_func=validation_loss, optimizer=opt_g,
+    gan = GanSystem(discriminator=discriminator, generator=generator,
+                    opt_d=opt_d, opt_g=opt_g, scheduler_d=scheduler_d,
+                    scheduler_g=scheduler_g, discriminator_loss=d_loss,
+                    generator_loss=g_loss, validation_loss=validation_loss,
                     train_loader=train_loader, val_loader=val_loader,
-                    scheduler=scheduler_g, config=conf_d)
+                    conf=conf_g)
 
     # Define callbacks
     checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
