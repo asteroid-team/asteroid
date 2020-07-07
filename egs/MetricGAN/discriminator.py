@@ -29,7 +29,7 @@ class Discriminator(nn.Module):
         self.linear = nn.Sequential(
             nn.utils.spectral_norm(nn.Linear(50, 50)),
             nn.LeakyReLU(negative_slope),
-            nn.utils.spectral_norm(nn.Linear(50,10)),
+            nn.utils.spectral_norm(nn.Linear(50, 10)),
             nn.LeakyReLU(negative_slope),
             nn.utils.spectral_norm(nn.Linear(10, 1)),
             )

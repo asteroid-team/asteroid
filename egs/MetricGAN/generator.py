@@ -6,6 +6,9 @@ from torch.nn.modules.loss import _Loss
 from asteroid import torch_utils
 from asteroid.filterbanks import make_enc_dec
 from asteroid.filterbanks.transforms import take_mag, apply_mag_mask
+import torch
+from asteroid.losses import PITLossWrapper
+from asteroid.losses import pairwise_neg_sisdr
 
 
 class Generator(nn.Module):
@@ -38,6 +41,7 @@ class Generator(nn.Module):
         # x = nn.utils.spectral_norm(x)
         mag = torch.transpose(mag, 1, 2)
         # Compute mask
+        self.LSTM.flatten_parameters()
         mask, _ = self.LSTM(mag)
         mask = self.model(mask)
         mask = torch.transpose(mask, 1, 2)
@@ -54,7 +58,9 @@ class GeneratorLoss(_Loss):
         self.s = s
 
     def forward(self, estimates, targets, est_labels):
-        loss = torch.mean((est_labels - self.s) ** 2)
+        # loss = torch.mean((est_labels - self.s) ** 2)
+        loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
+        loss = loss_func(estimates, targets)
         return loss
 
 
