@@ -79,7 +79,7 @@ def main(conf_g, conf_d):
     gan = GanSystem(discriminator=discriminator, generator=generator,
                     opt_d=opt_d, opt_g=opt_g, scheduler_d=scheduler_d,
                     scheduler_g=scheduler_g, discriminator_loss=d_loss,
-                    generator_loss=g_loss, validation_loss=validation_loss,
+                    generator_loss=g_loss,
                     train_loader=train_loader, val_loader=val_loader,
                     conf=conf_g)
 
