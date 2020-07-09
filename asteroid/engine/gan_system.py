@@ -3,13 +3,42 @@ import soundfile as sf
 import pytorch_lightning as pl
 import torch
 import os
+from torch_stoi import NegSTOILoss
+from asteroid.losses import PITLossWrapper
 
 
 class GanSystem(pl.LightningModule):
 
+    """ Base class for GAN training systems.
+       Contains a generator a discriminator, two optimizers,
+       a generator loss function, a discriminator loss function,
+       a validation loss function,
+       training and validation dataloaders and learning rate scheduler.
+
+       Args:
+           discriminator (torch.nn.Module): Instance of discriminator (d).
+           generator (torch.nn.Module): Instance of generator (g).
+           opt_d (torch.optim.Optimizer): Instance of optimizer for d.
+           opt_g (torch.optim.Optimizer): Instance of optimizer for g.
+           discriminator_loss (callable): Loss function with signature
+               (est_targets, targets).
+            generator_loss (callable): Loss function with signature
+               (est_targets, targets).
+           train_loader (torch.utils.data.DataLoader): Training dataloader.
+           val_loader (torch.utils.data.DataLoader): Validation dataloader.
+           scheduler_d (torch.optim.lr_scheduler._LRScheduler): Instance
+               of learning rate schedulers for d.
+           scheduler_g (torch.optim.lr_scheduler._LRScheduler): Instance
+               of learning rate schedulers for g.
+           conf: Anything to be saved with the checkpoints during training.
+               The config dictionary to re-instantiate the run for example.
+       """
+
     def __init__(self, discriminator, generator, opt_d, opt_g,
-                 scheduler_d, scheduler_g, discriminator_loss, generator_loss,
-                 validation_loss, train_loader, val_loader=None, conf=None):
+                 discriminator_loss, generator_loss, train_loader,
+                 validation_loss=PITLossWrapper(NegSTOILoss(), pit_from='pw_pt'),
+                 val_loader=None, scheduler_d=None, scheduler_g=None,
+                 conf=None):
 
         super(GanSystem, self).__init__()
         self.discriminator = discriminator
@@ -24,31 +53,27 @@ class GanSystem(pl.LightningModule):
         self.scheduler_d = scheduler_d
         self.scheduler_g = scheduler_g
         self.conf = conf
+        self.estimates = None
 
     def forward(self, z):
         return self.generator(z)
 
-    def routine_step(self, batch, optimizer_idx):
-
+    def training_step(self, batch, batch_nb, optimizer_idx):
         # Get data from data_loader
         inputs, targets = batch
         # Forward inputs
-        estimates = self(inputs)
-        # The discriminator is basically a binary classifier
-        true_labels = True
-        false_labels = False
-
+        self.estimates = self(inputs)
         # Train discriminator
         if optimizer_idx == 0:
-            # Compute D loss for targets (labels = 1)
+            # Compute D loss for targets
             est_true_labels = self.discriminator(targets, inputs, targets)
-            true_loss = self.d_loss(inputs, targets, estimates,
-                                    est_true_labels, true_labels)
-            # Compute D loss for estimates (labels = 0)
-            est_false_labels = self.discriminator(estimates.detach(), inputs,
-                                                  targets)
-            fake_loss = self.d_loss(inputs, targets, estimates,
-                                    est_false_labels, false_labels)
+            true_loss = self.d_loss(inputs, targets, self.estimates,
+                                    est_true_labels, True)
+            # Compute D loss for self.estimates
+            est_false_labels = self.discriminator(self.estimates.detach(),
+                                                  inputs, targets)
+            fake_loss = self.d_loss(inputs, targets, self.estimates,
+                                    est_false_labels, False)
             # Overall, the loss is the mean of these
             d_loss = (true_loss + fake_loss) * 0.5
             tqdm_dict = {'d_loss': d_loss}
@@ -62,9 +87,8 @@ class GanSystem(pl.LightningModule):
         # Train generator
         if optimizer_idx == 1:
             # The generator is supposed to fool the discriminator.
-            # To do so labels are set as true.
-            est_labels = self.discriminator(estimates, inputs, targets)
-            adversarial_loss = self.g_loss(estimates, targets, est_labels)
+            est_labels = self.discriminator(self.estimates, inputs, targets)
+            adversarial_loss = self.g_loss(self.estimates, targets, est_labels)
             tqdm_dict = {'g_loss': adversarial_loss}
             output = OrderedDict({
                 'loss': adversarial_loss,
@@ -72,10 +96,6 @@ class GanSystem(pl.LightningModule):
                 'log': tqdm_dict
             })
             return output
-
-    def training_step(self, batch, batch_nb, optimizer_idx):
-        output = self.routine_step(batch, optimizer_idx)
-        return output
 
     def validation_step(self, batch, batch_nb):
         """ Need to overwrite PL validation_step to do validation.
@@ -93,7 +113,6 @@ class GanSystem(pl.LightningModule):
         inputs, targets = batch
         est_targets = self(inputs)
         val_loss = self.validation_loss(est_targets, targets)
-        # return {'val_loss': val_loss}
         return {'val_loss': val_loss}
 
     def validation_end(self, outputs):
@@ -134,11 +153,6 @@ class GanSystem(pl.LightningModule):
 
         return [opt_d, opt_g]
 
-    # def on_save_checkpoint(self, checkpoint):
-    #     """ Overwrite if you want to save more things in the checkpoint."""
-    #     checkpoint['training_config'] = self.conf_g
-    #     return checkpoint
-
     def on_batch_start(self, batch):
         """ Overwrite if needed. Called by pytorch-lightning"""
         pass
@@ -151,11 +165,8 @@ class GanSystem(pl.LightningModule):
         """ Overwrite if needed. Called by pytorch-lightning"""
         pass
 
-
-    @pl.data_loader
     def train_dataloader(self):
         return self.train_loader
 
-    @pl.data_loader
     def val_dataloader(self):
         return self.val_loader
