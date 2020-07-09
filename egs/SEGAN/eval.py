@@ -18,7 +18,6 @@ import numpy as np
 from scipy import signal
 from generator import make_generator_and_optimizer
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--test_dir', type=str, default="data/wav16k/min/test",
                     help='Test directory including the csv files')
@@ -48,7 +47,7 @@ def main(conf):
         if keys.startswith('discriminator'):
             del state_copy[keys]
         if keys.startswith('generator'):
-            state_copy[keys.replace('generator.','')] = state_copy.pop(keys)
+            state_copy[keys.replace('generator.', '')] = state_copy.pop(keys)
 
     model = load_state_dict_in(state_copy, model)
     # Handle device placement
@@ -56,10 +55,10 @@ def main(conf):
         model.cuda()
     model_device = next(model.parameters()).device
     test_set = SEGAN(csv_dir=conf['test_dir'],
-                        task=conf['train_conf']['data']['task'],
-                        sample_rate=conf['sample_rate'],
-                        n_src=conf['train_conf']['data']['n_src'],
-                        segment=None) # Uses all segment length
+                     task=conf['train_conf']['data']['task'],
+                     sample_rate=conf['sample_rate'],
+                     n_src=conf['train_conf']['data']['n_src'],
+                     segment=None)  # Uses all segment length
     # Used to reorder sources only
 
     loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
@@ -77,15 +76,20 @@ def main(conf):
         mix, sources = tensors_to_device(test_set[idx], device=model_device)
         est_sources = torch.zeros_like(mix)
         for n_slice in range(mix.size(1)):
-            est_sources[0,n_slice,:] = model(mix[0,n_slice,:].unsqueeze(0).unsqueeze(0))
+            est_sources[0, n_slice, :] = model(
+                mix[0, n_slice, :].unsqueeze(0).unsqueeze(0))
         est_sources = de_slicer(est_sources, sources)
         sources = sources.unsqueeze(0)
         est_sources = est_sources.unsqueeze(0)
-        loss, reordered_sources = loss_func(est_sources, sources,return_est=True)
-        mix = de_slicer(mix,sources)
-        mix_np = de_emphasis(mix.squeeze().cpu().data.numpy()).astype('float32')
-        sources_np = de_emphasis(sources.squeeze(0).cpu().data.numpy()).astype('float32')
-        est_sources_np = de_emphasis(reordered_sources.squeeze(0).cpu().data.numpy()).astype('float32')
+        loss, reordered_sources = loss_func(est_sources, sources,
+                                            return_est=True)
+        mix = de_slicer(mix, sources)
+        mix_np = de_emphasis(mix.squeeze().cpu().data.numpy()).astype(
+            'float32')
+        sources_np = de_emphasis(sources.squeeze(0).cpu().data.numpy()).astype(
+            'float32')
+        est_sources_np = de_emphasis(
+            reordered_sources.squeeze(0).cpu().data.numpy()).astype('float32')
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics
         utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
@@ -144,11 +148,18 @@ def de_emphasis(signal_batch, emph_coeff=0.95) -> np.array:
 
 
 def de_slicer(sources, original_shape, window=16384):
+    """
+    Reconstruct a sliced signal (inverse slice() function)
+    """
+    # Get the number of slices
     n_slices = sources.size()[1]
+    # Create container
     reconstructed = torch.zeros((sources.size()[0], n_slices * window))
+    # Fill with the slices
     for n_slice in range(n_slices):
         reconstructed[:,
         n_slice * window:(n_slice + 1) * window] += sources[:, n_slice, :]
+    # Remove padding
     reconstructed = reconstructed[:, :original_shape.size()[-1]]
     return reconstructed
 

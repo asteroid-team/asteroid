@@ -8,8 +8,8 @@ from torch.nn.modules.loss import _Loss
 
 class VirtualBatchNorm1d(Module):
     """
-    Module for Virtual Batch Normalization.
-    Implementation borrowed and modified from Rafael_Valle's code + help of SimonW from this discussion thread:
+    Module for Virtual Batch Normalization.Implementation borrowed and modified
+    from Rafael_Valle's code + help of SimonW from this discussion thread:
     https://discuss.pytorch.org/t/parameter-grad-of-conv-weight-is-none-after-virtual-batch-normalization/9036
     """
 
@@ -168,7 +168,10 @@ class Discriminator(nn.Module):
         """
         Forward pass of discriminator.
         Args:
-            x: batch
+            x: batch of estimates
+            y: batch of targets
+            x: batch of inputs
+
         """
         # reference pass
         ref_x = self.conv1(self.ref_x.to(device=x.device))
@@ -251,25 +254,19 @@ class Discriminator(nn.Module):
         # reduce down to a scalar value
         x = torch.squeeze(x)
         x = self.fully_connected(x)
-        # return self.sigmoid(x)
         return x
 
 
 class DiscriminatorLoss(_Loss):
-
-    # Least Square loss function
-
     def __init__(self):
         super().__init__()
 
     def forward(self, inputs, targets, estimates, est_labels, labels):
         # Behaves differently if estimates come from  the generated data or not
-        #
         if labels:
             loss = torch.mean((est_labels - torch.ones_like(est_labels)) ** 2)
         else:
             loss = torch.mean(est_labels ** 2)
-
         return loss
 
 

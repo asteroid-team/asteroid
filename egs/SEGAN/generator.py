@@ -11,11 +11,11 @@ class Generator(nn.Module):
 
     def __init__(self):
         super().__init__()
-        # size notations = [batch_size x feature_maps x width] (height omitted - 1D convolutions)
+        # size notations = [batch_size x feature_maps x width]
         # encoder gets a noisy signal as input
         self.enc1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=32,
                               stride=2, padding=15)  # out : [B x 16 x 8192]
-        self.enc1_nl = nn.PReLU()  # non-linear transformation after encoder layer 1
+        self.enc1_nl = nn.PReLU()
         self.enc2 = nn.Conv1d(16, 32, 32, 2, 15)  # [B x 32 x 4096]
         self.enc2_nl = nn.PReLU()
         self.enc3 = nn.Conv1d(32, 32, 32, 2, 15)  # [B x 32 x 2048]
@@ -38,7 +38,7 @@ class Generator(nn.Module):
         self.enc11_nl = nn.PReLU()
 
         # decoder generates an enhanced signal
-        # each decoder output are concatenated with homolgous encoder output,
+        # each decoder output are concatenated with homologous encoder output,
         # so the feature map sizes are doubled
         self.dec10 = nn.ConvTranspose1d(in_channels=2048, out_channels=512,
                                         kernel_size=32, stride=2, padding=15)
@@ -101,9 +101,10 @@ class Generator(nn.Module):
         z = torch.randn_like(c)
         # concatenate the thought vector with latent variable
         encoded = torch.cat((c, z), dim=1)
-        ### decoding step
+        # decoding step
         d10 = self.dec10(encoded)
-        # dx_c : concatenated with skip-connected layer's output & passed nonlinear layer
+        # dx_c : concatenated with skip-connected layer's output & passed
+        # nonlinear layer
         d10_c = self.dec10_nl(torch.cat((d10, e10), dim=1))
         d9 = self.dec9(d10_c)
         d9_c = self.dec9_nl(torch.cat((d9, e9), dim=1))
