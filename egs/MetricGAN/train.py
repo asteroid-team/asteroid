@@ -16,6 +16,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from asteroid.data.metricGAN import MetricGAN
 from asteroid.engine.gan_system import GanSystem
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
+from torch_stoi import NegSTOILoss
 
 # Keys which are not in the conf_g.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be

@@ -5,7 +5,7 @@ filterbank:
   kernel_size: 512
   stride: 256
 metric_to_opt:
-  metric: 'pesq'
+  metric: 'stoi'
 training:
   half_lr: yes
 optim:

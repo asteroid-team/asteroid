@@ -58,9 +58,7 @@ class GeneratorLoss(_Loss):
         self.s = s
 
     def forward(self, estimates, targets, est_labels):
-        # loss = torch.mean((est_labels - self.s) ** 2)
-        loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
-        loss = loss_func(estimates, targets)
+        loss = torch.mean((est_labels - self.s) ** 2)
         return loss
 
 

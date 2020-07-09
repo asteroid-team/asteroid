@@ -10,7 +10,7 @@ import torch
 import yaml
 from tqdm import tqdm
 
-from asteroid.data.librimix_dataset import LibriMix
+from asteroid.data.metricGAN import MetricGAN
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.metrics import get_metrics
 from asteroid.utils import tensors_to_device
@@ -24,7 +24,7 @@ parser.add_argument('--use_gpu', type=int, default=0,
                     help='Whether to use the GPU for model execution')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Experiment root')
-parser.add_argument('--n_save_ex', type=int, default=10,
+parser.add_argument('--n_save_ex', type=int, default=0,
                     help='Number of audio examples to save, -1 means all')
 
 compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi','pesq']
@@ -45,7 +45,9 @@ def main(conf):
     for keys, values in state.items():
         if keys.startswith('discriminator'):
             del state_copy[keys]
-        if keys.startswith('generator'):
+        if keys.startswith('validation'):
+            del state_copy[keys]
+        if keys.startswith('generator') :
             state_copy[keys.replace('generator.','')] = state_copy.pop(keys)
 
     model = load_state_dict_in(state_copy, model)
@@ -53,7 +55,7 @@ def main(conf):
     if conf['use_gpu']:
         model.cuda()
     model_device = next(model.parameters()).device
-    test_set = LibriMix(csv_dir=conf['test_dir'],
+    test_set = MetricGAN(csv_dir=conf['test_dir'],
                         task=conf['train_conf']['data']['task'],
                         sample_rate=conf['sample_rate'],
                         n_src=conf['train_conf']['data']['n_src'],
@@ -73,15 +75,11 @@ def main(conf):
     for idx in tqdm(range(len(test_set))):
         # Forward the network on the mixture.
         mix, sources = tensors_to_device(test_set[idx], device=model_device)
-        est_sources = torch.zeros_like(mix)
-        for n_slice in range(mix.size(1)):
-            est_sources[0,n_slice,:] = model(mix[0,n_slice,:].unsqueeze(0).unsqueeze(0))
         sources = sources.unsqueeze(0)
-        est_sources = est_sources.unsqueeze(0)
-        loss, reordered_sources = loss_func(est_sources, sources,return_est=True)
+        est_sources = model(mix)
         mix_np = mix.cpu().data.numpy()
-        sources_np = sources.cpu().data.numpy()
-        est_sources_np = reordered_sources.squeeze(0).cpu().data.numpy()
+        sources_np = sources.cpu().squeeze(0).data.numpy()
+        est_sources_np = est_sources.cpu().squeeze(0).data.numpy()
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics
         utt_metrics = get_metrics(mix_np, sources_np, est_sources_np,
