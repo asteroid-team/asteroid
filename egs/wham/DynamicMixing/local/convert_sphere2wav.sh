@@ -28,7 +28,7 @@ mkdir -p $tmp
 
 if [ ! -d $wav_dir ]; then
   while read line; do
-    wav=`echo "$line" | sed "s:wv[12]:wav:g" | awk -v dir=$wav_dir -F'/' '{printf("%s/%s/%s/%s", dir, $(NF-2), $(NF-1), $NF)}'`
+    wav=`echo "$line" | sed "s:wv1:wav:g" | awk -v dir=$wav_dir -F'/' '{printf("%s/%s/%s/%s", dir, $(NF-2), $(NF-1), $NF)}'`
     echo $wav
     mkdir -p `dirname $wav`
     $sph2pipe -f wav $line > $wav
