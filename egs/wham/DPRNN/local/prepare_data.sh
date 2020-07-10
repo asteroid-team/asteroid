@@ -24,7 +24,7 @@ unzip $out_dir/wham_noise.zip $out_dir >> logs/unzip_wham.log
 
 echo "Run python scripts to create the WHAM mixtures"
 # Requires : Numpy, Scipy, Pandas, and Pysoundfile
-cd $out_dir/wham_scripts
+cd $out_dir/wham_scripts/wham_scripts
 $python_path create_wham_from_scratch.py \
 	--wsj0-root $wav_dir \
 	--wham-noise-root $out_dir/wham_noise\
