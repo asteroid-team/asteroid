@@ -14,8 +14,8 @@ def preprocess_task(task, in_dir, out_dir):
         examples = []
         for mix in mix_both:
             filename = mix.split("/")[-1]
-            spk1_id = filename.split("_")[0]
-            spk2_id = filename.split("_")[2]
+            spk1_id = filename.split("_")[0][:3]
+            spk2_id = filename.split("_")[2][:3]
             length = len(sf.SoundFile(mix))
 
             noise = os.path.join(in_dir, "noise", filename)
@@ -33,8 +33,8 @@ def preprocess_task(task, in_dir, out_dir):
         examples = []
         for mix in mix_clean:
             filename = mix.split("/")[-1]
-            spk1_id = filename.split("_")[0]
-            spk2_id = filename.split("_")[2]
+            spk1_id = filename.split("_")[0][:3]
+            spk2_id = filename.split("_")[2][:3]
             length = len(sf.SoundFile(mix))
 
             s1 = os.path.join(in_dir, "s1", filename)
@@ -51,7 +51,7 @@ def preprocess_task(task, in_dir, out_dir):
         examples = []
         for mix in mix_single:
             filename = mix.split("/")[-1]
-            spk1_id = filename.split("_")[0]
+            spk1_id = filename.split("_")[0][:3]
             length = len(sf.SoundFile(mix))
 
             s1 = os.path.join(in_dir, "s1", filename)

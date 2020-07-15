@@ -13,7 +13,7 @@ class ClippedSDR(nn.Module):
     def __init__(self, clip_value=-30):
         super(ClippedSDR, self).__init__()
 
-        self.snr = PITLossWrapper(pairwise_neg_sisdr)
+        self.snr = MultiSrcNegSDR("snr")
         self.clip_value = float(clip_value)
 
     def forward(self, est_targets, targets):
