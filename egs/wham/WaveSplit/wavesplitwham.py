@@ -97,8 +97,7 @@ class WaveSplitWhamDataset(data.Dataset):
         speakers = set()
         for ex in self.examples:
             for spk in ex["spk_id"]:
-                speakers.add(spk)
-
+                speakers.add(spk[:3])
 
         print("Total number of speakers {}".format(len(list(speakers))))
 
@@ -112,9 +111,8 @@ class WaveSplitWhamDataset(data.Dataset):
         for ex in self.examples:
             new = []
             for spk in ex["spk_id"]:
-                new.append(spk2indx[spk])
+                new.append(spk2indx[spk[:3]])
             ex["spk_id"] = new
-
 
     def __len__(self):
         return len(self.examples)

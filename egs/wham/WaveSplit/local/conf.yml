@@ -23,7 +23,7 @@ training:
   num_workers: 4
   half_lr: yes
   early_stop: yes
-  gradient_clipping: 5
+  gradient_clipping: 5000
 # Optim config
 optim:
   optimizer: adam
@@ -38,4 +38,4 @@ data:
   nondefault_nsrc:
   sample_rate: 8000
   mode: min
-  segment: 0.750
+  segment: 1

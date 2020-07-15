@@ -14,6 +14,7 @@ from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 
+
 from losses import SpeakerVectorLoss, ClippedSDR
 from wavesplit import SpeakerStack, SeparationStack
 from asteroid.filterbanks import make_enc_dec
@@ -39,24 +40,19 @@ warnings.simplefilter("ignore", UserWarning)
 
 class Wavesplit(pl.LightningModule): # redefinition
 
-    def __init__(self, train_loader,
+    def __init__(self, spk_stack, sep_stack, optimizer, spk_loss, sep_loss, train_loader,
                  val_loader=None, scheduler=None, config=None):
         super().__init__()
 
-        # instantiation of stacks optimizers etc
-        # NOTE: I use separated encoders for speaker and sep stack as it is not specified in the paper...
+        #self.spk_stack = SpeakerStack(256, 2, 1, 1)
 
-        self.enc_spk, self.dec = make_enc_dec("free", 512, 16, 8)
-        self.enc_sep = deepcopy(self.enc_spk)
-        self.spk_stack = SpeakerStack(512, 2, 14, 1)
-        self.sep_stack = SeparationStack(512, 8, 3, mask_act="sigmoid") # original is 10 4 but I have not enought GPU mem
 
-        self.spk_loss = SpeakerVectorLoss(101, 512, True, "global") # 512 spk embedding
-        self.sep_loss = ClippedSDR(-30)
-        params = list(self.enc_spk.parameters()) + list(self.enc_sep.parameters()) + list(self.dec.parameters()) + \
-                 list(self.spk_stack.parameters()) + list(self.sep_stack.parameters()) + list(self.spk_loss.parameters())
-
-        self.optimizer = torch.optim.Adam(params, lr=0.002) # optimizer i think also is not specified i use adam
+        #self.spk_loss = SpeakerVectorLoss(101, 256, False, "distance", 10)
+        self.spk_stack = spk_stack
+        self.sep_stack = sep_stack
+        self.optimizer = optimizer
+        self.sep_loss = sep_loss
+        self.spk_loss = spk_loss
 
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -68,6 +64,13 @@ class Wavesplit(pl.LightningModule): # redefinition
         # None to strings temporarily.
         # See https://github.com/pytorch/pytorch/issues/33140
         self.hparams = Namespace(**self.none_to_string(flatten_dict(config)))
+
+        #n_speakers = 100
+        #embed_dim = 128
+        #spk_emb = torch.eye(max(n_speakers, embed_dim))  # one-hot init works better according to Neil
+        #spk_emb = spk_emb[:n_speakers, :embed_dim]
+
+        #self.oracle = spk_emb.cuda()
 
     def forward(self, *args, **kwargs):
         """ Applies forward pass of the model.
@@ -98,27 +101,26 @@ class Wavesplit(pl.LightningModule): # redefinition
             `training_step` and `validation_step` instead.
         """
         inputs, targets, spk_ids = batch
-        tf_rep = self.enc_spk(inputs)
-        spk_vectors = self.spk_stack(tf_rep)
-        B, src, embed, frames = spk_vectors.size()
+        spk_embed = self.spk_stack(inputs)
 
-        # torch.ones ideally would be the speaker activty at frame level. Because WHAM speakers can be considered always two and active we fix this for now.
-        spk_loss, spk_vectors, oracle = self.spk_loss(spk_vectors, torch.ones((B, src, frames)).to(spk_vectors.device), spk_ids)
-        tf_rep = self.enc_sep(inputs)
-        B, n_filters, frames = tf_rep.size()
-        tf_rep = tf_rep[:, None, ...].expand(-1, src, -1, -1).reshape(B*src, n_filters, frames)
-        masks = self.sep_stack(tf_rep, spk_vectors.reshape(B*src, embed, frames))
+        spk_loss, reordered_embed = self.spk_loss(spk_embed, torch.ones((spk_embed.shape[0],
+                                                                         spk_embed.shape[1],spk_embed.shape[-1])).to(spk_embed.device), spk_ids)
+        reordered_embed = reordered_embed.mean(-1)
 
-        masked = tf_rep*masks
-        masked = masked.reshape(B, src, n_filters, frames)
+        #reordered_embed = self.oracle[spk_ids]
+        b, n_spk, spk_vec_size = reordered_embed.size()
 
-        masked = self.pad_output_to_inp(self.dec(masked), inputs)
+        separated = self.sep_stack(inputs, torch.cat((reordered_embed[:, 0], reordered_embed[:, 1]), 1))
 
-        sep_loss = self.sep_loss(masked, targets).mean()
-
-
+        sep_loss = 0
+        for o in separated:
+            o = self.pad_output_to_inp(o, inputs)
+            last = self.sep_loss(o, targets).mean()
+            sep_loss += last
+        spk_loss = sep_loss
         loss = sep_loss + spk_loss
-        return loss, spk_loss, sep_loss
+
+        return loss, spk_loss, last
 
     @staticmethod
     def pad_output_to_inp(output, inp):
@@ -259,7 +261,6 @@ class Wavesplit(pl.LightningModule): # redefinition
                 dic[k] = str(v)
         return dic
 
-    
 
 def main(conf):
     train_set = WaveSplitWhamDataset(conf['data']['train_dir'], conf['data']['task'],
@@ -273,18 +274,27 @@ def main(conf):
                               batch_size=conf['training']['batch_size'],
                               num_workers=conf['training']['num_workers'],
                               drop_last=True)
-    val_loader = DataLoader(val_set, shuffle=True,
+    val_loader = DataLoader(val_set, shuffle=False,
                             batch_size=conf['training']['batch_size'],
                             num_workers=conf['training']['num_workers'],
                             drop_last=True)
     # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': train_set.n_src})
-
+    spk_stack = SpeakerStack(2, 256) # inner dim is 256 instead of 512 from paper to spare mem 13 layers as in the paper.
+    sep_stack = SeparationStack(2, 256, 512, 10, 1) # 40 layers.
     # Define model and optimizer in a local function (defined in the recipe).
     # Two advantages to this : re-instantiating the model and optimizer
     # for retraining and evaluating is straight-forward.
     # Define scheduler
+    spk_loss = SpeakerVectorLoss(100, 256, loss_type="distance") # 100 speakers in WHAM dev and train, 256 embed dim
+    sep_loss = ClippedSDR(-30)
 
+    params = list(spk_stack.parameters()) + list(sep_stack.parameters()) + list(spk_loss.parameters())
+    optimizer = torch.optim.Adam(params, lr=0.003)
+    scheduler = None
+    if conf['training']['half_lr']:
+        scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5,
+                                      patience=5)
     # Just after instantiating, save the args. Easy loading in the future.
     exp_dir = conf['main_args']['exp_dir']
     os.makedirs(exp_dir, exist_ok=True)
@@ -292,8 +302,7 @@ def main(conf):
     with open(conf_path, 'w') as outfile:
         yaml.safe_dump(conf, outfile)
 
-
-    system = Wavesplit(train_loader, val_loader, conf)
+    system = Wavesplit(spk_stack, sep_stack, optimizer, spk_loss, sep_loss, train_loader, val_loader, scheduler, conf)
     # Define callbacks
     checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
     checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
@@ -312,8 +321,7 @@ def main(conf):
                          early_stop_callback=early_stopping,
                          default_save_path=exp_dir,
                          gpus=conf['main_args']['gpus'],
-                         distributed_backend='dp',
-                         gradient_clip_val=conf['training']["gradient_clipping"])
+                         )
     trainer.fit(system)
 
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
