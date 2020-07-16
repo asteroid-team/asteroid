@@ -21,18 +21,12 @@ class DummyDataset(data.Dataset):
 
 
 class GeneratorLoss(_Loss):
-    def __init__(self):
-        super().__init__()
-
     def forward(self, estimates, targets, est_labels):
         loss = torch.mean((est_labels - torch.ones_like(est_labels)) ** 2)
         return loss
 
 
 class DiscriminatorLoss(_Loss):
-    def __init__(self):
-        super().__init__()
-
     def forward(self, inputs, targets, estimates, est_labels, labels):
         # Behaves differently if estimates come from  the generated data or not
         if labels:
@@ -46,8 +40,7 @@ class Discriminator(nn.Module):
     """D"""
     def __init__(self):
         super().__init__()
-        self.model = nn.Sequential(nn.Linear(10, 1),
-                                   nn.Sigmoid())
+        self.model = nn.Sequential(nn.Linear(10, 1), nn.Sigmoid())
 
     def forward(self, x, y, z):
         """

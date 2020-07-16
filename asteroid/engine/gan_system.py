@@ -1,10 +1,5 @@
-from collections import OrderedDict
-import soundfile as sf
 import pytorch_lightning as pl
 import torch
-import os
-from torch_stoi import NegSTOILoss
-from asteroid.losses import PITLossWrapper
 
 
 class GanSystem(pl.LightningModule):
@@ -36,8 +31,8 @@ class GanSystem(pl.LightningModule):
 
     def __init__(self, discriminator, generator, opt_d, opt_g,
                  discriminator_loss, generator_loss, train_loader,
-                 validation_loss=PITLossWrapper(NegSTOILoss(), pit_from='pw_pt'),
-                 val_loader=None, scheduler_d=None, scheduler_g=None,
+                 validation_loss=None, val_loader=None,
+                 scheduler_d=None, scheduler_g=None,
                  conf=None):
 
         super(GanSystem, self).__init__()
@@ -53,49 +48,50 @@ class GanSystem(pl.LightningModule):
         self.scheduler_d = scheduler_d
         self.scheduler_g = scheduler_g
         self.conf = conf
-        self.estimates = None
 
-    def forward(self, z):
-        return self.generator(z)
+    def forward(self, *args, **kwargs):
+        return self.generator(*args, **kwargs)
 
     def training_step(self, batch, batch_nb, optimizer_idx):
-        # Get data from data_loader
-        inputs, targets = batch
-        # Forward inputs
-        self.estimates = self(inputs)
-        # Train discriminator
-        if optimizer_idx == 0:
-            # Compute D loss for targets
-            est_true_labels = self.discriminator(targets, inputs, targets)
-            true_loss = self.d_loss(inputs, targets, self.estimates,
-                                    est_true_labels, True)
-            # Compute D loss for self.estimates
-            est_false_labels = self.discriminator(self.estimates.detach(),
-                                                  inputs, targets)
-            fake_loss = self.d_loss(inputs, targets, self.estimates,
-                                    est_false_labels, False)
-            # Overall, the loss is the mean of these
-            d_loss = (true_loss + fake_loss) * 0.5
-            tqdm_dict = {'d_loss': d_loss}
-            output = OrderedDict({
-                'loss': d_loss,
-                'progress_bar': tqdm_dict,
-                'log': tqdm_dict
-            })
-            return output
 
-        # Train generator
-        if optimizer_idx == 1:
-            # The generator is supposed to fool the discriminator.
-            est_labels = self.discriminator(self.estimates, inputs, targets)
-            adversarial_loss = self.g_loss(self.estimates, targets, est_labels)
-            tqdm_dict = {'g_loss': adversarial_loss}
-            output = OrderedDict({
-                'loss': adversarial_loss,
-                'progress_bar': tqdm_dict,
-                'log': tqdm_dict
-            })
-            return output
+        raise NotImplementedError
+        # # Get data from data_loader
+        # inputs, targets = batch
+        # # Forward inputs
+        # self.estimates = self(inputs)
+        # # Train discriminator
+        # if optimizer_idx == 0:
+        #     # Compute D loss for targets
+        #     est_true_labels = self.discriminator(targets, inputs, targets)
+        #     true_loss = self.d_loss(inputs, targets, self.estimates,
+        #                             est_true_labels, True)
+        #     # Compute D loss for self.estimates
+        #     est_false_labels = self.discriminator(self.estimates.detach(),
+        #                                           inputs, targets)
+        #     fake_loss = self.d_loss(inputs, targets, self.estimates,
+        #                             est_false_labels, False)
+        #     # Overall, the loss is the mean of these
+        #     d_loss = (true_loss + fake_loss) * 0.5
+        #     tqdm_dict = {'d_loss': d_loss}
+        #     output = OrderedDict({
+        #         'loss': d_loss,
+        #         'progress_bar': tqdm_dict,
+        #         'log': tqdm_dict
+        #     })
+        #     return output
+        #
+        # # Train generator
+        # if optimizer_idx == 1:
+        #     # The generator is supposed to fool the discriminator.
+        #     est_labels = self.discriminator(self.estimates, inputs, targets)
+        #     adversarial_loss = self.g_loss(self.estimates, targets, est_labels)
+        #     tqdm_dict = {'g_loss': adversarial_loss}
+        #     output = OrderedDict({
+        #         'loss': adversarial_loss,
+        #         'progress_bar': tqdm_dict,
+        #         'log': tqdm_dict
+        #     })
+        #     return output
 
     def validation_step(self, batch, batch_nb):
         """ Need to overwrite PL validation_step to do validation.
