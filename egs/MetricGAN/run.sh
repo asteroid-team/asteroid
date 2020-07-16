@@ -34,7 +34,7 @@ if [[ -z ${tag} ]]; then
 	tag=${uuid}
 fi
 
-expdir=exp/train_SEGAN_${tag}
+expdir=exp/train_MetricGAN_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
@@ -49,7 +49,8 @@ fi
 
 if [[ $stage -le 2 ]]; then
 	echo "Stage 2 : Evaluation"
-  $python_path eval.py --test_dir $test_dir \
+  $python_path eval.py --use_gpu 1 \
+    --test_dir $test_dir \
     --exp_dir ${expdir} | tee logs/eval_${tag}.log
 	cp logs/eval_${tag}.log $expdir/eval.log
 

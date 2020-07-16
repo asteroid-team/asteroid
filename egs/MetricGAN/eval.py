@@ -24,7 +24,7 @@ parser.add_argument('--use_gpu', type=int, default=0,
                     help='Whether to use the GPU for model execution')
 parser.add_argument('--exp_dir', default='exp/tmp',
                     help='Experiment root')
-parser.add_argument('--n_save_ex', type=int, default=0,
+parser.add_argument('--n_save_ex', type=int, default=10,
                     help='Number of audio examples to save, -1 means all')
 
 compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi','pesq']
@@ -92,7 +92,7 @@ def main(conf):
         if idx in save_idx:
             local_save_dir = os.path.join(ex_save_dir, 'ex_{}/'.format(idx))
             os.makedirs(local_save_dir, exist_ok=True)
-            sf.write(local_save_dir + "mixture.wav", mix_np,
+            sf.write(local_save_dir + "mixture.wav", mix_np[0],
                      conf['sample_rate'])
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):

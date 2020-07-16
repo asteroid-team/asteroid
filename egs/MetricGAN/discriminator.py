@@ -8,6 +8,7 @@ from asteroid.filterbanks.transforms import take_mag
 from asteroid.losses import SingleSrcPMSQE
 from asteroid.filterbanks import STFTFB, Encoder, transforms
 from pystoi import stoi
+from pb_bss_eval.evaluation.module_pesq import pesq
 
 
 class Discriminator(nn.Module):
@@ -37,7 +38,7 @@ class Discriminator(nn.Module):
             nn.utils.spectral_norm(nn.Linear(10, 1)),
             )
 
-    def forward(self, x, z, y):
+    def forward(self, x, y, z):
         """
         Forward pass of discriminator.
         Args:
@@ -51,11 +52,11 @@ class Discriminator(nn.Module):
         x = x.unsqueeze(1)
 
         # Encode
-        y = self.encoder(y)
-        y = take_mag(y)
-        y = y.unsqueeze(1)
+        z = self.encoder(z)
+        z = take_mag(z)
+        z = z.unsqueeze(1)
 
-        x = torch.cat((x, y), dim=1)
+        x = torch.cat((x, z), dim=1)
         x = self.conv(x)
         x = self.pool(x).squeeze()
         x = self.linear(x)
@@ -82,28 +83,20 @@ class DiscriminatorLoss(_Loss):
 
 
 def get_metric(metric, noisy, clean, estimates):
-    # if metric == 'pesq':
-    #     stft = Encoder(STFTFB(kernel_size=512, n_filters=512, stride=256)).to(estimates.device)
-    #     ref_spec = transforms.take_mag(stft(clean)).to(estimates.device)
-    #     est_spec = transforms.take_mag(stft(estimates)).to(estimates.device)
-    #     loss_func = SingleSrcPMSQE().to(estimates.device)
-    #     loss = (loss_func(est_spec, ref_spec) - 3E-4)/5
-    # else:
-    #     loss_func = NegSTOILoss(sample_rate=16000,extended=True).to(estimates.device)
-    #     loss = -loss_func(estimates, clean)
     noisy_np = noisy.cpu().squeeze().data.numpy()
     clean_np = clean.cpu().squeeze().data.numpy()
     estimates_np = estimates.cpu().squeeze().data.numpy()
-    metrics = []
+    metrics = torch.zeros(noisy.size(0))
+    if metric == 'stoi':
+        f = stoi
+    else:
+        f = pesq
     for i in range(noisy_np.shape[0]):
-        metrics.append(get_metrics(noisy_np[i], clean_np[i], estimates_np[i],
-                                   metrics_list=[metric])[metric])
-        # metrics.append(stoi(clean_np[i], estimates_np[i],16000))
-    metrics = torch.FloatTensor(metrics)
+        m = f(clean_np[i], estimates_np[i], 16000)
+        metrics[i] += m
     if metric == 'pesq':
         metrics = (metrics + 0.5)/5.0
     return metrics.to(noisy.device)
-    # return loss
 
 
 def make_discriminator_and_optimizer(conf):
