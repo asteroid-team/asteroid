@@ -66,6 +66,15 @@ def main(conf):
     else:
         resume = None
 
+    if torch.cuda.device_count() > 1:
+        print(f"Multiple GPUs available")
+        device_ids = (
+            list(map(int, conf["main_args"]["gpus"].split(",")))
+            if conf["main_args"]["gpus"] != "-1"
+            else None
+        )
+        model = torch.nn.DataParallel(model, device_ids=device_ids)
+
     train(
         model,
         dataset,
@@ -82,10 +91,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--gpus", type=str, help="list of GPUs", default="-1")
     parser.add_argument(
-        "--n-src",
-        type=int,
-        help="number of inputs to neural network",
-        default=2,
+        "--n-src", type=int, help="number of inputs to neural network", default=2,
     )
     parser.add_argument(
         "--exp_dir",
