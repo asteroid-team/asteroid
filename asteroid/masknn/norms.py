@@ -95,7 +95,7 @@ class FeatsGlobLN(_LayerNorm):
         """
 
         stop = len(x.size())
-        dims = list(range(1, stop))
+        dims = list(range(2, stop))
 
         mean = torch.mean(x, dim=dims, keepdim=True)
         var = torch.var(x, dim=dims, keepdim=True, unbiased=False)
