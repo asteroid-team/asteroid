@@ -4,7 +4,7 @@ import torch
 from asteroid.masknn import norms
 
 
-@pytest.mark.parametrize("norm_str", ["gLN", "cLN", "cgLN", "bN"])
+@pytest.mark.parametrize("norm_str", ["gLN", "cLN", "cgLN", "bN", "fgLN"])
 @pytest.mark.parametrize("channel_size", [8, 128, 4])
 def test_norms(norm_str, channel_size):
     norm_layer = norms.get(norm_str)
