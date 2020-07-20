@@ -109,6 +109,7 @@ class BatchNorm(_BatchNorm):
             raise ValueError('expected 4D or 3D input (got {}D input)'
                              .format(input.dim()))
 
+
 # Aliases.
 gLN = GlobLN
 fgLN = FeatsGlobLN
