@@ -135,8 +135,8 @@ if [[ -z ${tag} ]]; then
 	uuid=$($python_path -c 'import uuid; print(str(uuid.uuid4())[:8])')
 	clean_dir_name=$(echo $storage_dir | sed 's/\//_/g')
 	tag=${n_src}_${clean_dir_name}_${uuid}
-	exp_dir="${exp_dir}_${tag}"
 fi
+exp_dir="${exp_dir}_${tag}"
 
 if [[ $stage -le 3 ]]; then
 	echo "Stage 3: Training"

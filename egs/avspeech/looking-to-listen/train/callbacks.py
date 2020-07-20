@@ -84,9 +84,12 @@ class SDRCallback(MetricCallback):
         output_audios = state.output[self.output_key]
         true_audios = state.input[self.input_key]
 
-        num_person = state.model.num_person
-        batch = output_audios.shape[0]
+        if hasattr(state.model, "module"):
+            num_person = state.model.module.num_person
+        else:
+            num_person = state.model.num_person
 
+        batch = output_audios.shape[0]
         avg_sdr = 0
         for n in range(batch):
             output_audio = output_audios[n, ...]

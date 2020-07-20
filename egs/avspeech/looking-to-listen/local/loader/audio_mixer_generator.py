@@ -83,27 +83,33 @@ def audio_mixer(
     train_files = audio_files[:total_train_files]
     val_files = audio_files[-total_val_files:]
 
+    storage_space_train, excess_storage = requires_excess_storage_space(
+        len(train_files), n_src
+    )
+
+    storage_space_val, _ = requires_excess_storage_space(
+        len(val_files), n_src
+    )
+
+    storage_space = storage_space_train + storage_space_val
+    if excess_storage:
+        storage_space = (1 - remove_random_chance) * storage_space
+        print(f"Removing {remove_random_chance * 100} percent of combinations")
+        print(
+            f"Saving total space: {storage_space - storage_space * remove_random_chance:,} Kbytes"
+        )
+
+    print(f"Occupying space: {storage_space:,} Kbytes")
+
+
     def retrieve_name(f):
         f = os.path.splitext(os.path.basename(f))[0]
         return re.sub(r"_part\d", "", f)
 
-    def mix(audio_filtered_files, file_name_df, offset):
+    def mix(audio_filtered_files, file_name_df, offset, excess_storage):
         # Generate all combinations and trim total possibilities
         audio_combinations = itertools.combinations(audio_filtered_files, n_src)
         audio_combinations = itertools.islice(audio_combinations, dataset_size)
-
-        storage_space, excess_storage = requires_excess_storage_space(
-            len(audio_filtered_files), n_src
-        )
-
-        if excess_storage:
-            storage_space = (1 - remove_random_chance) * storage_space
-            print(f"Removing {REMOVE_RANDOM_CHANCE * 100} percent of combinations")
-            print(
-                f"Saving total space: {storage_space - storage_space * REMOVE_RANDOM_CHANCE:,} Kbytes"
-            )
-
-        print(f"Occupying space: {storage_space:,} Kbytes")
 
         # Store list of tuples, consisting of `n_src`
         # Audio and their corresponding video path
@@ -205,8 +211,8 @@ def audio_mixer(
             )
         return df.shape[0]
 
-    offset = mix(train_files, "../../data/train.csv", 0)
-    mix(val_files, "../../data/val.csv", offset)
+    offset = mix(train_files, "../../data/train.csv", 0, excess_storage)
+    mix(val_files, "../../data/val.csv", offset, excess_storage)
 
 
 if __name__ == "__main__":

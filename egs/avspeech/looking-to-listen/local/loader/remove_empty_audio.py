@@ -17,12 +17,17 @@ def remove_corrupt_audio(audio_dir, df, path, expected_audio_size=96_000):
 
     for f in files:
         size = f.stat().st_size
+        if f.as_posix().startswith("../.."):
+            # pathname should match with content of {train/val}.csv
+            f = Path(*f.parts[2:])
+
         if size < expected_audio_size:
-            corrupt_audio.append(Path(*f.parts[1:]).as_posix())
+            corrupt_audio.append(f.as_posix())
 
     print(f"Found total corrupted files: {len(corrupt_audio)}")
 
     filtered_df = df[~df["mixed_audio"].isin(corrupt_audio)]
+    print(df.shape, filtered_df.shape)
 
     filtered_df.to_csv(path, index=False)
 

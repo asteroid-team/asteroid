@@ -59,6 +59,15 @@ def main(conf):
         f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters"
     )
 
+    if torch.cuda.device_count() > 1:
+        print(f"Multiple GPUs available")
+        device_ids = (
+            list(map(int, conf["main_args"]["gpus"].split(",")))
+            if conf["main_args"]["gpus"] != "-1"
+            else None
+        )
+        model = torch.nn.DataParallel(model, device_ids=device_ids)
+
     validate(model, val_dataset, config)
 
 
