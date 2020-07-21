@@ -37,9 +37,9 @@ optimizer=adam
 lr=0.001
 weight_decay=0.
 # Data config
-train_dir=data/wav8k/min/train-360
-valid_dir=data/wav8k/min/dev
-test_dir=data/wav8k/min/test
+train_dir=./local/data/wav8k/min/train-360
+valid_dir=./local/data/wav8k/min/train-100
+test_dir=./local/data/wav8k/min/test
 sample_rate=8000
 n_src=2
 segment=3
