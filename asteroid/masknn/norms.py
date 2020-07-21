@@ -78,6 +78,30 @@ class CumLN(_LayerNorm):
         return self.apply_gain_and_bias((x - cum_mean) / (cum_var + EPS).sqrt())
 
 
+class FeatsGlobLN(_LayerNorm):
+    """feature-wise global Layer Normalization (FeatsGlobLN).
+    Applies normalization over frames for each channel."""
+
+    def forward(self, x):
+        """ Applies forward pass.
+
+        Works for any input size > 2D.
+
+        Args:
+            x (:class:`torch.Tensor`): `[batch, chan, time]`
+
+        Returns:
+            :class:`torch.Tensor`: chanLN_x `[batch, chan, time]`
+        """
+
+        stop = len(x.size())
+        dims = list(range(2, stop))
+
+        mean = torch.mean(x, dim=dims, keepdim=True)
+        var = torch.var(x, dim=dims, keepdim=True, unbiased=False)
+        return self.apply_gain_and_bias((x - mean) / (var + EPS).sqrt())
+
+
 class BatchNorm(_BatchNorm):
     """Wrapper class for pytorch BatchNorm1D and BatchNorm2D"""
     def _check_input_dim(self, input):
@@ -85,8 +109,10 @@ class BatchNorm(_BatchNorm):
             raise ValueError('expected 4D or 3D input (got {}D input)'
                              .format(input.dim()))
 
+
 # Aliases.
 gLN = GlobLN
+fgLN = FeatsGlobLN
 cLN = ChanLN
 cgLN = CumLN
 bN = BatchNorm
