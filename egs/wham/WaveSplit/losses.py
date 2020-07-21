@@ -53,25 +53,24 @@ class SpeakerVectorLoss(nn.Module):
 
         utt_embeddings = spk_embeddings[spk_labels].unsqueeze(-1) * spk_mask.unsqueeze(2)
         c_spk = c_spk_vec_perm[:, 0]
-        pair_dist = ((c_spk.unsqueeze(1) - c_spk_vec_perm)**2).sum(2)
+        pair_dist = ((c_spk.unsqueeze(1) - c_spk_vec_perm)**2).mean(2)
         pair_dist = pair_dist[:, 1:]
-        distance = ((c_spk_vec_perm - utt_embeddings)**2).sum(dim=(1,2))
-        return distance + F.relu(1. - pair_dist).sum(dim=(1))
+        distance = ((c_spk_vec_perm - utt_embeddings)**2).mean(dim=(1,2))
+        return distance + F.relu(1. - pair_dist).mean(dim=(1))
 
     def _l_local_speaker(self, c_spk_vec_perm, spk_embeddings, spk_labels, spk_mask):
-        raise NotImplemented
+
         utt_embeddings = spk_embeddings[spk_labels].unsqueeze(-1) * spk_mask.unsqueeze(2)
         alpha = torch.clamp(self.alpha, 1e-8)
 
-        distance = alpha*((c_spk_vec_perm - utt_embeddings)**2).sum(2).sqrt() + self.beta
-        # exp normalize trick
-        with torch.no_grad():
-            b = torch.max(distance, dim=1, keepdim=True)[0]
-        out = -distance + b - torch.log(torch.exp(-distance + b).sum(1)).unsqueeze(1)
-        return out.sum(1)
+        distance = alpha*((c_spk_vec_perm - utt_embeddings)**2).mean(2) + self.beta
+        distances = alpha * ((c_spk_vec_perm.unsqueeze(1) - utt_embeddings.unsqueeze(2)) ** 2).mean(3) + self.beta
+        distances = torch.exp(-distances).mean(1)
+
+        return (distance + torch.log(distances)).mean(1)
 
     def _l_global_speaker(self, c_spk_vec_perm, spk_embeddings, spk_labels, spk_mask):
-        raise NotImplemented
+
         utt_embeddings = spk_embeddings[spk_labels].unsqueeze(-1) * spk_mask.unsqueeze(2)
         alpha = torch.clamp(self.alpha, 1e-8)
 
@@ -79,7 +78,12 @@ class SpeakerVectorLoss(nn.Module):
 
         B, src, embed_dim, frames = c_spk_vec_perm.size()
         spk_embeddings = spk_embeddings.reshape(1, spk_embeddings.shape[0], embed_dim, 1).expand(B, -1, -1, frames)
-        distances = alpha * ((c_spk_vec_perm.unsqueeze(1) - spk_embeddings.unsqueeze(2)) ** 2).sum(3).sqrt() + self.beta
+        distances = alpha * ((c_spk_vec_perm.unsqueeze(1) - spk_embeddings.unsqueeze(2)) ** 2).sum(3) + self.beta
+        distances = torch.exp(-distances).sum(1)
+
+        return (distance_utt + torch.log(distances)).sum(1)
+
+
         # exp normalize trick
         #with torch.no_grad():
          #   b = torch.max(distances, dim=1, keepdim=True)[0]
@@ -155,7 +159,7 @@ if __name__ == "__main__":
     #out = b.squeeze(1) - torch.log(torch.exp(-distances + b).sum(1))
     #out2 = - torch.log(torch.exp(-distances).sum(1))
 
-    loss_spk = SpeakerVectorLoss(n_speakers, emb_speaker, loss_type="global")
+    loss_spk = SpeakerVectorLoss(n_speakers, emb_speaker, loss_type="distance")
 
     speaker_vectors = torch.rand(2, 3, emb_speaker, 200)
     speaker_labels = torch.from_numpy(np.array([[1, 2, 0], [5, 2, 10]]))
