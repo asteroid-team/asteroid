@@ -117,7 +117,7 @@ class SeparationStack(nn.Module):
 
     def __init__(self, src, embed_dim=256, spk_vec_dim=512, n_blocks=10, n_repeats=4,
                  kernel_size=3,
-                 norm_type="gLN"):
+                 norm_type="gLN", return_all_layers=True):
 
         super(SeparationStack, self).__init__()
         self.n_blocks = n_blocks
@@ -126,6 +126,7 @@ class SeparationStack(nn.Module):
         self.norm_type = norm_type
         self.src = src
         self.embed_dim = embed_dim
+        self.return_all = return_all_layers
 
         # layer_norm = norms.get(norm_type)(in_chan)
         # bottleneck_conv = nn.Conv1d(in_chan, bn_chan, 1)
@@ -139,10 +140,16 @@ class SeparationStack(nn.Module):
                 else:
                     in_chan = embed_dim
                 padding = (kernel_size - 1) * 2 ** x // 2
-                self.TCN.append(SepConv1DBlock(in_chan, embed_dim, spk_vec_dim,
+                if not self.return_all:
+                    self.TCN.append(SepConv1DBlock(in_chan, embed_dim, spk_vec_dim,
                                             kernel_size, padding=padding,
                                             dilation=2 ** x, norm_type=norm_type))
-        self.out = nn.Conv1d(embed_dim, 2, 1)
+                else:
+                    self.TCN.append(nn.ModuleList([ SepConv1DBlock(in_chan, embed_dim, spk_vec_dim,
+                                            kernel_size, padding=padding,
+                                            dilation=2 ** x, norm_type=norm_type), nn.Conv1d(embed_dim, self.src, 1)]))
+
+        self.out = nn.Conv1d(embed_dim, self.src, 1)
 
     def forward(self, mixture_w, spk_vectors):
         """
@@ -159,14 +166,28 @@ class SeparationStack(nn.Module):
         # output = self.bottleneck(mixture_w)
         for i in range(len(self.TCN)):
             if i == 0:
-                output = self.TCN[i](output, spk_vectors)
-                outputs.append(output)
+                if self.return_all:
+                    conv, linear = self.TCN[i]
+                    output = conv(output, spk_vectors)
+                    outputs.append(linear(output))
+                else:
+                    output = self.TCN[i](output, spk_vectors)
             else:
-                residual = self.TCN[i](output, spk_vectors)
-                output = output + residual
-                outputs.append(output)
+                if self.return_all:
+                    conv, linear = self.TCN[i]
+                    residual = conv(output, spk_vectors)
+                    output = output + residual
+                    outputs.append(linear(output))
+                else:
+                    residual = self.TCN[i](output, spk_vectors)
+                    output = output + residual
 
-        return [self.out(o) for o in outputs]
+        if self.return_all:
+            out = outputs
+        else:
+            out = output
+
+        return out
 
 
 if __name__ == "__main__":
