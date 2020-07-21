@@ -104,23 +104,23 @@ class Wavesplit(pl.LightningModule): # redefinition
         spk_embed = self.spk_stack(inputs)
 
         spk_loss, reordered_embed = self.spk_loss(spk_embed, torch.ones((spk_embed.shape[0],
-                                                                         spk_embed.shape[1],spk_embed.shape[-1])).to(spk_embed.device), spk_ids)
+                                                                    spk_embed.shape[1],spk_embed.shape[-1])).to(spk_embed.device), spk_ids)
         reordered_embed = reordered_embed.mean(-1)
 
         #reordered_embed = self.oracle[spk_ids]
-        b, n_spk, spk_vec_size = reordered_embed.size()
+        #b, n_spk, spk_vec_size = reordered_embed.size()
 
         separated = self.sep_stack(inputs, torch.cat((reordered_embed[:, 0], reordered_embed[:, 1]), 1))
 
         sep_loss = 0
-        for o in separated:
+        for i, o in enumerate(separated):
             o = self.pad_output_to_inp(o, inputs)
             last = self.sep_loss(o, targets).mean()
             sep_loss += last
-        spk_loss = sep_loss
+        sep_loss = sep_loss / (i+1)
         loss = sep_loss + spk_loss
 
-        return loss, spk_loss, last
+        return loss, spk_loss, last.mean()
 
     @staticmethod
     def pad_output_to_inp(output, inp):
@@ -281,12 +281,12 @@ def main(conf):
     # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': train_set.n_src})
     spk_stack = SpeakerStack(2, 256) # inner dim is 256 instead of 512 from paper to spare mem 13 layers as in the paper.
-    sep_stack = SeparationStack(2, 256, 512, 10, 1) # 40 layers.
+    sep_stack = SeparationStack(2, 256, 512, 10, 4) # 40 layers.
     # Define model and optimizer in a local function (defined in the recipe).
     # Two advantages to this : re-instantiating the model and optimizer
     # for retraining and evaluating is straight-forward.
     # Define scheduler
-    spk_loss = SpeakerVectorLoss(100, 256, loss_type="distance") # 100 speakers in WHAM dev and train, 256 embed dim
+    spk_loss = SpeakerVectorLoss(101, 256, loss_type="distance") # 100 speakers in WHAM dev and train, 256 embed dim
     sep_loss = ClippedSDR(-30)
 
     params = list(spk_stack.parameters()) + list(sep_stack.parameters()) + list(spk_loss.parameters())
