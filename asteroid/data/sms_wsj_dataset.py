@@ -2,8 +2,6 @@ import torch
 from torch.utils import data
 import numpy as np
 import soundfile as sf
-import lazy_dataset
-from lazy_dataset.database import JsonDatabase
 EPS = 1e-8
 
 DATASET = 'SMS_WSJ'
@@ -94,6 +92,8 @@ class SmsWsjDataset(data.Dataset):
         self.dset = dset
 
         # Load json files
+
+        from lazy_dataset.database import JsonDatabase
         db = JsonDatabase(json_path)
         dataset = db.get_dataset(dset)
         # Filter out short utterances only when segment is specified
