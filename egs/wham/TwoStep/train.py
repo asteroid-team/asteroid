@@ -91,7 +91,7 @@ def train_model_part(conf, train_part='filterbank', pretrained_filterbank=None):
                                  mode='min', save_top_k=1, verbose=1)
     early_stopping = False
     if conf[train_part + '_training'][train_part[0] + '_early_stop']:
-        early_stopping = EarlyStopping(monitor='val_loss', patience=10,
+        early_stopping = EarlyStopping(monitor='val_loss', patience=30,
                                        verbose=1)
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
