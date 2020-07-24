@@ -186,6 +186,9 @@ class SmsWsjDataset(data.Dataset):
 
         sources = torch.from_numpy(np.stack(source_arrays, axis=0))
         assert sources.shape[-1] == seg_len[0], (sources.shape, seg_len)
+        if self.single_channel and not target[0] == 'source':
+            sources = sources[:, ref_channel]
+
         mixture = torch.from_numpy(x)
 
         if self.normalize_audio:
