@@ -1,6 +1,8 @@
 #!/bin/bash
 
+# Exit on error
 set -e
+set -o pipefail
 
 parse_boolean() {
 	# parses yaml boolean to flag.
