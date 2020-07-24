@@ -207,7 +207,7 @@ class SmsWsjDataset(data.Dataset):
         infos['dataset'] = self.dataset_name
         infos['task_dataset'] = self.dset
         infos['target'] = self.target
-        infos['license'] = [wsj0_license, wsj1_license, sms_wsj_license]
+        infos['licenses'] = [wsj0_license, wsj1_license, sms_wsj_license]
         return infos
 
 
