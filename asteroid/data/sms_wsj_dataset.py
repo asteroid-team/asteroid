@@ -2,6 +2,8 @@ import torch
 from torch.utils import data
 import numpy as np
 import soundfile as sf
+
+from .wsj0_mix import wsj0_license
 EPS = 1e-8
 
 DATASET = 'SMS_WSJ'
@@ -205,7 +207,19 @@ class SmsWsjDataset(data.Dataset):
         infos['dataset'] = self.dataset_name
         infos['task_dataset'] = self.dset
         infos['target'] = self.target
+        infos['license'] = [wsj0_license, wsj1_license, sms_wsj_license]
         return infos
+
+
+wsj1_license = dict(
+    title='CSR-II (WSJ1) Complete',
+    title_link='https://catalog.ldc.upenn.edu/LDC94S13A',
+    author='LDC',
+    author_link='https://www.ldc.upenn.edu/',
+    license='LDC User Agreement for Non-Members',
+    license_link='https://catalog.ldc.upenn.edu/license/ldc-non-members-agreement.pdf',
+    non_commercial=True
+)
 
 
 sms_wsj_license = dict(
