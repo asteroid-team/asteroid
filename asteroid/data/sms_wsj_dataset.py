@@ -17,6 +17,9 @@ sep_early = {'mixture': 'observation',
              'target': ['speech_reverberation_early'],
              'infos': {'num_channels': 6},
              'default_nsrc': 2}
+
+# speech image represents the whole reverberated signal so it is the sum of
+# the early and tail reverberation.
 speech_image = ['speech_reverberation_early', 'speech_reverberation_tail']
 sep_image = {'mixture': 'observation',
              'target': speech_image,
@@ -44,7 +47,7 @@ class SmsWsjDataset(data.Dataset):
         sample_rate (int, optional): The sampling rate of the wav files.
         segment (float, optional): Length of the segments used for training,
             in seconds. If None, use full utterances (e.g. for test).
-        single_channel (bool): if True all channels are used if false only
+        single_channel (bool): if False all channels are used if True only
                     a random channel is used during training
                     and the first channel during test
         nondefault_nsrc (int, optional): Number of sources in the training
@@ -59,7 +62,7 @@ class SmsWsjDataset(data.Dataset):
                  normalize_audio=False):
         try:
             import sms_wsj
-        except:
+        except ModuleNotFoundError:
             import warnings
             warnings.warn(
                 "Some of the functionality relies on the sms_wsj package "
