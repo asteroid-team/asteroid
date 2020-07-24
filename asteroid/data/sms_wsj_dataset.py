@@ -10,9 +10,9 @@ EPS = 1e-8
 DATASET = 'SMS_WSJ'
 # SMS_WSJ targets
 sep_source = {'mixture': 'observation',
-             'target': ['speech_source'],
-             'infos': {'num_channels': 6},
-             'default_nsrc': 2}
+              'target': ['speech_source'],
+              'infos': {'num_channels': 6},
+              'default_nsrc': 2}
 sep_early = {'mixture': 'observation',
              'target': ['speech_reverberation_early'],
              'infos': {'num_channels': 6},
@@ -25,8 +25,8 @@ sep_image = {'mixture': 'observation',
 
 
 SMS_TARGETS = {'source': sep_source,
-              'early': sep_early,
-              'image': sep_image}
+               'early': sep_early,
+               'image': sep_image}
 
 
 class SmsWsjDataset(data.Dataset):
