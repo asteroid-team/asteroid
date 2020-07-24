@@ -2,6 +2,7 @@ import torch
 from torch.utils import data
 import numpy as np
 import soundfile as sf
+from asteroid.data.wham_dataset import normalize_tensor_wav
 
 from .wsj0_mix import wsj0_license
 EPS = 1e-8
@@ -26,13 +27,6 @@ sep_image = {'mixture': 'observation',
 SMS_TARGETS = {'source': sep_source,
               'early': sep_early,
               'image': sep_image}
-
-
-def normalize_tensor_wav(wav_tensor, eps=1e-8, std=None):
-    mean = wav_tensor.mean(-1, keepdim=True)
-    if std is None:
-        std = wav_tensor.std(-1, keepdim=True)
-    return (wav_tensor - mean) / (std + eps)
 
 
 class SmsWsjDataset(data.Dataset):
