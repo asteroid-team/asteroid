@@ -66,8 +66,9 @@ def main(conf):
 
     # Define callbacks
     checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
-    checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
-                                 mode='min', save_top_k=5, verbose=1)
+    checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss', verbose=True,
+                                 save_last=False, save_top_k=5, save_weights_only=False, 
+                                 mode='min', period=1, prefix='')
     early_stopping = False
     if conf['training']['early_stop']:
         early_stopping = EarlyStopping(monitor='val_loss', patience=30,
@@ -75,21 +76,16 @@ def main(conf):
 
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
-    trainer = pl.Trainer(max_nb_epochs=conf['training']['epochs'],
+    trainer = pl.Trainer(max_epochs=conf['training']['epochs’],
                          checkpoint_callback=checkpoint,
                          early_stop_callback=early_stopping,
-                         default_save_path=exp_dir,
+                         default_root_dir=exp_dir,
                          gpus=gpus,
                          distributed_backend='ddp',
                          gradient_clip_val=conf['training']["gradient_clipping"])
     trainer.fit(system)
 
-    best_k = {k: v.item() for k, v in checkpoint.best_k_models.items()}
-    with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
-        json.dump(best_k, f, indent=0)
-
-    # Save best model (next PL version will make this easier)
-    best_path = [b for b, v in best_k.items() if v == min(best_k.values())][0]
+    best_path = checkpoint.best_model_path
     state_dict = torch.load(best_path)
     system.load_state_dict(state_dict=state_dict['state_dict'])
     system.cpu()
