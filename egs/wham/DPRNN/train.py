@@ -84,8 +84,7 @@ def main(conf):
                          gradient_clip_val=conf['training']["gradient_clipping"])
     trainer.fit(system)
 
-    best_path = checkpoint.best_model_path
-    state_dict = torch.load(best_path)
+    state_dict = torch.load(checkpoint.best_model_path)
     system.load_state_dict(state_dict=state_dict['state_dict'])
     system.cpu()
 
