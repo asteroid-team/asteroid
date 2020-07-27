@@ -67,8 +67,7 @@ def main(conf):
     # Define callbacks
     checkpoint_dir = os.path.join(exp_dir, 'checkpoints/')
     checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss', verbose=True,
-                                 save_last=False, save_top_k=5, save_weights_only=False, 
-                                 mode='min', period=1, prefix='')
+                                 save_top_k=5')
     early_stopping = False
     if conf['training']['early_stop']:
         early_stopping = EarlyStopping(monitor='val_loss', patience=30,
