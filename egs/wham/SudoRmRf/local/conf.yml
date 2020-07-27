@@ -1,15 +1,15 @@
 # Filterbank config
 filterbank:
   n_filters: 512
-  kernel_size: 16
-  stride: 8
+  kernel_size: 21
+  stride: 10
 # Network config
 masknet:
-  n_blocks: 8
-  n_repeats: 3
+  n_blocks: 16
+  n_repeats: 5
   mask_act: relu
-  bn_chan: 128
-  skip_chan: 128
+  bn_chan: 512
+  skip_chan: 0
   hid_chan: 512
 # Training config
 training:
@@ -26,7 +26,7 @@ optim:
 # Data config
 data:
   train_dir: data/wav8k/min/tr/
-  valid_dir: data/wav8k/min/tt/
+  valid_dir: data/wav8k/min/cv/
   task: sep_clean
   nondefault_nsrc:
   sample_rate: 8000

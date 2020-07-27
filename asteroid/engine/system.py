@@ -77,6 +77,22 @@ class System(pl.LightningModule):
             Otherwise, `training_step` and `validation_step` can be overwriten.
         """
         inputs, targets = batch
+
+        # Augment the data.
+        if train:
+            # Online mixing over samples of the batch. (This might cause to get
+            # utterances from the same speaker but it's highly improbable).
+            energies = torch.sum(targets ** 2, dim=-1, keepdim=True)
+            new_s1 = targets[torch.randperm(energies.shape[0]), 0, :]
+            new_s2 = targets[torch.randperm(energies.shape[0]), 1, :]
+            new_s2 = new_s2 * torch.sqrt(energies[:, 1] /
+                                         (new_s2 ** 2).sum(-1, keepdims=True))
+            new_s1 = new_s1 * torch.sqrt(energies[:, 0] /
+                                         (new_s1 ** 2).sum(-1, keepdims=True))
+            inputs = new_s1 + new_s2
+            targets[:, 0, :] = new_s1
+            targets[:, 1, :] = new_s2
+
         est_targets = self(inputs)
         loss = self.loss_func(est_targets, targets)
         return loss

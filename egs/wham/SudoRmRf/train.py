@@ -12,8 +12,7 @@ from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid.models import ConvTasNet
-from asteroid import torch_utils
+from asteroid.models import SudoRmRf
 
 
 # Keys which are not in the conf.yml file can be added here.
@@ -28,11 +27,14 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf):
+    training_segment = 4.0025
     train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
                             sample_rate=conf['data']['sample_rate'],
-                            nondefault_nsrc=conf['data']['nondefault_nsrc'])
+                            nondefault_nsrc=conf['data']['nondefault_nsrc'],
+                            segment=training_segment)
     val_set = WhamDataset(conf['data']['valid_dir'], conf['data']['task'],
                           sample_rate=conf['data']['sample_rate'],
+                          segment=training_segment,
                           nondefault_nsrc=conf['data']['nondefault_nsrc'])
 
     train_loader = DataLoader(train_set, shuffle=True,
@@ -45,19 +47,9 @@ def main(conf):
                             drop_last=True)
     # Update number of source values (It depends on the task)
     conf['masknet'].update({'n_src': train_set.n_src})
-    exp_dir = conf['main_args']['exp_dir']
 
     # Define model and optimizer
-    model = ConvTasNet(**conf['filterbank'], **conf['masknet'])
-    with open(os.path.join(exp_dir, "best_k_models.json"), "r") as f:
-        lines = yaml.safe_load(f)
-        best_model_path = sorted(list(lines.items()), key=lambda x: x[1])[0][0]
-    checkpoint = torch.load(best_model_path, map_location='cpu')
-    model = torch_utils.load_state_dict_in(checkpoint['state_dict'], model)
-    # model = ConvTasNet.from_pretrained(best_model_path)
-    # print(model)
-    model = model.cuda()
-
+    model = SudoRmRf(**conf['filterbank'], **conf['masknet'])
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
     # Define scheduler
     scheduler = None
@@ -65,6 +57,7 @@ def main(conf):
         scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5,
                                       patience=5)
     # Just after instantiating, save the args. Easy loading in the future.
+    exp_dir = conf['main_args']['exp_dir']
     os.makedirs(exp_dir, exist_ok=True)
     conf_path = os.path.join(exp_dir, 'conf.yml')
     with open(conf_path, 'w') as outfile:

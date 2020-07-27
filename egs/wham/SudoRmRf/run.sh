@@ -22,10 +22,10 @@ python_path=python3
 
 # General
 stage=3  # Controls from which stage to start
-tag="original_convtasnet"  # Controls the directory name associated to
-# the experiment
+tag="SudoRmRf"  # Controls the directory name associated to the
+# experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=0
+id=0,3
 
 # Data
 task=sep_clean  # Specify the task here (sep_clean, sep_noisy, enh_single, enh_both)
@@ -41,8 +41,8 @@ lr=0.001
 epochs=200
 
 # Architecture
-n_blocks=8
-n_repeats=3
+n_blocks=34
+n_repeats=5
 mask_nonlinear=relu
 
 # Evaluation
@@ -112,15 +112,15 @@ if [[ $stage -le 3 ]]; then
 
 	# Get ready to publish
 	mkdir -p $expdir/publish_dir
-	echo "wham/ConvTasNet" > $expdir/publish_dir/recipe_name.txt
+	echo "wham/SudoRmRf" > $expdir/publish_dir/recipe_name.txt
 fi
 
-if [[ $stage -le 4 ]]; then
-	echo "Stage 4 : Evaluation"
-	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
-		--task $task \
-		--test_dir $test_dir \
-		--use_gpu $eval_use_gpu \
-		--exp_dir ${expdir} | tee logs/eval_${tag}.log
-	cp logs/eval_${tag}.log $expdir/eval.log
-fi
+#if [[ $stage -le 4 ]]; then
+#	echo "Stage 4 : Evaluation"
+#	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
+#		--task $task \
+#		--test_dir $test_dir \
+#		--use_gpu $eval_use_gpu \
+#		--exp_dir ${expdir} | tee logs/eval_${tag}.log
+#	cp logs/eval_${tag}.log $expdir/eval.log
+#fi

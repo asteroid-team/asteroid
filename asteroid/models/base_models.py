@@ -37,6 +37,8 @@ class BaseTasNet(nn.Module):
         if wav.ndim == 2:
             wav = wav.unsqueeze(1)
         # Real forward
+        print('asdfasdfasfdsadfsadf')
+        import pdb; pdb.set_trace()
         tf_rep = self.encoder(wav)
         est_masks = self.masker(tf_rep)
         masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
