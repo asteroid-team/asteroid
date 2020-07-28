@@ -46,8 +46,10 @@ class SEGAN(LibriMix):
         sources = self.pre_emphasis(sources).astype('float32')
         # Convert sources to tensor
         sources = torch.from_numpy(sources)
-        if self.segment is None or self.seg_len > 16384 :
-            return self.slicer(mixture), self.slicer(sources)
+        if self.segment is not None and self.segment > 16384:
+            raise ValueError
+        if self.segment is None:
+            return self.slicer(mixture), sources
         return mixture, sources
 
     def slicer(self,sources, window=16384):

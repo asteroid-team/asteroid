@@ -7,7 +7,7 @@ from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 
 
 class Generator(nn.Module):
-    """G"""
+    """Generator also mentioned as G """
 
     def __init__(self):
         super().__init__()
@@ -42,7 +42,8 @@ class Generator(nn.Module):
         # so the feature map sizes are doubled
         self.dec10 = nn.ConvTranspose1d(in_channels=2048, out_channels=512,
                                         kernel_size=32, stride=2, padding=15)
-        self.dec10_nl = nn.PReLU()  # out : [B x 512 x 16] -> (concat) [B x 1024 x 16]
+        # [B x 512 x 16] -> (concat) [B x 1024 x 16]
+        self.dec10_nl = nn.PReLU()
         self.dec9 = nn.ConvTranspose1d(1024, 256, 32, 2, 15)  # [B x 256 x 32]
         self.dec9_nl = nn.PReLU()
         self.dec8 = nn.ConvTranspose1d(512, 256, 32, 2, 15)  # [B x 256 x 64]
@@ -81,9 +82,8 @@ class Generator(nn.Module):
         Forward pass of generator.
         Args:
             x: input batch (signal)
-            z: latent vector
         """
-        ### encoding step
+        # Encoding step
         e1 = self.enc1(x)
         e2 = self.enc2(self.enc1_nl(e1))
         e3 = self.enc3(self.enc2_nl(e2))
@@ -130,6 +130,11 @@ class Generator(nn.Module):
 
 
 class GeneratorLoss(_Loss):
+    """ This class implements losses for the generator. Three losses have been
+    investigated. classic_loss is the loss as described in SEGAN paper.
+    only_L1_loss removes the adversarial part of the classical_loss.
+    only_SNR_loss replace the L1 regularization by a SNR based one.
+    """
 
     def __init__(self, l=100, method='classic'):
         super().__init__()

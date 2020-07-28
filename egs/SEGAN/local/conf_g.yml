@@ -19,4 +19,4 @@ data:
   valid_dir: data/wav16k/min/dev
   sample_rate: 16000
   n_src: 1
-  segment: 1.024
+  segment: 1.024 # This parameter shouldn't be changed in training

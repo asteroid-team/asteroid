@@ -101,7 +101,7 @@ class VirtualBatchNorm1d(Module):
 
 
 class Discriminator(nn.Module):
-    """D"""
+    """Discriminator also mentioned as D"""
     def __init__(self, train_loader, dropout_drop=0.5):
         super().__init__()
         # Define convolution operations.
@@ -111,7 +111,7 @@ class Discriminator(nn.Module):
         ref_inputs, ref_targets = self.ref_x
         self.ref_x = torch.cat((ref_inputs, ref_targets), dim=1)
         negative_slope = 0.03
-        self.conv1 = nn.Conv1d(in_channels=2, out_channels=32, kernel_size=31, stride=2, padding=15)   # out : 8192 x 32
+        self.conv1 = nn.Conv1d(2, 32, 31, 2, 15)   # out : 8192 x 32
         self.vbn1 = VirtualBatchNorm1d(32)
         self.lrelu1 = nn.LeakyReLU(negative_slope)
         self.conv2 = nn.Conv1d(32, 64, 31, 2, 15)  # 4096 x 64
@@ -261,7 +261,7 @@ class DiscriminatorLoss(_Loss):
     def __init__(self):
         super().__init__()
 
-    def forward(self, inputs, targets, estimates, est_labels, labels):
+    def forward(self, est_labels, labels):
         # Behaves differently if estimates come from  the generated data or not
         if labels:
             loss = torch.mean((est_labels - torch.ones_like(est_labels)) ** 2)

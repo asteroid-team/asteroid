@@ -52,5 +52,4 @@ if [[ $stage -le 2 ]]; then
   $python_path eval.py --test_dir $test_dir \
     --exp_dir ${expdir} | tee logs/eval_${tag}.log
 	cp logs/eval_${tag}.log $expdir/eval.log
-
 fi

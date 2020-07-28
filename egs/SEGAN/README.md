@@ -11,13 +11,13 @@ The implementation used to reproduce SEGAN in this recipe was adapted from [here
 ### Investigation
 
 In this recipe, we investigate several aspects of SEGAN.
-The community has already reported that the noise that is added the compressed 
+The community has already reported that the noise that is added to the compressed 
 representation of the signal is ignored by the generator in the reconstruction phase
 [[1]](https://arxiv.org/pdf/1711.05747.pdf) [[2]](https://arxiv.org/pdf/1511.05440.pdf).
-We have been able to confirm and reproduce this result
+We have been able to confirm and reproduce this result.
 Furthermore, we have investigated the impact of the adversarial loss over the L1
 regularization. We found out that removing the adversarial part does not degrade performance 
-and using SNR regularization instead of L1 regularization gives better performance
+and using SNR regularization instead of L1 regularization gives better performance.
 
 ### Results
  
