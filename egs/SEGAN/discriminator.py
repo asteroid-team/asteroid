@@ -164,13 +164,12 @@ class Discriminator(nn.Module):
             if isinstance(m, nn.Conv1d):
                 nn.init.xavier_normal_(m.weight.data)
 
-    def forward(self, x, y ,z):
+    def forward(self, x, z):
         """
         Forward pass of discriminator.
         Args:
             x: batch of estimates
-            y: batch of targets
-            x: batch of inputs
+            z: batch of inputs
 
         """
         # reference pass

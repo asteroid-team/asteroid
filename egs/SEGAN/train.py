@@ -14,7 +14,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 # will limit the number of available GPUs for train.py .
 # This can be changed: `python train.py --gpus 0,1` will only train on 2 GPUs.
 from asteroid.data.SEGAN_dataset import SEGAN
-from asteroid.engine.gan_system import GanSystem
+from train_procedure import TrainSEGAN
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 
 # Keys which are not in the conf_g.yml file can be added here.
@@ -75,7 +75,7 @@ def main(conf_g, conf_d):
 
     validation_loss = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
 
-    gan = GanSystem(discriminator=discriminator, generator=generator,
+    gan = TrainSEGAN(discriminator=discriminator, generator=generator,
                     opt_d=opt_d, opt_g=opt_g, scheduler_d=scheduler_d,
                     scheduler_g=scheduler_g, discriminator_loss=d_loss,
                     generator_loss=g_loss, validation_loss=validation_loss,
