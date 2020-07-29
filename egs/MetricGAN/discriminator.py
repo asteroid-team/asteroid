@@ -2,17 +2,14 @@ import torch
 import torch.nn as nn
 from asteroid.engine.optimizers import make_optimizer
 from torch.nn.modules.loss import _Loss
-from asteroid.metrics import get_metrics
 from asteroid.filterbanks import make_enc_dec
 from asteroid.filterbanks.transforms import take_mag
-from asteroid.losses import SingleSrcPMSQE
-from asteroid.filterbanks import STFTFB, Encoder, transforms
 from pystoi import stoi
 from pb_bss_eval.evaluation.module_pesq import pesq
 
 
 class Discriminator(nn.Module):
-    """D"""
+    """Discriminator also mentioned ad D """
 
     def __init__(self, encoder, decoder, negative_slope=0.3):
         super().__init__()
@@ -38,12 +35,11 @@ class Discriminator(nn.Module):
             nn.utils.spectral_norm(nn.Linear(10, 1)),
             )
 
-    def forward(self, x, y, z):
+    def forward(self, x, z):
         """
         Forward pass of discriminator.
         Args:
             x: inputs
-            y: noisy
             z: clean
         """
         # Encode
@@ -64,12 +60,13 @@ class Discriminator(nn.Module):
 
 
 class DiscriminatorLoss(_Loss):
-
-    # Least Square loss function
-
-    def __init__(self, metric):
+    """ This class implements a generic loss for the discriminator.
+    However, computation of some metrics can break the code (eg PESQ).
+    For now, we recommend to use only STOI"""
+    def __init__(self, metric, rate):
         super().__init__()
         self.metric = metric
+        self.rate = rate
 
     def forward(self, noisy, clean, estimates, est_labels, labels):
         # Behaves differently if estimates come from  the generated data or not
@@ -78,11 +75,13 @@ class DiscriminatorLoss(_Loss):
             loss = torch.mean((est_labels - torch.ones_like(est_labels)) ** 2)
         else:
             loss = torch.mean((est_labels - get_metric(self.metric, noisy,
-                                                       clean, estimates))**2)
+                                                       clean, estimates,
+                                                       self.rate))**2)
         return loss
 
 
-def get_metric(metric, noisy, clean, estimates):
+def get_metric(metric, noisy, clean, estimates, rate):
+    """ Compute the metric """
     noisy_np = noisy.cpu().squeeze().data.numpy()
     clean_np = clean.cpu().squeeze().data.numpy()
     estimates_np = estimates.cpu().squeeze().data.numpy()
@@ -92,7 +91,7 @@ def get_metric(metric, noisy, clean, estimates):
     else:
         f = pesq
     for i in range(noisy_np.shape[0]):
-        m = f(clean_np[i], estimates_np[i], 16000)
+        m = f(clean_np[i], estimates_np[i], rate)
         metrics[i] += m
     if metric == 'pesq':
         metrics = (metrics + 0.5)/5.0
@@ -114,5 +113,6 @@ def make_discriminator_and_optimizer(conf):
     model = Discriminator(encoder, decoder)
     # Define optimizer of this model
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
-    d_loss = DiscriminatorLoss(conf['metric_to_opt']['metric'])
+    d_loss = DiscriminatorLoss(conf['metric_to_opt']['metric'],
+                               conf['data']['rate'])
     return model, optimizer, d_loss

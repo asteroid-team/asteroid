@@ -1,18 +1,15 @@
 import torch
 from torch import nn
-from asteroid.engine.optimizers import make_optimizer
 from torch.nn.modules.loss import _Loss
 
+from asteroid.engine.optimizers import make_optimizer
 from asteroid import torch_utils
 from asteroid.filterbanks import make_enc_dec
 from asteroid.filterbanks.transforms import take_mag, apply_mag_mask
-import torch
-from asteroid.losses import PITLossWrapper
-from asteroid.losses import pairwise_neg_sisdr
 
 
 class Generator(nn.Module):
-    """G"""
+    """ Generator also mentioned as G"""
 
     def __init__(self, encoder, decoder, negative_slope=0.3):
         super().__init__()
@@ -57,7 +54,7 @@ class GeneratorLoss(_Loss):
         super().__init__()
         self.s = s
 
-    def forward(self, estimates, targets, est_labels):
+    def forward(self, est_labels):
         loss = torch.mean((est_labels - self.s) ** 2)
         return loss
 
@@ -75,5 +72,5 @@ def make_generator_and_optimizer(conf):
     model = Generator(encoder, decoder)
     # Define optimizer of this model
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
-    g_loss = GeneratorLoss(conf['g_loss']['l'])
+    g_loss = GeneratorLoss(conf['g_loss']['s'])
     return model, optimizer, g_loss

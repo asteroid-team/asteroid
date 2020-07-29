@@ -27,7 +27,7 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 parser.add_argument('--n_save_ex', type=int, default=10,
                     help='Number of audio examples to save, -1 means all')
 
-compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi','pesq']
+compute_metrics = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi', 'pesq']
 
 
 def main(conf):
@@ -47,8 +47,8 @@ def main(conf):
             del state_copy[keys]
         if keys.startswith('validation'):
             del state_copy[keys]
-        if keys.startswith('generator') :
-            state_copy[keys.replace('generator.','')] = state_copy.pop(keys)
+        if keys.startswith('generator'):
+            state_copy[keys.replace('generator.', '')] = state_copy.pop(keys)
 
     model = load_state_dict_in(state_copy, model)
     # Handle device placement
@@ -56,13 +56,10 @@ def main(conf):
         model.cuda()
     model_device = next(model.parameters()).device
     test_set = MetricGAN(csv_dir=conf['test_dir'],
-                        task=conf['train_conf']['data']['task'],
-                        sample_rate=conf['sample_rate'],
-                        n_src=conf['train_conf']['data']['n_src'],
-                        segment=None) # Uses all segment length
-    # Used to reorder sources only
-
-    loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
+                         task=conf['train_conf']['data']['task'],
+                         sample_rate=conf['sample_rate'],
+                         n_src=conf['train_conf']['data']['n_src'],
+                         segment=None)  # Uses all segment length
 
     # Randomly choose the indexes of sentences to save.
     eval_save_dir = os.path.join(conf['exp_dir'])

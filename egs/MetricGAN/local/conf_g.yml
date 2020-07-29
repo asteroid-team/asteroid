@@ -11,7 +11,7 @@ training:
   half_lr: yes
   early_stop: yes
 g_loss:
-  l: 1
+  s: 1
 # Optim config
 optim:
   optimizer: adam
