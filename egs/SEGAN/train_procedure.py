@@ -1,10 +1,10 @@
 from collections import OrderedDict
-
 from asteroid.engine.gan_system import GanSystem
 import torch
 
 
 class TrainSEGAN(GanSystem):
+    """This class implements the training and validation procedure for SEGAN"""
 
     def training_step(self, batch, batch_nb, optimizer_idx):
         # Get data from data_loader
