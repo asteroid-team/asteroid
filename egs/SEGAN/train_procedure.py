@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from asteroid.engine.gan_system import GanSystem
 import torch
 
@@ -10,37 +9,37 @@ class TrainSEGAN(GanSystem):
         # Get data from data_loader
         inputs, targets = batch
         # Forward inputs
-        self.estimates = self(inputs)
+        estimates = self(inputs)
         # Train discriminator
         if optimizer_idx == 0:
             # Compute D loss for targets
             est_true_labels = self.discriminator(targets, inputs)
             true_loss = self.d_loss(est_true_labels, True)
             # Compute D loss for self.estimates
-            est_false_labels = self.discriminator(self.estimates.detach(),
+            est_false_labels = self.discriminator(estimates.detach(),
                                                   inputs)
             fake_loss = self.d_loss(est_false_labels, False)
             # Overall, the loss is the mean of these
             d_loss = (true_loss + fake_loss) * 0.5
             tqdm_dict = {'d_loss': d_loss}
-            output = OrderedDict({
+            output = {
                 'loss': d_loss,
                 'progress_bar': tqdm_dict,
                 'log': tqdm_dict
-            })
+            }
             return output
 
         # Train generator
         if optimizer_idx == 1:
             # The generator is supposed to fool the discriminator.
-            est_labels = self.discriminator(self.estimates, inputs)
-            adversarial_loss = self.g_loss(self.estimates, targets, est_labels)
+            est_labels = self.discriminator(estimates, inputs)
+            adversarial_loss = self.g_loss(estimates, targets, est_labels)
             tqdm_dict = {'g_loss': adversarial_loss}
-            output = OrderedDict({
+            output = {
                 'loss': adversarial_loss,
                 'progress_bar': tqdm_dict,
                 'log': tqdm_dict
-            })
+            }
             return output
 
     def validation_step(self, batch, batch_nb):
