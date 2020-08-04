@@ -6,7 +6,7 @@ Examples:
     >>> from asteroid.losses import PITLossWrapper
     >>> targets = torch.randn(10, 2, 32000)
     >>> est_targets = torch.randn(10, 2, 32000)
-    >>> loss_func = PITLossWrapper(NegSTOILoss(), pit_from='pw_pt')
+    >>> loss_func = PITLossWrapper(NegSTOILoss(sample_rate=8000), pit_from='pw_pt')
     >>> loss = loss_func(est_targets, targets)
 """
 
