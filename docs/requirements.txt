@@ -3,6 +3,7 @@ sphinxcontrib-jsmath==1.0.1
 sphinx>=1.8.3, <3.0
 recommonmark  # fails with badges
 nbsphinx
+m2r2
 # m2r  # fails with multi-line text
 # pandoc
 # docutils
