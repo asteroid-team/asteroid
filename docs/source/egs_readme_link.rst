@@ -1,0 +1,1 @@
+.. mdinclude:: ../../egs/README.md
