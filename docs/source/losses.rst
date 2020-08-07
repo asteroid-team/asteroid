@@ -8,7 +8,7 @@ Losses
 .. currentmodule:: asteroid.losses
 
 
-Permutation invariant (PIT) training made easy
+Permutation invariant training (PIT) made easy
 ----------------------------------------------
 
 .. automodule:: asteroid.losses.pit_wrapper
