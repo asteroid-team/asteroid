@@ -99,6 +99,7 @@ More information in [egs/README.md](./egs).
 * [x] [WSJ0-2mix](./egs/wsj0-mix) / WSJ03mix ([Hershey et al.](https://arxiv.org/abs/1508.04306))
 * [x] [WHAM](./egs/wham) ([Wichern et al.](https://arxiv.org/abs/1907.01160))
 * [x] [WHAMR](./egs/whamr) ([Maciejewski et al.](https://arxiv.org/abs/1910.10279))
+* [x] [LibriMix](./egs/librimix) ([Cosentino et al.](https://arxiv.org/abs/2005.11262))
 * [x] [Microsoft DNS Challenge](./egs/dns_challenge) ([Chandan et al.](https://arxiv.org/abs/2001.08662))
 * [x] [SMS_WSJ](./egs/sms_wsj) ([Drude et al.](https://arxiv.org/abs/1910.13934))
 * [x] MUSDB18 (egs coming) ([Raffi et al.](https://hal.inria.fr/hal-02190845)) 
