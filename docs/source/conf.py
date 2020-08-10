@@ -136,7 +136,7 @@ html_theme_options = {
     'logo_only': False,
 }
 
-html_logo = '_static/images/asteroid_logo.svg'
+html_logo = '_static/images/favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
