@@ -8,9 +8,20 @@ Welcome to asteroid's documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Why Asteroid ?
+   :caption: Start here
 
    why_use_asteroid
+   installation
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Datasets and recipes
+
+   egs_readme_link
+   supported_datasets
+   pretrained_models
+   faq
+
 
 .. toctree::
    :maxdepth: 1
@@ -19,12 +30,6 @@ Welcome to asteroid's documentation!
    filterbanks
    losses
    masknn
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Datasets and Recipes
-
-   supported_datasets
    running_a_recipe
 
 .. toctree::
