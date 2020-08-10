@@ -29,6 +29,14 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    readmes/pretrained_models.md
    faq
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Notebooks and Tutorials
+
+   Getting stated with Asteroid <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/01_AsteroidGettingStarted.ipynb>
+   Understanding the Filterbank API <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/02_Filterbank.ipynb>
+   Our PITLossWrapper explained <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb>
+   Community: Numpy vs. Asteroid STFT <https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j>
 
 .. toctree::
    :maxdepth: 1
