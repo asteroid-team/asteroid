@@ -1,6 +1,10 @@
 Installation
 ============
 
+By following the instructions below, first install PyTorch and then
+Asteroid (using either pip/dev install). We recommend the development
+installation for users likely to modify the source code.
+
 CUDA and PyTorch
 ****************
 
