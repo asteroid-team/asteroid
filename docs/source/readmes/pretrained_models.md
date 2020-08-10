@@ -50,3 +50,4 @@ All Asteroid's pretrained models are shared under the
 license. This means that models are released under the same license as the original
 training data. **If any non-commercial data is used during training (wsj0, WHAM's noises etc..), the
 models are non-commercial use only.** 
+This is indicated in the bottom of the corresponding Zenodo page (ex: [here](https://zenodo.org/record/3903795#collapseTwo)).
