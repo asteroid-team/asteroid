@@ -1,4 +1,4 @@
 FAQ
 ===
-List here frequently asked questions and issue references.
+List here frequently asked questions with issue references.
 

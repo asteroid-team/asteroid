@@ -3,8 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to asteroid's documentation!
-====================================
+Asteroid: Audio source separation on Steroids
+=============================================
+
+.. image:: ./_static/images/asteroid_logo_dark.png
+
+Asteroid is a Pytorch-based audio source separation toolkit that enables fast
+experimentation on common datasets. It comes with a source code thats supports a
+large range of datasets and architectures, and a set of recipes to reproduce some important papers.
 
 .. toctree::
    :maxdepth: 1
@@ -15,17 +21,18 @@ Welcome to asteroid's documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Datasets and recipes
+   :caption: Asteroid
 
    readmes/egs_README.md
    supported_datasets
-   pretrained_models
+   training_and_evaluation
+   readmes/pretrained_models.md
    faq
 
 
 .. toctree::
    :maxdepth: 1
-   :caption: Python API
+   :caption: Package reference
 
    filterbanks
    losses
