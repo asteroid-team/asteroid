@@ -1,5 +1,8 @@
 #!/bin/bash
-set -e  # Exit on error
+
+# Exit on error
+set -e
+set -o pipefail
 
 
 storage_dir= # Main storage directory (Need disk space)

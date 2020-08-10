@@ -55,7 +55,7 @@ def main(conf):
                                  mode='min', save_top_k=5, verbose=1)
     early_stopping = False
     if conf['training']['early_stop']:
-        early_stopping = EarlyStopping(monitor='val_loss', patience=10,
+        early_stopping = EarlyStopping(monitor='val_loss', patience=30,
                                        verbose=1)
     gpus=-1
     # Don't ask GPU if they are not available.
