@@ -17,7 +17,7 @@ Welcome to asteroid's documentation!
    :maxdepth: 1
    :caption: Datasets and recipes
 
-   egs_readme_link
+   readmes/egs_README.md
    supported_datasets
    pretrained_models
    faq
