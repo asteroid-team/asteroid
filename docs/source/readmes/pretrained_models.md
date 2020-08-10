@@ -21,6 +21,11 @@ from torch import hub
 model = hub.load('mpariente/asteroid', 'conv_tasnet', 'mpariente/ConvTasNet_WHAM!_sepclean')
 ```
 
+### Model caching 
+When using a `from_pretrained` method, the model is downloaded and cached. 
+The cache directory is either the value in the `$ASTEROID_CACHE` environment variable,
+or `~/.cache/torch/asteroid`.
+
 ### Share your models
 At the end of each sharing-enabled recipe, all the necessary infos are gathered into a file, the only thing 
 that's left to do is to run 
