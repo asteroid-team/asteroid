@@ -1,4 +1,4 @@
-### About the WHAMR dataset
+### WHAMR dataset
 WHAMR! is a noisy and reverberant single-channel speech separation dataset 
 based on WSJ0.
 It is a reverberant extension of [WHAM!](./../wham). 
@@ -7,7 +7,7 @@ Note that WHAMR! can synthesize binaural recordings, but we only consider
 the single channel for now.
 
 More info [here](http://wham.whisper.ai/).
-### References
+**References**
 ```BibTex
 @misc{maciejewski2019whamr,
     title={WHAMR!: Noisy and Reverberant Single-Channel Speech Separation},

@@ -1,11 +1,11 @@
-### Adbout the DNS Challenge
+### DNS Challenge's dataset
 
 The Deep Noise Suppression (DNS) Challenge is a single-channel speech enhancement 
 challenge organized by Microsoft, with a focus on real-time applications. 
 More info can be found on the [official page](https://dns-challenge.azurewebsites.net/).
 
 
-### - Our basic recipe
+#### - Our basic recipe
 This is made to make *your* life simpler and research easier !
 ##### What we automate for you :
 - Install `git-lfs` without root (required to download the data).
@@ -47,7 +47,7 @@ The data download, dataset creation and preprocessing will take a while
 enough compute power to train your DNN. Before that, you're I/O bound so 
 not much compute power is needed.
 
-### References
+**References**
 - The challenge paper, [here](https://arxiv.org/abs/2001.08662).
 ```BibTex
 @misc{DNSChallenge2020,

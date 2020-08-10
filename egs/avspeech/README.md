@@ -1,4 +1,4 @@
-### About the AVSpeech dataset
+### AVSpeech dataset
 
 AVSpeech is an audio-visual speech separation dataset which was introduced by Google 
 in this article [Looking to Listen at the Cocktail Party: 
@@ -7,7 +7,7 @@ Separation](https://arxiv.org/abs/1804.03619).
 
 More info [here](https://looking-to-listen.github.io/avspeech/download.html).
 
-### References
+**References**
 ```BibTex
 @article{Ephrat_2018,
    title={Looking to listen at the cocktail party},
