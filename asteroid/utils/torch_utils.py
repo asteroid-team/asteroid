@@ -1,7 +1,8 @@
 import torch
 from torch import nn
 from collections import OrderedDict
-
+from scipy.signal import get_window
+from asteroid.losses import PITLossWrapper
 
 def to_cuda(tensors):  # pragma: no cover (No CUDA on travis)
     """ Transfer tensor, dict or list of tensors to GPU.
@@ -123,3 +124,84 @@ def are_models_equal(model1, model2):
         if p1.data.ne(p2.data).sum() > 0:
             return False
     return True
+
+class OverlapAddWrapper(torch.nn.Module):
+    def __init__(self, nnet, sources, window_size, device, window="hanning", reorder_chunks=True):
+        super(OverlapAddWrapper, self).__init__()
+
+        assert window_size % 2 == 0, "Window size must be even"
+
+        self.to(device)
+        self.device = device
+        if isinstance(nnet, torch.nn.Module):
+            nnet = nnet.to(device)
+        self.function = nnet
+        self.window_size = window_size
+        self.sources = sources
+
+        window = get_window(window, self.window_size).astype("float32")
+        window = torch.from_numpy(window)
+        self.register_buffer("window", window)
+        self.reorder_chunks = reorder_chunks
+        if self.reorder_chunks:
+            xcorr = lambda x, y: torch.sum((x.unsqueeze(1)*y.unsqueeze(2)), dim=-1)
+            self.pit_xcorr = PITLossWrapper(xcorr)
+
+    def _reorder_sources(self, current, previous):
+        # we compute xcorr for all permutations
+        # we get index for min
+        batch, frames = current.size()
+        current = current.reshape(-1, self.sources, frames)
+        previous = previous.reshape(-1, self.sources, frames)
+
+        _, current = self.pit_xcorr(current, previous, return_est=True)
+        return current.reshape(batch, frames)
+
+    def forward(self, x):
+        with torch.no_grad():
+            x = x.to(self.device)
+            assert len(x.shape) == 3
+
+            # Overlap and add:
+            # [batch, channels, n_frames] -> [batch, channels, window_size, n_chunks]
+            batch, channels, n_frames = x.size()
+            hop_size = self.window_size // 2
+            folded = torch.nn.functional.unfold(x.unsqueeze(-1), kernel_size=(
+            self.window_size, 1),
+                                                padding=(self.window_size, 0),
+                                                stride=(hop_size, 1))
+
+            out = []
+            for f in range(folded.shape[-1]):  # for loop to spare memory
+                tmp = self.function(folded[..., f])
+                tmp = tmp * self.window
+                # user must handle multichannel by reshaping to batch
+                assert len(tmp.size()) == 3
+                assert tmp.shape[1] == self.sources
+                tmp = tmp.reshape(batch * self.sources, -1)
+
+                if f == 0:
+                    out.append(tmp)
+                else:
+                    # we determine best perm based on xcorr with previous sources
+                    tmp = self._reorder_sources(tmp, out[-1])
+                    out.append(tmp)
+
+            out = torch.stack(out).permute(1, 2, 0)
+            out = torch.nn.functional.fold(out, (n_frames, 1),
+                                           kernel_size=(self.window_size, 1),
+                                           padding=(self.window_size, 0),
+                                           stride=(hop_size, 1))
+            return out.squeeze(-1)
+
+
+
+
+
+
+
+
+
+
+
+
