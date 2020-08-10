@@ -1,19 +1,18 @@
-
-.. role:: hidden
-    :class: hidden-section
-
-Why use Asteroid ?
+What is Asteroid ?
 ==================
 
-Asteroid makes source separation easy
-Can you parse this?
+Asteroid is a PyTorch-based audio source separation toolkit.
 
-Reproducible research
-Asteroid can automatize all these things for you. 
+The main goals of Asteroid are:
 
-- Data preparation
-- System training
-- Evaluation 
+- Gather a wider **community** around audio source separation by lowering the barriers to entry.
+- **Promote reproducibility** by replicating important research papers.
+- Automatize most engineering and **make way for research**.
+- Simplify **model sharing** to reduce compute costs and carbon footprint.
 
-Asteroid's dev team
-Hey
+
+So, how do we do that? We aim to provide
+- PyTorch ``Dataset`` for **common datasets**.
+- Ready-to-use state-of-the art source separation architectures.
+- **Configurable recipes** from data preparation to evaluation.
+- **Pretrained models** for a wide variety of tasks and architectures.
