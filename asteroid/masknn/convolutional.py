@@ -1,7 +1,8 @@
 import torch
 from torch import nn
 import warnings
-from numpy import VisibleDeprecationWarning
+from ..utils.deprecation_utils import VisibleDeprecationWarning
+
 
 from . import norms, activations
 from ..utils import has_arg
