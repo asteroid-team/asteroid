@@ -105,8 +105,7 @@ class Encoder(_EncDec):
             If False, will output a tensor of shape (batch, 1, freq, conv_time).
         padding (int): Zero-padding added to both sides of the input.
 
-    Notes:
-        (time, ) --> (freq, conv_time)
+    .. note:: (time, ) --> (freq, conv_time)
         (batch, time) --> (batch, freq, conv_time)  # Avoid
         if as_conv1d:
             (batch, 1, time) --> (batch, freq, conv_time)

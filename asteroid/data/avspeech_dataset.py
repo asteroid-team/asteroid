@@ -47,8 +47,7 @@ class Signal:
             fps (int): fps of video.
             signal_len (int): length of the signal
 
-        Note:
-            [1]: each video consists of multiple parts which consists of fps*signal_len frames.
+        .. note:: each video consists of multiple parts which consists of fps*signal_len frames.
     """
 
     def __init__(

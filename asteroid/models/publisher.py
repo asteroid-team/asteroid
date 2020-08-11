@@ -152,8 +152,7 @@ def _populate_publishable(model, uploader=None, affiliation=None,
     Returns:
         dict (model), same as input `model`
 
-    Notes:
-        If a `git_username` is not specified, we look for it somehow, or take
+    .. note:: If a `git_username` is not specified, we look for it somehow, or take
         the laptop username.
     """
     # Get username somehow
@@ -231,8 +230,7 @@ def zenodo_upload(model, token, model_path=None, use_sandbox=False):
         Zenodo (Zenodo instance with access token)
         int (deposit ID)
 
-    Notes:
-        If `model_path` is not specified, save the model in tmp.pth and
+    .. note::If `model_path` is not specified, save the model in tmp.pth and
         remove it after upload.
     """
     model_path_was_none = False
@@ -265,8 +263,7 @@ def make_metadata_from_model(model):
     Returns:
         dict, the metadata to create the Zenodo deposit with.
 
-    Notes:
-        We remove the PESQ from the final results as a license is needed to
+    .. note::We remove the PESQ from the final results as a license is needed to
         use it.
     """
     infos = model['infos']
