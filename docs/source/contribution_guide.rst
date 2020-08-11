@@ -5,7 +5,7 @@ Asteroid is a Pytorch-based audio source separation toolkit that enables fast
 experimentation on common datasets.
 
 The Asteroid Contribution Process
---------------------------------
+---------------------------------
 
 The Asteroid development process involves a healthy amount of open
 discussions between the core development team and the community.
@@ -268,6 +268,6 @@ Frequently asked questions
 
 
 Attribution
-___________
+-----------
 This Contribution Guide is adapted from PyTorch's Contribution Guide available
 `here <https://github.com/pytorch/pytorch/blob/master/docs/source/community/contribution_guide.rst>`_.
