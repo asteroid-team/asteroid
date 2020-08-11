@@ -48,6 +48,7 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    package_reference/models
    package_reference/losses
    package_reference/system
+   package_reference/optimizers
 
 .. toctree::
    :maxdepth: 1
