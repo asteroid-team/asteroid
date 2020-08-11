@@ -43,3 +43,16 @@ Fixed filterbanks
 .. automodule:: asteroid.filterbanks.stft_fb
     :members:
 
+:hidden:`MP-GTFB`
+~~~~~~~~~~~~~~~~
+.. automodule:: asteroid.filterbanks.multiphase_gammatone_fb
+    :members:
+
+Transforms
+----------
+.. automodule:: asteroid.filterbanks.griffin_lim
+   :members:
+
+.. automodule:: asteroid.filterbanks.transforms
+   :members:
+
