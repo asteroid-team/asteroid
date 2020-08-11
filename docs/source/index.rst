@@ -9,7 +9,7 @@ Asteroid: Audio source separation on Steroids
 .. image:: ./_static/images/asteroid_logo_dark.png
 
 Asteroid is a Pytorch-based audio source separation toolkit that enables fast
-experimentation on common datasets. It comes with a source code thats supports a
+experimentation on common datasets. It comes with a source code that supports a
 large range of datasets and architectures, and a set of recipes to reproduce some important papers.
 
 .. toctree::
@@ -42,10 +42,12 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    :maxdepth: 1
    :caption: Package reference
 
-   filterbanks
-   losses
-   masknn
-   running_a_recipe
+   package_reference/data
+   package_reference/filterbanks
+   package_reference/blocks
+   package_reference/models
+   package_reference/losses
+   package_reference/system
 
 .. toctree::
    :maxdepth: 1
