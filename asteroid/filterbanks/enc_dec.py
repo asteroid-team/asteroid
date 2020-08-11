@@ -122,7 +122,7 @@ class Encoder(_EncDec):
             return cls(filterbank.filterbank, is_pinv=True, **kwargs)
 
     def forward(self, waveform):
-        """ Convolve 1D torch.Tensor with the filters from a filterbank.
+        """ Convolve input waveform with the filters from a filterbank.
         Args:
             waveform (:class:`torch.Tensor`): any tensor with samples along the
                 last dimension. The waveform representation with and
