@@ -7,15 +7,16 @@ Filterbank API
 Filterbank, Encoder and Decoder
 -----------------
 .. autoclass:: asteroid.filterbanks.Filterbank
-		:members:
+   :members:
 .. autoclass:: asteroid.filterbanks.Encoder
-		:members:
-		:show-inheritance:
+   :members:
+   :show-inheritance:
 .. autoclass:: asteroid.filterbanks.Decoder
-		:members:
-   	:show-inheritance:
+   :members:
+   :show-inheritance:
 .. autoclass:: asteroid.filterbanks.make_enc_dec
-		:members:
+   :members:
+.. autoclass:: asteroid.filterbanks.get
 
 Learnable filterbanks
 ---------------------
