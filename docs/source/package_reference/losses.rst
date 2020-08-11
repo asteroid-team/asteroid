@@ -1,8 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
-Losses
-======
+Losses & Metrics
+================
 
 .. automodule:: asteroid.losses
 .. currentmodule:: asteroid.losses
@@ -57,3 +57,9 @@ into both PIT and nonPIT training.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: asteroid.losses.cluster.deep_clustering_loss
+
+
+Computing metrics
+-----------------
+
+.. autofunction:: asteroid.metrics.get_metrics
