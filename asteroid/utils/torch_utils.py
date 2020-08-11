@@ -125,76 +125,25 @@ def are_models_equal(model1, model2):
             return False
     return True
 
-class OverlapAddWrapper(torch.nn.Module):
-    def __init__(self, nnet, sources, window_size, device, window="hanning", reorder_chunks=True):
-        super(OverlapAddWrapper, self).__init__()
 
-        assert window_size % 2 == 0, "Window size must be even"
+if __name__ == "__main__":
+    batch = 1
+    sources = 2
+    import soundfile as sf
+    dummy_in, _ = sf.read("/media/sam/cb915f0e-e440-414c-bb74-df66b311d09d/2speakers_wham/wav8k/min/cv/s1/01aa010k_1.3053_01po0310_-1.3053.wav")#torch.rand((batch, 64000)).unsqueeze(1)
+    from asteroid import ConvTasNet
+    dummy_in = torch.from_numpy(dummy_in).float().unsqueeze(0).unsqueeze(0)
+    tasnet = ConvTasNet(sources, n_filters=64, stride=8, n_blocks=1, n_repeats=1)
 
-        self.to(device)
-        self.device = device
-        if isinstance(nnet, torch.nn.Module):
-            nnet = nnet.to(device)
-        self.function = nnet
-        self.window_size = window_size
-        self.sources = sources
+    func = lambda x: tasnet(x.unsqueeze(1))
+    wind = OverlapAddWrapper(func, sources, 32000, 16000)
+    windowed = wind(dummy_in)
 
-        window = get_window(window, self.window_size).astype("float32")
-        window = torch.from_numpy(window)
-        self.register_buffer("window", window)
-        self.reorder_chunks = reorder_chunks
+    unwindowed = tasnet(dummy_in).reshape(batch, sources, -1).detach()
 
-    def _reorder_sources(self, current, previous):
-        # we compute xcorr for all permutations
-        # we get index for min
-        batch, frames = current.size()
-        current = current.reshape(-1, self.sources, frames)
-        previous = previous.reshape(-1, self.sources, frames)
-
-        pw_losses = PITLossWrapper.get_pw_losses(lambda x, y: torch.sum((x.unsqueeze(1) * y.unsqueeze(2))),
-                                                 current[..., :self.window_size//2],
-                                                 previous[..., -self.window_size//2:])
-        _, perms = PITLossWrapper.find_best_perm(pw_losses, self.sources)
-        current = PITLossWrapper.reorder_source(current, self.sources, perms)
-        return current.reshape(batch, frames)
-
-    def forward(self, x):
-        with torch.no_grad():
-            x = x.to(self.device)
-            assert len(x.shape) == 3
-
-            # Overlap and add:
-            # [batch, channels, n_frames] -> [batch, channels, window_size, n_chunks]
-            batch, channels, n_frames = x.size()
-            hop_size = self.window_size // 2
-            folded = torch.nn.functional.unfold(x.unsqueeze(-1), kernel_size=(
-            self.window_size, 1),
-                                                padding=(self.window_size, 0),
-                                                stride=(hop_size, 1))
-
-            out = []
-            for f in range(folded.shape[-1]):  # for loop to spare memory
-                tmp = self.function(folded[..., f])
-                tmp = tmp * self.window
-                # user must handle multichannel by reshaping to batch
-                assert len(tmp.size()) == 3
-                assert tmp.shape[1] == self.sources
-                tmp = tmp.reshape(batch * self.sources, -1)
-
-                if f == 0:
-                    out.append(tmp)
-                else:
-                    # we determine best perm based on xcorr with previous sources
-                    tmp = self._reorder_sources(tmp, out[-1])
-                    out.append(tmp)
-
-            out = torch.stack(out).permute(1, 2, 0)
-            out = torch.nn.functional.fold(out, (n_frames, 1),
-                                           kernel_size=(self.window_size, 1),
-                                           padding=(self.window_size, 0),
-                                           stride=(hop_size, 1))
-
-            return out.squeeze(-1)
+    import numpy as np
+    windowed = windowed.reshape(batch, sources, -1)
+    np.testing.assert_array_almost_equal(windowed.numpy(), unwindowed.numpy())
 
 
 
