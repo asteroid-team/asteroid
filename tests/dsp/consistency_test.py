@@ -2,7 +2,7 @@ import torch
 from torch.testing import assert_allclose
 import pytest
 
-from asteroid.masknn.consistency import mixture_consistency
+from asteroid.dsp.consistency import mixture_consistency
 
 
 @pytest.mark.parametrize("mix_shape", [[2, 1600], [2, 130, 10]])
