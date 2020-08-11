@@ -17,4 +17,3 @@ def test_overlap_add(length, batch_size, n_src, window, window_size, hop_size):
     oladd = OverlapAddWrapper(nnet, n_src, window_size, hop_size, window)
     oladded = oladd(mix)
     assert_allclose(mix.repeat(1, n_src, 1), oladded)
-    
