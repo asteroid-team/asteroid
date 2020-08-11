@@ -1,8 +1,7 @@
 import torch
 from torch import nn
 from collections import OrderedDict
-from scipy.signal import get_window
-from asteroid.losses import PITLossWrapper
+
 
 def to_cuda(tensors):  # pragma: no cover (No CUDA on travis)
     """ Transfer tensor, dict or list of tensors to GPU.
@@ -124,16 +123,3 @@ def are_models_equal(model1, model2):
         if p1.data.ne(p2.data).sum() > 0:
             return False
     return True
-
-
-
-
-
-
-
-
-
-
-
-
-
