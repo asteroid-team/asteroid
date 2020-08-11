@@ -143,9 +143,6 @@ class OverlapAddWrapper(torch.nn.Module):
         window = torch.from_numpy(window)
         self.register_buffer("window", window)
         self.reorder_chunks = reorder_chunks
-        if self.reorder_chunks:
-            xcorr = lambda x, y: torch.sum((x.unsqueeze(1)*y.unsqueeze(2)), dim=-1)
-            self.pit_xcorr = PITLossWrapper(xcorr)
 
     def _reorder_sources(self, current, previous):
         # we compute xcorr for all permutations
@@ -154,7 +151,11 @@ class OverlapAddWrapper(torch.nn.Module):
         current = current.reshape(-1, self.sources, frames)
         previous = previous.reshape(-1, self.sources, frames)
 
-        _, current = self.pit_xcorr(current, previous, return_est=True)
+        pw_losses = PITLossWrapper.get_pw_losses(lambda x, y: torch.sum((x.unsqueeze(1) * y.unsqueeze(2))),
+                                                 current[..., :self.window_size//2],
+                                                 previous[..., -self.window_size//2:])
+        _, perms = PITLossWrapper.find_best_perm(pw_losses, self.sources)
+        current = PITLossWrapper.reorder_source(current, self.sources, perms)
         return current.reshape(batch, frames)
 
     def forward(self, x):
