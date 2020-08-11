@@ -28,6 +28,19 @@ def make_dataloaders(train_dir, valid_dir, n_src=2, sample_rate=8000,
 
 
 class Wsj0mixDataset(data.Dataset):
+    """ Dataset class for the wsj0-mix source separation dataset.
+
+    Args:
+        json_dir (str): The path to the directory containing the json files.
+        sample_rate (int, optional): The sampling rate of the wav files.
+        segment (float, optional): Length of the segments used for training,
+            in seconds. If None, use full utterances (e.g. for test).
+        n_src (int, optional): Number of sources in the training targets.
+
+    References
+        "Deep clustering: Discriminative embeddings for segmentation and
+        separation", Hershey et al. 2015.
+    """
     dataset_name = 'wsj0-mix'
 
     def __init__(self, json_dir, n_src=2, sample_rate=8000, segment=4.0):

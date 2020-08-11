@@ -28,6 +28,19 @@ def make_dataloaders(train_dir, valid_dir, n_src=2, sample_rate=16000,
 
 
 class KinectWsjMixDataset(Wsj0mixDataset):
+    """ Dataset class for the KinectWSJ-mix source separation dataset.
+
+    Args:
+        json_dir (str): The path to the directory containing the json files.
+        sample_rate (int, optional): The sampling rate of the wav files.
+        segment (float, optional): Length of the segments used for training,
+            in seconds. If None, use full utterances (e.g. for test).
+        n_src (int, optional): Number of sources in the training targets.
+
+    References
+        "Analyzing the impact of speaker localization errors on speech separation
+        for automatic speech recognition", Sunit Sivasankaran et al. 2020.
+    """
     dataset_name = 'Kinect-WSJ'
 
     def __init__(self, json_dir, n_src=2, sample_rate=16000, segment=4.0):
