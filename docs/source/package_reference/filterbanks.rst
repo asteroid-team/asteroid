@@ -51,8 +51,15 @@ Fixed filterbanks
 
 Transforms
 ----------
+
+:hidden:`Griffin-Lim and MISI`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. automodule:: asteroid.filterbanks.griffin_lim
    :members:
+
+:hidden:`Complex transforms`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: asteroid.filterbanks.transforms
    :members:
