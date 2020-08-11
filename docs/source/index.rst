@@ -56,9 +56,8 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    :maxdepth: 1
    :caption: Community
 
-   community
-
-
+   contribution_guide
+   readmes/CONTRIBUTING.md
 
 
 Indices and tables
