@@ -126,26 +126,6 @@ def are_models_equal(model1, model2):
     return True
 
 
-if __name__ == "__main__":
-    batch = 1
-    sources = 2
-    import soundfile as sf
-    dummy_in, _ = sf.read("/media/sam/cb915f0e-e440-414c-bb74-df66b311d09d/2speakers_wham/wav8k/min/cv/s1/01aa010k_1.3053_01po0310_-1.3053.wav")#torch.rand((batch, 64000)).unsqueeze(1)
-    from asteroid import ConvTasNet
-    dummy_in = torch.from_numpy(dummy_in).float().unsqueeze(0).unsqueeze(0)
-    tasnet = ConvTasNet(sources, n_filters=64, stride=8, n_blocks=1, n_repeats=1)
-
-    func = lambda x: tasnet(x.unsqueeze(1))
-    wind = OverlapAddWrapper(func, sources, 32000, 16000)
-    windowed = wind(dummy_in)
-
-    unwindowed = tasnet(dummy_in).reshape(batch, sources, -1).detach()
-
-    import numpy as np
-    windowed = windowed.reshape(batch, sources, -1)
-    np.testing.assert_array_almost_equal(windowed.numpy(), unwindowed.numpy())
-
-
 
 
 
