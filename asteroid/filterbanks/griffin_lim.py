@@ -4,7 +4,7 @@ import math
 from . import Encoder, Decoder, STFTFB
 from .stft_fb import perfect_synthesis_window
 from . import transforms
-from ..masknn.consistency import mixture_consistency
+from ..dsp.consistency import mixture_consistency
 
 
 def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6,
