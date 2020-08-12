@@ -3,7 +3,23 @@ from scipy.signal import get_window
 from asteroid.losses import PITLossWrapper
 
 
-class OverlapAddWrapper(torch.nn.Module):
+def _reorder_sources(current, previous, n_src, window_size, hop_size):
+
+    batch, frames = current.size()
+    current = current.reshape(-1, n_src, frames)
+    previous = previous.reshape(-1, n_src, frames)
+
+    overlap_f = window_size - hop_size
+    pw_losses = PITLossWrapper.get_pw_losses(
+        lambda x, y: torch.sum((x.unsqueeze(1) * y.unsqueeze(2))),
+        current[..., :overlap_f],
+        previous[..., -overlap_f:])
+    _, perms = PITLossWrapper.find_best_perm(pw_losses, n_src)
+    current = PITLossWrapper.reorder_source(current, n_src, perms)
+    return current.reshape(batch, frames)
+
+
+class LambdaOverlapAdd(torch.nn.Module):
     """ Segment signal, apply func, combine with OLA.
 
     Args:
@@ -15,7 +31,9 @@ class OverlapAddWrapper(torch.nn.Module):
         reorder_chunks (bool): whether to reorder each consecutive segment.
     """
     def __init__(self, nnet, n_src, window_size, hop_size=None,
-                 window="hanning", reorder_chunks=True):
+                 window="hanning", reorder_chunks=True,
+                 enable_grad=False,
+                 ):
         super().__init__()
         assert window_size % 2 == 0, "Window size must be even"
 
@@ -27,43 +45,19 @@ class OverlapAddWrapper(torch.nn.Module):
         if window:
             window = get_window(window, self.window_size).astype("float32")
             window = torch.from_numpy(window)
+            self.use_window = True
         else:
-            window = torch.ones(self.window_size)
+            self.use_window = False
 
         self.register_buffer("window", window)
         self.reorder_chunks = reorder_chunks
-
-    def _reorder_sources(self, current, previous):
-        """ Reorder based on max corr between segments for all permutations """
-        batch, frames = current.size()
-        current = current.reshape(-1, self.n_src, frames)
-        previous = previous.reshape(-1, self.n_src, frames)
-
-        overlap_f = self.window_size - self.hop_size
-        pw_losses = PITLossWrapper.get_pw_losses(lambda x, y: torch.sum((x.unsqueeze(1) * y.unsqueeze(2))),
-                                                 current[..., :overlap_f],
-                                                 previous[..., -overlap_f:])
-        _, perms = PITLossWrapper.find_best_perm(pw_losses, self.n_src)
-        current = PITLossWrapper.reorder_source(current, self.n_src, perms)
-        return current.reshape(batch, frames)
-
-    def forward(self, x):
-        """ Forward module: segment signal, apply func, combine with OLA.
-
-        Args:
-            x (:class:`torch.Tensor`): waveform signal of shape (batch, 1, time).
-
-        Returns:
-            :class:`torch.Tensor`: The output of the lambda OLA.
-        """
-        # Here we can do the reshaping
-        with torch.no_grad():
-            olad = self.ola_forward(x)
-            return olad
+        self.enable_grad = enable_grad
 
     def ola_forward(self, x):
         """Heart of the class: segment signal, apply func, combine with OLA."""
+
         assert len(x.shape) == 3
+
         batch, channels, n_frames = x.size()
         # Overlap and add:
         # [batch, chans, n_frames] -> [batch, chans, win_size, n_chunks]
@@ -79,15 +73,21 @@ class OverlapAddWrapper(torch.nn.Module):
         for f in range(n_chunks):  # for loop to spare memory
             tmp = self.nnet(folded[..., f])
             # user must handle multichannel by reshaping to batch
-            assert len(tmp.size()) == 3, "nnet should return (batch, n_src, time)"
-            assert tmp.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
+            assert len(
+                tmp.size()) == 3, "nnet should return (batch, n_src, time)"
+            assert tmp.shape[
+                       1] == self.n_src, "nnet should return (batch, n_src, time)"
             tmp = tmp.reshape(batch * self.n_src, -1)
 
             if f != 0 and self.reorder_chunks:
                 # we determine best perm based on xcorr with previous sources
-                tmp = self._reorder_sources(tmp, out[-1])
+                tmp = _reorder_sources(tmp, out[-1], self.n_src,
+                                       self.window_size, self.hop_size)
 
-            tmp = tmp * self.window
+            if self.use_window:
+                tmp = tmp * self.window
+            else:
+                tmp = tmp / (self.window_size / self.hop_size)
             out.append(tmp)
 
         out = torch.stack(out).reshape(
@@ -104,3 +104,24 @@ class OverlapAddWrapper(torch.nn.Module):
             stride=(self.hop_size, 1)
         )
         return out.squeeze(-1).reshape(batch, self.n_src, -1)
+
+    def forward(self, x):
+        """ Forward module: segment signal, apply func, combine with OLA.
+
+        Args:
+            x (:class:`torch.Tensor`): waveform signal of shape (batch, 1, time).
+
+        Returns:
+            :class:`torch.Tensor`: The output of the lambda OLA.
+        """
+        # Here we can do the reshaping
+        if self.enable_grad:
+            olad = self.ola_forward(x)
+            return olad
+        else:
+            with torch.no_grad():
+                olad = self.ola_forward(x)
+                return olad
+
+
+
