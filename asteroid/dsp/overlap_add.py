@@ -64,8 +64,9 @@ class LambdaOverlapAdd(torch.nn.Module):
         for f in range(n_chunks):  # for loop to spare memory
             tmp = self.nnet(folded[..., f])
             # user must handle multichannel by reshaping to batch
-            assert len(tmp.size()) == 3, "nnet should return (batch, n_src, time)"
-            assert tmp.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
+            if f == 0:
+                assert len(tmp.size()) == 3, "nnet should return (batch, n_src, time)"
+                assert tmp.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
             tmp = tmp.reshape(batch * self.n_src, -1)
 
             if f != 0 and self.reorder_chunks:
@@ -100,13 +101,9 @@ class LambdaOverlapAdd(torch.nn.Module):
             :class:`torch.Tensor`: The output of the lambda OLA.
         """
         # Here we can do the reshaping
-        if self.enable_grad:
+        with torch.autograd.set_grad_enabled(self.enable_grad):
             olad = self.ola_forward(x)
             return olad
-        else:
-            with torch.no_grad():
-                olad = self.ola_forward(x)
-                return olad
 
 
 def _reorder_sources(current: torch.FloatTensor,
