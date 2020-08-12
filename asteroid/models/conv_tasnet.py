@@ -53,9 +53,9 @@ class ConvTasNet(BaseTasNet):
         skip_chan=128,
         conv_kernel_size=3,
         norm_type="gLN",
-        mask_act='relu',
+        mask_act="relu",
         in_chan=None,
-        fb_name='free',
+        fb_name="free",
         kernel_size=16,
         n_filters=512,
         stride=8,
@@ -67,10 +67,10 @@ class ConvTasNet(BaseTasNet):
         n_feats = encoder.n_feats_out
         if in_chan is not None:
             assert in_chan == n_feats, (
-                'Number of filterbank output channels'
-                ' and number of input channels should '
-                'be the same. Received '
-                f'{n_feats} and {in_chan}'
+                "Number of filterbank output channels"
+                " and number of input channels should "
+                "be the same. Received "
+                f"{n_feats} and {in_chan}"
             )
         # Update in_chan
         masker = TDConvNet(

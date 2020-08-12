@@ -28,23 +28,23 @@ class Zenodo(object):
 
     def __init__(self, api_key=None, use_sandbox=True):
         if api_key is None:
-            api_key = os.getenv('ACCESS_TOKEN', None)
+            api_key = os.getenv("ACCESS_TOKEN", None)
         if api_key is None:
             raise ValueError(
-                'Need to set `api_key` somehow. Either through the class'
-                'arguments or by setting ACCESS_TOKEN env variable in bash.'
+                "Need to set `api_key` somehow. Either through the class"
+                "arguments or by setting ACCESS_TOKEN env variable in bash."
             )
         self.use_sandbox = use_sandbox
         if use_sandbox is True:
-            self.zenodo_address = 'https://sandbox.zenodo.org'
+            self.zenodo_address = "https://sandbox.zenodo.org"
         else:
-            self.zenodo_address = 'https://zenodo.org'
+            self.zenodo_address = "https://zenodo.org"
 
         self.api_key = api_key
-        self.auth_header = {'Authorization': f"Bearer {self.api_key}"}
+        self.auth_header = {"Authorization": f"Bearer {self.api_key}"}
         self.headers = {
             "Content-Type": "application/json",
-            'Authorization': f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {self.api_key}",
         }
 
     def create_new_deposition(self, metadata=None):
@@ -54,7 +54,9 @@ class Zenodo(object):
             metadata (dict, optional): Metadata dict to upload on the new
                 deposition.
         """
-        r = requests.post(f'{self.zenodo_address}/api/deposit/depositions', json={}, headers=self.headers)
+        r = requests.post(
+            f"{self.zenodo_address}/api/deposit/depositions", json={}, headers=self.headers
+        )
 
         if r.status_code != 201:
             print("Creation failed (status code: {})".format(r.status_code))
@@ -85,7 +87,9 @@ class Zenodo(object):
         """
         data = {"metadata": metadata}
         r = requests.put(
-            f'{self.zenodo_address}/api/deposit/depositions/{dep_id}', data=json.dumps(data), headers=self.headers,
+            f"{self.zenodo_address}/api/deposit/depositions/{dep_id}",
+            data=json.dumps(data),
+            headers=self.headers,
         )
         return r
 
@@ -102,24 +106,24 @@ class Zenodo(object):
         (More: https://developers.zenodo.org/#deposition-files)
         """
         if isinstance(file, BufferedReader):
-            files = {'file': file}
+            files = {"file": file}
             filename = name if name else "Unknown"
         elif isinstance(file, str):
             if os.path.isfile(file):
                 # This is a file, read it
-                files = {'file': open(os.path.expanduser(file), 'rb')}
+                files = {"file": open(os.path.expanduser(file), "rb")}
                 filename = name if name else os.path.basename(file)
             else:
                 # This is a string, convert to BytesIO
-                files = {'file': BytesIO(bytes(file, 'utf-8'))}
+                files = {"file": BytesIO(bytes(file, "utf-8"))}
                 filename = name if name else "Unknown"
         else:
-            raise ValueError('Unknown file format , expected str or Bytes ')
+            raise ValueError("Unknown file format , expected str or Bytes ")
         data = {"name": filename}
         print("Submitting Data: {} and Files: {}".format(data, files))
 
         r = requests.post(
-            f'{self.zenodo_address}/api/deposit/depositions/{dep_id}/files',
+            f"{self.zenodo_address}/api/deposit/depositions/{dep_id}/files",
             headers=self.auth_header,
             data=data,
             files=files,
@@ -135,7 +139,8 @@ class Zenodo(object):
                 `r = create_new_deposition(); dep_id = r.json()['id']`
         """
         r = requests.post(
-            f'{self.zenodo_address}/api/deposit/depositions/{dep_id}/actions/publish', headers=self.headers,
+            f"{self.zenodo_address}/api/deposit/depositions/{dep_id}/actions/publish",
+            headers=self.headers,
         )
         return r
 
@@ -143,7 +148,9 @@ class Zenodo(object):
         """ Get deposition by deposition id. Get all dep_id is -1 (default)."""
         if dep_id > -1:
             print(f"Get deposition {dep_id} from Zenodo")
-            r = requests.get(f"{self.zenodo_address}/api/deposit/depositions/{dep_id}", headers=self.headers)
+            r = requests.get(
+                f"{self.zenodo_address}/api/deposit/depositions/{dep_id}", headers=self.headers
+            )
         else:
             print("Get all depositions from Zenodo")
             r = requests.get(f"{self.zenodo_address}/api/deposit/depositions", headers=self.headers)
@@ -152,8 +159,10 @@ class Zenodo(object):
 
     def remove_deposition(self, dep_id):
         """ Remove deposition with deposition id `dep_id`"""
-        print(f'Delete deposition number {dep_id}')
-        r = requests.delete(f'{self.zenodo_address}/api/deposit/depositions/{dep_id}', headers=self.auth_header)
+        print(f"Delete deposition number {dep_id}")
+        r = requests.delete(
+            f"{self.zenodo_address}/api/deposit/depositions/{dep_id}", headers=self.auth_header
+        )
         return r
 
     def remove_all_depositions(self):

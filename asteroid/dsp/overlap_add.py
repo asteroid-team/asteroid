@@ -106,9 +106,13 @@ class LambdaOverlapAdd(torch.nn.Module):
             return olad
 
 
-def _reorder_sources(current: torch.FloatTensor,
-                     previous: torch.FloatTensor, n_src: int, window_size: int,
-                     hop_size: int):
+def _reorder_sources(
+    current: torch.FloatTensor,
+    previous: torch.FloatTensor,
+    n_src: int,
+    window_size: int,
+    hop_size: int,
+):
     """
      Reorder sources in current chunk to maximize correlation with previous chunk.
      Used for Continuous Source Separation. Standard dsp correlation is used

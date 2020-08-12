@@ -31,8 +31,8 @@ class AnalyticFreeFB(Filterbank):
         self.n_feats_out = 2 * self.cutoff
         if n_filters % 2 != 0:
             print(
-                'If the number of filters `n_filters` is odd, the '
-                'output size of the layer will be `n_filters - 1`.'
+                "If the number of filters `n_filters` is odd, the "
+                "output size of the layer will be `n_filters - 1`."
             )
 
         self._filters = nn.Parameter(torch.ones(n_filters // 2, 1, kernel_size), requires_grad=True)

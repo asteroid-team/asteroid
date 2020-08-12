@@ -72,7 +72,9 @@ class CumLN(_LayerNorm):
         batch, chan, spec_len = x.size()
         cum_sum = torch.cumsum(x.sum(1, keepdim=True), dim=-1)
         cum_pow_sum = torch.cumsum(x.pow(2).sum(1, keepdim=True), dim=-1)
-        cnt = torch.arange(start=chan, end=chan * (spec_len + 1), step=chan, dtype=x.dtype).view(1, 1, -1)
+        cnt = torch.arange(start=chan, end=chan * (spec_len + 1), step=chan, dtype=x.dtype).view(
+            1, 1, -1
+        )
         cum_mean = cum_sum / cnt
         cum_var = cum_pow_sum - cum_mean.pow(2)
         return self.apply_gain_and_bias((x - cum_mean) / (cum_var + EPS).sqrt())
@@ -107,7 +109,7 @@ class BatchNorm(_BatchNorm):
 
     def _check_input_dim(self, input):
         if input.dim() < 2 or input.dim() > 4:
-            raise ValueError('expected 4D or 3D input (got {}D input)'.format(input.dim()))
+            raise ValueError("expected 4D or 3D input (got {}D input)".format(input.dim()))
 
 
 # Aliases.
@@ -135,7 +137,7 @@ def get(identifier):
     elif isinstance(identifier, str):
         cls = globals().get(identifier)
         if cls is None:
-            raise ValueError('Could not interpret normalization identifier: ' + str(identifier))
+            raise ValueError("Could not interpret normalization identifier: " + str(identifier))
         return cls
     else:
-        raise ValueError('Could not interpret normalization identifier: ' + str(identifier))
+        raise ValueError("Could not interpret normalization identifier: " + str(identifier))

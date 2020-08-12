@@ -11,7 +11,7 @@ from asteroid.filterbanks import transforms
 
 
 def fb_config_list():
-    keys = ['n_filters', 'kernel_size', 'stride']
+    keys = ["n_filters", "kernel_size", "stride"]
     param_list = [
         [256, 256, 128],  # Usual STFT, 50% overlap
         [256, 256, 64],  # Usual STFT, 25% overlap
@@ -26,7 +26,7 @@ def test_stft_def(fb_config):
     fb = STFTFB(**fb_config)
     enc = Encoder(fb)
     dec = Decoder(fb)
-    enc2, dec2 = make_enc_dec('stft', **fb_config)
+    enc2, dec2 = make_enc_dec("stft", **fb_config)
     testing.assert_allclose(enc.filterbank.filters, enc2.filterbank.filters)
     testing.assert_allclose(dec.filterbank.filters, dec2.filterbank.filters)
 
@@ -46,14 +46,14 @@ def test_filter_shape(fb_config):
     # Instantiate STFT
     fb = STFTFB(**fb_config)
     # Check filter shape.
-    assert fb.filters.shape == (fb_config['n_filters'] + 2, 1, fb_config['kernel_size'])
+    assert fb.filters.shape == (fb_config["n_filters"] + 2, 1, fb_config["kernel_size"])
 
 
 @pytest.mark.parametrize("fb_config", fb_config_list())
 def test_perfect_istft_default_parameters(fb_config):
     """ Unit test perfect reconstruction with default values. """
-    kernel_size = fb_config['kernel_size']
-    enc, dec = make_enc_dec('stft', **fb_config)
+    kernel_size = fb_config["kernel_size"]
+    enc, dec = make_enc_dec("stft", **fb_config)
     inp_wav = torch.randn(2, 1, 32000)
     out_wav = dec(enc(inp_wav))[:, :, kernel_size:-kernel_size]
     inp_test = inp_wav[:, :, kernel_size:-kernel_size]
@@ -61,10 +61,12 @@ def test_perfect_istft_default_parameters(fb_config):
 
 
 @pytest.mark.parametrize("fb_config", fb_config_list())
-@pytest.mark.parametrize("analysis_window_name", ['blackman', 'hamming', 'hann', 'bartlett', 'boxcar'])
+@pytest.mark.parametrize(
+    "analysis_window_name", ["blackman", "hamming", "hann", "bartlett", "boxcar"]
+)
 def test_perfect_resyn_window(fb_config, analysis_window_name):
     """ Unit test perfect reconstruction """
-    kernel_size = fb_config['kernel_size']
+    kernel_size = fb_config["kernel_size"]
     window = get_window(analysis_window_name, kernel_size)
 
     enc = Encoder(STFTFB(**fb_config, window=window))

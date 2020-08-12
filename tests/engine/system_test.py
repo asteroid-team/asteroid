@@ -25,7 +25,12 @@ def test_system():
     dataset = DummyDataset()
     loader = data.DataLoader(dataset, batch_size=2, num_workers=4)
     system = System(
-        model, optimizer, loss_func=nn.MSELoss(), train_loader=loader, val_loader=loader, scheduler=scheduler,
+        model,
+        optimizer,
+        loss_func=nn.MSELoss(),
+        train_loader=loader,
+        val_loader=loader,
+        scheduler=scheduler,
     )
     trainer = Trainer(max_epochs=1, fast_dev_run=True)
     trainer.fit(system)

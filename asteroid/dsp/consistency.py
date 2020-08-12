@@ -59,9 +59,9 @@ def mixture_consistency(mixture, est_sources, src_weights=None, dim=1):
     else:
         n, m = est_sources.ndim, mixture.ndim
         raise RuntimeError(
-            f'The size of the mixture tensor should match the '
-            f'size of the est_sources tensor. Expected mixture'
-            f'tensor to have {n} or {n-1} dimension, found {m}.'
+            f"The size of the mixture tensor should match the "
+            f"size of the est_sources tensor. Expected mixture"
+            f"tensor to have {n} or {n-1} dimension, found {m}."
         )
     # Compute remove
     new_sources = est_sources + src_weights * residual

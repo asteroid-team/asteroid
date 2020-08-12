@@ -18,10 +18,13 @@ def has_arg(fn, name):
     parameter = signature.parameters.get(name)
     if parameter is None:
         return False
-    return parameter.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY,)
+    return parameter.kind in (
+        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        inspect.Parameter.KEYWORD_ONLY,
+    )
 
 
-def flatten_dict(d, parent_key='', sep='_'):
+def flatten_dict(d, parent_key="", sep="_"):
     """ Flattens a dictionary into a single-level dictionary while preserving
     parent keys. Taken from https://stackoverflow.com/questions/6027558/
     flatten-nested-dictionaries-compressing-keys?answertab=votes#tab-top
