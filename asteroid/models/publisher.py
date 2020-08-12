@@ -55,9 +55,16 @@ def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None):
     return model_dict
 
 
-def upload_publishable(publish_dir, uploader=None, affiliation=None,
-                       git_username=None, token=None, force_publish=False,
-                       use_sandbox=False, unit_test=False):
+def upload_publishable(
+    publish_dir,
+    uploader=None,
+    affiliation=None,
+    git_username=None,
+    token=None,
+    force_publish=False,
+    use_sandbox=False,
+    unit_test=False,
+):
     """ Entry point to upload publishable model.
 
     Args:
@@ -74,9 +81,9 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
         unit_test (bool): If True, we do not ask user input and do not publish.
 
     """
+
     def get_answer():
-        out = input('\n\nDo you want to publish it now (irreversible)? y/n'
-                    '(Recommended: n).\n')
+        out = input('\n\nDo you want to publish it now (irreversible)? y/n' '(Recommended: n).\n')
         if out not in ['y', 'n']:
             print(f'\nExpected one of [`y`, `n`], received {out}, please retry.')
             return get_answer()
@@ -89,12 +96,7 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
     model_path = os.path.join(publish_dir, 'model.pth')
     publish_model_path = os.path.join(publish_dir, 'published_model.pth')
     model = torch.load(model_path)
-    model = _populate_publishable(
-        model,
-        uploader=uploader,
-        affiliation=affiliation,
-        git_username=git_username,
-    )
+    model = _populate_publishable(model, uploader=uploader, affiliation=affiliation, git_username=git_username,)
     torch.save(model, publish_model_path)
 
     # Get Zenodo access token
@@ -112,8 +114,7 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
             )
 
     # Do the actual upload
-    zen, dep_id = zenodo_upload(model, token, model_path=publish_model_path,
-                                use_sandbox=use_sandbox)
+    zen, dep_id = zenodo_upload(model, token, model_path=publish_model_path, use_sandbox=use_sandbox)
     address = os.path.join(zen.zenodo_address, 'deposit', str(dep_id))
     if force_publish:
         r_publish = zen.publish_deposition(dep_id)
@@ -122,8 +123,7 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
         return r_publish
     # Give choice
     current = zen.get_deposition(dep_id)
-    print(f"\n\n This is the current state of the deposition "
-          f"(see here {address}): ")
+    print(f"\n\n This is the current state of the deposition " f"(see here {address}): ")
     pprint(current.json())
     # Patch to run unit test
     if unit_test:
@@ -135,12 +135,10 @@ def upload_publishable(publish_dir, uploader=None, affiliation=None,
         _ = zen.publish_deposition(dep_id)
         print("Visit it at {}".format(address))
     else:
-        print(f'Did not finalize the upload, please visit {address} to finalize '
-              f'it.')
+        print(f'Did not finalize the upload, please visit {address} to finalize ' f'it.')
 
 
-def _populate_publishable(model, uploader=None, affiliation=None,
-                          git_username=None):
+def _populate_publishable(model, uploader=None, affiliation=None, git_username=None):
     """ Populate infos in publishable model.
 
     Args:
@@ -160,12 +158,10 @@ def _populate_publishable(model, uploader=None, affiliation=None,
         git_username = get_username()
 
     # Example: mpariente/ConvTasNet_WHAM_sepclean
-    model_name = '_'.join([model['model_name'], model['dataset'],
-                           model['task'].replace('_', '')])
+    model_name = '_'.join([model['model_name'], model['dataset'], model['task'].replace('_', '')])
     upload_name = git_username + '/' + model_name
     # Write License Notice
-    license_note = make_license_notice(model_name, model['licenses'],
-                                       uploader=uploader)
+    license_note = make_license_notice(model_name, model['licenses'], uploader=uploader)
     # Add infos
     model['infos']['uploader'] = uploader
     model['infos']['git_username'] = git_username
@@ -181,6 +177,7 @@ def get_username():
     username = username.decode('utf-8')[:-1]
     if not username:  # Empty string
         import getpass
+
         username = getpass.getuser()
     return username
 
@@ -245,8 +242,7 @@ def zenodo_upload(model, token, model_path=None, use_sandbox=False):
     r = zen.create_new_deposition(metadata=metadata)
     if r.status_code != 200:
         print(r.json())
-        raise RuntimeError('Could not create the deposition, check the '
-                           'provided token.')
+        raise RuntimeError('Could not create the deposition, check the ' 'provided token.')
     dep_id = r.json()["id"]
     _ = zen.upload_new_file_to_deposition(dep_id, model_path, name='model.pth')
     if model_path_was_none:
@@ -270,8 +266,7 @@ def make_metadata_from_model(model):
     # Description section
     description = '<p><strong>Description: </strong></p>'
     tmp = 'This model was trained by {} using the {} recipe in {}. '
-    description += tmp.format(infos['uploader'], infos['recipe_name'],
-                              ASTEROID_REF)
+    description += tmp.format(infos['uploader'], infos['recipe_name'], ASTEROID_REF)
     tmp = '</a>It was trained on the <code>{}</code> task of the {} dataset.</p>'
     description += tmp.format(model['task'], model['dataset'])
 
@@ -283,10 +278,7 @@ def make_metadata_from_model(model):
     # Results section
     description += '<p>&nbsp;</p>'
     description += '<p><strong>Results:</strong></p>'
-    display_result = {
-        k: v for k, v in infos['final_metrics'].items()
-        if 'pesq' not in k.lower()
-    }
+    display_result = {k: v for k, v in infos['final_metrics'].items() if 'pesq' not in k.lower()}
     description += display_one_level_dict(display_result)
 
     # License section
@@ -299,13 +291,17 @@ def make_metadata_from_model(model):
         'title': infos['upload_name'],
         'upload_type': 'software',
         'description': description,
-        'creators': [{'name': infos['uploader'],
-                      'affiliation': infos['affiliation']}],
-        'communities': [{'identifier': 'zenodo'},
-                        {'identifier': 'asteroid-models'}],
-        'keywords': ['Asteroid', 'audio source separation', model['dataset'],
-                     model['task'], model['model_name'], 'pretrained model'],
-        'license': 'CC-BY-SA-3.0'
+        'creators': [{'name': infos['uploader'], 'affiliation': infos['affiliation']}],
+        'communities': [{'identifier': 'zenodo'}, {'identifier': 'asteroid-models'}],
+        'keywords': [
+            'Asteroid',
+            'audio source separation',
+            model['dataset'],
+            model['task'],
+            model['model_name'],
+            'pretrained model',
+        ],
+        'license': 'CC-BY-SA-3.0',
     }
     return metadata
 

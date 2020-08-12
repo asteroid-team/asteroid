@@ -8,11 +8,7 @@ from asteroid import filterbanks as fb
 from asteroid.filterbanks import transforms
 
 
-COMPLEX_FBS = [
-    fb.STFTFB,
-    fb.ParamSincFB,
-    fb.AnalyticFreeFB
-]
+COMPLEX_FBS = [fb.STFTFB, fb.ParamSincFB, fb.AnalyticFreeFB]
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +42,7 @@ def test_mag_mask(encoder_list):
     """ Assert identity mask works. """
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 8000))  # [batch, freq, time]
-        id_mag_mask = torch.ones((1, fb_dim//2, 1))
+        id_mag_mask = torch.ones((1, fb_dim // 2, 1))
         masked = transforms.apply_mag_mask(tf_rep, id_mag_mask, dim=1)
         assert_allclose(masked, tf_rep)
 
@@ -64,11 +60,8 @@ def test_comp_mask(encoder_list):
     """ Assert identity mask works. """
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 8000))  # [batch, freq, time]
-        id_complex_mask = torch.cat((torch.ones((1, fb_dim // 2, 1)),
-                                     torch.zeros((1, fb_dim // 2, 1))),
-                                    dim=1)
-        masked = transforms.apply_complex_mask(tf_rep, id_complex_mask,
-                                               dim=1)
+        id_complex_mask = torch.cat((torch.ones((1, fb_dim // 2, 1)), torch.zeros((1, fb_dim // 2, 1))), dim=1)
+        masked = transforms.apply_complex_mask(tf_rep, id_complex_mask, dim=1)
         assert_allclose(masked, tf_rep)
 
 
@@ -94,13 +87,9 @@ def test_cat(encoder_list):
         assert mag.shape == (batch, 3 * (freq // 2), time)
 
 
-@pytest.mark.parametrize("np_torch_tuple", [
-    ([0], [0, 0]),
-    ([1j], [0, 1]),
-    ([-1], [-1, 0]),
-    ([-1j], [0, -1]),
-    ([1 + 1j], [1, 1]),
-])
+@pytest.mark.parametrize(
+    "np_torch_tuple", [([0], [0, 0]), ([1j], [0, 1]), ([-1], [-1, 0]), ([-1j], [0, -1]), ([1 + 1j], [1, 1])],
+)
 @pytest.mark.parametrize("dim", [0, 1, 2])
 def test_to_numpy(np_torch_tuple, dim):
     """ Test torch --> np conversion (right angles)"""
@@ -120,13 +109,9 @@ def test_to_numpy(np_torch_tuple, dim):
     np.testing.assert_allclose(np_array, np_from_torch)
 
 
-@pytest.mark.parametrize("np_torch_tuple", [
-    ([0], [0, 0]),
-    ([1j], [0, 1]),
-    ([-1], [-1, 0]),
-    ([-1j], [0, -1]),
-    ([1 + 1j], [1, 1]),
-])
+@pytest.mark.parametrize(
+    "np_torch_tuple", [([0], [0, 0]), ([1j], [0, 1]), ([-1], [-1, 0]), ([-1j], [0, -1]), ([1 + 1j], [1, 1])],
+)
 @pytest.mark.parametrize("dim", [0, 1, 2])
 def test_from_numpy(np_torch_tuple, dim):
     """ Test np --> torch conversion (right angles)"""
@@ -184,7 +169,7 @@ def test_check_complex_error(dim):
     """ Test error in angle """
     not_complex = torch.randn(3, 5, 7, 9, 15)
     with pytest.raises(AssertionError):
-        phase = transforms.check_complex(not_complex, dim=dim)
+        transforms.check_complex(not_complex, dim=dim)
 
 
 @pytest.mark.parametrize("dim", [0, 1, 2, 3])

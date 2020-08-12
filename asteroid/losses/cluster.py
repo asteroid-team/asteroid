@@ -44,8 +44,7 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
     binary_mask = binary_mask.to(tgt_index.device)
 
     # Fill in one-hot vector for each TF bin
-    tgt_embedding = torch.zeros(batch, bins * frames, spk_cnt,
-                                device=tgt_index.device)
+    tgt_embedding = torch.zeros(batch, bins * frames, spk_cnt, device=tgt_index.device)
     tgt_embedding.scatter_(2, tgt_index.view(batch, bins * frames, 1), 1)
 
     # Compute VAD-weighted DC loss

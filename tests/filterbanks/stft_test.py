@@ -33,12 +33,12 @@ def test_stft_def(fb_config):
 
 @pytest.mark.parametrize("fb_config", fb_config_list())
 def test_stft_windows(fb_config):
-    n_filters, kernel_size = fb_config["n_filters"], fb_config["kernel_size"]
+    kernel_size = fb_config["kernel_size"]
     win = np.hanning(kernel_size)
-    fb = STFTFB(**fb_config, window=win)
+    STFTFB(**fb_config, window=win)
     with pytest.raises(AssertionError):
         win = np.hanning(kernel_size + 1)
-        fb = STFTFB(**fb_config, window=win)
+        STFTFB(**fb_config, window=win)
 
 
 @pytest.mark.parametrize("fb_config", fb_config_list())
@@ -46,8 +46,7 @@ def test_filter_shape(fb_config):
     # Instantiate STFT
     fb = STFTFB(**fb_config)
     # Check filter shape.
-    assert fb.filters.shape == (fb_config['n_filters'] + 2, 1,
-                                fb_config['kernel_size'])
+    assert fb.filters.shape == (fb_config['n_filters'] + 2, 1, fb_config['kernel_size'])
 
 
 @pytest.mark.parametrize("fb_config", fb_config_list())
@@ -56,15 +55,13 @@ def test_perfect_istft_default_parameters(fb_config):
     kernel_size = fb_config['kernel_size']
     enc, dec = make_enc_dec('stft', **fb_config)
     inp_wav = torch.randn(2, 1, 32000)
-    out_wav = dec(enc(inp_wav))[:, :, kernel_size: -kernel_size]
-    inp_test = inp_wav[:, :, kernel_size: -kernel_size]
+    out_wav = dec(enc(inp_wav))[:, :, kernel_size:-kernel_size]
+    inp_test = inp_wav[:, :, kernel_size:-kernel_size]
     testing.assert_allclose(inp_test, out_wav)
 
 
 @pytest.mark.parametrize("fb_config", fb_config_list())
-@pytest.mark.parametrize("analysis_window_name", [
-    'blackman', 'hamming', 'hann', 'bartlett', 'boxcar'
-])
+@pytest.mark.parametrize("analysis_window_name", ['blackman', 'hamming', 'hann', 'bartlett', 'boxcar'])
 def test_perfect_resyn_window(fb_config, analysis_window_name):
     """ Unit test perfect reconstruction """
     kernel_size = fb_config['kernel_size']
@@ -72,14 +69,12 @@ def test_perfect_resyn_window(fb_config, analysis_window_name):
 
     enc = Encoder(STFTFB(**fb_config, window=window))
     # Compute window for perfect resynthesis
-    synthesis_window = perfect_synthesis_window(enc.filterbank.window,
-                                                enc.stride)
+    synthesis_window = perfect_synthesis_window(enc.filterbank.window, enc.stride)
     dec = Decoder(STFTFB(**fb_config, window=synthesis_window))
     inp_wav = torch.ones(1, 1, 32000)
-    out_wav = dec(enc(inp_wav))[:, :, kernel_size: -kernel_size]
-    inp_test = inp_wav[:, :, kernel_size: -kernel_size]
-    testing.assert_allclose(inp_test,
-                            out_wav)
+    out_wav = dec(enc(inp_wav))[:, :, kernel_size:-kernel_size]
+    inp_test = inp_wav[:, :, kernel_size:-kernel_size]
+    testing.assert_allclose(inp_test, out_wav)
 
 
 @pytest.mark.parametrize("fb_config", fb_config_list())

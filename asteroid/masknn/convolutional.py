@@ -33,18 +33,16 @@ class Conv1DBlock(nn.Module):
         for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
         https://arxiv.org/abs/1809.07454
     """
-    def __init__(self, in_chan, hid_chan, skip_out_chan, kernel_size, padding,
-                 dilation, norm_type="gLN"):
+
+    def __init__(self, in_chan, hid_chan, skip_out_chan, kernel_size, padding, dilation, norm_type="gLN"):
         super(Conv1DBlock, self).__init__()
         self.skip_out_chan = skip_out_chan
         conv_norm = norms.get(norm_type)
         in_conv1d = nn.Conv1d(in_chan, hid_chan, 1)
-        depth_conv1d = nn.Conv1d(hid_chan, hid_chan, kernel_size,
-                                 padding=padding, dilation=dilation,
-                                 groups=hid_chan)
-        self.shared_block = nn.Sequential(in_conv1d, nn.PReLU(),
-                                          conv_norm(hid_chan), depth_conv1d,
-                                          nn.PReLU(), conv_norm(hid_chan))
+        depth_conv1d = nn.Conv1d(hid_chan, hid_chan, kernel_size, padding=padding, dilation=dilation, groups=hid_chan)
+        self.shared_block = nn.Sequential(
+            in_conv1d, nn.PReLU(), conv_norm(hid_chan), depth_conv1d, nn.PReLU(), conv_norm(hid_chan),
+        )
         self.res_conv = nn.Conv1d(hid_chan, in_chan, 1)
         if skip_out_chan:
             self.skip_conv = nn.Conv1d(hid_chan, skip_out_chan, 1)
@@ -87,9 +85,22 @@ class TDConvNet(nn.Module):
         for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
         https://arxiv.org/abs/1809.07454
     """
-    def __init__(self, in_chan, n_src, out_chan=None, n_blocks=8, n_repeats=3,
-                 bn_chan=128, hid_chan=512, skip_chan=128, conv_kernel_size=3,
-                 norm_type="gLN", mask_act='relu', kernel_size=None):
+
+    def __init__(
+        self,
+        in_chan,
+        n_src,
+        out_chan=None,
+        n_blocks=8,
+        n_repeats=3,
+        bn_chan=128,
+        hid_chan=512,
+        skip_chan=128,
+        conv_kernel_size=3,
+        norm_type="gLN",
+        mask_act='relu',
+        kernel_size=None,
+    ):
         super(TDConvNet, self).__init__()
         self.in_chan = in_chan
         self.n_src = n_src
@@ -102,10 +113,12 @@ class TDConvNet(nn.Module):
         self.skip_chan = skip_chan
         if kernel_size is not None:
             # warning
-            warnings.warn('`kernel_size` argument is deprecated since v0.2.1 '
-                          'and will be remove in v0.3.0. Use argument '
-                          '`conv_kernel_size` instead',
-                          VisibleDeprecationWarning)
+            warnings.warn(
+                '`kernel_size` argument is deprecated since v0.2.1 '
+                'and will be remove in v0.3.0. Use argument '
+                '`conv_kernel_size` instead',
+                VisibleDeprecationWarning,
+            )
             conv_kernel_size = kernel_size
         self.conv_kernel_size = conv_kernel_size
         self.norm_type = norm_type
@@ -118,12 +131,20 @@ class TDConvNet(nn.Module):
         self.TCN = nn.ModuleList()
         for r in range(n_repeats):
             for x in range(n_blocks):
-                padding = (conv_kernel_size - 1) * 2**x // 2
-                self.TCN.append(Conv1DBlock(bn_chan, hid_chan, skip_chan,
-                                            conv_kernel_size, padding=padding,
-                                            dilation=2**x, norm_type=norm_type))
+                padding = (conv_kernel_size - 1) * 2 ** x // 2
+                self.TCN.append(
+                    Conv1DBlock(
+                        bn_chan,
+                        hid_chan,
+                        skip_chan,
+                        conv_kernel_size,
+                        padding=padding,
+                        dilation=2 ** x,
+                        norm_type=norm_type,
+                    )
+                )
         mask_conv_inp = skip_chan if skip_chan else bn_chan
-        mask_conv = nn.Conv1d(mask_conv_inp, n_src*out_chan, 1)
+        mask_conv = nn.Conv1d(mask_conv_inp, n_src * out_chan, 1)
         self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
@@ -146,7 +167,7 @@ class TDConvNet(nn.Module):
         """
         batch, n_filters, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)
-        skip_connection = 0.
+        skip_connection = 0.0
         for i in range(len(self.TCN)):
             # Common to w. skip and w.o skip architectures
             tcn_out = self.TCN[i](output)
@@ -175,6 +196,6 @@ class TDConvNet(nn.Module):
             'n_repeats': self.n_repeats,
             'n_src': self.n_src,
             'norm_type': self.norm_type,
-            'mask_act': self.mask_act
+            'mask_act': self.mask_act,
         }
         return config

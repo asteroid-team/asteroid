@@ -38,11 +38,9 @@ class DNSDataset(data.Dataset):
         # Load mixture
         x = torch.from_numpy(sf.read(utt_info['mix'], dtype='float32')[0])
         # Load clean
-        speech = torch.from_numpy(sf.read(utt_info['clean'],
-                                          dtype='float32')[0])
+        speech = torch.from_numpy(sf.read(utt_info['clean'], dtype='float32')[0])
         # Load noise
-        noise = torch.from_numpy(sf.read(utt_info['noise'],
-                                         dtype='float32')[0])
+        noise = torch.from_numpy(sf.read(utt_info['noise'], dtype='float32')[0])
         return x, speech, noise
 
     def get_infos(self):

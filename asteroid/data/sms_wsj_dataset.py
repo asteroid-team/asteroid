@@ -5,31 +5,36 @@ import soundfile as sf
 from asteroid.data.wham_dataset import normalize_tensor_wav
 
 from .wsj0_mix import wsj0_license
+
 EPS = 1e-8
 
 DATASET = 'SMS_WSJ'
 # SMS_WSJ targets
-sep_source = {'mixture': 'observation',
-              'target': ['speech_source'],
-              'infos': {'num_channels': 6},
-              'default_nsrc': 2}
-sep_early = {'mixture': 'observation',
-             'target': ['speech_reverberation_early'],
-             'infos': {'num_channels': 6},
-             'default_nsrc': 2}
+sep_source = {
+    'mixture': 'observation',
+    'target': ['speech_source'],
+    'infos': {'num_channels': 6},
+    'default_nsrc': 2,
+}
+sep_early = {
+    'mixture': 'observation',
+    'target': ['speech_reverberation_early'],
+    'infos': {'num_channels': 6},
+    'default_nsrc': 2,
+}
 
 # speech image represents the whole reverberated signal so it is the sum of
 # the early and tail reverberation.
 speech_image = ['speech_reverberation_early', 'speech_reverberation_tail']
-sep_image = {'mixture': 'observation',
-             'target': speech_image,
-             'infos': {'num_channels': 6},
-             'default_nsrc': 2}
+sep_image = {
+    'mixture': 'observation',
+    'target': speech_image,
+    'infos': {'num_channels': 6},
+    'default_nsrc': 2,
+}
 
 
-SMS_TARGETS = {'source': sep_source,
-               'early': sep_early,
-               'image': sep_image}
+SMS_TARGETS = {'source': sep_source, 'early': sep_early, 'image': sep_image}
 
 
 class SmsWsjDataset(data.Dataset):
@@ -59,15 +64,25 @@ class SmsWsjDataset(data.Dataset):
         "SMS-WSJ: Database, performance measures, and baseline recipe for
          multi-channel source separation and recognition", Drude et al. 2019
     """
+
     dataset_name = 'SMS_WSJ'
 
-    def __init__(self, json_path, target, dset, sample_rate=8000,
-                 single_channel=True, segment=4.0, nondefault_nsrc=None,
-                 normalize_audio=False):
+    def __init__(
+        self,
+        json_path,
+        target,
+        dset,
+        sample_rate=8000,
+        single_channel=True,
+        segment=4.0,
+        nondefault_nsrc=None,
+        normalize_audio=False,
+    ):
         try:
             import sms_wsj
         except ModuleNotFoundError:
             import warnings
+
             warnings.warn(
                 "Some of the functionality relies on the sms_wsj package "
                 "downloadable from https://github.com/fgnt/sms_wsj ."
@@ -75,8 +90,7 @@ class SmsWsjDataset(data.Dataset):
             )
         super().__init__()
         if target not in SMS_TARGETS.keys():
-            raise ValueError('Unexpected task {}, expected one of '
-                             '{}'.format(target, SMS_TARGETS.keys()))
+            raise ValueError('Unexpected task {}, expected one of ' '{}'.format(target, SMS_TARGETS.keys()))
 
         # Task setting
         self.json_path = json_path
@@ -97,12 +111,12 @@ class SmsWsjDataset(data.Dataset):
         # Load json files
 
         from lazy_dataset.database import JsonDatabase
+
         db = JsonDatabase(json_path)
         dataset = db.get_dataset(dset)
         # Filter out short utterances only when segment is specified
-        orig_len = len(dataset)
-        drop_utt, drop_len = 0, 0
         if not self.like_test:
+
             def filter_short_examples(example):
                 num_samples = example['num_samples']['observation']
                 if num_samples < self.seg_len:
@@ -115,13 +129,14 @@ class SmsWsjDataset(data.Dataset):
 
     def __add__(self, sms_wsj):
         if self.n_src != sms_wsj.n_src:
-            raise ValueError('Only datasets having the same number of sources'
-                             'can be added together. Received '
-                             '{} and {}'.format(self.n_src, sms_wsj.n_src))
+            raise ValueError(
+                'Only datasets having the same number of sources'
+                'can be added together. Received '
+                '{} and {}'.format(self.n_src, sms_wsj.n_src)
+            )
         if self.seg_len != sms_wsj.seg_len:
             self.seg_len = min(self.seg_len, sms_wsj.seg_len)
-            print('Segment length mismatched between the two Dataset'
-                  'passed one the smallest to the sum.')
+            print('Segment length mismatched between the two Dataset' 'passed one the smallest to the sum.')
         self.dataset = self.dataset.concatenate(sms_wsj.dataset)
 
     def __len__(self):
@@ -147,8 +162,7 @@ class SmsWsjDataset(data.Dataset):
         else:
             stop = rand_start + self.seg_len
         # Load mixture
-        x, _ = sf.read(audio_path[in_signal], start=rand_start,
-                       stop=stop, dtype='float32')
+        x, _ = sf.read(audio_path[in_signal], start=rand_start, stop=stop, dtype='float32')
         x = x.T
 
         num_channels = self.target_dict['infos']['num_channels']
@@ -171,21 +185,20 @@ class SmsWsjDataset(data.Dataset):
                     else:
                         start = rand_start
                         stop_ = stop
-                    s_, _ = sf.read(audio_path[t][idx], start=start,
-                                    stop=stop_, dtype='float32')
+                    s_, _ = sf.read(audio_path[t][idx], start=start, stop=stop_, dtype='float32')
                     s += s_.T
             except IndexError:
                 if self.single_channel:
-                    s = np.zeros((seg_len, ))
+                    s = np.zeros((seg_len,))
                 else:
                     s = np.zeros((num_channels, seg_len))
             source_arrays.append(s)
 
         if target[0] == 'speech_source':
             from sms_wsj.database.utils import extract_piece
+
             offset = example['offset']
-            source_arrays = [extract_piece(s, offset_, num_samples)
-                             for s, offset_ in zip(source_arrays, offset)]
+            source_arrays = [extract_piece(s, offset_, num_samples) for s, offset_ in zip(source_arrays, offset)]
             source_arrays = [s[rand_start:stop] for s in source_arrays]
 
         sources = torch.from_numpy(np.stack(source_arrays, axis=0))
@@ -222,7 +235,7 @@ wsj1_license = dict(
     author_link='https://www.ldc.upenn.edu/',
     license='LDC User Agreement for Non-Members',
     license_link='https://catalog.ldc.upenn.edu/license/ldc-non-members-agreement.pdf',
-    non_commercial=True
+    non_commercial=True,
 )
 
 

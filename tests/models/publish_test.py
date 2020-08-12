@@ -22,8 +22,7 @@ def test_upload():
 
     # Dataset and NN
     train_set = WhamDataset('tmp/wham', task='sep_clean')
-    model = ConvTasNet(n_src=2, n_repeats=2, n_blocks=2, bn_chan=16,
-                       hid_chan=4, skip_chan=8, n_filters=32)
+    model = ConvTasNet(n_src=2, n_repeats=2, n_blocks=2, bn_chan=16, hid_chan=4, skip_chan=8, n_filters=32)
 
     # Save publishable
     model_conf = model.serialize()

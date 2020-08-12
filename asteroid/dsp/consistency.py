@@ -44,7 +44,7 @@ def mixture_consistency(mixture, est_sources, src_weights=None, dim=1):
         all_dims = list(range(est_sources.ndim))
         all_dims.pop(dim)  # Remove source axis
         all_dims.pop(0)  # Remove batch dim
-        src_weights = torch.mean(est_sources**2, dim=all_dims, keepdim=True)
+        src_weights = torch.mean(est_sources ** 2, dim=all_dims, keepdim=True)
     # Make sure that the weights sum up to 1
     norm_weights = torch.sum(src_weights, dim=dim, keepdim=True) + 1e-8
     src_weights = src_weights / norm_weights
@@ -58,9 +58,11 @@ def mixture_consistency(mixture, est_sources, src_weights=None, dim=1):
         residual = mixture - est_sources.sum(dim=dim, keepdim=True)
     else:
         n, m = est_sources.ndim, mixture.ndim
-        raise RuntimeError(f'The size of the mixture tensor should match the '
-                           f'size of the est_sources tensor. Expected mixture'
-                           f'tensor to have {n} or {n-1} dimension, found {m}.')
+        raise RuntimeError(
+            f'The size of the mixture tensor should match the '
+            f'size of the est_sources tensor. Expected mixture'
+            f'tensor to have {n} or {n-1} dimension, found {m}.'
+        )
     # Compute remove
     new_sources = est_sources + src_weights * residual
     return new_sources

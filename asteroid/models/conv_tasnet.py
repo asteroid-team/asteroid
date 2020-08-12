@@ -41,25 +41,49 @@ class ConvTasNet(BaseTasNet):
         for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
         https://arxiv.org/abs/1809.07454
     """
-    def __init__(self, n_src, out_chan=None, n_blocks=8, n_repeats=3,
-                 bn_chan=128, hid_chan=512, skip_chan=128, conv_kernel_size=3,
-                 norm_type="gLN", mask_act='relu', in_chan=None, fb_name='free',
-                 kernel_size=16, n_filters=512, stride=8, **fb_kwargs):
+
+    def __init__(
+        self,
+        n_src,
+        out_chan=None,
+        n_blocks=8,
+        n_repeats=3,
+        bn_chan=128,
+        hid_chan=512,
+        skip_chan=128,
+        conv_kernel_size=3,
+        norm_type="gLN",
+        mask_act='relu',
+        in_chan=None,
+        fb_name='free',
+        kernel_size=16,
+        n_filters=512,
+        stride=8,
+        **fb_kwargs,
+    ):
         encoder, decoder = make_enc_dec(
-            fb_name, kernel_size=kernel_size, n_filters=n_filters,
-            stride=stride, **fb_kwargs
+            fb_name, kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
         )
         n_feats = encoder.n_feats_out
         if in_chan is not None:
-            assert in_chan == n_feats, ('Number of filterbank output channels'
-                                        ' and number of input channels should '
-                                        'be the same. Received '
-                                        f'{n_feats} and {in_chan}')
+            assert in_chan == n_feats, (
+                'Number of filterbank output channels'
+                ' and number of input channels should '
+                'be the same. Received '
+                f'{n_feats} and {in_chan}'
+            )
         # Update in_chan
         masker = TDConvNet(
-            n_feats, n_src, out_chan=out_chan, n_blocks=n_blocks,
-            n_repeats=n_repeats, bn_chan=bn_chan, hid_chan=hid_chan,
-            skip_chan=skip_chan, conv_kernel_size=conv_kernel_size,
-            norm_type=norm_type, mask_act=mask_act
+            n_feats,
+            n_src,
+            out_chan=out_chan,
+            n_blocks=n_blocks,
+            n_repeats=n_repeats,
+            bn_chan=bn_chan,
+            hid_chan=hid_chan,
+            skip_chan=skip_chan,
+            conv_kernel_size=conv_kernel_size,
+            norm_type=norm_type,
+            mask_act=mask_act,
         )
         super().__init__(encoder, masker, decoder)

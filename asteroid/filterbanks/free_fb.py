@@ -21,6 +21,7 @@ class FreeFB(Filterbank):
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.
     """
+
     def __init__(self, n_filters, kernel_size, stride=None, **kwargs):
         super(FreeFB, self).__init__(n_filters, kernel_size, stride=stride)
         self._filters = nn.Parameter(torch.ones(n_filters, 1, kernel_size))
@@ -30,4 +31,3 @@ class FreeFB(Filterbank):
     @property
     def filters(self):
         return self._filters
-

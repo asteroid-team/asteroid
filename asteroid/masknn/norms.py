@@ -7,25 +7,24 @@ EPS = 1e-8
 
 class _LayerNorm(nn.Module):
     """Layer Normalization base class."""
+
     def __init__(self, channel_size):
         super(_LayerNorm, self).__init__()
         self.channel_size = channel_size
-        self.gamma = nn.Parameter(torch.ones(channel_size),
-                                  requires_grad=True)
-        self.beta = nn.Parameter(torch.zeros(channel_size),
-                                 requires_grad=True)
+        self.gamma = nn.Parameter(torch.ones(channel_size), requires_grad=True)
+        self.beta = nn.Parameter(torch.zeros(channel_size), requires_grad=True)
 
     def apply_gain_and_bias(self, normed_x):
         """ Assumes input of size `[batch, chanel, *]`. """
-        return (self.gamma * normed_x.transpose(1, -1) +
-                self.beta).transpose(1, -1)
+        return (self.gamma * normed_x.transpose(1, -1) + self.beta).transpose(1, -1)
 
 
 class GlobLN(_LayerNorm):
     """Global Layer Normalization (globLN)."""
+
     def forward(self, x):
         """ Applies forward pass.
-        
+
         Works for any input size > 2D.
 
         Args:
@@ -42,9 +41,10 @@ class GlobLN(_LayerNorm):
 
 class ChanLN(_LayerNorm):
     """Channel-wise Layer Normalization (chanLN)."""
+
     def forward(self, x):
         """ Applies forward pass.
-        
+
         Works for any input size > 2D.
 
         Args:
@@ -60,6 +60,7 @@ class ChanLN(_LayerNorm):
 
 class CumLN(_LayerNorm):
     """Cumulative Global layer normalization(cumLN)."""
+
     def forward(self, x):
         """
 
@@ -71,8 +72,7 @@ class CumLN(_LayerNorm):
         batch, chan, spec_len = x.size()
         cum_sum = torch.cumsum(x.sum(1, keepdim=True), dim=-1)
         cum_pow_sum = torch.cumsum(x.pow(2).sum(1, keepdim=True), dim=-1)
-        cnt = torch.arange(start=chan, end=chan*(spec_len+1),
-                           step=chan, dtype=x.dtype).view(1, 1, -1)
+        cnt = torch.arange(start=chan, end=chan * (spec_len + 1), step=chan, dtype=x.dtype).view(1, 1, -1)
         cum_mean = cum_sum / cnt
         cum_var = cum_pow_sum - cum_mean.pow(2)
         return self.apply_gain_and_bias((x - cum_mean) / (cum_var + EPS).sqrt())
@@ -104,10 +104,10 @@ class FeatsGlobLN(_LayerNorm):
 
 class BatchNorm(_BatchNorm):
     """Wrapper class for pytorch BatchNorm1D and BatchNorm2D"""
+
     def _check_input_dim(self, input):
         if input.dim() < 2 or input.dim() > 4:
-            raise ValueError('expected 4D or 3D input (got {}D input)'
-                             .format(input.dim()))
+            raise ValueError('expected 4D or 3D input (got {}D input)'.format(input.dim()))
 
 
 # Aliases.
@@ -135,9 +135,7 @@ def get(identifier):
     elif isinstance(identifier, str):
         cls = globals().get(identifier)
         if cls is None:
-            raise ValueError('Could not interpret normalization identifier: ' +
-                             str(identifier))
+            raise ValueError('Could not interpret normalization identifier: ' + str(identifier))
         return cls
     else:
-        raise ValueError('Could not interpret normalization identifier: ' +
-                         str(identifier))
+        raise ValueError('Could not interpret normalization identifier: ' + str(identifier))

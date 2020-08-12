@@ -8,4 +8,5 @@ __version__ = '0.3.0'
 
 def show_available_models():
     from .utils.hub_utils import MODELS_URLS_HASHTABLE
+
     print(' \n'.join(list(MODELS_URLS_HASHTABLE.keys())))

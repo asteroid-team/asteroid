@@ -40,6 +40,7 @@ class PairwiseNegSDR(_Loss):
             International Conference on Acoustics, Speech and Signal
             Processing (ICASSP) 2019.
         """
+
     def __init__(self, sdr_type, zero_mean=True, take_log=True):
         super(PairwiseNegSDR, self).__init__()
         assert sdr_type in ["snr", "sisdr", "sdsdr"]
@@ -61,10 +62,9 @@ class PairwiseNegSDR(_Loss):
 
         if self.sdr_type in ["sisdr", "sdsdr"]:
             # [batch, n_src, n_src, 1]
-            pair_wise_dot = torch.sum(s_estimate * s_target, dim=3,
-                                      keepdim=True)
+            pair_wise_dot = torch.sum(s_estimate * s_target, dim=3, keepdim=True)
             # [batch, 1, n_src, 1]
-            s_target_energy = torch.sum(s_target**2, dim=3, keepdim=True) + EPS
+            s_target_energy = torch.sum(s_target ** 2, dim=3, keepdim=True) + EPS
             # [batch, n_src, n_src, time]
             pair_wise_proj = pair_wise_dot * s_target / s_target_energy
         else:
@@ -75,11 +75,10 @@ class PairwiseNegSDR(_Loss):
         else:
             e_noise = s_estimate - pair_wise_proj
         # [batch, n_src, n_src]
-        pair_wise_sdr = torch.sum(pair_wise_proj ** 2, dim=3) / (
-                torch.sum(e_noise ** 2, dim=3) + EPS)
+        pair_wise_sdr = torch.sum(pair_wise_proj ** 2, dim=3) / (torch.sum(e_noise ** 2, dim=3) + EPS)
         if self.take_log:
             pair_wise_sdr = 10 * torch.log10(pair_wise_sdr + EPS)
-        return - pair_wise_sdr
+        return -pair_wise_sdr
 
 
 class SingleSrcNegSDR(_Loss):
@@ -122,8 +121,8 @@ class SingleSrcNegSDR(_Loss):
             International Conference on Acoustics, Speech and Signal
             Processing (ICASSP) 2019.
         """
-    def __init__(self, sdr_type, zero_mean=True, take_log=True,
-                 reduction='none'):
+
+    def __init__(self, sdr_type, zero_mean=True, take_log=True, reduction='none'):
         assert reduction != 'sum', NotImplementedError
         super().__init__(reduction=reduction)
 
@@ -145,8 +144,7 @@ class SingleSrcNegSDR(_Loss):
             # [batch, 1]
             dot = torch.sum(est_target * target, dim=1, keepdim=True)
             # [batch, 1]
-            s_target_energy = torch.sum(target ** 2, dim=1,
-                                        keepdim=True) + EPS
+            s_target_energy = torch.sum(target ** 2, dim=1, keepdim=True) + EPS
             # [batch, time]
             scaled_target = dot * target / s_target_energy
         else:
@@ -157,12 +155,11 @@ class SingleSrcNegSDR(_Loss):
         else:
             e_noise = est_target - scaled_target
         # [batch]
-        losses = torch.sum(scaled_target ** 2, dim=1) / (
-                torch.sum(e_noise ** 2, dim=1) + EPS)
+        losses = torch.sum(scaled_target ** 2, dim=1) / (torch.sum(e_noise ** 2, dim=1) + EPS)
         if self.take_log:
             losses = 10 * torch.log10(losses + EPS)
         losses = losses.mean() if self.reduction == 'mean' else losses
-        return - losses
+        return -losses
 
 
 class MultiSrcNegSDR(_Loss):
@@ -202,6 +199,7 @@ class MultiSrcNegSDR(_Loss):
             Processing (ICASSP) 2019.
 
         """
+
     def __init__(self, sdr_type, zero_mean=True, take_log=True):
         super().__init__()
 
@@ -221,11 +219,9 @@ class MultiSrcNegSDR(_Loss):
         # Step 2. Pair-wise SI-SDR.
         if self.sdr_type in ["sisdr", "sdsdr"]:
             # [batch, n_src]
-            pair_wise_dot = torch.sum(est_targets * targets, dim=2,
-                                      keepdim=True)
+            pair_wise_dot = torch.sum(est_targets * targets, dim=2, keepdim=True)
             # [batch, n_src]
-            s_target_energy = torch.sum(targets ** 2, dim=2,
-                                        keepdim=True) + EPS
+            s_target_energy = torch.sum(targets ** 2, dim=2, keepdim=True) + EPS
             # [batch, n_src, time]
             scaled_targets = pair_wise_dot * targets / s_target_energy
         else:
@@ -236,11 +232,10 @@ class MultiSrcNegSDR(_Loss):
         else:
             e_noise = est_targets - scaled_targets
         # [batch, n_src]
-        pair_wise_sdr = torch.sum(scaled_targets ** 2, dim=2) / (
-                torch.sum(e_noise ** 2, dim=2) + EPS)
+        pair_wise_sdr = torch.sum(scaled_targets ** 2, dim=2) / (torch.sum(e_noise ** 2, dim=2) + EPS)
         if self.take_log:
             pair_wise_sdr = 10 * torch.log10(pair_wise_sdr + EPS)
-        return - torch.mean(pair_wise_sdr, dim=-1)
+        return -torch.mean(pair_wise_sdr, dim=-1)
 
 
 # aliases

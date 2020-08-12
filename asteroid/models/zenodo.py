@@ -25,6 +25,7 @@ class Zenodo(object):
         A Zenodo deposit has not yet been published, is private and can be
         deleted.
     """
+
     def __init__(self, api_key=None, use_sandbox=True):
         if api_key is None:
             api_key = os.getenv('ACCESS_TOKEN', None)
@@ -41,8 +42,10 @@ class Zenodo(object):
 
         self.api_key = api_key
         self.auth_header = {'Authorization': f"Bearer {self.api_key}"}
-        self.headers = {"Content-Type": "application/json",
-                        'Authorization': f"Bearer {self.api_key}"}
+        self.headers = {
+            "Content-Type": "application/json",
+            'Authorization': f"Bearer {self.api_key}",
+        }
 
     def create_new_deposition(self, metadata=None):
         """ Creates a new deposition.
@@ -51,10 +54,7 @@ class Zenodo(object):
             metadata (dict, optional): Metadata dict to upload on the new
                 deposition.
         """
-        r = requests.post(
-            f'{self.zenodo_address}/api/deposit/depositions',
-            json={}, headers=self.headers
-        )
+        r = requests.post(f'{self.zenodo_address}/api/deposit/depositions', json={}, headers=self.headers)
 
         if r.status_code != 201:
             print("Creation failed (status code: {})".format(r.status_code))
@@ -63,8 +63,7 @@ class Zenodo(object):
         if metadata is not None and isinstance(metadata, dict):
             return self.change_metadata_in_deposition(r.json()["id"], metadata)
         else:
-            print(f"Could not interpret metadata type ({type(metadata)}), "
-                  "expected dict")
+            print(f"Could not interpret metadata type ({type(metadata)}), " "expected dict")
         return r
 
     def change_metadata_in_deposition(self, dep_id, metadata):
@@ -86,8 +85,7 @@ class Zenodo(object):
         """
         data = {"metadata": metadata}
         r = requests.put(
-            f'{self.zenodo_address}/api/deposit/depositions/{dep_id}',
-            data=json.dumps(data), headers=self.headers
+            f'{self.zenodo_address}/api/deposit/depositions/{dep_id}', data=json.dumps(data), headers=self.headers,
         )
         return r
 
@@ -122,8 +120,9 @@ class Zenodo(object):
 
         r = requests.post(
             f'{self.zenodo_address}/api/deposit/depositions/{dep_id}/files',
-            headers=self.auth_header, data=data,
-            files=files
+            headers=self.auth_header,
+            data=data,
+            files=files,
         )
         print("Zenodo received : {}".format(r.content))
         return r
@@ -136,8 +135,7 @@ class Zenodo(object):
                 `r = create_new_deposition(); dep_id = r.json()['id']`
         """
         r = requests.post(
-            f'{self.zenodo_address}/api/deposit/depositions/{dep_id}/actions/publish',
-            headers=self.headers
+            f'{self.zenodo_address}/api/deposit/depositions/{dep_id}/actions/publish', headers=self.headers,
         )
         return r
 
@@ -145,26 +143,17 @@ class Zenodo(object):
         """ Get deposition by deposition id. Get all dep_id is -1 (default)."""
         if dep_id > -1:
             print(f"Get deposition {dep_id} from Zenodo")
-            r = requests.get(
-                f"{self.zenodo_address}/api/deposit/depositions/{dep_id}",
-                headers=self.headers
-            )
+            r = requests.get(f"{self.zenodo_address}/api/deposit/depositions/{dep_id}", headers=self.headers)
         else:
             print("Get all depositions from Zenodo")
-            r = requests.get(
-                f"{self.zenodo_address}/api/deposit/depositions",
-                headers=self.headers
-            )
+            r = requests.get(f"{self.zenodo_address}/api/deposit/depositions", headers=self.headers)
         print("Get Depositions: Status Code: {}".format(r.status_code))
         return r
 
     def remove_deposition(self, dep_id):
         """ Remove deposition with deposition id `dep_id`"""
         print(f'Delete deposition number {dep_id}')
-        r = requests.delete(
-            f'{self.zenodo_address}/api/deposit/depositions/{dep_id}',
-            headers=self.auth_header
-        )
+        r = requests.delete(f'{self.zenodo_address}/api/deposit/depositions/{dep_id}', headers=self.auth_header)
         return r
 
     def remove_all_depositions(self):

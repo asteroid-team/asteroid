@@ -15,6 +15,7 @@ def prepare_parser_from_dict(dic, parser=None):
             and arguments corresponding to the second level keys with default
             values given by the values.
     """
+
     def standardized_entry_type(value):
         """ If the default value is None, replace NoneType by str_int_float.
             If the default value is boolean, look for boolean strings."""
@@ -30,8 +31,7 @@ def prepare_parser_from_dict(dic, parser=None):
         group = parser.add_argument_group(k)
         for kk in dic[k].keys():
             entry_type = standardized_entry_type(dic[k][kk])
-            group.add_argument('--' + kk, default=dic[k][kk],
-                               type=entry_type)
+            group.add_argument('--' + kk, default=dic[k][kk], type=entry_type)
     return parser
 
 
@@ -130,8 +130,7 @@ def parse_args_as_dict(parser, return_plain_args=False, args=None):
     args = parser.parse_args(args=args)
     args_dic = {}
     for group in parser._action_groups:
-        group_dict = {a.dest: getattr(args, a.dest, None)
-                      for a in group._group_actions}
+        group_dict = {a.dest: getattr(args, a.dest, None) for a in group._group_actions}
         args_dic[group.title] = group_dict
     args_dic['main_args'] = args_dic['optional arguments']
     del args_dic['optional arguments']

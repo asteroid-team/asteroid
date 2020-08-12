@@ -23,10 +23,11 @@ class PairwiseMSE(_Loss):
         >>> loss_func = PITLossWrapper(PairwiseMSE(), pit_from='pairwise')
         >>> loss = loss_func(est_targets, targets)
     """
+
     def forward(self, est_targets, targets):
         targets = targets.unsqueeze(1)
         est_targets = est_targets.unsqueeze(2)
-        pw_loss = (targets - est_targets)**2
+        pw_loss = (targets - est_targets) ** 2
         # Need to return [batch, nsrc, nsrc]
         mean_over = list(range(3, pw_loss.ndim))
         return pw_loss.mean(dim=mean_over)
@@ -55,8 +56,9 @@ class SingleSrcMSE(_Loss):
         >>> loss_func = PITLossWrapper(singlesrc_mse, pit_from='pw_pt')
         >>> loss = loss_func(est_targets, targets)
     """
+
     def forward(self, est_targets, targets):
-        loss = (targets - est_targets)**2
+        loss = (targets - est_targets) ** 2
         mean_over = list(range(1, loss.ndim))
         return loss.mean(dim=mean_over)
 

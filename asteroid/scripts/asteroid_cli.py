@@ -22,21 +22,17 @@ def upload():
 
     """
     import argparse
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('publish_dir', type=str,
-                        help='Path to the publish dir.')
-    parser.add_argument('--uploader', default=None, type=str,
-                        help='Name of the uploader. Ex: `Manuel Pariente`')
-    parser.add_argument('--affiliation', default=None, type=str,
-                        help='Affiliation of the uploader. Ex `INRIA` ')
-    parser.add_argument('--git_username', default=None, type=str,
-                        help='Username in GitHub')
-    parser.add_argument('--token', default=None, type=str,
-                        help='Access token for Zenodo (or sandbox)')
-    parser.add_argument('--force_publish', default=False, action='store_true',
-                        help='Whether to  without asking confirmation')
-    parser.add_argument('--use_sandbox', default=False, action='store_true',
-                        help='Whether to use Zenodo sandbox.')
+    parser.add_argument('publish_dir', type=str, help='Path to the publish dir.')
+    parser.add_argument('--uploader', default=None, type=str, help='Name of the uploader. Ex: `Manuel Pariente`')
+    parser.add_argument('--affiliation', default=None, type=str, help='Affiliation of the uploader. Ex `INRIA` ')
+    parser.add_argument('--git_username', default=None, type=str, help='Username in GitHub')
+    parser.add_argument('--token', default=None, type=str, help='Access token for Zenodo (or sandbox)')
+    parser.add_argument(
+        '--force_publish', default=False, action='store_true', help='Whether to  without asking confirmation',
+    )
+    parser.add_argument('--use_sandbox', default=False, action='store_true', help='Whether to use Zenodo sandbox.')
     args = parser.parse_args()
     args_as_dict = dict(vars(args))
     # Load uploader info if present
@@ -59,8 +55,9 @@ def upload():
         token: XXX
         ```
         """
-        print('You can create a `uploader_infos.yml` file in `Asteroid` root'
-              f'to stop passing your name, affiliation etc. to the CLI. '
-              f'Here is an example {example}')
-        print("Thanks a lot for sharing your model! Don't forget to create"
-              "a model card in the repo! ")
+        print(
+            'You can create a `uploader_infos.yml` file in `Asteroid` root'
+            f'to stop passing your name, affiliation etc. to the CLI. '
+            f'Here is an example {example}'
+        )
+        print("Thanks a lot for sharing your model! Don't forget to create" "a model card in the repo! ")

@@ -47,28 +47,55 @@ class DPRNNTasNet(BaseTasNet):
             time-domain single-channel speech separation", Yi Luo, Zhuo Chen
             and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
-    def __init__(self, n_src, out_chan=None, bn_chan=128, hid_size=128,
-                 chunk_size=100, hop_size=None, n_repeats=6, norm_type="gLN",
-                 mask_act='relu', bidirectional=True, rnn_type="LSTM",
-                 num_layers=1, dropout=0, in_chan=None, fb_name='free',
-                 kernel_size=16, n_filters=512, stride=8, **fb_kwargs):
+
+    def __init__(
+        self,
+        n_src,
+        out_chan=None,
+        bn_chan=128,
+        hid_size=128,
+        chunk_size=100,
+        hop_size=None,
+        n_repeats=6,
+        norm_type="gLN",
+        mask_act='relu',
+        bidirectional=True,
+        rnn_type="LSTM",
+        num_layers=1,
+        dropout=0,
+        in_chan=None,
+        fb_name='free',
+        kernel_size=16,
+        n_filters=512,
+        stride=8,
+        **fb_kwargs,
+    ):
         encoder, decoder = make_enc_dec(
-            fb_name, kernel_size=kernel_size, n_filters=n_filters,
-            stride=stride, **fb_kwargs
+            fb_name, kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
         )
         n_feats = encoder.n_feats_out
         if in_chan is not None:
-            assert in_chan == n_feats, ('Number of filterbank output channels'
-                                        ' and number of input channels should '
-                                        'be the same. Received '
-                                        f'{n_feats} and {in_chan}')
+            assert in_chan == n_feats, (
+                'Number of filterbank output channels'
+                ' and number of input channels should '
+                'be the same. Received '
+                f'{n_feats} and {in_chan}'
+            )
         # Update in_chan
         masker = DPRNN(
-            n_feats, n_src, out_chan=out_chan, bn_chan=bn_chan,
-            hid_size=hid_size, chunk_size=chunk_size, hop_size=hop_size,
-            n_repeats=n_repeats, norm_type=norm_type, mask_act=mask_act,
-            bidirectional=bidirectional, rnn_type=rnn_type,
-            num_layers=num_layers, dropout=dropout
+            n_feats,
+            n_src,
+            out_chan=out_chan,
+            bn_chan=bn_chan,
+            hid_size=hid_size,
+            chunk_size=chunk_size,
+            hop_size=hop_size,
+            n_repeats=n_repeats,
+            norm_type=norm_type,
+            mask_act=mask_act,
+            bidirectional=bidirectional,
+            rnn_type=rnn_type,
+            num_layers=num_layers,
+            dropout=dropout,
         )
         super().__init__(encoder, masker, decoder)
-

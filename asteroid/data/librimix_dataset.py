@@ -10,6 +10,7 @@ import shutil
 import zipfile
 
 from .wham_dataset import wham_noise_license
+
 MINI_URL = 'https://zenodo.org/record/3871592/files/MiniLibriMix.zip?download=1'
 
 
@@ -34,10 +35,10 @@ class LibriMix(Dataset):
         "LibriMix: An Open-Source Dataset for Generalizable Speech Separation",
         Cosentino et al. 2020.
     """
+
     dataset_name = 'LibriMix'
 
-    def __init__(self, csv_dir, task='sep_clean', sample_rate=16000, n_src=2,
-                 segment=3):
+    def __init__(self, csv_dir, task='sep_clean', sample_rate=16000, n_src=2, segment=3):
         self.csv_dir = csv_dir
         self.task = task
         # Get the csv corresponding to the task
@@ -65,8 +66,7 @@ class LibriMix(Dataset):
             self.seg_len = int(self.segment * self.sample_rate)
             # Ignore the file shorter than the desired_length
             self.df = self.df[self.df['length'] >= self.seg_len]
-            print(f"Drop {max_len - len(self.df)} utterances from {max_len} "
-                  f"(shorter than {segment} seconds)")
+            print(f"Drop {max_len - len(self.df)} utterances from {max_len} " f"(shorter than {segment} seconds)")
         else:
             self.seg_len = None
         self.n_src = n_src
@@ -90,20 +90,17 @@ class LibriMix(Dataset):
         # If task is enh_both then the source is the clean mixture
         if 'enh_both' in self.task:
             mix_clean_path = self.df_clean.iloc[idx]['mixture_path']
-            s, _ = sf.read(mix_clean_path, dtype='float32', start=start,
-                           stop=stop)
+            s, _ = sf.read(mix_clean_path, dtype='float32', start=start, stop=stop)
             sources_list.append(s)
 
         else:
             # Read sources
             for i in range(self.n_src):
                 source_path = row[f'source_{i + 1}_path']
-                s, _ = sf.read(source_path, dtype='float32', start=start,
-                               stop=stop)
+                s, _ = sf.read(source_path, dtype='float32', start=start, stop=stop)
                 sources_list.append(s)
         # Read the mixture
-        mixture, _ = sf.read(self.mixture_path, dtype='float32', start=start,
-                             stop=stop)
+        mixture, _ = sf.read(self.mixture_path, dtype='float32', start=start, stop=stop)
         # Convert to torch tensor
         mixture = torch.from_numpy(mixture)
         # Stack sources
@@ -133,12 +130,11 @@ class LibriMix(Dataset):
         """
         # kwargs checks
         assert 'csv_dir' not in kwargs, 'Cannot specify csv_dir when downloading.'
-        assert kwargs.get('task', 'sep_clean') in ['sep_clean', 'sep_noisy'], (
-            'Only clean and noisy separation are supported in MiniLibriMix.'
-        )
-        assert kwargs.get('sample_rate', 8000) == 8000, (
-            'Only 8kHz sample rate is supported in MiniLibriMix.'
-        )
+        assert kwargs.get('task', 'sep_clean') in [
+            'sep_clean',
+            'sep_noisy',
+        ], 'Only clean and noisy separation are supported in MiniLibriMix.'
+        assert kwargs.get('sample_rate', 8000) == 8000, 'Only 8kHz sample rate is supported in MiniLibriMix.'
         # Download LibriMix in current directory
         meta_path = cls.mini_download()
         # Create dataset instances
@@ -160,8 +156,7 @@ class LibriMix(Dataset):
         if not os.path.isfile(zip_path):
             hub.download_url_to_file(MINI_URL, zip_path)
         # Unzip zip
-        cond = all([os.path.isdir('MiniLibriMix/' + f)
-                    for f in ['train', 'val', 'metadata']])
+        cond = all([os.path.isdir('MiniLibriMix/' + f) for f in ['train', 'val', 'metadata']])
         if not cond:
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall('./')  # Will unzip in MiniLibriMix
@@ -170,10 +165,8 @@ class LibriMix(Dataset):
         for mode in ['train', 'val']:
             dst = f'MiniLibriMix/metadata/{mode}/'
             os.makedirs(dst, exist_ok=True)
-            [shutil.copyfile(src + f, dst + f) for f in os.listdir(src)
-             if mode in f and os.path.isfile(src + f)]
+            [shutil.copyfile(src + f, dst + f) for f in os.listdir(src) if mode in f and os.path.isfile(src + f)]
         return './MiniLibriMix/metadata'
-
 
     def get_infos(self):
         """ Get dataset infos (for publishing models).
@@ -203,5 +196,5 @@ librispeech_license = dict(
     author_link='https://github.com/vdp',
     license='CC BY 4.0',
     license_link='https://creativecommons.org/licenses/by/4.0/',
-    non_commercial=False
+    non_commercial=False,
 )

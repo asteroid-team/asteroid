@@ -19,9 +19,7 @@ def get_frames(video):
     frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    buffer_video = np.empty(
-        (frame_count, frame_height, frame_width, 3), np.dtype("uint8")
-    )
+    buffer_video = np.empty((frame_count, frame_height, frame_width, 3), np.dtype("uint8"))
 
     frame = 0
     ret = True
@@ -95,9 +93,7 @@ class Signal:
             # check embed_dir="../../dir" or embed_dir="dir"
             embed_dir = Path(*embed_dir.parts[2:])
 
-        self.embed_path = Path(
-            embed_dir, f"{video_name_stem}_part{self.video_start_length}{embed_ext}"
-        )
+        self.embed_path = Path(embed_dir, f"{video_name_stem}_part{self.video_start_length}{embed_ext}")
         if self.embed_path.is_file():
             self.embed = np.load(self.embed_path.as_posix())
         else:
@@ -129,9 +125,7 @@ class AVSpeechDataset(data.Dataset):
 
     dataset_name = "AVSpeech"
 
-    def __init__(
-        self, input_df_path: Union[str, Path], embed_dir: Union[str, Path], n_src=2
-    ):
+    def __init__(self, input_df_path: Union[str, Path], embed_dir: Union[str, Path], n_src=2):
         if isinstance(input_df_path, str):
             input_df_path = Path(input_df_path)
         if isinstance(embed_dir, str):
@@ -190,12 +184,7 @@ class AVSpeechDataset(data.Dataset):
             if re_match:
                 video_length_idx = int(re_match.group(0)[-1])
 
-            signal = Signal(
-                video_path,
-                audio_path,
-                self.embed_dir,
-                video_start_length=video_length_idx,
-            )
+            signal = Signal(video_path, audio_path, self.embed_dir, video_start_length=video_length_idx,)
             all_signals.append(signal)
 
         # input audio signal is the last column.
@@ -207,9 +196,7 @@ class AVSpeechDataset(data.Dataset):
 
         for i in range(self.n_src):
             # audio to spectrogram
-            spectrogram = self.encode(
-                all_signals[i].get_audio(), stft_encoder=self.stft_encoder
-            )
+            spectrogram = self.encode(all_signals[i].get_audio(), stft_encoder=self.stft_encoder)
             audio_tensors.append(spectrogram)
 
             # get embed

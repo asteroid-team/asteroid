@@ -16,8 +16,8 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
     Out-of-the-box, asteroid does only support MUSDB18-HQ which comes as
     uncompressed WAV files. To use the MUSDB18, please convert it to WAV first:
 
-    MUSDB18 HQ: https://zenodo.org/record/3338373   
-    MUSDB18     https://zenodo.org/record/1117372 
+    MUSDB18 HQ: https://zenodo.org/record/3338373
+    MUSDB18     https://zenodo.org/record/1117372
 
     Note: The datasets are hosted on Zenodo and require that users
           request access, since the tracks can only be used for
@@ -54,7 +54,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         segment (float, optional): Duration of segments in seconds,
             defaults to ``None`` which loads the full-length audio tracks.
         samples_per_track (int, optional):
-            Number of samples yielded from each track, can be used to increase 
+            Number of samples yielded from each track, can be used to increase
             dataset size, defaults to `1`.
         random_segments (boolean, optional): Enables random offset for track segments.
         random_track_mix boolean: enables mixing of random sources from
@@ -89,21 +89,24 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
     References
         "The 2018 Signal Separation Evaluation Campaign" Stoter et al. 2018.
     """
+
     dataset_name = 'MUSDB18'
 
-    def __init__(self,
-                 root,
-                 sources=['vocals', 'bass', 'drums', 'other'],
-                 targets=None,
-                 suffix='.wav',
-                 split='train',
-                 subset=None,
-                 segment=None,
-                 samples_per_track=1,
-                 random_segments=False,
-                 random_track_mix=False,
-                 source_augmentations=lambda audio: audio,
-                 sample_rate=44100):
+    def __init__(
+        self,
+        root,
+        sources=['vocals', 'bass', 'drums', 'other'],
+        targets=None,
+        suffix='.wav',
+        split='train',
+        subset=None,
+        segment=None,
+        samples_per_track=1,
+        random_segments=False,
+        random_track_mix=False,
+        source_augmentations=lambda audio: audio,
+        sample_rate=44100,
+    ):
 
         self.root = Path(root).expanduser()
         self.split = split
@@ -128,9 +131,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         # get track_id
         track_id = index // self.samples_per_track
         if self.random_segments:
-            start = random.uniform(
-                0, self.tracks[track_id]['min_duration'] - self.segment
-            )
+            start = random.uniform(0, self.tracks[track_id]['min_duration'] - self.segment)
         else:
             start = 0
 
@@ -141,30 +142,24 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                 # load a different track
                 track_id = random.choice(range(len(self.tracks)))
                 if self.random_segments:
-                    start = random.uniform(
-                        0, self.tracks[track_id]['min_duration'] - self.segment
-                    )
+                    start = random.uniform(0, self.tracks[track_id]['min_duration'] - self.segment)
 
             # loads the full track duration
             start_sample = int(start * self.sample_rate)
             # check if dur is none
             if self.segment:
                 # stop in soundfile is calc in samples, not seconds
-                stop_sample = start_sample + int(
-                    self.segment * self.sample_rate
-                )
+                stop_sample = start_sample + int(self.segment * self.sample_rate)
             else:
                 # set to None for reading complete file
                 stop_sample = None
 
             # load actual audio
             audio, _ = sf.read(
-                Path(
-                    self.tracks[track_id]['path'] / source
-                ).with_suffix(self.suffix),
+                Path(self.tracks[track_id]['path'] / source).with_suffix(self.suffix),
                 always_2d=True,
                 start=start_sample,
-                stop=stop_sample
+                stop=stop_sample,
             )
             # convert to torch tensor
             audio = torch.tensor(audio.T, dtype=torch.float)
@@ -175,9 +170,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         # apply linear mix over source index=0
         audio_mix = torch.stack(list(audio_sources.values())).sum(0)
         if self.targets:
-            audio_sources = torch.stack([
-                wav for src, wav in audio_sources.items() if src in self.targets
-            ], dim=0)
+            audio_sources = torch.stack([wav for src, wav in audio_sources.items() if src in self.targets], dim=0)
         return audio_mix, audio_sources
 
     def __len__(self):
@@ -192,40 +185,24 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                     # skip this track
                     continue
 
-                source_paths = [
-                    track_path / (s + self.suffix) for s in self.sources
-                ]
+                source_paths = [track_path / (s + self.suffix) for s in self.sources]
                 if not all(sp.exists() for sp in source_paths):
-                    print(
-                        "Exclude track due to non-existing source",
-                        track_path
-                    )
+                    print("Exclude track due to non-existing source", track_path)
                     continue
 
                 # get metadata
                 infos = list(map(sf.info, source_paths))
-                if not all(
-                    i.samplerate == self.sample_rate for i in infos
-                ):
-                    print(
-                        "Exclude track due to different sample rate ",
-                        track_path
-                    )
+                if not all(i.samplerate == self.sample_rate for i in infos):
+                    print("Exclude track due to different sample rate ", track_path)
                     continue
 
                 if self.segment is not None:
                     # get minimum duration of track
                     min_duration = min(i.duration for i in infos)
                     if min_duration > self.segment:
-                        yield({
-                            'path': track_path,
-                            'min_duration': min_duration
-                        })
+                        yield ({'path': track_path, 'min_duration': min_duration})
                 else:
-                    yield({
-                        'path': track_path,
-                        'min_duration': None
-                    })
+                    yield ({'path': track_path, 'min_duration': None})
 
     def get_infos(self):
         """ Get dataset infos (for publishing models).
@@ -240,5 +217,4 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         return infos
 
 
-musdb_license = dict(
-)
+musdb_license = dict()

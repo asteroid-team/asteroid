@@ -15,7 +15,7 @@ def test_pad_fail():
     x = torch.randn(10, 16000, 1)
     y = torch.randn(10, 16234, 1)
     with pytest.raises(NotImplementedError):
-        padded_x = torch_utils.pad_x_to_y(x, y, axis=1)
+        torch_utils.pad_x_to_y(x, y, axis=1)
 
 
 def test_model_equal():
@@ -36,9 +36,11 @@ def test_loader_module():
 def test_loader_submodule():
     class SuperModule(nn.Module):
         """ nn.Module subclass that holds a model under self.whoever """
+
         def __init__(self, sub_model):
             super().__init__()
             self.whoever = sub_model
+
     model = SuperModule(nn.Sequential(nn.Linear(10, 10)))
     # Keys in state_dict will be whoever.0.weight, whoever.0.bias
     state_dict = model.state_dict()

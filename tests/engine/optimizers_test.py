@@ -9,29 +9,50 @@ def optim_mapping():
         (optim.Adam, 'adam'),
         (optim.SGD, 'sgd'),
         (optim.RMSprop, 'rmsprop'),
-        (Ranger, 'ranger')
+        (Ranger, 'ranger'),
     ]
     return mapping_list
 
 
-global_model = nn.Sequential(nn.Linear(10, 10),
-                             nn.ReLU())
+global_model = nn.Sequential(nn.Linear(10, 10), nn.ReLU())
 
 
-@pytest.mark.parametrize("opt", [
-    'Adam', 'RMSprop', 'SGD', 'Adadelta', 'Adagrad', 'Adamax', 'AdamW', 'ASGD',
-    'AccSGD', 'AdaBound', 'AdaMod', 'DiffGrad', 'Lamb', 'NovoGrad', 'PID',
-    'QHAdam', 'QHM', 'RAdam', 'SGDW', 'Yogi', 'Ranger', 'RangerQH', 'RangerVA'
-])
+@pytest.mark.parametrize(
+    "opt",
+    [
+        'Adam',
+        'RMSprop',
+        'SGD',
+        'Adadelta',
+        'Adagrad',
+        'Adamax',
+        'AdamW',
+        'ASGD',
+        'AccSGD',
+        'AdaBound',
+        'AdaMod',
+        'DiffGrad',
+        'Lamb',
+        'NovoGrad',
+        'PID',
+        'QHAdam',
+        'QHM',
+        'RAdam',
+        'SGDW',
+        'Yogi',
+        'Ranger',
+        'RangerQH',
+        'RangerVA',
+    ],
+)
 def test_all_get(opt):
-    asteroid_optim = optimizers.get(opt)(global_model.parameters(), lr=1e-3)
+    optimizers.get(opt)(global_model.parameters(), lr=1e-3)
 
 
 @pytest.mark.parametrize("opt_tuple", optim_mapping())
 def test_get_str_returns_instance(opt_tuple):
     torch_optim = opt_tuple[0](global_model.parameters(), lr=1e-3)
-    asteroid_optim = optimizers.get(opt_tuple[1])(global_model.parameters(),
-                                                  lr=1e-3)
+    asteroid_optim = optimizers.get(opt_tuple[1])(global_model.parameters(), lr=1e-3)
     assert type(torch_optim) == type(asteroid_optim)
     assert torch_optim.param_groups == asteroid_optim.param_groups
 

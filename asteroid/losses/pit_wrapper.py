@@ -57,17 +57,18 @@ class PITLossWrapper(nn.Module):
         >>> loss_val = loss_func(est_sources, sources,
         >>>                      reduce_kwargs=reduce_kwargs)
     """
+
     def __init__(self, loss_func, pit_from='pw_mtx', perm_reduce=None):
         super().__init__()
         self.loss_func = loss_func
         self.pit_from = pit_from
         self.perm_reduce = perm_reduce
         if self.pit_from not in ['pw_mtx', 'pw_pt', 'perm_avg']:
-            raise ValueError('Unsupported loss function type for now. Expected'
-                             'one of [`pw_mtx`, `pw_pt`, `perm_avg`]')
+            raise ValueError(
+                'Unsupported loss function type for now. Expected' 'one of [`pw_mtx`, `pw_pt`, `perm_avg`]'
+            )
 
-    def forward(self, est_targets, targets, return_est=False,
-                reduce_kwargs=None, **kwargs):
+    def forward(self, est_targets, targets, return_est=False, reduce_kwargs=None, **kwargs):
         """ Find the best permutation and return the loss.
 
         Args:
@@ -95,14 +96,11 @@ class PITLossWrapper(nn.Module):
             pw_losses = self.loss_func(est_targets, targets, **kwargs)
         elif self.pit_from == 'pw_pt':
             # Compute pairwise losses with a for loop.
-            pw_losses = self.get_pw_losses(self.loss_func, est_targets,
-                                           targets, **kwargs)
+            pw_losses = self.get_pw_losses(self.loss_func, est_targets, targets, **kwargs)
         elif self.pit_from == 'perm_avg':
             # Cannot get pairwise losses from this type of loss.
             # Find best permutation directly.
-            min_loss, min_loss_idx = self.best_perm_from_perm_avg_loss(
-                self.loss_func, est_targets, targets, **kwargs
-            )
+            min_loss, min_loss_idx = self.best_perm_from_perm_avg_loss(self.loss_func, est_targets, targets, **kwargs)
             # Take the mean over the batch
             mean_loss = torch.mean(min_loss)
             if not return_est:
@@ -112,15 +110,11 @@ class PITLossWrapper(nn.Module):
         else:
             return
 
-        assert pw_losses.ndim == 3, ("Something went wrong with the loss "
-                                     "function, please read the docs.")
-        assert (pw_losses.shape[0] ==
-                targets.shape[0]), "PIT loss needs same batch dim as input"
+        assert pw_losses.ndim == 3, "Something went wrong with the loss " "function, please read the docs."
+        assert pw_losses.shape[0] == targets.shape[0], "PIT loss needs same batch dim as input"
 
         reduce_kwargs = reduce_kwargs if reduce_kwargs is not None else dict()
-        min_loss, min_loss_idx = self.find_best_perm(
-            pw_losses, n_src, perm_reduce=self.perm_reduce, **reduce_kwargs
-        )
+        min_loss, min_loss_idx = self.find_best_perm(pw_losses, n_src, perm_reduce=self.perm_reduce, **reduce_kwargs)
         mean_loss = torch.mean(min_loss)
         if not return_est:
             return mean_loss
@@ -154,8 +148,7 @@ class PITLossWrapper(nn.Module):
         pair_wise_losses = targets.new_empty(batch_size, n_src, n_src)
         for est_idx, est_src in enumerate(est_targets.transpose(0, 1)):
             for target_idx, target_src in enumerate(targets.transpose(0, 1)):
-                pair_wise_losses[:, est_idx, target_idx] = loss_func(
-                    est_src, target_src, **kwargs)
+                pair_wise_losses[:, est_idx, target_idx] = loss_func(est_src, target_src, **kwargs)
         return pair_wise_losses
 
     @staticmethod
@@ -181,10 +174,7 @@ class PITLossWrapper(nn.Module):
         """
         n_src = targets.shape[1]
         perms = list(permutations(range(n_src)))
-        loss_set = torch.stack([loss_func(est_targets[:, perm],
-                                          targets,
-                                          **kwargs) for perm in perms],
-                               dim=1)
+        loss_set = torch.stack([loss_func(est_targets[:, perm], targets, **kwargs) for perm in perms], dim=1)
         # Indexes and values of min losses for each batch element
         min_loss, min_loss_idx = torch.min(loss_set, dim=1, keepdim=True)
         return min_loss, min_loss_idx[:, 0]
@@ -217,8 +207,7 @@ class PITLossWrapper(nn.Module):
         """
         # After transposition, dim 1 corresp. to sources and dim 2 to estimates
         pwl = pair_wise_losses.transpose(-1, -2)
-        perms = pwl.new_tensor(list(permutations(range(n_src))),
-                               dtype=torch.long)
+        perms = pwl.new_tensor(list(permutations(range(n_src))), dtype=torch.long)
         # Column permutation indices
         idx = torch.unsqueeze(perms, 2)
         # Loss mean of each permutation
@@ -228,8 +217,7 @@ class PITLossWrapper(nn.Module):
             loss_set = torch.einsum('bij,pij->bp', [pwl, perms_one_hot])
             loss_set /= n_src
         else:
-            batch = pwl.shape[0]
-            n_perm = idx.shape[0]
+            # batch = pwl.shape[0]; n_perm = idx.shape[0]
             # [batch, n_src!, n_src] : Pairwise losses for each permutation.
             pwl_set = pwl[:, torch.arange(n_src), idx.squeeze(-1)]
             # Apply reduce [batch, n_src!, n_src] --> [batch, n_src!]
@@ -258,8 +246,7 @@ class PITLossWrapper(nn.Module):
         <https://github.com/kaituoxu/Conv-TasNet/blob/master>`__ and `License
         <https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`__.
         """
-        perms = source.new_tensor(list(permutations(range(n_src))),
-                                  dtype=torch.long)
+        perms = source.new_tensor(list(permutations(range(n_src))), dtype=torch.long)
         # Reorder estimate targets according the best permutation
         min_loss_perm = torch.index_select(perms, dim=0, index=min_loss_idx)
         # maybe use torch.gather()/index_select()/scatter() to impl this?
