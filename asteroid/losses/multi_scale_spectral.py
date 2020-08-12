@@ -51,8 +51,7 @@ class SingleSrcMultiScaleSpectral(_Loss):
         International Conference on Learning Representations ICLR 2020 $
     """
 
-    def __init__(self, n_filters=None, windows_size=None,
-                 hops_size=None, alpha=1.):
+    def __init__(self, n_filters=None, windows_size=None, hops_size=None, alpha=1.0):
         super().__init__()
 
         if windows_size is None:
@@ -68,8 +67,8 @@ class SingleSrcMultiScaleSpectral(_Loss):
         self.alpha = alpha
 
         self.encoders = nn.ModuleList(
-            Encoder(STFTFB(n_filters[i], windows_size[i], hops_size[i])) for i
-            in range(len(self.n_filters)))
+            Encoder(STFTFB(n_filters[i], windows_size[i], hops_size[i])) for i in range(len(self.n_filters))
+        )
 
     def forward(self, est_target, target):
         batch_size = est_target.shape[0]
@@ -86,8 +85,7 @@ class SingleSrcMultiScaleSpectral(_Loss):
         spect_est_target = take_mag(encoder(est_target)).view(batch_size, -1)
         spect_target = take_mag(encoder(target)).view(batch_size, -1)
         linear_loss = self.norm1(spect_est_target - spect_target)
-        log_loss = self.norm1(torch.log(spect_est_target + EPS) -
-                              torch.log(spect_target + EPS))
+        log_loss = self.norm1(torch.log(spect_est_target + EPS) - torch.log(spect_target + EPS))
         return linear_loss + self.alpha * log_loss
 
     @staticmethod

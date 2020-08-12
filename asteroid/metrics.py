@@ -1,10 +1,12 @@
 from .utils import average_arrays_in_dic
 from pb_bss_eval import InputMetrics, OutputMetrics
+
 ALL_METRICS = ['si_sdr', 'sdr', 'sir', 'sar', 'stoi', 'pesq']
 
 
-def get_metrics(mix, clean, estimate, sample_rate=16000, metrics_list='all',
-                average=True, compute_permutation=False):
+def get_metrics(
+    mix, clean, estimate, sample_rate=16000, metrics_list='all', average=True, compute_permutation=False,
+):
     """ Get speech separation/enhancement metrics from mix/clean/estimate.
 
     Args:
@@ -52,17 +54,16 @@ def get_metrics(mix, clean, estimate, sample_rate=16000, metrics_list='all',
     if isinstance(metrics_list, str):
         metrics_list = [metrics_list]
     # For each utterance, we get a dictionary with the input and output metrics
-    input_metrics = InputMetrics(observation=mix,
-                                 speech_source=clean,
-                                 enable_si_sdr=True,
-                                 sample_rate=sample_rate)
+    input_metrics = InputMetrics(observation=mix, speech_source=clean, enable_si_sdr=True, sample_rate=sample_rate)
     utt_metrics = {'input_' + n: input_metrics[n] for n in metrics_list}
 
-    output_metrics = OutputMetrics(speech_prediction=estimate,
-                                   speech_source=clean,
-                                   enable_si_sdr=True,
-                                   sample_rate=sample_rate,
-                                   compute_permutation=compute_permutation)
+    output_metrics = OutputMetrics(
+        speech_prediction=estimate,
+        speech_source=clean,
+        enable_si_sdr=True,
+        sample_rate=sample_rate,
+        compute_permutation=compute_permutation,
+    )
     utt_metrics.update(output_metrics[metrics_list])
     if average is True:
         return average_arrays_in_dic(utt_metrics)

@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+
 EPS = 1e-8
 
 
@@ -41,8 +42,7 @@ def mul_c(inp, other, dim=-2):
     check_complex(other, dim=dim)
     real1, imag1 = inp.chunk(2, dim=dim)
     real2, imag2 = other.chunk(2, dim=dim)
-    return torch.cat([real1 * real2 - imag1 * imag2,
-                      real1 * imag2 + imag1 * real2], dim=dim)
+    return torch.cat([real1 * real2 - imag1 * imag2, real1 * imag2 + imag1 * real2], dim=dim)
 
 
 def take_reim(x, dim=-2):
@@ -191,9 +191,11 @@ def check_complex(tensor, dim=-2):
 
     """
     if tensor.shape[dim] % 2 != 0:
-        raise AssertionError('Could not equally chunk the tensor (shape {}) '
-                             'along the given dimension ({}). Dim axis is '
-                             'probably wrong')
+        raise AssertionError(
+            'Could not equally chunk the tensor (shape {}) '
+            'along the given dimension ({}). Dim axis is '
+            'probably wrong'
+        )
 
 
 def to_numpy(tensor, dim=-2):
@@ -224,8 +226,7 @@ def from_numpy(array, dim=-2):
         :class:`torch.Tensor`:
             Corresponding torch.Tensor (complex axis in dim `dim`=
     """
-    return torch.cat([torch.from_numpy(np.real(array)),
-                      torch.from_numpy(np.imag(array))], dim=dim)
+    return torch.cat([torch.from_numpy(np.real(array)), torch.from_numpy(np.imag(array))], dim=dim)
 
 
 def to_torchaudio(tensor, dim=-2):
@@ -290,7 +291,7 @@ def from_mag_and_phase(mag, phase, dim=-2):
         :class:`torch.Tensor`:
             The corresponding complex-like torch tensor.
     """
-    return torch.cat([mag*torch.cos(phase), mag*torch.sin(phase)], dim=dim)
+    return torch.cat([mag * torch.cos(phase), mag * torch.sin(phase)], dim=dim)
 
 
 def ebased_vad(mag_spec, th_db=40):
@@ -321,11 +322,7 @@ def ebased_vad(mag_spec, th_db=40):
     return log_mag > (max_log_mag - th_db)
 
 
-_inputs = {
-    'reim': (take_reim, 1),
-    'mag': (take_mag, 1/2),
-    'cat': (take_cat, 1 + 1/2)
-}
+_inputs = {'reim': (take_reim, 1), 'mag': (take_mag, 1 / 2), 'cat': (take_cat, 1 + 1 / 2)}
 _inputs['real'] = _inputs['reim']
 _inputs['mod'] = _inputs['mag']
 _inputs['concat'] = _inputs['cat']
@@ -333,8 +330,8 @@ _inputs['concat'] = _inputs['cat']
 
 _masks = {
     'reim': (apply_real_mask, 1),
-    'mag': (apply_mag_mask, 1/2),
-    'complex': (apply_complex_mask, 1)
+    'mag': (apply_mag_mask, 1 / 2),
+    'complex': (apply_complex_mask, 1),
 }
 _masks['real'] = _masks['reim']
 _masks['mod'] = _masks['mag']

@@ -27,8 +27,10 @@ class System(pl.LightningModule):
         loop and the validation loop, overwrite both `training_step` and
         `validation_step` instead.
     """
-    def __init__(self, model, optimizer, loss_func, train_loader,
-                 val_loader=None, scheduler=None, config=None):
+
+    def __init__(
+        self, model, optimizer, loss_func, train_loader, val_loader=None, scheduler=None, config=None,
+    ):
         super().__init__()
         self.model = model
         self.optimizer = optimizer
@@ -137,8 +139,7 @@ class System(pl.LightningModule):
         """
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss}
-        return {'val_loss': avg_loss, 'log': tensorboard_logs,
-                'progress_bar': tensorboard_logs}
+        return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
 
     def unsqueeze_if_dp_or_ddp(self, *values):
         """ Apply unsqueeze(0) to all values if training is done with dp

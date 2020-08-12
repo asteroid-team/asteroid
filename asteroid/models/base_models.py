@@ -14,6 +14,7 @@ class BaseTasNet(nn.Module):
         masker (nn.Module): masker network.
         decoder (Decoder): Decoder instance.
     """
+
     def __init__(self, encoder, masker, decoder):
         super().__init__()
         self.encoder = encoder
@@ -75,6 +76,7 @@ class BaseTasNet(nn.Module):
         was_file = False
         if isinstance(wav, str):
             import soundfile as sf
+
             was_file = True
             filename = wav
             wav, fs = sf.read(wav, dtype='float32')
@@ -99,7 +101,7 @@ class BaseTasNet(nn.Module):
             to_save = out_wavs.cpu().data.numpy()
             for src_idx, est_src in enumerate(to_save):
                 base = '.'.join(filename.split('.')[:-1])
-                save_name = base + '_est{}.'.format(src_idx+1) + filename.split('.')[-1]
+                save_name = base + '_est{}.'.format(src_idx + 1) + filename.split('.')[-1]
                 sf.write(save_name, est_src, fs)
             return
         return out_wavs
@@ -126,11 +128,13 @@ class BaseTasNet(nn.Module):
         else:
             conf = pretrained_model_conf_or_path
         if 'model_args' not in conf.keys():
-            raise ValueError('Expected config dictionary to have field '
-                             'model_args`. Found only: {}'.format(conf.keys()))
+            raise ValueError(
+                'Expected config dictionary to have field ' 'model_args`. Found only: {}'.format(conf.keys())
+            )
         if 'state_dict' not in conf.keys():
-            raise ValueError('Expected config dictionary to have field '
-                             'state_dict`. Found only: {}'.format(conf.keys()))
+            raise ValueError(
+                'Expected config dictionary to have field ' 'state_dict`. Found only: {}'.format(conf.keys())
+            )
         model = cls(*args, **conf['model_args'], **kwargs)
         model.load_state_dict(conf['state_dict'])
         return model
@@ -143,13 +147,13 @@ class BaseTasNet(nn.Module):
         """
         from .. import __version__ as asteroid_version  # Avoid circular imports
         import pytorch_lightning as pl  # Not used in torch.hub
+
         model_conf = dict()
         fb_config = self.encoder.filterbank.get_config()
         masknet_config = self.masker.get_config()
         # Assert both dict are disjoint
         if not all(k not in fb_config for k in masknet_config):
-            raise AssertionError("Filterbank and Mask network config share"
-                                 "common keys. Merging them is not safe.")
+            raise AssertionError("Filterbank and Mask network config share" "common keys. Merging them is not safe.")
         # Merge all args under model_args.
         model_conf['model_name'] = self.__class__.__name__
         model_conf['model_args'] = {**fb_config, **masknet_config}

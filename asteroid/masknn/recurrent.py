@@ -24,19 +24,21 @@ class SingleRNN(nn.Module):
             bidirectional. Default is ``False``.
     """
 
-    def __init__(self, rnn_type, input_size, hidden_size, n_layers=1,
-                 dropout=0, bidirectional=False):
+    def __init__(self, rnn_type, input_size, hidden_size, n_layers=1, dropout=0, bidirectional=False):
         super(SingleRNN, self).__init__()
         assert rnn_type.upper() in ["RNN", "LSTM", "GRU"]
         rnn_type = rnn_type.upper()
         self.rnn_type = rnn_type
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.rnn = getattr(nn, rnn_type)(input_size, hidden_size,
-                                         num_layers=n_layers,
-                                         dropout=dropout,
-                                         batch_first=True,
-                                         bidirectional=bool(bidirectional))
+        self.rnn = getattr(nn, rnn_type)(
+            input_size,
+            hidden_size,
+            num_layers=n_layers,
+            dropout=dropout,
+            batch_first=True,
+            bidirectional=bool(bidirectional),
+        )
 
     def forward(self, inp):
         """ Input shape [batch, seq, feats] """
@@ -62,8 +64,7 @@ class StackedResidualRNN(nn.Module):
             unidirectional. (Default: False)
     """
 
-    def __init__(self, rnn_type, n_units, n_layers=4, dropout=0.,
-                 bidirectional=False):
+    def __init__(self, rnn_type, n_units, n_layers=4, dropout=0.0, bidirectional=False):
         super(StackedResidualRNN, self).__init__()
         self.rnn_type = rnn_type
         self.n_units = n_units
@@ -74,9 +75,9 @@ class StackedResidualRNN(nn.Module):
 
         self.layers = nn.ModuleList()
         for _ in range(n_layers):
-            self.layers.append(SingleRNN(rnn_type, input_size=n_units,
-                                         hidden_size=n_units,
-                                         bidirectional=bidirectional))
+            self.layers.append(
+                SingleRNN(rnn_type, input_size=n_units, hidden_size=n_units, bidirectional=bidirectional)
+            )
         self.dropout_layer = nn.Dropout(self.dropout)
 
     def forward(self, x):
@@ -107,8 +108,7 @@ class StackedResidualBiRNN(nn.Module):
             unidirectional. (Default: False)
     """
 
-    def __init__(self, rnn_type, n_units, n_layers=4, dropout=0.,
-                 bidirectional=True):
+    def __init__(self, rnn_type, n_units, n_layers=4, dropout=0.0, bidirectional=True):
         super().__init__()
         self.rnn_type = rnn_type
         self.n_units = n_units
@@ -118,17 +118,15 @@ class StackedResidualBiRNN(nn.Module):
         self.bidirectional = bidirectional
 
         # The first layer has as many units as input size
-        self.first_layer = SingleRNN(rnn_type, input_size=n_units,
-                                     hidden_size=n_units,
-                                     bidirectional=bidirectional)
+        self.first_layer = SingleRNN(rnn_type, input_size=n_units, hidden_size=n_units, bidirectional=bidirectional)
         # As the first layer outputs 2*n_units, the following layers need
         # 2*n_units as input size
         self.layers = nn.ModuleList()
         for i in range(n_layers - 1):
             input_size = 2 * n_units
-            self.layers.append(SingleRNN(rnn_type, input_size=input_size,
-                                         hidden_size=n_units,
-                                         bidirectional=bidirectional))
+            self.layers.append(
+                SingleRNN(rnn_type, input_size=input_size, hidden_size=n_units, bidirectional=bidirectional,)
+            )
         self.dropout_layer = nn.Dropout(self.dropout)
 
     def forward(self, x):
@@ -167,17 +165,19 @@ class DPRNNBlock(nn.Module):
         time-domain single-channel speech separation", Yi Luo, Zhuo Chen
         and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
-    def __init__(self, in_chan, hid_size, norm_type="gLN", bidirectional=True,
-                 rnn_type="LSTM", num_layers=1, dropout=0):
+
+    def __init__(
+        self, in_chan, hid_size, norm_type="gLN", bidirectional=True, rnn_type="LSTM", num_layers=1, dropout=0,
+    ):
         super(DPRNNBlock, self).__init__()
         # IntraRNN and linear projection layer (always bi-directional)
-        self.intra_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers,
-                                   dropout=dropout, bidirectional=True)
+        self.intra_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True)
         self.intra_linear = nn.Linear(hid_size * 2, in_chan)
         self.intra_norm = norms.get(norm_type)(in_chan)
         # InterRNN block and linear projection layer (uni or bi-directional)
-        self.inter_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers,
-                                   dropout=dropout, bidirectional=bidirectional)
+        self.inter_RNN = SingleRNN(
+            rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=bidirectional
+        )
         num_direction = int(bidirectional) + 1
         self.inter_linear = nn.Linear(hid_size * num_direction, in_chan)
         self.inter_norm = norms.get(norm_type)(in_chan)
@@ -237,10 +237,24 @@ class DPRNN(nn.Module):
             time-domain single-channel speech separation", Yi Luo, Zhuo Chen
             and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
-    def __init__(self, in_chan, n_src, out_chan=None, bn_chan=128, hid_size=128,
-                 chunk_size=100, hop_size=None, n_repeats=6, norm_type="gLN",
-                 mask_act='relu', bidirectional=True, rnn_type="LSTM",
-                 num_layers=1, dropout=0):
+
+    def __init__(
+        self,
+        in_chan,
+        n_src,
+        out_chan=None,
+        bn_chan=128,
+        hid_size=128,
+        chunk_size=100,
+        hop_size=None,
+        n_repeats=6,
+        norm_type="gLN",
+        mask_act='relu',
+        bidirectional=True,
+        rnn_type="LSTM",
+        num_layers=1,
+        dropout=0,
+    ):
         super(DPRNN, self).__init__()
         self.in_chan = in_chan
         out_chan = out_chan if out_chan is not None else in_chan
@@ -266,17 +280,24 @@ class DPRNN(nn.Module):
         # Succession of DPRNNBlocks.
         net = []
         for x in range(self.n_repeats):
-            net += [DPRNNBlock(bn_chan, hid_size, norm_type=norm_type,
-                               bidirectional=bidirectional, rnn_type=rnn_type,
-                               num_layers=num_layers, dropout=dropout)]
+            net += [
+                DPRNNBlock(
+                    bn_chan,
+                    hid_size,
+                    norm_type=norm_type,
+                    bidirectional=bidirectional,
+                    rnn_type=rnn_type,
+                    num_layers=num_layers,
+                    dropout=dropout,
+                )
+            ]
         self.net = nn.Sequential(*net)
         # Masking in 3D space
-        net_out_conv = nn.Conv2d(bn_chan, n_src*bn_chan, 1)
+        net_out_conv = nn.Conv2d(bn_chan, n_src * bn_chan, 1)
         self.first_out = nn.Sequential(nn.PReLU(), net_out_conv)
         # Gating and masking in 2D space (after fold)
         self.net_out = nn.Sequential(nn.Conv1d(bn_chan, bn_chan, 1), nn.Tanh())
-        self.net_gate = nn.Sequential(nn.Conv1d(bn_chan, bn_chan, 1),
-                                      nn.Sigmoid())
+        self.net_gate = nn.Sequential(nn.Conv1d(bn_chan, bn_chan, 1), nn.Sigmoid())
         self.mask_net = nn.Conv1d(bn_chan, out_chan, 1, bias=False)
 
         # Get activation function.
@@ -298,23 +319,29 @@ class DPRNN(nn.Module):
         """
         batch, n_filters, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)  # [batch, bn_chan, n_frames]
-        output = unfold(output.unsqueeze(-1), kernel_size=(self.chunk_size, 1),
-                        padding=(self.chunk_size, 0), stride=(self.hop_size, 1))
+        output = unfold(
+            output.unsqueeze(-1),
+            kernel_size=(self.chunk_size, 1),
+            padding=(self.chunk_size, 0),
+            stride=(self.hop_size, 1),
+        )
         n_chunks = output.size(-1)
         output = output.reshape(batch, self.bn_chan, self.chunk_size, n_chunks)
         # Apply stacked DPRNN Blocks sequentially
         output = self.net(output)
         # Map to sources with kind of 2D masks
         output = self.first_out(output)
-        output = output.reshape(batch * self.n_src, self.bn_chan,
-                                self.chunk_size, n_chunks)
+        output = output.reshape(batch * self.n_src, self.bn_chan, self.chunk_size, n_chunks)
         # Overlap and add:
         # [batch, out_chan, chunk_size, n_chunks] -> [batch, out_chan, n_frames]
         to_unfold = self.bn_chan * self.chunk_size
-        output = fold(output.reshape(batch * self.n_src, to_unfold, n_chunks),
-                      (n_frames, 1), kernel_size=(self.chunk_size, 1),
-                      padding=(self.chunk_size, 0),
-                      stride=(self.hop_size, 1))
+        output = fold(
+            output.reshape(batch * self.n_src, to_unfold, n_chunks),
+            (n_frames, 1),
+            kernel_size=(self.chunk_size, 1),
+            padding=(self.chunk_size, 0),
+            stride=(self.hop_size, 1),
+        )
         # Apply gating
         output = output.reshape(batch * self.n_src, self.bn_chan, -1)
         output = self.net_out(output) * self.net_gate(output)
@@ -339,6 +366,6 @@ class DPRNN(nn.Module):
             'bidirectional': self.bidirectional,
             'rnn_type': self.rnn_type,
             'num_layers': self.num_layers,
-            'dropout': self.dropout
+            'dropout': self.dropout,
         }
         return config

@@ -7,8 +7,7 @@ from . import transforms
 from ..dsp.consistency import mixture_consistency
 
 
-def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6,
-                momentum=0.9):
+def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, momentum=0.9):
     """ Estimates matching phase from magnitude spectogram using the
     'fast' Griffin Lim algorithm [1].
 
@@ -47,19 +46,17 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6,
     # We can create perfect iSTFT from STFT Encoder
     if istft_dec is None:
         # Compute window for perfect resynthesis
-        syn_win = perfect_synthesis_window(stft_enc.filterbank.window,
-                                           stft_enc.stride)
+        syn_win = perfect_synthesis_window(stft_enc.filterbank.window, stft_enc.stride)
         istft_dec = Decoder(STFTFB(**stft_enc.get_config(), window=syn_win))
 
     # If no intitial phase is provided initialize uniformly
     if angles is None:
-        angles = 2 * math.pi * torch.rand_like(mag_specgram,
-                                               device=mag_specgram.device)
+        angles = 2 * math.pi * torch.rand_like(mag_specgram, device=mag_specgram.device)
     else:
         angles = angles.view(*mag_specgram.shape)
 
     # Initialize rebuilt (useful to use momentum)
-    rebuilt = 0.
+    rebuilt = 0.0
     for _ in range(n_iter):
         prev_built = rebuilt
         # Go to the time domain
@@ -75,8 +72,9 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6,
     return istft_dec(final_complex_spec)
 
 
-def misi(mixture_wav, mag_specgrams, stft_enc, angles=None, istft_dec=None,
-         n_iter=6, momentum=0., src_weights=None, dim=1):
+def misi(
+    mixture_wav, mag_specgrams, stft_enc, angles=None, istft_dec=None, n_iter=6, momentum=0.0, src_weights=None, dim=1,
+):
     """ Jointly estimates matching phase from magnitude spectograms using the
     Multiple Input Spectrogram Inversion (MISI) algorithm [1].
 
@@ -123,14 +121,12 @@ def misi(mixture_wav, mag_specgrams, stft_enc, angles=None, istft_dec=None,
     # We can create perfect iSTFT from STFT Encoder
     if istft_dec is None:
         # Compute window for perfect resynthesis
-        syn_win = perfect_synthesis_window(stft_enc.filterbank.window,
-                                           stft_enc.stride)
+        syn_win = perfect_synthesis_window(stft_enc.filterbank.window, stft_enc.stride)
         istft_dec = Decoder(STFTFB(**stft_enc.get_config(), window=syn_win))
 
     # If no intitial phase is provided initialize uniformly
     if angles is None:
-        angles = 2 * math.pi * torch.rand_like(mag_specgrams,
-                                               device=mag_specgrams.device)
+        angles = 2 * math.pi * torch.rand_like(mag_specgrams, device=mag_specgrams.device)
     # wav_dim is used in mixture_consistency.
     # Transform spec src dim to wav src dim for positive and negative dim
     wav_dim = dim if dim >= 0 else dim + 1
@@ -141,16 +137,14 @@ def misi(mixture_wav, mag_specgrams, stft_enc, angles=None, istft_dec=None,
     mixture_wav = istft_dec(stft_enc(mixture_wav))
 
     # Initialize rebuilt (useful to use momentum)
-    rebuilt = 0.
+    rebuilt = 0.0
     for _ in range(n_iter):
         prev_built = rebuilt
         # Go to the time domain
         complex_specgram = transforms.from_mag_and_phase(mag_specgrams, angles)
         wavs = istft_dec(complex_specgram)
         # Make wavs sum up to the mixture
-        consistent_wavs = mixture_consistency(mixture_wav, wavs,
-                                              src_weights=src_weights,
-                                              dim=wav_dim)
+        consistent_wavs = mixture_consistency(mixture_wav, wavs, src_weights=src_weights, dim=wav_dim)
         # Back to TF domain
         rebuilt = stft_enc(consistent_wavs)
         # Update phase estimates (with momentum). Keep the momentum here

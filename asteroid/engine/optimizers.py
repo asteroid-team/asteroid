@@ -1,10 +1,21 @@
 from torch.optim.optimizer import Optimizer
-from torch.optim import (
-    Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, AdamW, ASGD
-)
+from torch.optim import Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, AdamW, ASGD
 from torch_optimizer import (
-    AccSGD, AdaBound, AdaMod, DiffGrad, Lamb, NovoGrad, PID, QHAdam,
-    QHM, RAdam, SGDW, Yogi, Ranger, RangerQH, RangerVA
+    AccSGD,
+    AdaBound,
+    AdaMod,
+    DiffGrad,
+    Lamb,
+    NovoGrad,
+    PID,
+    QHAdam,
+    QHM,
+    RAdam,
+    SGDW,
+    Yogi,
+    Ranger,
+    RangerQH,
+    RangerVA,
 )
 
 

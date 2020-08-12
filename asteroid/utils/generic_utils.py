@@ -18,8 +18,7 @@ def has_arg(fn, name):
     parameter = signature.parameters.get(name)
     if parameter is None:
         return False
-    return (parameter.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                               inspect.Parameter.KEYWORD_ONLY))
+    return parameter.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY,)
 
 
 def flatten_dict(d, parent_key='', sep='_'):
@@ -63,7 +62,7 @@ def average_arrays_in_dic(dic):
     return dic
 
 
-def get_wav_random_start_stop(signal_len, desired_len=4*8000):
+def get_wav_random_start_stop(signal_len, desired_len=4 * 8000):
     """ Get indexes for a chunk of signal of a given length.
 
     Args:

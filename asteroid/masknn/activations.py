@@ -46,9 +46,7 @@ def get(identifier):
     elif isinstance(identifier, str):
         cls = globals().get(identifier)
         if cls is None:
-            raise ValueError('Could not interpret activation identifier: ' +
-                             str(identifier))
+            raise ValueError('Could not interpret activation identifier: ' + str(identifier))
         return cls
     else:
-        raise ValueError('Could not interpret activation identifier: ' +
-                         str(identifier))
+        raise ValueError('Could not interpret activation identifier: ' + str(identifier))
