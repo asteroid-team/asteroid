@@ -75,8 +75,7 @@ def test_fb_forward_multichannel(fb_class, fb_config, ndim):
     tensor_shape = tuple([random.randint(2, 4) for _ in range(ndim)]) + (4000,)
     inp = torch.randn(tensor_shape)
     tf_out = enc(inp)
-    assert tf_out.shape[:ndim+1] == (tensor_shape[:-1] +
-                                     (enc.filterbank.n_feats_out,))
+    assert tf_out.shape[: ndim + 1] == (tensor_shape[:-1] + (enc.filterbank.n_feats_out,))
     out = dec(tf_out)
     assert out.shape[:-1] == inp.shape[:-1]  # Time axis can differ
 
@@ -118,9 +117,7 @@ def test_pinv_of(fb_class):
 
 @pytest.mark.parametrize("who", ["enc", "dec"])
 def test_make_enc_dec(who):
-    fb_config = {"n_filters": 500,
-                 "kernel_size": 16,
-                 "stride": 8}
+    fb_config = {"n_filters": 500, "kernel_size": 16, "stride": 8}
     enc, dec = make_enc_dec("free", who_is_pinv=who, **fb_config)
     enc, dec = make_enc_dec(FreeFB, who_is_pinv=who, **fb_config)
     assert enc.filterbank == filterbanks.get(enc.filterbank)
