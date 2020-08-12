@@ -31,12 +31,12 @@ def make_enc_dec(fb_name, n_filters, kernel_size, stride=None, who_is_pinv=None,
     """
     fb_class = get(fb_name)
 
-    if who_is_pinv in ['dec', 'decoder']:
+    if who_is_pinv in ["dec", "decoder"]:
         fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
         enc = Encoder(fb)
         # Decoder filterbank is pseudo inverse of encoder filterbank.
         dec = Decoder.pinv_of(fb)
-    elif who_is_pinv in ['enc', 'encoder']:
+    elif who_is_pinv in ["enc", "encoder"]:
         fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
         dec = Decoder(fb)
         # Encoder filterbank is pseudo inverse of decoder filterbank.
@@ -67,10 +67,10 @@ def get(identifier):
     elif isinstance(identifier, str):
         cls = globals().get(identifier)
         if cls is None:
-            raise ValueError('Could not interpret filterbank identifier: ' + str(identifier))
+            raise ValueError("Could not interpret filterbank identifier: " + str(identifier))
         return cls
     else:
-        raise ValueError('Could not interpret filterbank identifier: ' + str(identifier))
+        raise ValueError("Could not interpret filterbank identifier: " + str(identifier))
 
 
 # Aliases.
@@ -82,12 +82,14 @@ multiphase_gammatone = mpgtf = MultiphaseGammatoneFB
 
 # For the docs
 __all__ = [
-    'Filterbank',
-    'Encoder',
-    'Decoder',
-    'FreeFB',
-    'STFTFB',
-    'AnalyticFreeFB',
-    'ParamSincFB',
-    'MultiphaseGammatoneFB',
+    "Filterbank",
+    "Encoder",
+    "Decoder",
+    "FreeFB",
+    "STFTFB",
+    "AnalyticFreeFB",
+    "ParamSincFB",
+    "MultiphaseGammatoneFB",
+    "griffin_lim",
+    "misi",
 ]

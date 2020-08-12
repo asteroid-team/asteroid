@@ -79,7 +79,7 @@ class SmsWsjDataset(data.Dataset):
         normalize_audio=False,
     ):
         try:
-            import sms_wsj
+            import sms_wsj  # noqa
         except ModuleNotFoundError:
             import warnings
 
@@ -90,7 +90,9 @@ class SmsWsjDataset(data.Dataset):
             )
         super().__init__()
         if target not in SMS_TARGETS.keys():
-            raise ValueError('Unexpected task {}, expected one of ' '{}'.format(target, SMS_TARGETS.keys()))
+            raise ValueError(
+                'Unexpected task {}, expected one of ' '{}'.format(target, SMS_TARGETS.keys())
+            )
 
         # Task setting
         self.json_path = json_path
@@ -136,7 +138,10 @@ class SmsWsjDataset(data.Dataset):
             )
         if self.seg_len != sms_wsj.seg_len:
             self.seg_len = min(self.seg_len, sms_wsj.seg_len)
-            print('Segment length mismatched between the two Dataset' 'passed one the smallest to the sum.')
+            print(
+                'Segment length mismatched between the two Dataset'
+                'passed one the smallest to the sum.'
+            )
         self.dataset = self.dataset.concatenate(sms_wsj.dataset)
 
     def __len__(self):
@@ -198,7 +203,9 @@ class SmsWsjDataset(data.Dataset):
             from sms_wsj.database.utils import extract_piece
 
             offset = example['offset']
-            source_arrays = [extract_piece(s, offset_, num_samples) for s, offset_ in zip(source_arrays, offset)]
+            source_arrays = [
+                extract_piece(s, offset_, num_samples) for s, offset_ in zip(source_arrays, offset)
+            ]
             source_arrays = [s[rand_start:stop] for s in source_arrays]
 
         sources = torch.from_numpy(np.stack(source_arrays, axis=0))

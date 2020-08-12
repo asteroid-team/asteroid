@@ -1,4 +1,3 @@
-import torch
 from torch import nn
 import warnings
 from ..utils.deprecation_utils import VisibleDeprecationWarning
@@ -34,14 +33,23 @@ class Conv1DBlock(nn.Module):
         https://arxiv.org/abs/1809.07454
     """
 
-    def __init__(self, in_chan, hid_chan, skip_out_chan, kernel_size, padding, dilation, norm_type="gLN"):
+    def __init__(
+        self, in_chan, hid_chan, skip_out_chan, kernel_size, padding, dilation, norm_type="gLN"
+    ):
         super(Conv1DBlock, self).__init__()
         self.skip_out_chan = skip_out_chan
         conv_norm = norms.get(norm_type)
         in_conv1d = nn.Conv1d(in_chan, hid_chan, 1)
-        depth_conv1d = nn.Conv1d(hid_chan, hid_chan, kernel_size, padding=padding, dilation=dilation, groups=hid_chan)
+        depth_conv1d = nn.Conv1d(
+            hid_chan, hid_chan, kernel_size, padding=padding, dilation=dilation, groups=hid_chan
+        )
         self.shared_block = nn.Sequential(
-            in_conv1d, nn.PReLU(), conv_norm(hid_chan), depth_conv1d, nn.PReLU(), conv_norm(hid_chan),
+            in_conv1d,
+            nn.PReLU(),
+            conv_norm(hid_chan),
+            depth_conv1d,
+            nn.PReLU(),
+            conv_norm(hid_chan),
         )
         self.res_conv = nn.Conv1d(hid_chan, in_chan, 1)
         if skip_out_chan:
