@@ -6,6 +6,21 @@ from asteroid.models.publisher import upload_publishable
 
 
 def upload():
+    """ CLI function to upload pretrained models.
+
+    Args:
+        publish_dir (str): Path to the publishing directory.
+            Usually under exp/exp_name/publish_dir
+        uploader (str): Full name of the uploader (Ex: Manuel Pariente)
+        affiliation (str, optional): Affiliation (no accent).
+        git_username (str, optional): GitHub username.
+        token (str): Access token generated to upload depositions.
+        force_publish (bool): Whether to directly publish without
+            asking confirmation before. Defaults to False.
+        use_sandbox (bool): Whether to use Zenodo's sandbox instead of
+            the official Zenodo.
+
+    """
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('publish_dir', type=str,

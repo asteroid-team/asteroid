@@ -86,6 +86,8 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         sample_rate (int, optional): Samplerate of files in dataset.
         tracks (:obj:`list` of :obj:`Dict`): List of track metadata
 
+    References
+        "The 2018 Signal Separation Evaluation Campaign" Stoter et al. 2018.
     """
     dataset_name = 'MUSDB18'
 

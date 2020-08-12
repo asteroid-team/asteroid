@@ -29,6 +29,10 @@ class LibriMix(Dataset):
         sample_rate (int) : The sample rate of the sources and mixtures
         n_src (int) : The number of sources in the mixture
         segment (int) : The desired sources and mixtures length in s
+
+    References
+        "LibriMix: An Open-Source Dataset for Generalizable Speech Separation",
+        Cosentino et al. 2020.
     """
     dataset_name = 'LibriMix'
 

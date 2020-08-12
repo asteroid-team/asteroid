@@ -34,8 +34,7 @@ class SingleSrcPMSQE(nn.Module):
         Copyright 2019: University of Granada, Signal Processing, Multimedia
         Transmission and Speech/Audio Technologies (SigMAT) Group.
 
-    Notes:
-        Inspired on the Perceptual Evaluation of the Speech Quality (PESQ)
+    .. note:: Inspired on the Perceptual Evaluation of the Speech Quality (PESQ)
         algorithm, this function consists of two regularization factors :
         the symmetrical and asymmetrical distortion in the loudness domain.
 

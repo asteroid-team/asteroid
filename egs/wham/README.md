@@ -1,10 +1,10 @@
-### About the WHAM dataset
+###  WHAM dataset
 WHAM! is a noisy single-channel speech separation dataset based on WSJ0. 
 It is a noisy extension of [wsj0-2mix](./../wsj0-mix/).
 
 More info [here](http://wham.whisper.ai/).
 
-### References
+**References**
 ```BibTex
 @inproceedings{WHAMWichern2019,
   author={Gordon Wichern and Joe Antognini and Michael Flynn and Licheng Richard Zhu and Emmett McQuinn and Dwight Crow and Ethan Manilow and Jonathan Le Roux},

@@ -1,9 +1,9 @@
-### About the wsj0-2mix dataset
+### wsj0-2mix dataset
 
 wsj0-2mix is a single channel speech separation dataset base on WSJ0. 
 Three speaker extension (wsj0-3mix) is also considered here.
 
-### References 
+**Reference**
 ```BibTex
 @article{Hershey_2016,
    title={Deep clustering: Discriminative embeddings for segmentation and separation},

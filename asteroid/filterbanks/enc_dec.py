@@ -105,16 +105,6 @@ class Encoder(_EncDec):
             If False, will output a tensor of shape (batch, 1, freq, conv_time).
         padding (int): Zero-padding added to both sides of the input.
 
-    Notes:
-        (time, ) --> (freq, conv_time)
-        (batch, time) --> (batch, freq, conv_time)  # Avoid
-        if as_conv1d:
-            (batch, 1, time) --> (batch, freq, conv_time)
-            (batch, chan, time) --> (batch, chan, freq, conv_time)
-        else:
-            (batch, chan, time) --> (batch, chan, freq, conv_time)
-        (batch, any, dim, time) --> (batch, any, dim, freq, conv_time)
-
     """
     def __init__(self, filterbank, is_pinv=False, as_conv1d=True, padding=0):
         super(Encoder, self).__init__(filterbank, is_pinv=is_pinv)
@@ -132,7 +122,24 @@ class Encoder(_EncDec):
             return cls(filterbank.filterbank, is_pinv=True, **kwargs)
 
     def forward(self, waveform):
-        """ Convolve 1D torch.Tensor with the filters from a filterbank."""
+        """ Convolve input waveform with the filters from a filterbank.
+        Args:
+            waveform (:class:`torch.Tensor`): any tensor with samples along the
+                last dimension. The waveform representation with and
+                batch/channel etc.. dimension.
+        Returns:
+            :class:`torch.Tensor`: The corresponding TF domain signal.
+
+        Shapes:
+            >>> (time, ) --> (freq, conv_time)
+            >>> (batch, time) --> (batch, freq, conv_time)  # Avoid
+            >>> if as_conv1d:
+            >>>     (batch, 1, time) --> (batch, freq, conv_time)
+            >>>     (batch, chan, time) --> (batch, chan, freq, conv_time)
+            >>> else:
+            >>>     (batch, chan, time) --> (batch, chan, freq, conv_time)
+            >>> (batch, any, dim, time) --> (batch, any, dim, freq, conv_time)
+        """
         filters = self.get_filters()
         if waveform.ndim == 1:
             # Assumes 1D input with shape (time,)
