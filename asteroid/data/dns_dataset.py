@@ -6,9 +6,19 @@ import soundfile as sf
 
 
 class DNSDataset(data.Dataset):
+    """ Deep Noise Suppression (DNS) Challenge's dataset.
+
+    Args
+        json_dir (str): path to the JSON directory (from the recipe).
+
+    References
+        "The INTERSPEECH 2020 Deep Noise Suppression Challenge: Datasets,
+        Subjective Testing Framework, and Challenge Results", Reddy et al. 2020.
+    """
     dataset_name = 'DNS'
 
     def __init__(self, json_dir):
+
         super(DNSDataset, self).__init__()
         self.json_dir = json_dir
         with open(os.path.join(json_dir, 'file_infos.json'), 'r') as f:

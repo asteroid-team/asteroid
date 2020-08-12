@@ -1,4 +1,4 @@
-### What is a recipe ? 
+## What is a recipe ? 
 A recipe is a set of scripts that use Asteroid to build a 
 source separation system.
 Each directory corresponds to a dataset and each subdirectory 

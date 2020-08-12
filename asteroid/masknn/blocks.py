@@ -1,5 +1,5 @@
 import warnings
-from numpy import VisibleDeprecationWarning
+from ..utils.deprecation_utils import VisibleDeprecationWarning
 
 warnings.warn(
     "`blocks` has been splited between `convolutional` and "

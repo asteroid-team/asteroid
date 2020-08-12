@@ -1,0 +1,65 @@
+.. role:: hidden
+    :class: hidden-section
+
+Losses & Metrics
+================
+
+.. automodule:: asteroid.losses
+.. currentmodule:: asteroid.losses
+
+
+Permutation invariant training (PIT) made easy
+----------------------------------------------
+
+.. automodule:: asteroid.losses.pit_wrapper
+   :members:
+
+Available loss functions
+------------------------
+
+``PITLossWrapper`` supports three types of loss function. For "easy" losses,
+we implement the three types (pairwise point, single-source loss and multi-source loss).
+For others, we only implement the single-source loss which can be aggregated
+into both PIT and nonPIT training.
+
+:hidden:`MSE`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: asteroid.losses.mse.PairwiseMSE
+.. autofunction:: asteroid.losses.mse.SingleSrcMSE
+.. autofunction:: asteroid.losses.mse.MultiSrcMSE
+
+
+:hidden:`SDR`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: asteroid.losses.sdr.PairwiseNegSDR
+.. autofunction:: asteroid.losses.sdr.SingleSrcNegSDR
+.. autofunction:: asteroid.losses.sdr.MultiSrcNegSDR
+
+
+:hidden:`PMSQE`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: asteroid.losses.pmsqe.SingleSrcPMSQE
+
+:hidden:`STOI`
+~~~~~~~~~~~~~~~~
+.. autofunction:: asteroid.losses.stoi.NegSTOILoss
+
+
+:hidden:`MultiScale Spectral Loss`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: asteroid.losses.multi_scale_spectral.SingleSrcMultiScaleSpectral
+
+:hidden:`Deep clustering (Affinity) loss`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: asteroid.losses.cluster.deep_clustering_loss
+
+
+Computing metrics
+-----------------
+
+.. autofunction:: asteroid.metrics.get_metrics

@@ -3,37 +3,61 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to asteroid's documentation!
-====================================
+Asteroid: Audio source separation on Steroids
+=============================================
+
+.. image:: ./_static/images/asteroid_logo_dark.png
+
+Asteroid is a Pytorch-based audio source separation toolkit that enables fast
+experimentation on common datasets. It comes with a source code that supports a
+large range of datasets and architectures, and a set of recipes to reproduce some important papers.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Why Asteroid ?
+   :caption: Start here
 
    why_use_asteroid
+   installation
 
 .. toctree::
    :maxdepth: 1
-   :caption: Python API
+   :caption: Asteroid
 
-   filterbanks
-   losses
-   masknn
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Datasets and Recipes
-
+   readmes/egs_README.md
    supported_datasets
-   running_a_recipe
+   training_and_evaluation
+   readmes/pretrained_models.md
+   faq
 
 .. toctree::
    :maxdepth: 1
-   :caption: Extending asteroid
+   :caption: Notebooks and Tutorials
 
-   writing_a_new_loss
-   writing_a_new_filterbank
+   NB: Getting stated with Asteroid <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/01_AsteroidGettingStarted.ipynb>
+   NB: Understanding the Filterbank API <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/02_Filterbank.ipynb>
+   NB: Our PITLossWrapper explained <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb>
+   Community NB: Numpy vs. Asteroid STFT <https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j>
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Package reference
+
+   package_reference/data
+   package_reference/filterbanks
+   package_reference/blocks
+   package_reference/models
+   package_reference/losses
+   package_reference/system
+   package_reference/optimizers
+   package_reference/utils
+   package_reference/cli
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Community
+
+   contribution_guide
+   readmes/CONTRIBUTING.md
 
 
 Indices and tables

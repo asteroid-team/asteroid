@@ -21,8 +21,7 @@ class Zenodo(object):
         remove_deposition
         remove_all_depositions
 
-    Notes:
-        A Zenodo record is something that is public and cannot be deleted.
+    .. note:: A Zenodo record is something that is public and cannot be deleted.
         A Zenodo deposit has not yet been published, is private and can be
         deleted.
     """

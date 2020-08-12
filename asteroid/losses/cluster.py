@@ -15,7 +15,7 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
     Returns:
          `torch.Tensor`. Deep clustering loss for every batch sample.
 
-    Examples:
+    Examples
         >>> import torch
         >>> from asteroid.losses.cluster import deep_clustering_loss
         >>> spk_cnt = 3
@@ -23,12 +23,11 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
         >>> targets = torch.LongTensor([10, 400, 5]).random_(0, spk_cnt)
         >>> loss = deep_clustering_loss(embedding, targets)
 
-    Reference:
+    Reference
         [1] Zhong-Qiu Wang, Jonathan Le Roux, John R. Hershey
             "ALTERNATIVE OBJECTIVE FUNCTIONS FOR DEEP CLUSTERING"
 
-    Notes:
-        Be careful in viewing the embedding tensors. The target indices
+    .. note:: Be careful in viewing the embedding tensors. The target indices
         `tgt_index` are of shape (batch, freq, frames). Even if the embedding
         is of shape (batch, freq*frames, emb), the underlying view should be
         (batch, freq, frames, emb) and not (batch, frames, freq, emb).
