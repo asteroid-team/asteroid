@@ -6,6 +6,6 @@ requires = [
 
 [tool.black]
 # https://github.com/psf/black
-line-length = 120
-target-version = ["py38"]
+line-length = 100
+target-version = ["py36"]
 exclude = "(.eggs|.git|.hg|.mypy_cache|.nox|.tox|.venv|.svn|_build|buck-out|build|dist)"
