@@ -3,22 +3,6 @@ from scipy.signal import get_window
 from asteroid.losses import PITLossWrapper
 
 
-def _reorder_sources(current, previous, n_src, window_size, hop_size):
-
-    batch, frames = current.size()
-    current = current.reshape(-1, n_src, frames)
-    previous = previous.reshape(-1, n_src, frames)
-
-    overlap_f = window_size - hop_size
-    pw_losses = PITLossWrapper.get_pw_losses(
-        lambda x, y: torch.sum((x.unsqueeze(1) * y.unsqueeze(2))),
-        current[..., :overlap_f],
-        previous[..., -overlap_f:])
-    _, perms = PITLossWrapper.find_best_perm(pw_losses, n_src)
-    current = PITLossWrapper.reorder_source(current, n_src, perms)
-    return current.reshape(batch, frames)
-
-
 class LambdaOverlapAdd(torch.nn.Module):
     """ Segment signal, apply func, combine with OLA.
 
@@ -30,10 +14,17 @@ class LambdaOverlapAdd(torch.nn.Module):
         window (str): Name of the window (see scipy.signal.get_window)
         reorder_chunks (bool): whether to reorder each consecutive segment.
     """
-    def __init__(self, nnet, n_src, window_size, hop_size=None,
-                 window="hanning", reorder_chunks=True,
-                 enable_grad=False,
-                 ):
+
+    def __init__(
+        self,
+        nnet,
+        n_src,
+        window_size,
+        hop_size=None,
+        window="hanning",
+        reorder_chunks=True,
+        enable_grad=False,
+    ):
         super().__init__()
         assert window_size % 2 == 0, "Window size must be even"
 
@@ -65,7 +56,7 @@ class LambdaOverlapAdd(torch.nn.Module):
             x.unsqueeze(-1),
             kernel_size=(self.window_size, 1),
             padding=(self.window_size, 0),
-            stride=(self.hop_size, 1)
+            stride=(self.hop_size, 1),
         )
 
         out = []
@@ -73,16 +64,13 @@ class LambdaOverlapAdd(torch.nn.Module):
         for f in range(n_chunks):  # for loop to spare memory
             tmp = self.nnet(folded[..., f])
             # user must handle multichannel by reshaping to batch
-            assert len(
-                tmp.size()) == 3, "nnet should return (batch, n_src, time)"
-            assert tmp.shape[
-                       1] == self.n_src, "nnet should return (batch, n_src, time)"
+            assert len(tmp.size()) == 3, "nnet should return (batch, n_src, time)"
+            assert tmp.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
             tmp = tmp.reshape(batch * self.n_src, -1)
 
             if f != 0 and self.reorder_chunks:
                 # we determine best perm based on xcorr with previous sources
-                tmp = _reorder_sources(tmp, out[-1], self.n_src,
-                                       self.window_size, self.hop_size)
+                tmp = _reorder_sources(tmp, out[-1], self.n_src, self.window_size, self.hop_size)
 
             if self.use_window:
                 tmp = tmp * self.window
@@ -90,18 +78,15 @@ class LambdaOverlapAdd(torch.nn.Module):
                 tmp = tmp / (self.window_size / self.hop_size)
             out.append(tmp)
 
-        out = torch.stack(out).reshape(
-            n_chunks,
-            batch * self.n_src,
-            self.window_size
-        ).permute(1, 2, 0)
+        out = torch.stack(out).reshape(n_chunks, batch * self.n_src, self.window_size)
+        out = out.permute(1, 2, 0)
 
         out = torch.nn.functional.fold(
             out,
             (n_frames, 1),
             kernel_size=(self.window_size, 1),
             padding=(self.window_size, 0),
-            stride=(self.hop_size, 1)
+            stride=(self.hop_size, 1),
         )
         return out.squeeze(-1).reshape(batch, self.n_src, -1)
 
@@ -124,4 +109,18 @@ class LambdaOverlapAdd(torch.nn.Module):
                 return olad
 
 
+def _reorder_sources(current, previous, n_src, window_size, hop_size):
+    """ Reorder current sources to maximize correlation with previous."""
+    batch, frames = current.size()
+    current = current.reshape(-1, n_src, frames)
+    previous = previous.reshape(-1, n_src, frames)
 
+    overlap_f = window_size - hop_size
+    pw_losses = PITLossWrapper.get_pw_losses(
+        lambda x, y: torch.sum((x.unsqueeze(1) * y.unsqueeze(2))),
+        current[..., :overlap_f],
+        previous[..., -overlap_f:],
+    )
+    _, perms = PITLossWrapper.find_best_perm(pw_losses, n_src)
+    current = PITLossWrapper.reorder_source(current, n_src, perms)
+    return current.reshape(batch, frames)
