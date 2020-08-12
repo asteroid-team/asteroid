@@ -47,7 +47,7 @@ class LambdaOverlapAdd(torch.nn.Module):
     def ola_forward(self, x):
         """Heart of the class: segment signal, apply func, combine with OLA."""
 
-        assert len(x.shape) == 3
+        assert x.ndim == 3
 
         batch, channels, n_frames = x.size()
         # Overlap and add:
@@ -61,15 +61,15 @@ class LambdaOverlapAdd(torch.nn.Module):
 
         out = []
         n_chunks = folded.shape[-1]
-        for f in range(n_chunks):  # for loop to spare memory
-            tmp = self.nnet(folded[..., f])
+        for frame_idx in range(n_chunks):  # for loop to spare memory
+            tmp = self.nnet(folded[..., frame_idx])
             # user must handle multichannel by reshaping to batch
-            if f == 0:
-                assert len(tmp.size()) == 3, "nnet should return (batch, n_src, time)"
+            if frame_idx == 0:
+                assert tmp.ndim == 3, "nnet should return (batch, n_src, time)"
                 assert tmp.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
             tmp = tmp.reshape(batch * self.n_src, -1)
 
-            if f != 0 and self.reorder_chunks:
+            if frame_idx != 0 and self.reorder_chunks:
                 # we determine best perm based on xcorr with previous sources
                 tmp = _reorder_sources(tmp, out[-1], self.n_src, self.window_size, self.hop_size)
 
