@@ -33,4 +33,4 @@ deploy:
     github_token: $GITHUB_PAGES
     local_dir: docs/build/html
     on:
-      branch: master, improve_docs
+      branch: master
