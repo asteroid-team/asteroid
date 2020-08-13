@@ -44,6 +44,10 @@ jobs:
 #        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-${{ hashFiles('requirements.txt') }}
 #        restore-keys: |
 #          ${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}-pip-
+    - name: Install libnsdfile and libsox
+      run: |
+        sudo apt update
+        sudo apt install libsndfile1-dev libsndfile1
 
     - name: Install dependencies
       run: |
