@@ -1,0 +1,46 @@
+name: Build the docs
+
+# see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
+# Trigger the workflow on push or pull request
+on: [push, pull_request]
+
+jobs:
+  doctest:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.6]  #, 3.7, 3.8]
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    # TODO: check if needed
+    - name: Install libnsdfile and libsox
+      run: |
+        sudo apt update
+        sudo apt install libsndfile1-dev libsndfile1
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade --user pip --quiet
+        python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
+        python -m pip install -r requirements.txt --quiet
+        python -m pip install -r docs/requirements.txt --quiet
+        python --version
+        pip --version
+        python -m pip list
+      shell: bash
+
+    - name: build docs
+      run: |
+        cd docs
+        make html
+        touch build/html/.nojekyll  # prevents use jekyll to build doc
