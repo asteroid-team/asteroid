@@ -1,15 +1,8 @@
 name: CI base testing
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
-on:
-  # Trigger the workflow on push or pull request,
-  # but only for the master branch
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+# Trigger the workflow on push or pull request
+on: [push, pull_request]
 
 jobs:
   doctest:
@@ -56,18 +49,15 @@ jobs:
         python -m pip install pytest coverage codecov --upgrade-strategy only-if-needed --quiet
         python -m pip install -r requirements.txt --quiet
         python -m pip install -r docs/requirements.txt --quiet
+        python --version
+        pip --version
         python -m pip list
-#        pip install --requirement ./requirements/base.txt --quiet  --find-links https://download.pytorch.org/whl/cpu/torch_stable.html --upgrade
-#        pip install --requirement ./requirements/test.txt --quiet --upgrade-strategy only-if-needed
-#        pip install tox coverage
-#        python --version
-#        pip --version
       shell: bash
 
     - name: Test with pytest and coverage
       run: |
         coverage run -m py.test tests
-#        coverage report -m  # was is travis
+
     - name: Generate and upload the coverage report
       run: |
         coverage xml
