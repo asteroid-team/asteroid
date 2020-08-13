@@ -1,0 +1,7 @@
+numpy
+Cython
+pytest
+coverage
+codecov
+-r ../../requirements.txt
+-r ../../docs/requirements.txt
