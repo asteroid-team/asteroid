@@ -4,7 +4,7 @@ on: [push, pull_request]
 jobs:
   code-black:
     name: Check code formatting with Black
-    runs-on: ubuntu-latests
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
