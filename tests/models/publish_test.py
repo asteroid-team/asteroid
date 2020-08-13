@@ -1,6 +1,7 @@
 import os
 import json
 import shutil
+import pytest
 
 from asteroid.models import save_publishable, upload_publishable, ConvTasNet
 from asteroid.data.wham_dataset import WhamDataset
@@ -15,6 +16,7 @@ def populate_wham_dir(path):
             json.dump(dict(), f)
 
 
+@pytest.mark.skipif(os.getenv('ACCESS_TOKEN', None) is True, reason="Require private key")
 def test_upload():
     # Make dirs
     os.makedirs("tmp/publish_dir", exist_ok=True)
