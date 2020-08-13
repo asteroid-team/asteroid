@@ -1,6 +1,7 @@
 import os
 import json
 import shutil
+import pytest
 
 from asteroid.models import save_publishable, upload_publishable, ConvTasNet
 from asteroid.data.wham_dataset import WhamDataset
@@ -15,6 +16,7 @@ def populate_wham_dir(path):
             json.dump(dict(), f)
 
 
+@pytest.mark.skipif(os.getenv('ACCESS_TOKEN', None) is True, reason="Require private key")
 def test_upload():
     # Make dirs
     os.makedirs('tmp/publish_dir', exist_ok=True)
@@ -22,7 +24,9 @@ def test_upload():
 
     # Dataset and NN
     train_set = WhamDataset('tmp/wham', task='sep_clean')
-    model = ConvTasNet(n_src=2, n_repeats=2, n_blocks=2, bn_chan=16, hid_chan=4, skip_chan=8, n_filters=32)
+    model = ConvTasNet(
+        n_src=2, n_repeats=2, n_blocks=2, bn_chan=16, hid_chan=4, skip_chan=8, n_filters=32
+    )
 
     # Save publishable
     model_conf = model.serialize()
