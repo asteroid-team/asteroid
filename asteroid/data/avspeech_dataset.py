@@ -1,5 +1,4 @@
 import re
-import os
 import cv2
 import librosa
 import numpy as np
@@ -8,8 +7,8 @@ import torch
 from torch.utils import data
 from torch.nn import functional as F
 import pandas as pd
-from typing import Callable, Tuple, List, Union
-from asteroid.filterbanks import Encoder, Decoder, STFTFB, transforms
+from typing import Union
+from asteroid.filterbanks import Encoder, Decoder, STFTFB
 
 EPS = 1e-8
 
@@ -93,7 +92,9 @@ class Signal:
             # check embed_dir="../../dir" or embed_dir="dir"
             embed_dir = Path(*embed_dir.parts[2:])
 
-        self.embed_path = Path(embed_dir, f"{video_name_stem}_part{self.video_start_length}{embed_ext}")
+        self.embed_path = Path(
+            embed_dir, f"{video_name_stem}_part{self.video_start_length}{embed_ext}"
+        )
         if self.embed_path.is_file():
             self.embed = np.load(self.embed_path.as_posix())
         else:
@@ -184,7 +185,9 @@ class AVSpeechDataset(data.Dataset):
             if re_match:
                 video_length_idx = int(re_match.group(0)[-1])
 
-            signal = Signal(video_path, audio_path, self.embed_dir, video_start_length=video_length_idx,)
+            signal = Signal(
+                video_path, audio_path, self.embed_dir, video_start_length=video_length_idx,
+            )
             all_signals.append(signal)
 
         # input audio signal is the last column.

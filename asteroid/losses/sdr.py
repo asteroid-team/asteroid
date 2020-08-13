@@ -75,7 +75,9 @@ class PairwiseNegSDR(_Loss):
         else:
             e_noise = s_estimate - pair_wise_proj
         # [batch, n_src, n_src]
-        pair_wise_sdr = torch.sum(pair_wise_proj ** 2, dim=3) / (torch.sum(e_noise ** 2, dim=3) + EPS)
+        pair_wise_sdr = torch.sum(pair_wise_proj ** 2, dim=3) / (
+            torch.sum(e_noise ** 2, dim=3) + EPS
+        )
         if self.take_log:
             pair_wise_sdr = 10 * torch.log10(pair_wise_sdr + EPS)
         return -pair_wise_sdr
@@ -122,8 +124,8 @@ class SingleSrcNegSDR(_Loss):
             Processing (ICASSP) 2019.
         """
 
-    def __init__(self, sdr_type, zero_mean=True, take_log=True, reduction='none'):
-        assert reduction != 'sum', NotImplementedError
+    def __init__(self, sdr_type, zero_mean=True, take_log=True, reduction="none"):
+        assert reduction != "sum", NotImplementedError
         super().__init__(reduction=reduction)
 
         assert sdr_type in ["snr", "sisdr", "sdsdr"]
@@ -158,7 +160,7 @@ class SingleSrcNegSDR(_Loss):
         losses = torch.sum(scaled_target ** 2, dim=1) / (torch.sum(e_noise ** 2, dim=1) + EPS)
         if self.take_log:
             losses = 10 * torch.log10(losses + EPS)
-        losses = losses.mean() if self.reduction == 'mean' else losses
+        losses = losses.mean() if self.reduction == "mean" else losses
         return -losses
 
 
@@ -232,7 +234,9 @@ class MultiSrcNegSDR(_Loss):
         else:
             e_noise = est_targets - scaled_targets
         # [batch, n_src]
-        pair_wise_sdr = torch.sum(scaled_targets ** 2, dim=2) / (torch.sum(e_noise ** 2, dim=2) + EPS)
+        pair_wise_sdr = torch.sum(scaled_targets ** 2, dim=2) / (
+            torch.sum(e_noise ** 2, dim=2) + EPS
+        )
         if self.take_log:
             pair_wise_sdr = 10 * torch.log10(pair_wise_sdr + EPS)
         return -torch.mean(pair_wise_sdr, dim=-1)

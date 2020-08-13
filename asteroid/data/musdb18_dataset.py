@@ -90,15 +90,15 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         "The 2018 Signal Separation Evaluation Campaign" Stoter et al. 2018.
     """
 
-    dataset_name = 'MUSDB18'
+    dataset_name = "MUSDB18"
 
     def __init__(
         self,
         root,
-        sources=['vocals', 'bass', 'drums', 'other'],
+        sources=["vocals", "bass", "drums", "other"],
         targets=None,
-        suffix='.wav',
-        split='train',
+        suffix=".wav",
+        split="train",
         subset=None,
         segment=None,
         samples_per_track=1,
@@ -131,7 +131,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         # get track_id
         track_id = index // self.samples_per_track
         if self.random_segments:
-            start = random.uniform(0, self.tracks[track_id]['min_duration'] - self.segment)
+            start = random.uniform(0, self.tracks[track_id]["min_duration"] - self.segment)
         else:
             start = 0
 
@@ -142,7 +142,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                 # load a different track
                 track_id = random.choice(range(len(self.tracks)))
                 if self.random_segments:
-                    start = random.uniform(0, self.tracks[track_id]['min_duration'] - self.segment)
+                    start = random.uniform(0, self.tracks[track_id]["min_duration"] - self.segment)
 
             # loads the full track duration
             start_sample = int(start * self.sample_rate)
@@ -156,7 +156,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
 
             # load actual audio
             audio, _ = sf.read(
-                Path(self.tracks[track_id]['path'] / source).with_suffix(self.suffix),
+                Path(self.tracks[track_id]["path"] / source).with_suffix(self.suffix),
                 always_2d=True,
                 start=start_sample,
                 stop=stop_sample,
@@ -170,7 +170,9 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         # apply linear mix over source index=0
         audio_mix = torch.stack(list(audio_sources.values())).sum(0)
         if self.targets:
-            audio_sources = torch.stack([wav for src, wav in audio_sources.items() if src in self.targets], dim=0)
+            audio_sources = torch.stack(
+                [wav for src, wav in audio_sources.items() if src in self.targets], dim=0
+            )
         return audio_mix, audio_sources
 
     def __len__(self):
@@ -200,9 +202,9 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                     # get minimum duration of track
                     min_duration = min(i.duration for i in infos)
                     if min_duration > self.segment:
-                        yield ({'path': track_path, 'min_duration': min_duration})
+                        yield ({"path": track_path, "min_duration": min_duration})
                 else:
-                    yield ({'path': track_path, 'min_duration': None})
+                    yield ({"path": track_path, "min_duration": None})
 
     def get_infos(self):
         """ Get dataset infos (for publishing models).
@@ -211,9 +213,9 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
             dict, dataset infos with keys `dataset`, `task` and `licences`.
         """
         infos = dict()
-        infos['dataset'] = self.dataset_name
-        infos['task'] = 'enhancement'
-        infos['licenses'] = [musdb_license]
+        infos["dataset"] = self.dataset_name
+        infos["task"] = "enhancement"
+        infos["licenses"] = [musdb_license]
         return infos
 
 

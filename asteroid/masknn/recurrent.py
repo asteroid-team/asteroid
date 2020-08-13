@@ -24,7 +24,9 @@ class SingleRNN(nn.Module):
             bidirectional. Default is ``False``.
     """
 
-    def __init__(self, rnn_type, input_size, hidden_size, n_layers=1, dropout=0, bidirectional=False):
+    def __init__(
+        self, rnn_type, input_size, hidden_size, n_layers=1, dropout=0, bidirectional=False
+    ):
         super(SingleRNN, self).__init__()
         assert rnn_type.upper() in ["RNN", "LSTM", "GRU"]
         rnn_type = rnn_type.upper()
@@ -76,7 +78,9 @@ class StackedResidualRNN(nn.Module):
         self.layers = nn.ModuleList()
         for _ in range(n_layers):
             self.layers.append(
-                SingleRNN(rnn_type, input_size=n_units, hidden_size=n_units, bidirectional=bidirectional)
+                SingleRNN(
+                    rnn_type, input_size=n_units, hidden_size=n_units, bidirectional=bidirectional
+                )
             )
         self.dropout_layer = nn.Dropout(self.dropout)
 
@@ -118,14 +122,21 @@ class StackedResidualBiRNN(nn.Module):
         self.bidirectional = bidirectional
 
         # The first layer has as many units as input size
-        self.first_layer = SingleRNN(rnn_type, input_size=n_units, hidden_size=n_units, bidirectional=bidirectional)
+        self.first_layer = SingleRNN(
+            rnn_type, input_size=n_units, hidden_size=n_units, bidirectional=bidirectional
+        )
         # As the first layer outputs 2*n_units, the following layers need
         # 2*n_units as input size
         self.layers = nn.ModuleList()
         for i in range(n_layers - 1):
             input_size = 2 * n_units
             self.layers.append(
-                SingleRNN(rnn_type, input_size=input_size, hidden_size=n_units, bidirectional=bidirectional,)
+                SingleRNN(
+                    rnn_type,
+                    input_size=input_size,
+                    hidden_size=n_units,
+                    bidirectional=bidirectional,
+                )
             )
         self.dropout_layer = nn.Dropout(self.dropout)
 
@@ -167,11 +178,20 @@ class DPRNNBlock(nn.Module):
     """
 
     def __init__(
-        self, in_chan, hid_size, norm_type="gLN", bidirectional=True, rnn_type="LSTM", num_layers=1, dropout=0,
+        self,
+        in_chan,
+        hid_size,
+        norm_type="gLN",
+        bidirectional=True,
+        rnn_type="LSTM",
+        num_layers=1,
+        dropout=0,
     ):
         super(DPRNNBlock, self).__init__()
         # IntraRNN and linear projection layer (always bi-directional)
-        self.intra_RNN = SingleRNN(rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True)
+        self.intra_RNN = SingleRNN(
+            rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True
+        )
         self.intra_linear = nn.Linear(hid_size * 2, in_chan)
         self.intra_norm = norms.get(norm_type)(in_chan)
         # InterRNN block and linear projection layer (uni or bi-directional)
@@ -249,7 +269,7 @@ class DPRNN(nn.Module):
         hop_size=None,
         n_repeats=6,
         norm_type="gLN",
-        mask_act='relu',
+        mask_act="relu",
         bidirectional=True,
         rnn_type="LSTM",
         num_layers=1,
@@ -303,7 +323,7 @@ class DPRNN(nn.Module):
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
         # For softmax, feed the source dimension.
-        if has_arg(mask_nl_class, 'dim'):
+        if has_arg(mask_nl_class, "dim"):
             self.output_act = mask_nl_class(dim=1)
         else:
             self.output_act = mask_nl_class()
@@ -353,19 +373,19 @@ class DPRNN(nn.Module):
 
     def get_config(self):
         config = {
-            'in_chan': self.in_chan,
-            'out_chan': self.out_chan,
-            'bn_chan': self.bn_chan,
-            'hid_size': self.hid_size,
-            'chunk_size': self.chunk_size,
-            'hop_size': self.hop_size,
-            'n_repeats': self.n_repeats,
-            'n_src': self.n_src,
-            'norm_type': self.norm_type,
-            'mask_act': self.mask_act,
-            'bidirectional': self.bidirectional,
-            'rnn_type': self.rnn_type,
-            'num_layers': self.num_layers,
-            'dropout': self.dropout,
+            "in_chan": self.in_chan,
+            "out_chan": self.out_chan,
+            "bn_chan": self.bn_chan,
+            "hid_size": self.hid_size,
+            "chunk_size": self.chunk_size,
+            "hop_size": self.hop_size,
+            "n_repeats": self.n_repeats,
+            "n_src": self.n_src,
+            "norm_type": self.norm_type,
+            "mask_act": self.mask_act,
+            "bidirectional": self.bidirectional,
+            "rnn_type": self.rnn_type,
+            "num_layers": self.num_layers,
+            "dropout": self.dropout,
         }
         return config

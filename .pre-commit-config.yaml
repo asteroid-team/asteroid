@@ -14,6 +14,6 @@ repos:
       - id: black
         name: black
         entry: python -m black
-        args: [--skip-string-normalization, --config, ./pyproject.toml]
+        args: [--config, ./pyproject.toml]
         language: system
         types: [python]

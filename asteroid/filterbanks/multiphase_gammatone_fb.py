@@ -47,7 +47,9 @@ def generate_mpgtf(samplerate_hz, len_sec, n_filters):
     current_center_freq_hz = center_freq_hz_min
 
     # Determine number of phase shifts per center frequency
-    phase_pair_count = (np.ones(n_center_freqs) * np.floor(n_filters / 2 / n_center_freqs)).astype(int)
+    phase_pair_count = (np.ones(n_center_freqs) * np.floor(n_filters / 2 / n_center_freqs)).astype(
+        int
+    )
     remaining_phase_pairs = ((n_filters - np.sum(phase_pair_count) * 2) / 2).astype(int)
     if remaining_phase_pairs > 0:
         phase_pair_count[:remaining_phase_pairs] = phase_pair_count[:remaining_phase_pairs] + 1
@@ -64,11 +66,15 @@ def generate_mpgtf(samplerate_hz, len_sec, n_filters):
             index = index + 1
 
         # Second half of filters: phase_shifts in [pi, 2*pi)
-        filterbank[index : index + phase_pair_count[i], :] = -filterbank[index - phase_pair_count[i] : index, :]
+        filterbank[index : index + phase_pair_count[i], :] = -filterbank[
+            index - phase_pair_count[i] : index, :
+        ]
 
         # Prepare for next center frequency
         index = index + phase_pair_count[i]
-        current_center_freq_hz = erb_scale_2_freq_hz(freq_hz_2_erb_scale(current_center_freq_hz) + 1)
+        current_center_freq_hz = erb_scale_2_freq_hz(
+            freq_hz_2_erb_scale(current_center_freq_hz) + 1
+        )
 
     filterbank = normalize_filters(filterbank)
     return filterbank
@@ -86,7 +92,10 @@ def gammatone_impulse_response(samplerate_hz, len_sec, center_freq_hz, phase_shi
     len_sample = int(np.floor(samplerate_hz * len_sec))
     t = np.linspace(1.0 / samplerate_hz, len_sec, len_sample)
     gammatone_ir = (
-        a * np.power(t, p - 1) * np.exp(-2 * np.pi * b * t) * np.cos(2 * np.pi * center_freq_hz * t + phase_shift)
+        a
+        * np.power(t, p - 1)
+        * np.exp(-2 * np.pi * b * t)
+        * np.cos(2 * np.pi * center_freq_hz * t + phase_shift)
     )
     return gammatone_ir
 

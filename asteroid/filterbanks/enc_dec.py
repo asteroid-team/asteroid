@@ -35,10 +35,10 @@ class Filterbank(nn.Module):
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class. """
         config = {
-            'fb_name': self.__class__.__name__,
-            'n_filters': self.n_filters,
-            'kernel_size': self.kernel_size,
-            'stride': self.stride,
+            "fb_name": self.__class__.__name__,
+            "n_filters": self.n_filters,
+            "kernel_size": self.kernel_size,
+            "stride": self.stride,
         }
         return config
 
@@ -86,7 +86,7 @@ class _EncDec(nn.Module):
 
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class."""
-        config = {'is_pinv': self.is_pinv}
+        config = {"is_pinv": self.is_pinv}
         base_config = self.filterbank.get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
@@ -147,7 +147,9 @@ class Encoder(_EncDec):
         if waveform.ndim == 1:
             # Assumes 1D input with shape (time,)
             # Output will be (freq, conv_time)
-            return F.conv1d(waveform[None, None], filters, stride=self.stride, padding=self.padding).squeeze()
+            return F.conv1d(
+                waveform[None, None], filters, stride=self.stride, padding=self.padding
+            ).squeeze()
         elif waveform.ndim == 2:
             # Assume 2D input with shape (batch or channels, time)
             # Output will be (batch or channels, freq, conv_time)
@@ -159,7 +161,9 @@ class Encoder(_EncDec):
                 "to avoid it. For example, this can be done with "
                 "input_tensor.unsqueeze(1)."
             )
-            return F.conv1d(waveform.unsqueeze(1), filters, stride=self.stride, padding=self.padding)
+            return F.conv1d(
+                waveform.unsqueeze(1), filters, stride=self.stride, padding=self.padding
+            )
         elif waveform.ndim == 3:
             batch, channels, time_len = waveform.shape
             if channels == 1 and self.as_conv1d:
@@ -181,7 +185,9 @@ class Encoder(_EncDec):
     def batch_1d_conv(self, inp, filters):
         # Here we perform multichannel / multi-source convolution. Ou
         # Output should be (batch, channels, freq, conv_time)
-        batched_conv = F.conv1d(inp.view(-1, 1, inp.shape[-1]), filters, stride=self.stride, padding=self.padding)
+        batched_conv = F.conv1d(
+            inp.view(-1, 1, inp.shape[-1]), filters, stride=self.stride, padding=self.padding
+        )
         output_shape = inp.shape[:-1] + batched_conv.shape[-2:]
         return batched_conv.view(output_shape)
 
@@ -241,7 +247,11 @@ class Decoder(_EncDec):
         if spec.ndim == 3:
             # Input is (batch, freq, conv_time), output is (batch, 1, time)
             return F.conv_transpose1d(
-                spec, filters, stride=self.stride, padding=self.padding, output_padding=self.output_padding,
+                spec,
+                filters,
+                stride=self.stride,
+                padding=self.padding,
+                output_padding=self.output_padding,
             )
         elif spec.ndim > 3:
             # Multiply all the left dimensions together and group them in the

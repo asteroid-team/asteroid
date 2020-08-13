@@ -7,7 +7,6 @@ verbose = 2
 format = pylint
 ignore =
     E731  # E731 - Do not assign a lambda expression, use a def
-    F401  # F401 - Imported but unused. Imports can be useful for users
     W605  # W605 - invalid escape sequence '\_'. Needed for docs
     W504  # W504 - line break after binary operator
     W503  # W503 - line break before binary operator, need for black

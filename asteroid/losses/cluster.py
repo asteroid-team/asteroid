@@ -50,9 +50,9 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
     # Compute VAD-weighted DC loss
     tgt_embedding = tgt_embedding * binary_mask
     embedding = embedding * binary_mask
-    est_proj = torch.einsum('ijk,ijl->ikl', embedding, embedding)
-    true_proj = torch.einsum('ijk,ijl->ikl', tgt_embedding, tgt_embedding)
-    true_est_proj = torch.einsum('ijk,ijl->ikl', embedding, tgt_embedding)
+    est_proj = torch.einsum("ijk,ijl->ikl", embedding, embedding)
+    true_proj = torch.einsum("ijk,ijl->ikl", tgt_embedding, tgt_embedding)
+    true_est_proj = torch.einsum("ijk,ijl->ikl", embedding, tgt_embedding)
     # Equation (1) in [1]
     cost = batch_matrix_norm(est_proj) + batch_matrix_norm(true_proj)
     cost = cost - 2 * batch_matrix_norm(true_est_proj)

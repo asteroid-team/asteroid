@@ -79,7 +79,7 @@ class BaseTasNet(nn.Module):
 
             was_file = True
             filename = wav
-            wav, fs = sf.read(wav, dtype='float32')
+            wav, fs = sf.read(wav, dtype="float32")
             wav = torch.from_numpy(wav)
         # Handle numpy inputs
         was_numpy = False
@@ -100,8 +100,8 @@ class BaseTasNet(nn.Module):
             # Save wav files to filename_est1.wav etc...
             to_save = out_wavs.cpu().data.numpy()
             for src_idx, est_src in enumerate(to_save):
-                base = '.'.join(filename.split('.')[:-1])
-                save_name = base + '_est{}.'.format(src_idx + 1) + filename.split('.')[-1]
+                base = ".".join(filename.split(".")[:-1])
+                save_name = base + "_est{}.".format(src_idx + 1) + filename.split(".")[-1]
                 sf.write(save_name, est_src, fs)
             return
         return out_wavs
@@ -124,19 +124,21 @@ class BaseTasNet(nn.Module):
         """
         if isinstance(pretrained_model_conf_or_path, str):
             cached_model = cached_download(pretrained_model_conf_or_path)
-            conf = torch.load(cached_model, map_location='cpu')
+            conf = torch.load(cached_model, map_location="cpu")
         else:
             conf = pretrained_model_conf_or_path
-        if 'model_args' not in conf.keys():
+        if "model_args" not in conf.keys():
             raise ValueError(
-                'Expected config dictionary to have field ' 'model_args`. Found only: {}'.format(conf.keys())
+                "Expected config dictionary to have field "
+                "model_args`. Found only: {}".format(conf.keys())
             )
-        if 'state_dict' not in conf.keys():
+        if "state_dict" not in conf.keys():
             raise ValueError(
-                'Expected config dictionary to have field ' 'state_dict`. Found only: {}'.format(conf.keys())
+                "Expected config dictionary to have field "
+                "state_dict`. Found only: {}".format(conf.keys())
             )
-        model = cls(*args, **conf['model_args'], **kwargs)
-        model.load_state_dict(conf['state_dict'])
+        model = cls(*args, **conf["model_args"], **kwargs)
+        model.load_state_dict(conf["state_dict"])
         return model
 
     def serialize(self):
@@ -153,17 +155,19 @@ class BaseTasNet(nn.Module):
         masknet_config = self.masker.get_config()
         # Assert both dict are disjoint
         if not all(k not in fb_config for k in masknet_config):
-            raise AssertionError("Filterbank and Mask network config share" "common keys. Merging them is not safe.")
+            raise AssertionError(
+                "Filterbank and Mask network config share" "common keys. Merging them is not safe."
+            )
         # Merge all args under model_args.
-        model_conf['model_name'] = self.__class__.__name__
-        model_conf['model_args'] = {**fb_config, **masknet_config}
-        model_conf['state_dict'] = self.state_dict()
+        model_conf["model_name"] = self.__class__.__name__
+        model_conf["model_args"] = {**fb_config, **masknet_config}
+        model_conf["state_dict"] = self.state_dict()
         # Additional infos
         infos = dict()
-        infos['software_versions'] = dict(
+        infos["software_versions"] = dict(
             torch_version=torch.__version__,
             pytorch_lightning_version=pl.__version__,
             asteroid_version=asteroid_version,
         )
-        model_conf['infos'] = infos
+        model_conf["infos"] = infos
         return model_conf

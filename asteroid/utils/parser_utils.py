@@ -31,7 +31,7 @@ def prepare_parser_from_dict(dic, parser=None):
         group = parser.add_argument_group(k)
         for kk in dic[k].keys():
             entry_type = standardized_entry_type(dic[k][kk])
-            group.add_argument('--' + kk, default=dic[k][kk], type=entry_type)
+            group.add_argument("--" + kk, default=dic[k][kk], type=entry_type)
     return parser
 
 
@@ -56,9 +56,9 @@ def str2bool(value):
     """ Type to convert strings to Boolean (returns input if not boolean) """
     if not isinstance(value, str):
         return value
-    if value.lower() in ('yes', 'true', 'y', '1'):
+    if value.lower() in ("yes", "true", "y", "1"):
         return True
-    elif value.lower() in ('no', 'false', 'n', '0'):
+    elif value.lower() in ("no", "false", "n", "0"):
         return False
     else:
         return value
@@ -69,7 +69,7 @@ def str2bool_arg(value):
     value = str2bool(value)
     if isinstance(value, bool):
         return value
-    raise argparse.ArgumentTypeError('Boolean value expected.')
+    raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
 def isfloat(value):
@@ -132,8 +132,8 @@ def parse_args_as_dict(parser, return_plain_args=False, args=None):
     for group in parser._action_groups:
         group_dict = {a.dest: getattr(args, a.dest, None) for a in group._group_actions}
         args_dic[group.title] = group_dict
-    args_dic['main_args'] = args_dic['optional arguments']
-    del args_dic['optional arguments']
+    args_dic["main_args"] = args_dic["optional arguments"]
+    del args_dic["optional arguments"]
     if return_plain_args:
         return args_dic, args
     return args_dic

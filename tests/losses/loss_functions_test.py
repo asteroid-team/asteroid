@@ -28,9 +28,9 @@ def test_sisdr(n_src, function_triplet):
     targets = torch.randn(2, n_src, 10000)
     est_targets = torch.randn(2, n_src, 10000)
     # Create the 3 PIT wrappers
-    pw_wrapper = PITLossWrapper(pairwise, pit_from='pw_mtx')
-    wo_src_wrapper = PITLossWrapper(nosrc, pit_from='pw_pt')
-    w_src_wrapper = PITLossWrapper(nonpit, pit_from='perm_avg')
+    pw_wrapper = PITLossWrapper(pairwise, pit_from="pw_mtx")
+    wo_src_wrapper = PITLossWrapper(nosrc, pit_from="pw_pt")
+    w_src_wrapper = PITLossWrapper(nonpit, pit_from="perm_avg")
 
     # Circular tests on value
     assert_allclose(pw_wrapper(est_targets, targets), wo_src_wrapper(est_targets, targets))
@@ -66,7 +66,8 @@ def test_multi_scale_spectral_PIT(n_src):
     pt_loss = SingleSrcMultiScaleSpectral(
         windows_size=filt_list, n_filters=filt_list, hops_size=filt_list
     )
-    loss_func = PITLossWrapper(pt_loss, pit_from='pw_pt')
+
+    loss_func = PITLossWrapper(pt_loss, pit_from="pw_pt")
     # Compute the loss
     loss_func(targets, est_targets)
 
@@ -119,7 +120,7 @@ def test_pmsqe_pit(n_src, sample_rate):
     ref, est = torch.randn(2, n_src, 16000), torch.randn(2, n_src, 16000)
     ref_spec = transforms.take_mag(stft(ref))
     est_spec = transforms.take_mag(stft(est))
-    loss_func = PITLossWrapper(SingleSrcPMSQE(sample_rate=sample_rate), pit_from='pw_pt')
+    loss_func = PITLossWrapper(SingleSrcPMSQE(sample_rate=sample_rate), pit_from="pw_pt")
     # Assert forward ok.
     loss_func(est_spec, ref_spec)
 
@@ -133,6 +134,6 @@ def test_negstoi_pit(n_src, sample_rate, use_vad, extended):
     singlesrc_negstoi = SingleSrcNegSTOI(
         sample_rate=sample_rate, use_vad=use_vad, extended=extended
     )
-    loss_func = PITLossWrapper(singlesrc_negstoi, pit_from='pw_pt')
+    loss_func = PITLossWrapper(singlesrc_negstoi, pit_from="pw_pt")
     # Assert forward ok.
     loss_func(est, ref)
