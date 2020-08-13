@@ -42,13 +42,17 @@ class NoamScheduler(_BaseScheduler):
 
 
 class DPTNetScheduler(_BaseScheduler):
-    def __init__(self, optimizer, steps_per_epoch, d_model, warmup_steps, scale=1.0):
+    def __init__(self, optimizer, steps_per_epoch, d_model, warmup_steps, noam_scale=1.0,
+                 exp_max=0.0004, exp_base=0.98):
         super(DPTNetScheduler, self).__init__(optimizer)
-        self.scale = scale
+        self.noam_scale = noam_scale
         self.d_model = d_model
         self.warmup_steps = warmup_steps
+        self.exp_max = exp_max
+        self.exp_base = exp_base
         self.steps_per_epoch = steps_per_epoch
         self.epoch = None
+
 
     def _get_lr(self):
         if self.step_num % self.steps_per_epoch == 0:
@@ -56,10 +60,10 @@ class DPTNetScheduler(_BaseScheduler):
 
         if self.step_num > self.warmup_steps:
             # exp decaying
-            lr = 0.0004 * (0.98 ** ((self.epoch - 1) // 2))
+            lr = self.exp_max * (self.exp_base ** ((self.epoch - 1) // 2))
         else:
             # noam
-            lr = self.scale * self.d_model ** (-0.5) * \
+            lr = self.noam_scale * self.d_model ** (-0.5) * \
                 min(self.step_num ** (-0.5), self.step_num * self.warmup_steps ** (-1.5))
         return lr
 
