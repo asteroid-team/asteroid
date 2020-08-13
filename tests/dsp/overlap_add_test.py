@@ -5,7 +5,7 @@ import pytest
 from asteroid.dsp.overlap_add import LambdaOverlapAdd
 
 
-@pytest.mark.parametrize("length", [10390, 89372])
+@pytest.mark.parametrize("length", [1390, 8372])
 @pytest.mark.parametrize("batch_size", [1, 2])
 @pytest.mark.parametrize("n_src", [1, 2])
 @pytest.mark.parametrize("window", ["hanning", None])
