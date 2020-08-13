@@ -48,11 +48,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade --user pip --quiet
-        pip install numpy Cython --upgrade-strategy only-if-needed --quiet
-        pip install pytest coverage codecov --upgrade-strategy only-if-needed --quiet
-        pip install -r requirements.txt --quiet
-        pip install -r docs/requirements.txt --quiet
-        pip list
+        python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
+        python -m pip install pytest coverage codecov --upgrade-strategy only-if-needed --quiet
+        python -m pip install -r requirements.txt --quiet
+        python -m pip install -r docs/requirements.txt --quiet
+        python -m pip list
 #        pip install --requirement ./requirements/base.txt --quiet  --find-links https://download.pytorch.org/whl/cpu/torch_stable.html --upgrade
 #        pip install --requirement ./requirements/test.txt --quiet --upgrade-strategy only-if-needed
 #        pip install tox coverage
