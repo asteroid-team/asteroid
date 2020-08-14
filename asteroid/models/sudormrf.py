@@ -466,7 +466,7 @@ class SuDORMRFImproved(SuDORMRFBase):
             padding=enc_kernel_size // 2,
             bias=False,
         )
-        torch.nn.init.xavier_uniform(self.encoder.weight)
+        torch.nn.init.xavier_uniform_(self.encoder.weight)
 
         # Norm before the rest, and apply one more dense layer
         self.ln = GlobLN(enc_num_basis)
@@ -500,7 +500,7 @@ class SuDORMRFImproved(SuDORMRFBase):
             groups=1,
             bias=False,
         )
-        torch.nn.init.xavier_uniform(self.decoder.weight)
+        torch.nn.init.xavier_uniform_(self.decoder.weight)
         self.mask_nl_class = nn.ReLU()
 
     def separation(self, x):

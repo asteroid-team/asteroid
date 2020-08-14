@@ -4,6 +4,7 @@ from torch.testing import assert_allclose
 import numpy as np
 import soundfile as sf
 from asteroid.models import ConvTasNet, DPRNNTasNet
+from asteroid.models.sudormrf import SuDORMRF, SuDORMRFImproved
 
 
 def test_convtasnet_sep():
@@ -64,3 +65,31 @@ def test_save_and_load_dprnn(fb):
 
     reconstructed_model = DPRNNTasNet.from_pretrained(model_conf)
     assert_allclose(model1.separate(test_input), reconstructed_model(test_input))
+
+
+def test_sudormrf():
+    model = SuDORMRF(
+        out_channels=10,
+        in_channels=10,
+        num_blocks=4,
+        upsampling_depth=2,
+        enc_kernel_size=21,
+        enc_num_basis=10,
+        num_sources=2,
+    )
+    test_input = torch.randn(1, 801)
+    model(test_input)
+
+
+def test_sudormrf_imp():
+    model = SuDORMRFImproved(
+        out_channels=10,
+        in_channels=10,
+        num_blocks=4,
+        upsampling_depth=2,
+        enc_kernel_size=21,
+        enc_num_basis=10,
+        num_sources=2,
+    )
+    test_input = torch.randn(1, 801)
+    model(test_input)
