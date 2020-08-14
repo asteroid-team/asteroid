@@ -3,6 +3,7 @@ from scipy.signal import get_window
 from asteroid.losses import PITLossWrapper
 from torch import nn
 
+
 class LambdaOverlapAdd(torch.nn.Module):
     """ Segment signal, apply func, combine with OLA.
 
@@ -149,7 +150,6 @@ def _reorder_sources(
 
 
 class DualPathProcessing(nn.Module):
-
     def __init__(self, chunk_size, hop_size):
         super(DualPathProcessing, self).__init__()
         self.chunk_size = chunk_size
@@ -157,8 +157,6 @@ class DualPathProcessing(nn.Module):
         self.n_orig_frames = None
 
     def unfold(self, x):
-        assert not self.n_orig_frames, "Unfold should be called only once, " \
-                                       "please instantiate another object for each tensor"
         # x is (batch, chan, frames)
         batch, chan, frames = x.size()
         assert x.ndim == 3
@@ -170,21 +168,24 @@ class DualPathProcessing(nn.Module):
             stride=(self.hop_size, 1),
         )
 
-        return unfolded.reshape(batch, chan, self.chunk_size, -1) # (batch, chan, chunk_size, n_chunks)
+        return unfolded.reshape(
+            batch, chan, self.chunk_size, -1
+        )  # (batch, chan, chunk_size, n_chunks)
 
-    def fold(self, x):
+    def fold(self, x, output_size=None):
+        output_size = output_size if output_size is not None else self.n_orig_frames
         # x is (batch, chan, chunk_size, n_chunks)
         batch, chan, chunk_size, n_chunks = x.size()
         to_unfold = x.reshape(batch, chan * self.chunk_size, n_chunks)
         x = torch.nn.functional.fold(
             to_unfold,
-            (self.n_orig_frames, 1),
+            (output_size, 1),
             kernel_size=(self.chunk_size, 1),
             padding=(self.chunk_size, 0),
             stride=(self.hop_size, 1),
         )
 
-        x /= (self.chunk_size / self.hop_size)
+        x /= self.chunk_size / self.hop_size
 
         return x.reshape(batch, chan, self.n_orig_frames)
 
@@ -193,14 +194,14 @@ class DualPathProcessing(nn.Module):
         # x is (batch, channels, chunk_size, n_chunks)
         batch, channels, chunk_size, n_chunks = x.size()
         # we reshape to batch*chunk_size, channels, n_chunks
-        x = x.transpose(1, -1).reshape(batch*n_chunks, chunk_size, channels).transpose(1, -1)
+        x = x.transpose(1, -1).reshape(batch * n_chunks, chunk_size, channels).transpose(1, -1)
         x = module(x)
         x = x.reshape(batch, n_chunks, channels, chunk_size).transpose(1, -1).transpose(1, 2)
         return x
 
     def inter_process(self, x, module):
         batch, channels, chunk_size, n_chunks = x.size()
-        x = x.transpose(1, 2).reshape(batch*chunk_size, channels, n_chunks)
+        x = x.transpose(1, 2).reshape(batch * chunk_size, channels, n_chunks)
         x = module(x)
         x = x.reshape(batch, chunk_size, channels, n_chunks).transpose(1, 2)
         return x
