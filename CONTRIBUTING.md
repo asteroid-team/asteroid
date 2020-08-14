@@ -58,11 +58,12 @@ Docstrings follow the [Google format][docstrings], have a look at other
 docstrings in the codebase for examples.
 
 ### Coding style
-We use [PEP8 syntax conventions][pep8].
-To make your life easier, we recommend running a PEP8 linter:
 
-- Install PEP8 packages: `pip install pep8 pytest-pep8 autopep8`
-- Run a standalone PEP8 check: `py.test --pep8 -m pep8`
+We use [pre-commit hooks][../.pre-commit-config.yaml] to format the code using
+`black`.
+The code is checked for `black`- and `flake8`- compliance on every commit with
+GitHub actions. Remember, continuous integration is not here to be all green,
+be to help us see where to improve !
 
 
 If you have any question, [open an issue][issue] or [join the slack][slack],
