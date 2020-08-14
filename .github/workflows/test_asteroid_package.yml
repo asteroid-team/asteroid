@@ -5,8 +5,8 @@ name: Source Code CI
 on: [push, pull_request]
 
 jobs:
-  doctest:
-
+  src-test:
+    name: Test asteroid's source code
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -21,12 +21,12 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install libnsdfile and libsox
+    - name: Install libnsdfile
       run: |
         sudo apt update
         sudo apt install libsndfile1-dev libsndfile1
 
-    - name: Install dependencies
+    - name: Install python dependencies
       run: |
         python -m pip install --upgrade --user pip --quiet
         python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
@@ -37,17 +37,17 @@ jobs:
         python -m pip list
       shell: bash
 
-    - name: pytest and coverage
+    - name: Pytest and coverage
       run: |
         coverage run -m py.test tests  --ignore tests/models/publish_test.py
 
     # This tends to fail despite the code works, when Zenodo is slow.
-    - name: Model-sharing only | pytest and coverage,
+    - name: Pytest and coverage (Model-sharing only)
       # coverage run -a appends cov data to .coverage
       run: |
         coverage run -a -m py.test tests/models/publish_test.py
 
-    - name: Model-sharing only | Coverage report
+    - name: Coverage report
       run: |
         coverage xml
         bash <(curl -s https://codecov.io/bash)
