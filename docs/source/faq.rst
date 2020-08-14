@@ -17,7 +17,7 @@ Refs: `#164 <https://github.com/mpariente/asteroid/issues/164>`_,
 Be sure that your training/validation losses are completely flat at the end of training.
 Need to attach a DPRNN log here.
 
-3. If it's not both, there is a real bug and we're happy you caught it !
+3. If it's not both, there is a real bug and we're happy you caught it!
 Please, open an issue with your torch/pytorch_lightning/asteroid versions to let us know.
 
 How long does it take to train a model?
@@ -27,4 +27,3 @@ Need a log here.
 Can I use the pretrained models for commercial purposes?
 --------------------------------------------------------
 Not always. See the note on pretrained models Licenses :ref:`Note about licenses`
-

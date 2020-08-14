@@ -7,7 +7,7 @@ from .zenodo import Zenodo
 
 PLEASE_PUBLISH = (
     "\nDon't forget to share your pretrained models at "
-    "https://zenodo.org/communities/asteroid-models/ ! =)\n"
+    "https://zenodo.org/communities/asteroid-models/! =)\n"
     "You can directly use our CLI for that, run this: \n"
     '`asteroid-upload {} --uploader "Your name here"`\n'
 )
@@ -112,7 +112,7 @@ def upload_publishable(
                 "If you do not have a access token, first create a Zenodo "
                 "account (https://zenodo.org/signup/), create a token "
                 "https://zenodo.org/account/settings/applications/tokens/new/"
-                "and you are all set to help us ! =)"
+                "and you are all set to help us! =)"
             )
 
     # Do the actual upload

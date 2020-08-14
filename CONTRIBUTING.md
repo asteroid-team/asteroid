@@ -30,7 +30,7 @@ pre-commit install  # To run black before commit
 # Test them locally
 # Commit your changes
 # Push your changes
-# Open a PR !
+# Open a PR!
 ```
 
 ### Source code contributions

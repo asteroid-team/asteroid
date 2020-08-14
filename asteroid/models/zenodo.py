@@ -132,7 +132,7 @@ class Zenodo(object):
         return r
 
     def publish_deposition(self, dep_id):  # pragma: no cover (Cannot publish)
-        """ Publish given deposition (Cannot be deleted) !
+        """ Publish given deposition (Cannot be deleted)!
 
         Args:
             dep_id (int): deposition id. You cna get it with
