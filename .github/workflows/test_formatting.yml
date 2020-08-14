@@ -1,9 +1,9 @@
-name: Check Code Format
+name: Check Code Format (black/flake8)
 on: [push]
 
 jobs:
   code-black:
-    name: Check code formatting with Black and Flake8
+    name: CI
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

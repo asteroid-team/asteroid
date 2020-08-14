@@ -1,4 +1,4 @@
-name: Source Code CI
+name: Asteroid's Source Code
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 # Trigger the workflow on push or pull request
@@ -6,7 +6,7 @@ on: [push, pull_request]
 
 jobs:
   src-test:
-    name: Test asteroid's source code
+    name: CI
     runs-on: ubuntu-latest
     strategy:
       matrix:
