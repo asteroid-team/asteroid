@@ -1,8 +1,14 @@
 name: Build the docs
 
-# see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
-# Trigger the workflow on push or pull request
-on: [push, pull_request]
+# Trigger the workflow on push or pull request, but only for the master branch
+# https://help.github.com/en/actions/reference/events-that-trigger-workflows
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   doctest:
