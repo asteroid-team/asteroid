@@ -45,7 +45,7 @@ jobs:
     - name: Pytest and coverage (Model-sharing only)
       # coverage run -a appends cov data to .coverage
       run: |
-        coverage run -a -p -m py.test tests/models/publish_test.py
+        coverage run -p -m py.test tests/models/publish_test.py
 
     - name: Coverage report
       run: |
