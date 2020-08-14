@@ -9,4 +9,4 @@ assignees: ''
 
 ## 📚 Documentation
 
-For typos and doc fixes, rather and submit a PR, thanks in advance !
+For typos and doc fixes, rather and submit a PR, thanks in advance!

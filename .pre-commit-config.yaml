@@ -1,9 +1,6 @@
-default_language_version:
-  python: python3.6
-
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v2.4.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -14,6 +11,6 @@ repos:
       - id: black
         name: black
         entry: python -m black
-        args: [--skip-string-normalization, --config, ./pyproject.toml]
+        args: [--config, ./pyproject.toml]
         language: system
         types: [python]

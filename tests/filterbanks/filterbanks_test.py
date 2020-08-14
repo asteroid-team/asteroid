@@ -10,7 +10,7 @@ from asteroid.filterbanks import make_enc_dec
 
 
 def fb_config_list():
-    keys = ['n_filters', 'kernel_size', 'stride']
+    keys = ["n_filters", "kernel_size", "stride"]
     param_list = [
         [256, 256, 128],
         [256, 256, 64],

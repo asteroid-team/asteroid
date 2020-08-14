@@ -1,7 +1,7 @@
 import torch
 import math
 
-from . import Encoder, Decoder, STFTFB
+from . import Encoder, Decoder, STFTFB  # noqa
 from .stft_fb import perfect_synthesis_window
 from . import transforms
 from ..dsp.consistency import mixture_consistency
@@ -73,7 +73,15 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, m
 
 
 def misi(
-    mixture_wav, mag_specgrams, stft_enc, angles=None, istft_dec=None, n_iter=6, momentum=0.0, src_weights=None, dim=1,
+    mixture_wav,
+    mag_specgrams,
+    stft_enc,
+    angles=None,
+    istft_dec=None,
+    n_iter=6,
+    momentum=0.0,
+    src_weights=None,
+    dim=1,
 ):
     """ Jointly estimates matching phase from magnitude spectograms using the
     Multiple Input Spectrogram Inversion (MISI) algorithm [1].
@@ -144,7 +152,9 @@ def misi(
         complex_specgram = transforms.from_mag_and_phase(mag_specgrams, angles)
         wavs = istft_dec(complex_specgram)
         # Make wavs sum up to the mixture
-        consistent_wavs = mixture_consistency(mixture_wav, wavs, src_weights=src_weights, dim=wav_dim)
+        consistent_wavs = mixture_consistency(
+            mixture_wav, wavs, src_weights=src_weights, dim=wav_dim
+        )
         # Back to TF domain
         rebuilt = stft_enc(consistent_wavs)
         # Update phase estimates (with momentum). Keep the momentum here

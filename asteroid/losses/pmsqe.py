@@ -58,7 +58,12 @@ class SingleSrcPMSQE(nn.Module):
     """
 
     def __init__(
-        self, window_name='sqrt_hann', window_weight=1.0, bark_eq=True, gain_eq=True, sample_rate=16000,
+        self,
+        window_name="sqrt_hann",
+        window_weight=1.0,
+        bark_eq=True,
+        gain_eq=True,
+        sample_rate=16000,
     ):
         super().__init__()
         self.window_name = window_name
@@ -138,7 +143,9 @@ class SingleSrcPMSQE(nn.Module):
             pad_mask = pad_mask.transpose(1, 2) if freq_idx == 1 else pad_mask
         else:
             # Suppose no padding if no pad_mask is provided.
-            pad_mask = torch.ones(est_targets.shape[0], est_targets.shape[1], 1, device=est_targets.device)
+            pad_mask = torch.ones(
+                est_targets.shape[0], est_targets.shape[1], 1, device=est_targets.device
+            )
         # SLL equalization
         ref_spectra = self.magnitude_at_sll(targets, pad_mask)
         deg_spectra = self.magnitude_at_sll(est_targets, pad_mask)
@@ -184,7 +191,9 @@ class SingleSrcPMSQE(nn.Module):
     def compute_audible_power(self, bark_spectra, factor=1.0):
         # Apply absolute hearing threshold to each band
         thr_bark = torch.where(
-            bark_spectra > self.abs_thresh_power * factor, bark_spectra, torch.zeros_like(bark_spectra),
+            bark_spectra > self.abs_thresh_power * factor,
+            bark_spectra,
+            torch.zeros_like(bark_spectra),
         )
         # Sum band power over frequency
         return torch.sum(thr_bark, dim=-1, keepdim=True)
@@ -208,14 +217,22 @@ class SingleSrcPMSQE(nn.Module):
         not_silent = audible_power_x100 >= 1.0e7
         # Threshold for active bark bins
         cond_thr = ref_bark_spectra >= self.abs_thresh_power * 100.0
-        ref_thresholded = torch.where(cond_thr, ref_bark_spectra, torch.zeros_like(ref_bark_spectra))
-        deg_thresholded = torch.where(cond_thr, deg_bark_spectra, torch.zeros_like(deg_bark_spectra))
+        ref_thresholded = torch.where(
+            cond_thr, ref_bark_spectra, torch.zeros_like(ref_bark_spectra)
+        )
+        deg_thresholded = torch.where(
+            cond_thr, deg_bark_spectra, torch.zeros_like(deg_bark_spectra)
+        )
         # Total power per bark bin (ppb)
         avg_ppb_ref = torch.sum(
-            torch.where(not_silent, ref_thresholded, torch.zeros_like(ref_thresholded)), dim=-2, keepdim=True,
+            torch.where(not_silent, ref_thresholded, torch.zeros_like(ref_thresholded)),
+            dim=-2,
+            keepdim=True,
         )
         avg_ppb_deg = torch.sum(
-            torch.where(not_silent, deg_thresholded, torch.zeros_like(deg_thresholded)), dim=-2, keepdim=True,
+            torch.where(not_silent, deg_thresholded, torch.zeros_like(deg_thresholded)),
+            dim=-2,
+            keepdim=True,
         )
         # Compute equalizer
         equalizer = (avg_ppb_ref + 1000.0) / (avg_ppb_deg + 1000.0)
@@ -227,7 +244,10 @@ class SingleSrcPMSQE(nn.Module):
     def loudness_computation(self, bark_spectra):
         # Bark spectra transformed to a sone loudness scale using Zwicker's law
         aterm = torch.pow(self.abs_thresh_power / 0.5, self.modified_zwicker_power)
-        bterm = torch.pow(0.5 + 0.5 * bark_spectra / self.abs_thresh_power, self.modified_zwicker_power) - 1.0
+        bterm = (
+            torch.pow(0.5 + 0.5 * bark_spectra / self.abs_thresh_power, self.modified_zwicker_power)
+            - 1.0
+        )
         loudness_dens = self.Sl * aterm * bterm
         cond = bark_spectra < self.abs_thresh_power
         return torch.where(cond, torch.zeros_like(loudness_dens), loudness_dens)
@@ -245,7 +265,9 @@ class SingleSrcPMSQE(nn.Module):
         # Asymmetry factor computation
         asym = torch.pow((deg_bark_spec + 50.0) / (ref_bark_spec + 50.0), 1.2)
         cond = asym < 3.0 * torch.ones_like(asym)
-        asym_factor = torch.where(cond, torch.zeros_like(asym), torch.min(asym, 12.0 * torch.ones_like(asym)))
+        asym_factor = torch.where(
+            cond, torch.zeros_like(asym), torch.min(asym, 12.0 * torch.ones_like(asym))
+        )
         # Asymmetric Disturbance matrix computation
         asym_d = asym_factor * sym_d
         return sym_d, asym_d
@@ -253,7 +275,9 @@ class SingleSrcPMSQE(nn.Module):
     def per_frame_distortion(self, sym_d, asym_d, total_power_ref):
         # Computation of the norms over bark bands for each frame
         # 2 and 1 for sym_d and asym_d, respectively
-        d_frame = torch.sum(torch.pow(sym_d * self.width_of_band_bark, 2.0) + self.EPS, dim=-1, keepdim=True)
+        d_frame = torch.sum(
+            torch.pow(sym_d * self.width_of_band_bark, 2.0) + self.EPS, dim=-1, keepdim=True
+        )
         # a = torch.pow(sym_d * self.width_of_band_bark, 2.0)
         # b = sym_d
         # print(a.min(),a.max(),b.min(),b.max(), d_frame.min(), d_frame.max())
@@ -271,18 +295,18 @@ class SingleSrcPMSQE(nn.Module):
     @staticmethod
     def get_correction_factor(window_name):
         """ Returns the power correction factor depending on the window. """
-        if window_name == 'rect':
+        if window_name == "rect":
             return 1.0
-        elif window_name == 'hann':
+        elif window_name == "hann":
             return 2.666666666666754
-        elif window_name == 'sqrt_hann':
+        elif window_name == "sqrt_hann":
             return 2.0
-        elif window_name == 'hamming':
+        elif window_name == "hamming":
             return 2.51635879188799
-        elif window_name == 'flatTop':
+        elif window_name == "flatTop":
             return 5.70713295690759
         else:
-            raise ValueError('Unexpected window type {}'.format(window_name))
+            raise ValueError("Unexpected window type {}".format(window_name))
 
     def populate_constants(self, sample_rate):
         if sample_rate == 8000:
@@ -460,8 +484,8 @@ class SingleSrcPMSQE(nn.Module):
         self.width_of_band_bark = nn.Parameter(tensor(width_of_band_bark), requires_grad=False)
         # Bark matrix
         local_path = pathlib.Path(__file__).parent.absolute()
-        bark_path = os.path.join(local_path, 'bark_matrix_16k.mat')
-        bark_matrix = loadmat(bark_path)["Bark_matrix_16k"].astype('float32')
+        bark_path = os.path.join(local_path, "bark_matrix_16k.mat")
+        bark_matrix = loadmat(bark_path)["Bark_matrix_16k"].astype("float32")
         self.bark_matrix = nn.Parameter(tensor(bark_matrix), requires_grad=False)
 
     def register_8k_constants(self):
@@ -605,6 +629,6 @@ class SingleSrcPMSQE(nn.Module):
         self.width_of_band_bark = nn.Parameter(tensor(width_of_band_bark), requires_grad=False)
         # Bark matrix
         local_path = pathlib.Path(__file__).parent.absolute()
-        bark_path = os.path.join(local_path, 'bark_matrix_8k.mat')
-        bark_matrix = loadmat(bark_path)["Bark_matrix_8k"].astype('float32')
+        bark_path = os.path.join(local_path, "bark_matrix_8k.mat")
+        bark_matrix = loadmat(bark_path)["Bark_matrix_8k"].astype("float32")
         self.bark_matrix = nn.Parameter(tensor(bark_matrix), requires_grad=False)

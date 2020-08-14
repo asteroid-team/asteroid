@@ -67,7 +67,8 @@ class SingleSrcMultiScaleSpectral(_Loss):
         self.alpha = alpha
 
         self.encoders = nn.ModuleList(
-            Encoder(STFTFB(n_filters[i], windows_size[i], hops_size[i])) for i in range(len(self.n_filters))
+            Encoder(STFTFB(n_filters[i], windows_size[i], hops_size[i]))
+            for i in range(len(self.n_filters))
         )
 
     def forward(self, est_target, target):

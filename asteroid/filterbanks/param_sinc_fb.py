@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import warnings
 from .enc_dec import Filterbank
 
 
@@ -32,11 +31,13 @@ class ParamSincFB(Filterbank):
         Antoine Deleforge, Emmanuel Vincent. https://arxiv.org/abs/1910.10400
     """
 
-    def __init__(self, n_filters, kernel_size, stride=None, sample_rate=16000, min_low_hz=50, min_band_hz=50):
+    def __init__(
+        self, n_filters, kernel_size, stride=None, sample_rate=16000, min_low_hz=50, min_band_hz=50
+    ):
         if kernel_size % 2 == 0:
             print(
-                'Received kernel_size={}, force '.format(kernel_size)
-                + 'kernel_size={} so filters are odd'.format(kernel_size + 1)
+                "Received kernel_size={}, force ".format(kernel_size)
+                + "kernel_size={} so filters are odd".format(kernel_size + 1)
             )
             kernel_size += 1
         super(ParamSincFB, self).__init__(n_filters, kernel_size, stride=stride)
@@ -49,19 +50,24 @@ class ParamSincFB(Filterbank):
         self._initialize_filters()
         if n_filters % 2 != 0:
             print(
-                'If the number of filters `n_filters` is odd, the ' 'output size of the layer will be `n_filters - 1`.'
+                "If the number of filters `n_filters` is odd, the "
+                "output size of the layer will be `n_filters - 1`."
             )
 
         window_ = np.hamming(self.kernel_size)[: self.half_kernel]  # Half window
-        n_ = 2 * np.pi * (torch.arange(-self.half_kernel, 0.0).view(1, -1) / self.sample_rate)  # Half time vector
-        self.register_buffer('window_', torch.from_numpy(window_).float())
-        self.register_buffer('n_', n_)
+        n_ = (
+            2 * np.pi * (torch.arange(-self.half_kernel, 0.0).view(1, -1) / self.sample_rate)
+        )  # Half time vector
+        self.register_buffer("window_", torch.from_numpy(window_).float())
+        self.register_buffer("n_", n_)
 
     def _initialize_filters(self):
         """ Filter Initialization along the Mel scale"""
         low_hz = 30
         high_hz = self.sample_rate / 2 - (self.min_low_hz + self.min_band_hz)
-        mel = np.linspace(self.to_mel(low_hz), self.to_mel(high_hz), self.n_filters // 2 + 1, dtype='float32')
+        mel = np.linspace(
+            self.to_mel(low_hz), self.to_mel(high_hz), self.n_filters // 2 + 1, dtype="float32"
+        )
         hz = self.to_hz(mel)
         # filters parameters (out_channels // 2, 1)
         self.low_hz_ = nn.Parameter(torch.from_numpy(hz[:-1]).view(-1, 1))
@@ -71,25 +77,27 @@ class ParamSincFB(Filterbank):
     def filters(self):
         """ Compute filters from parameters """
         low = self.min_low_hz + torch.abs(self.low_hz_)
-        high = torch.clamp(low + self.min_band_hz + torch.abs(self.band_hz_), self.min_low_hz, self.sample_rate / 2)
-        cos_filters = self.make_filters(low, high, filt_type='cos')
-        sin_filters = self.make_filters(low, high, filt_type='sin')
+        high = torch.clamp(
+            low + self.min_band_hz + torch.abs(self.band_hz_), self.min_low_hz, self.sample_rate / 2
+        )
+        cos_filters = self.make_filters(low, high, filt_type="cos")
+        sin_filters = self.make_filters(low, high, filt_type="sin")
         return torch.cat([cos_filters, sin_filters], dim=0)
 
-    def make_filters(self, low, high, filt_type='cos'):
+    def make_filters(self, low, high, filt_type="cos"):
         band = (high - low)[:, 0]
         ft_low = torch.matmul(low, self.n_)
         ft_high = torch.matmul(high, self.n_)
-        if filt_type == 'cos':  # Even filters from the SincNet paper.
+        if filt_type == "cos":  # Even filters from the SincNet paper.
             bp_left = ((torch.sin(ft_high) - torch.sin(ft_low)) / (self.n_ / 2)) * self.window_
             bp_center = 2 * band.view(-1, 1)
             bp_right = torch.flip(bp_left, dims=[1])
-        elif filt_type == 'sin':  # Extension including odd filters
+        elif filt_type == "sin":  # Extension including odd filters
             bp_left = ((torch.cos(ft_low) - torch.cos(ft_high)) / (self.n_ / 2)) * self.window_
             bp_center = torch.zeros_like(band.view(-1, 1))
             bp_right = -torch.flip(bp_left, dims=[1])
         else:
-            raise ValueError('Invalid filter type {}'.format(filt_type))
+            raise ValueError("Invalid filter type {}".format(filt_type))
         band_pass = torch.cat([bp_left, bp_center, bp_right], dim=1)
         band_pass = band_pass / (2 * band[:, None])
         return band_pass.view(self.n_filters // 2, 1, self.kernel_size)
@@ -105,9 +113,9 @@ class ParamSincFB(Filterbank):
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class."""
         config = {
-            'sample_rate': self.sample_rate,
-            'min_low_hz': self.min_low_hz,
-            'min_band_hz': self.min_band_hz,
+            "sample_rate": self.sample_rate,
+            "min_low_hz": self.min_low_hz,
+            "min_band_hz": self.min_band_hz,
         }
         base_config = super(ParamSincFB, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))

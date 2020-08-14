@@ -35,19 +35,19 @@ def test_wrapper(batch_size, n_src, time):
         with pytest.raises(AssertionError):
             loss(est_targets, targets)
     # wo_src loss function / With and without return estimates
-    loss = PITLossWrapper(good_batch_loss_func, pit_from='pw_pt')
+    loss = PITLossWrapper(good_batch_loss_func, pit_from="pw_pt")
     loss(est_targets, targets)
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape
 
     # pairwise loss function / With and without return estimates
-    loss = PITLossWrapper(good_pairwise_loss_func, pit_from='pw_mtx')
+    loss = PITLossWrapper(good_pairwise_loss_func, pit_from="pw_mtx")
     loss(est_targets, targets)
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape
 
     # w_src loss function / With and without return estimates
-    loss = PITLossWrapper(good_batch_loss_func, pit_from='perm_avg')
+    loss = PITLossWrapper(good_batch_loss_func, pit_from="perm_avg")
     loss(est_targets, targets)
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape
@@ -80,14 +80,16 @@ def test_permreduce():
     n_src = 3
     sources = torch.randn(10, n_src, 8000)
     est_sources = torch.randn(10, n_src, 8000)
-    wo_reduce = PITLossWrapper(pairwise_mse, pit_from='pw_mtx')
+    wo_reduce = PITLossWrapper(pairwise_mse, pit_from="pw_mtx")
     w_mean_reduce = PITLossWrapper(
         pairwise_mse,
-        pit_from='pw_mtx',
+        pit_from="pw_mtx",
         # perm_reduce=partial(torch.mean, dim=-1))
         perm_reduce=lambda x: torch.mean(x, dim=-1),
     )
-    w_sum_reduce = PITLossWrapper(pairwise_mse, pit_from='pw_mtx', perm_reduce=partial(torch.sum, dim=-1))
+    w_sum_reduce = PITLossWrapper(
+        pairwise_mse, pit_from="pw_mtx", perm_reduce=partial(torch.sum, dim=-1)
+    )
 
     wo = wo_reduce(est_sources, sources)
     w_mean = w_mean_reduce(est_sources, sources)
@@ -109,6 +111,6 @@ def test_permreduce_args():
     n_src = 3
     sources = torch.randn(10, n_src, 8000)
     est_sources = torch.randn(10, n_src, 8000)
-    loss_func = PITLossWrapper(pairwise_mse, pit_from='pw_mtx', perm_reduce=reduce_func)
+    loss_func = PITLossWrapper(pairwise_mse, pit_from="pw_mtx", perm_reduce=reduce_func)
     weights = torch.softmax(torch.randn(10, n_src), dim=-1)
-    loss_func(est_sources, sources, reduce_kwargs={'class_weights': weights})
+    loss_func(est_sources, sources, reduce_kwargs={"class_weights": weights})

@@ -6,8 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ## [0.3.0] - 2020-06-16
 
-#### Added 
-[src & egs] Publishing pretrained models !! (wham/ConvTasNet) (#125)
+#### Added
+[src & egs] Publishing pretrained models!! (wham/ConvTasNet) (#125)
 [src] Add License info on all (but MUSDB) supported datasets (#130)
 [src & egs] Kinect-WSJ  Dataset and Single channel DC Recipe (#131)
 [src] Add licenses info and dataset name for model publishing
@@ -47,9 +47,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 
 ## [0.2.1] - 25/05/2020
-#### Added 
+#### Added
 - [src] Add dataset_name attribute to all data.Dataset (#113) (@mpariente)
-- [hub] Add hubconf.py: load asteroid models without install ! (#112) (@mpariente)
+- [hub] Add hubconf.py: load asteroid models without install! (#112) (@mpariente)
 - [src] Add support to the MUSDB18 dataset (#110) (@faroit)
 - [src & tests] Importable models: ConvTasNet and DPRNNTasNet  (#109) (@mpariente)
 #### Changed
@@ -68,7 +68,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 
 ## [0.2.0] - 08/05/2020
-#### Added 
+#### Added
 - [egs] Deep clustering/Chimera++ recipe (#96) (@mpariente)
 - [src & egs] Source changes towards deep clustering recipe (#95) (@mpariente)
 - [docs] Add training logic figure (#94) (@mpariente)
@@ -85,7 +85,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - [src] ConvTasnetv1 available : no skip option to TDCN (#82) (@mpariente)
 - [src & tests] Implement GriffinLim (#83) (@mpariente)
 - [docs] Add reduce example in PITLossWrapper (@mpariente)
-- [src & tests] Generalize ! Implement pairwise losses reduce function (#81) (@mpariente)
+- [src & tests] Generalize! Implement pairwise losses reduce function (#81) (@mpariente)
 - [src & tests] Add support for STOI loss (#79) (@mpariente)
 - [src] Support padding and output_padding in Encoder and Decoder (#78) (@mpariente)
 - [src & tests] Added mixture consistency constraints (#77) (@mpariente)
@@ -121,5 +121,4 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Fix build erros (Pin sphinx < 3.0) (#72) (@mpariente)
 - Fixing paths for wham scripts and unziping command for noise (#66) (@etzinis)
 - Fix whamr_dataset.py, map reverb to anechoic (@mpariente)
-- Important fix : WHAMR tasks include dereverberation ! (@mpariente)
-
+- Important fix : WHAMR tasks include dereverberation! (@mpariente)

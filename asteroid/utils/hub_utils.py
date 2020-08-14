@@ -3,14 +3,14 @@ from torch import hub
 from hashlib import sha256
 
 
-CACHE_DIR = os.getenv('ASTEROID_CACHE', os.path.expanduser('~/.cache/torch/asteroid'),)
+CACHE_DIR = os.getenv("ASTEROID_CACHE", os.path.expanduser("~/.cache/torch/asteroid"),)
 MODELS_URLS_HASHTABLE = {
-    'mpariente/ConvTasNet_WHAM!_sepclean': 'https://zenodo.org/record/3862942/files/model.pth?download=1',
-    'mpariente/DPRNNTasNet_WHAM!_sepclean': 'https://zenodo.org/record/3873670/files/model.pth?download=1',
-    'mpariente/DPRNNTasNet(ks=16)_WHAM!_sepclean': 'https://zenodo.org/record/3903795/files/model.pth?download=1',
-    'Cosentino/ConvTasNet_LibriMix_sep_clean': 'https://zenodo.org/record/3873572/files/model.pth?download=1',
-    'Cosentino/ConvTasNet_LibriMix_sep_noisy': 'https://zenodo.org/record/3874420/files/model.pth?download=1',
-    'brijmohan/ConvTasNet_Libri1Mix_enhsingle': 'https://zenodo.org/record/3970768/files/model.pth?download=1',
+    "mpariente/ConvTasNet_WHAM!_sepclean": "https://zenodo.org/record/3862942/files/model.pth?download=1",
+    "mpariente/DPRNNTasNet_WHAM!_sepclean": "https://zenodo.org/record/3873670/files/model.pth?download=1",
+    "mpariente/DPRNNTasNet(ks=16)_WHAM!_sepclean": "https://zenodo.org/record/3903795/files/model.pth?download=1",
+    "Cosentino/ConvTasNet_LibriMix_sep_clean": "https://zenodo.org/record/3873572/files/model.pth?download=1",
+    "Cosentino/ConvTasNet_LibriMix_sep_noisy": "https://zenodo.org/record/3874420/files/model.pth?download=1",
+    "brijmohan/ConvTasNet_Libri1Mix_enhsingle": "https://zenodo.org/record/3970768/files/model.pth?download=1",
 }
 
 
@@ -36,14 +36,14 @@ def cached_download(filename_or_url):
         url = filename_or_url
     cached_filename = url_to_filename(url)
     cached_dir = os.path.join(get_cache_dir(), cached_filename)
-    cached_path = os.path.join(cached_dir, 'model.pth')
+    cached_path = os.path.join(cached_dir, "model.pth")
 
     os.makedirs(cached_dir, exist_ok=True)
     if not os.path.isfile(cached_path):
         hub.download_url_to_file(url, cached_path)
         return cached_path
     # It was already downloaded
-    print(f'Using cached model `{filename_or_url}`')
+    print(f"Using cached model `{filename_or_url}`")
     return cached_path
 
 

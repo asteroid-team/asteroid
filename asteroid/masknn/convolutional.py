@@ -1,4 +1,3 @@
-import torch
 from torch import nn
 import warnings
 from ..utils.deprecation_utils import VisibleDeprecationWarning
@@ -34,14 +33,23 @@ class Conv1DBlock(nn.Module):
         https://arxiv.org/abs/1809.07454
     """
 
-    def __init__(self, in_chan, hid_chan, skip_out_chan, kernel_size, padding, dilation, norm_type="gLN"):
+    def __init__(
+        self, in_chan, hid_chan, skip_out_chan, kernel_size, padding, dilation, norm_type="gLN"
+    ):
         super(Conv1DBlock, self).__init__()
         self.skip_out_chan = skip_out_chan
         conv_norm = norms.get(norm_type)
         in_conv1d = nn.Conv1d(in_chan, hid_chan, 1)
-        depth_conv1d = nn.Conv1d(hid_chan, hid_chan, kernel_size, padding=padding, dilation=dilation, groups=hid_chan)
+        depth_conv1d = nn.Conv1d(
+            hid_chan, hid_chan, kernel_size, padding=padding, dilation=dilation, groups=hid_chan
+        )
         self.shared_block = nn.Sequential(
-            in_conv1d, nn.PReLU(), conv_norm(hid_chan), depth_conv1d, nn.PReLU(), conv_norm(hid_chan),
+            in_conv1d,
+            nn.PReLU(),
+            conv_norm(hid_chan),
+            depth_conv1d,
+            nn.PReLU(),
+            conv_norm(hid_chan),
         )
         self.res_conv = nn.Conv1d(hid_chan, in_chan, 1)
         if skip_out_chan:
@@ -98,7 +106,7 @@ class TDConvNet(nn.Module):
         skip_chan=128,
         conv_kernel_size=3,
         norm_type="gLN",
-        mask_act='relu',
+        mask_act="relu",
         kernel_size=None,
     ):
         super(TDConvNet, self).__init__()
@@ -114,9 +122,9 @@ class TDConvNet(nn.Module):
         if kernel_size is not None:
             # warning
             warnings.warn(
-                '`kernel_size` argument is deprecated since v0.2.1 '
-                'and will be remove in v0.3.0. Use argument '
-                '`conv_kernel_size` instead',
+                "`kernel_size` argument is deprecated since v0.2.1 "
+                "and will be remove in v0.3.0. Use argument "
+                "`conv_kernel_size` instead",
                 VisibleDeprecationWarning,
             )
             conv_kernel_size = kernel_size
@@ -149,7 +157,7 @@ class TDConvNet(nn.Module):
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
         # For softmax, feed the source dimension.
-        if has_arg(mask_nl_class, 'dim'):
+        if has_arg(mask_nl_class, "dim"):
             self.output_act = mask_nl_class(dim=1)
         else:
             self.output_act = mask_nl_class()
@@ -186,16 +194,16 @@ class TDConvNet(nn.Module):
 
     def get_config(self):
         config = {
-            'in_chan': self.in_chan,
-            'out_chan': self.out_chan,
-            'bn_chan': self.bn_chan,
-            'hid_chan': self.hid_chan,
-            'skip_chan': self.skip_chan,
-            'conv_kernel_size': self.conv_kernel_size,
-            'n_blocks': self.n_blocks,
-            'n_repeats': self.n_repeats,
-            'n_src': self.n_src,
-            'norm_type': self.norm_type,
-            'mask_act': self.mask_act,
+            "in_chan": self.in_chan,
+            "out_chan": self.out_chan,
+            "bn_chan": self.bn_chan,
+            "hid_chan": self.hid_chan,
+            "skip_chan": self.skip_chan,
+            "conv_kernel_size": self.conv_kernel_size,
+            "n_blocks": self.n_blocks,
+            "n_repeats": self.n_repeats,
+            "n_src": self.n_src,
+            "norm_type": self.norm_type,
+            "mask_act": self.mask_act,
         }
         return config

@@ -1,5 +1,5 @@
-What is Asteroid ?
-==================
+What is Asteroid?
+=================
 
 Asteroid is a PyTorch-based audio source separation toolkit.
 

@@ -8,33 +8,33 @@ from .wsj0_mix import wsj0_license
 
 EPS = 1e-8
 
-DATASET = 'SMS_WSJ'
+DATASET = "SMS_WSJ"
 # SMS_WSJ targets
 sep_source = {
-    'mixture': 'observation',
-    'target': ['speech_source'],
-    'infos': {'num_channels': 6},
-    'default_nsrc': 2,
+    "mixture": "observation",
+    "target": ["speech_source"],
+    "infos": {"num_channels": 6},
+    "default_nsrc": 2,
 }
 sep_early = {
-    'mixture': 'observation',
-    'target': ['speech_reverberation_early'],
-    'infos': {'num_channels': 6},
-    'default_nsrc': 2,
+    "mixture": "observation",
+    "target": ["speech_reverberation_early"],
+    "infos": {"num_channels": 6},
+    "default_nsrc": 2,
 }
 
 # speech image represents the whole reverberated signal so it is the sum of
 # the early and tail reverberation.
-speech_image = ['speech_reverberation_early', 'speech_reverberation_tail']
+speech_image = ["speech_reverberation_early", "speech_reverberation_tail"]
 sep_image = {
-    'mixture': 'observation',
-    'target': speech_image,
-    'infos': {'num_channels': 6},
-    'default_nsrc': 2,
+    "mixture": "observation",
+    "target": speech_image,
+    "infos": {"num_channels": 6},
+    "default_nsrc": 2,
 }
 
 
-SMS_TARGETS = {'source': sep_source, 'early': sep_early, 'image': sep_image}
+SMS_TARGETS = {"source": sep_source, "early": sep_early, "image": sep_image}
 
 
 class SmsWsjDataset(data.Dataset):
@@ -65,7 +65,7 @@ class SmsWsjDataset(data.Dataset):
          multi-channel source separation and recognition", Drude et al. 2019
     """
 
-    dataset_name = 'SMS_WSJ'
+    dataset_name = "SMS_WSJ"
 
     def __init__(
         self,
@@ -79,7 +79,7 @@ class SmsWsjDataset(data.Dataset):
         normalize_audio=False,
     ):
         try:
-            import sms_wsj
+            import sms_wsj  # noqa
         except ModuleNotFoundError:
             import warnings
 
@@ -90,7 +90,9 @@ class SmsWsjDataset(data.Dataset):
             )
         super().__init__()
         if target not in SMS_TARGETS.keys():
-            raise ValueError('Unexpected task {}, expected one of ' '{}'.format(target, SMS_TARGETS.keys()))
+            raise ValueError(
+                "Unexpected task {}, expected one of " "{}".format(target, SMS_TARGETS.keys())
+            )
 
         # Task setting
         self.json_path = json_path
@@ -101,9 +103,9 @@ class SmsWsjDataset(data.Dataset):
         self.normalize_audio = normalize_audio
         self.seg_len = None if segment is None else int(segment * sample_rate)
         if not nondefault_nsrc:
-            self.n_src = self.target_dict['default_nsrc']
+            self.n_src = self.target_dict["default_nsrc"]
         else:
-            assert nondefault_nsrc >= self.target_dict['default_nsrc']
+            assert nondefault_nsrc >= self.target_dict["default_nsrc"]
             self.n_src = nondefault_nsrc
         self.like_test = self.seg_len is None
         self.dset = dset
@@ -118,7 +120,7 @@ class SmsWsjDataset(data.Dataset):
         if not self.like_test:
 
             def filter_short_examples(example):
-                num_samples = example['num_samples']['observation']
+                num_samples = example["num_samples"]["observation"]
                 if num_samples < self.seg_len:
                     return False
                 else:
@@ -130,13 +132,16 @@ class SmsWsjDataset(data.Dataset):
     def __add__(self, sms_wsj):
         if self.n_src != sms_wsj.n_src:
             raise ValueError(
-                'Only datasets having the same number of sources'
-                'can be added together. Received '
-                '{} and {}'.format(self.n_src, sms_wsj.n_src)
+                "Only datasets having the same number of sources"
+                "can be added together. Received "
+                "{} and {}".format(self.n_src, sms_wsj.n_src)
             )
         if self.seg_len != sms_wsj.seg_len:
             self.seg_len = min(self.seg_len, sms_wsj.seg_len)
-            print('Segment length mismatched between the two Dataset' 'passed one the smallest to the sum.')
+            print(
+                "Segment length mismatched between the two Dataset"
+                "passed one the smallest to the sum."
+            )
         self.dataset = self.dataset.concatenate(sms_wsj.dataset)
 
     def __len__(self):
@@ -149,10 +154,10 @@ class SmsWsjDataset(data.Dataset):
         """
         # Random start
         example = self.dataset[idx]
-        in_signal = self.target_dict['mixture']
-        target = self.target_dict['target']
-        audio_path = example['audio_path']
-        num_samples = example['num_samples']['observation']
+        in_signal = self.target_dict["mixture"]
+        target = self.target_dict["target"]
+        audio_path = example["audio_path"]
+        num_samples = example["num_samples"]["observation"]
         if num_samples == self.seg_len or self.like_test:
             rand_start = 0
         else:
@@ -162,10 +167,10 @@ class SmsWsjDataset(data.Dataset):
         else:
             stop = rand_start + self.seg_len
         # Load mixture
-        x, _ = sf.read(audio_path[in_signal], start=rand_start, stop=stop, dtype='float32')
+        x, _ = sf.read(audio_path[in_signal], start=rand_start, stop=stop, dtype="float32")
         x = x.T
 
-        num_channels = self.target_dict['infos']['num_channels']
+        num_channels = self.target_dict["infos"]["num_channels"]
         if self.single_channel:
             if self.like_test:
                 ref_channel = 0
@@ -179,13 +184,13 @@ class SmsWsjDataset(data.Dataset):
             try:
                 s = 0
                 for t in target:
-                    if t == 'speech_source':
+                    if t == "speech_source":
                         start = 0
                         stop_ = None
                     else:
                         start = rand_start
                         stop_ = stop
-                    s_, _ = sf.read(audio_path[t][idx], start=start, stop=stop_, dtype='float32')
+                    s_, _ = sf.read(audio_path[t][idx], start=start, stop=stop_, dtype="float32")
                     s += s_.T
             except IndexError:
                 if self.single_channel:
@@ -194,16 +199,18 @@ class SmsWsjDataset(data.Dataset):
                     s = np.zeros((num_channels, seg_len))
             source_arrays.append(s)
 
-        if target[0] == 'speech_source':
+        if target[0] == "speech_source":
             from sms_wsj.database.utils import extract_piece
 
-            offset = example['offset']
-            source_arrays = [extract_piece(s, offset_, num_samples) for s, offset_ in zip(source_arrays, offset)]
+            offset = example["offset"]
+            source_arrays = [
+                extract_piece(s, offset_, num_samples) for s, offset_ in zip(source_arrays, offset)
+            ]
             source_arrays = [s[rand_start:stop] for s in source_arrays]
 
         sources = torch.from_numpy(np.stack(source_arrays, axis=0))
         assert sources.shape[-1] == seg_len[0], (sources.shape, seg_len)
-        if self.single_channel and not target[0] == 'source':
+        if self.single_channel and not target[0] == "source":
             sources = sources[:, ref_channel]
 
         mixture = torch.from_numpy(x)
@@ -221,30 +228,30 @@ class SmsWsjDataset(data.Dataset):
             dict, dataset infos with keys `dataset`, `task` and `target`.
         """
         infos = dict()
-        infos['dataset'] = self.dataset_name
-        infos['task_dataset'] = self.dset
-        infos['target'] = self.target
-        infos['licenses'] = [wsj0_license, wsj1_license, sms_wsj_license]
+        infos["dataset"] = self.dataset_name
+        infos["task_dataset"] = self.dset
+        infos["target"] = self.target
+        infos["licenses"] = [wsj0_license, wsj1_license, sms_wsj_license]
         return infos
 
 
 wsj1_license = dict(
-    title='CSR-II (WSJ1) Complete',
-    title_link='https://catalog.ldc.upenn.edu/LDC94S13A',
-    author='LDC',
-    author_link='https://www.ldc.upenn.edu/',
-    license='LDC User Agreement for Non-Members',
-    license_link='https://catalog.ldc.upenn.edu/license/ldc-non-members-agreement.pdf',
+    title="CSR-II (WSJ1) Complete",
+    title_link="https://catalog.ldc.upenn.edu/LDC94S13A",
+    author="LDC",
+    author_link="https://www.ldc.upenn.edu/",
+    license="LDC User Agreement for Non-Members",
+    license_link="https://catalog.ldc.upenn.edu/license/ldc-non-members-agreement.pdf",
     non_commercial=True,
 )
 
 
 sms_wsj_license = dict(
-    title='SMS-WSJ: A database for in-depth analysis of multi-channel source separation algorithms',
-    title_link='https://github.com/fgnt/sms_wsj',
-    author='Department of Communications Engineering University of Paderborn',
-    author_link='https://github.com/fgnt',
-    license='MIT License',
-    license_link='https://github.com/fgnt/sms_wsj/blob/master/LICENSE',
+    title="SMS-WSJ: A database for in-depth analysis of multi-channel source separation algorithms",
+    title_link="https://github.com/fgnt/sms_wsj",
+    author="Department of Communications Engineering University of Paderborn",
+    author_link="https://github.com/fgnt",
+    license="MIT License",
+    license_link="https://github.com/fgnt/sms_wsj/blob/master/LICENSE",
     non_commercial=False,
 )
