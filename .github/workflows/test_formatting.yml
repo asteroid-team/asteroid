@@ -1,4 +1,4 @@
-name: Check Code Format (black/flake8)
+name: Linter
 on: [push]
 
 jobs:
