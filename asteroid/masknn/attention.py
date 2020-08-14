@@ -1,22 +1,23 @@
-import torch.nn.functional as F
 import torch.nn as nn
 from torch.nn.modules.activation import MultiheadAttention
 from asteroid.masknn import activations, norms
 import torch
 from asteroid.utils import has_arg
+from asteroid.dsp.overlap_add import DualPathProcessing
+
 
 class ImprovedTransformedLayer(nn.Module):
-    def __init__(self, d_model, n_heads, dim_ff, dropout=0., activation="relu", bidirectional=True, norm="gLN"):
+    def __init__(self, embed_dim, n_heads, dim_ff, dropout=0., activation="relu", bidirectional=True, norm="gLN"):
         super(ImprovedTransformedLayer, self).__init__()
 
-        self.mha = MultiheadAttention(d_model, n_heads, dropout=dropout)
-        self.recurrent = nn.LSTM(d_model, dim_ff, bidirectional=bidirectional)
+        self.mha = MultiheadAttention(embed_dim, n_heads, dropout=dropout)
+        self.recurrent = nn.LSTM(embed_dim, dim_ff, bidirectional=bidirectional)
         self.dropout = nn.Dropout(dropout)
         ff_inner_dim = 2*dim_ff if bidirectional else dim_ff
-        self.linear = nn.Linear(ff_inner_dim, d_model)
+        self.linear = nn.Linear(ff_inner_dim, embed_dim)
         self.activation = activations.get(activation)()
-        self.norm_mha = norms.get(norm)(d_model)
-        self.norm_ff = norms.get(norm)(d_model)
+        self.norm_mha = norms.get(norm)(embed_dim)
+        self.norm_ff = norms.get(norm)(embed_dim)
 
     def forward(self, x):
         x = x.transpose(1, -1)
@@ -30,63 +31,6 @@ class ImprovedTransformedLayer(nn.Module):
         out = self.linear(self.dropout(self.activation(self.recurrent(x)[0])))
         x = self.dropout(out) + x
         return self.norm_ff(x.transpose(1, -1))
-
-
-class Oladd(nn.Module):
-
-    def __init__(self, chunk_size, hop_size):
-        super(Oladd, self).__init__()
-        self.chunk_size = chunk_size
-        self.hop_size = hop_size
-        self.n_orig_frames = None
-
-    def unfold(self, x):
-        # x is (batch, chan, frames)
-        batch, chan, frames = x.size()
-        assert x.ndim == 3
-        self.n_orig_frames = x.shape[-1]
-        unfolded = torch.nn.functional.unfold(
-            x.unsqueeze(-1),
-            kernel_size=(self.chunk_size, 1),
-            padding=(self.chunk_size, 0),
-            stride=(self.hop_size, 1),
-        )
-
-        return unfolded.reshape(batch, chan, self.chunk_size, -1) # (batch, chan, chunk_size, n_chunks)
-
-    def fold(self, x):
-        # x is (batch, chan, chunk_size, n_chunks)
-        batch, chan, chunk_size, n_chunks = x.size()
-        to_unfold = x.reshape(batch, chan * self.chunk_size, n_chunks)
-        x = torch.nn.functional.fold(
-            to_unfold,
-            (self.n_orig_frames, 1),
-            kernel_size=(self.chunk_size, 1),
-            padding=(self.chunk_size, 0),
-            stride=(self.hop_size, 1),
-        )
-
-        x /= (self.chunk_size / self.hop_size)
-
-        return x.reshape(batch, chan, self.n_orig_frames)
-
-    def intra_process(self, x, module):
-
-        # x is (batch, channels, chunk_size, n_chunks)
-        batch, channels, chunk_size, n_chunks = x.size()
-        # we reshape to batch*chunk_size, channels, n_chunks
-        x = x.transpose(1, -1).reshape(batch*n_chunks, chunk_size, channels).transpose(1, -1)
-        x = module(x)
-        x = x.reshape(batch, n_chunks, channels, chunk_size).transpose(1, -1).transpose(1, 2)
-        return x
-
-
-    def inter_process(self, x, module):
-        batch, channels, chunk_size, n_chunks = x.size()
-        x = x.transpose(1, 2).reshape(batch*chunk_size, channels, n_chunks)
-        x = module(x)
-        x = x.reshape(batch, chunk_size, channels, n_chunks).transpose(1, 2)
-        return x
 
 
 class DPTransformer(nn.Module):
@@ -163,7 +107,6 @@ class DPTransformer(nn.Module):
         self.net_out = nn.Sequential(nn.Conv1d(self.in_chan, self.in_chan, 1), nn.Tanh())
         self.net_gate = nn.Sequential(nn.Conv1d(self.in_chan, self.in_chan, 1), nn.Sigmoid())
 
-
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
         # For softmax, feed the source dimension.
@@ -181,10 +124,9 @@ class DPTransformer(nn.Module):
             :class:`torch.Tensor`
                 estimated mask of shape [batch, n_src, n_filters, n_frames]
         """
-        #batch, n_filters, n_frames = mixture_w.size()
         mixture_w = self.in_norm(mixture_w)  # [batch, bn_chan, n_frames]
 
-        ola = Oladd(self.chunk_size, self.hop_size)
+        ola = DualPathProcessing(self.chunk_size, self.hop_size)
         mixture_w = ola.unfold(mixture_w)
         batch, n_filters, self.chunk_size, n_chunks = mixture_w.size()
 
@@ -203,7 +145,6 @@ class DPTransformer(nn.Module):
         est_mask = self.output_act(output)
         return est_mask
 
-
     def get_config(self):
         config = {
             'in_chan': self.in_chan,
@@ -220,18 +161,3 @@ class DPTransformer(nn.Module):
             'dropout': self.dropout,
         }
         return config
-
-
-if __name__ == "__main__":
-    import torch
-    a = torch.rand((2, 64, 16000))
-    ola1 = Oladd(400, 200)
-    ola2 = Oladd(30, 15)
-
-    unfolded1 = ola1.unfold(a)
-    unfolded1 = ola1.inter_process(unfolded1, lambda x : ola2.fold(ola2.unfold(x)))
-    unfolded1 = ola1.intra_process(unfolded1, lambda x : ola2.fold(ola2.unfold(x)))
-
-    folded = ola1.fold(unfolded1)
-
-
