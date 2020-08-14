@@ -56,8 +56,8 @@ extensions = [
     'sphinx.ext.viewcode',
     # Or linkcode to find the corresponding code in github. Start with viewcode
     # 'sphinx.ext.linkcode',
-    'recommonmark',
-    # 'm2r',
+    # 'recommonmark',
+    'm2r2',
     'nbsphinx',
 ]
 
@@ -84,7 +84,7 @@ nbsphinx_allow_errors = True
 source_suffix = {
     '.rst': 'restructuredtext',
     '.txt': 'markdown',
-    '.md': 'markdown',
+    # '.md': 'markdown',
     '.ipynb': 'nbsphinx',
 }
 
@@ -136,7 +136,7 @@ html_theme_options = {
     'logo_only': False,
 }
 
-html_logo = '_static/images/asteroid_logo.svg'
+html_logo = '_static/images/favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

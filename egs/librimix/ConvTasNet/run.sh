@@ -1,5 +1,8 @@
 #!/bin/bash
-set -e  # Exit on error
+
+# Exit on error
+set -e
+set -o pipefail
 
 # If you haven't generated LibriMix start from stage 0
 # Main storage directory. You'll need disk space to store LibriSpeech, WHAM noises

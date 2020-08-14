@@ -5,34 +5,25 @@ import os
 import numpy as np
 import soundfile as sf
 from .wsj0_mix import wsj0_license
+
 EPS = 1e-8
 
-DATASET = 'WHAM'
+DATASET = "WHAM"
 # WHAM tasks
-enh_single = {'mixture': 'mix_single',
-              'sources': ['s1'],
-              'infos': ['noise'],
-              'default_nsrc': 1}
-enh_both = {'mixture': 'mix_both',
-            'sources': ['mix_clean'],
-            'infos': ['noise'],
-            'default_nsrc': 1}
-sep_clean = {'mixture': 'mix_clean',
-             'sources': ['s1', 's2'],
-             'infos': [],
-             'default_nsrc': 2}
-sep_noisy = {'mixture': 'mix_both',
-             'sources': ['s1', 's2'],
-             'infos': ['noise'],
-             'default_nsrc': 2}
+enh_single = {"mixture": "mix_single", "sources": ["s1"], "infos": ["noise"], "default_nsrc": 1}
+enh_both = {"mixture": "mix_both", "sources": ["mix_clean"], "infos": ["noise"], "default_nsrc": 1}
+sep_clean = {"mixture": "mix_clean", "sources": ["s1", "s2"], "infos": [], "default_nsrc": 2}
+sep_noisy = {"mixture": "mix_both", "sources": ["s1", "s2"], "infos": ["noise"], "default_nsrc": 2}
 
-WHAM_TASKS = {'enhance_single': enh_single,
-              'enhance_both': enh_both,
-              'sep_clean': sep_clean,
-              'sep_noisy': sep_noisy}
+WHAM_TASKS = {
+    "enhance_single": enh_single,
+    "enhance_both": enh_both,
+    "sep_clean": sep_clean,
+    "sep_noisy": sep_noisy,
+}
 # Aliases.
-WHAM_TASKS['enh_single'] = WHAM_TASKS['enhance_single']
-WHAM_TASKS['enh_both'] = WHAM_TASKS['enhance_both']
+WHAM_TASKS["enh_single"] = WHAM_TASKS["enhance_single"]
+WHAM_TASKS["enh_both"] = WHAM_TASKS["enhance_both"]
 
 
 def normalize_tensor_wav(wav_tensor, eps=1e-8, std=None):
@@ -64,15 +55,28 @@ class WhamDataset(data.Dataset):
             separation tasks.
         normalize_audio (bool): If True then both sources and the mixture are
             normalized with the standard deviation of the mixture.
-    """
-    dataset_name = 'WHAM!'
 
-    def __init__(self, json_dir, task, sample_rate=8000, segment=4.0,
-                 nondefault_nsrc=None, normalize_audio=False):
+    References:
+        "WHAM!: Extending Speech Separation to Noisy Environments",
+        Wichern et al. 2019
+    """
+
+    dataset_name = "WHAM!"
+
+    def __init__(
+        self,
+        json_dir,
+        task,
+        sample_rate=8000,
+        segment=4.0,
+        nondefault_nsrc=None,
+        normalize_audio=False,
+    ):
         super(WhamDataset, self).__init__()
         if task not in WHAM_TASKS.keys():
-            raise ValueError('Unexpected task {}, expected one of '
-                             '{}'.format(task, WHAM_TASKS.keys()))
+            raise ValueError(
+                "Unexpected task {}, expected one of " "{}".format(task, WHAM_TASKS.keys())
+            )
         # Task setting
         self.json_dir = json_dir
         self.task = task
@@ -81,20 +85,21 @@ class WhamDataset(data.Dataset):
         self.normalize_audio = normalize_audio
         self.seg_len = None if segment is None else int(segment * sample_rate)
         if not nondefault_nsrc:
-            self.n_src = self.task_dict['default_nsrc']
+            self.n_src = self.task_dict["default_nsrc"]
         else:
-            assert nondefault_nsrc >= self.task_dict['default_nsrc']
+            assert nondefault_nsrc >= self.task_dict["default_nsrc"]
             self.n_src = nondefault_nsrc
         self.like_test = self.seg_len is None
         # Load json files
-        mix_json = os.path.join(json_dir, self.task_dict['mixture'] + '.json')
-        sources_json = [os.path.join(json_dir, source + '.json') for
-                        source in self.task_dict['sources']]
-        with open(mix_json, 'r') as f:
+        mix_json = os.path.join(json_dir, self.task_dict["mixture"] + ".json")
+        sources_json = [
+            os.path.join(json_dir, source + ".json") for source in self.task_dict["sources"]
+        ]
+        with open(mix_json, "r") as f:
             mix_infos = json.load(f)
         sources_infos = []
         for src_json in sources_json:
-            with open(src_json, 'r') as f:
+            with open(src_json, "r") as f:
                 sources_infos.append(json.load(f))
         # Filter out short utterances only when segment is specified
         orig_len = len(mix_infos)
@@ -108,8 +113,11 @@ class WhamDataset(data.Dataset):
                     for src_inf in sources_infos:
                         del src_inf[i]
 
-        print("Drop {} utts({:.2f} h) from {} (shorter than {} samples)".format(
-            drop_utt, drop_len/sample_rate/36000, orig_len, self.seg_len))
+        print(
+            "Drop {} utts({:.2f} h) from {} (shorter than {} samples)".format(
+                drop_utt, drop_len / sample_rate / 36000, orig_len, self.seg_len
+            )
+        )
         self.mix = mix_infos
         # Handle the case n_src > default_nsrc
         while len(sources_infos) < self.n_src:
@@ -118,13 +126,17 @@ class WhamDataset(data.Dataset):
 
     def __add__(self, wham):
         if self.n_src != wham.n_src:
-            raise ValueError('Only datasets having the same number of sources'
-                             'can be added together. Received '
-                             '{} and {}'.format(self.n_src, wham.n_src))
+            raise ValueError(
+                "Only datasets having the same number of sources"
+                "can be added together. Received "
+                "{} and {}".format(self.n_src, wham.n_src)
+            )
         if self.seg_len != wham.seg_len:
             self.seg_len = min(self.seg_len, wham.seg_len)
-            print('Segment length mismatched between the two Dataset'
-                  'passed one the smallest to the sum.')
+            print(
+                "Segment length mismatched between the two Dataset"
+                "passed one the smallest to the sum."
+            )
         self.mix = self.mix + wham.mix
         self.sources = [a + b for a, b in zip(self.sources, wham.sources)]
 
@@ -146,18 +158,16 @@ class WhamDataset(data.Dataset):
         else:
             stop = rand_start + self.seg_len
         # Load mixture
-        x, _ = sf.read(self.mix[idx][0], start=rand_start,
-                       stop=stop, dtype='float32')
+        x, _ = sf.read(self.mix[idx][0], start=rand_start, stop=stop, dtype="float32")
         seg_len = torch.as_tensor([len(x)])
         # Load sources
         source_arrays = []
         for src in self.sources:
             if src[idx] is None:
                 # Target is filled with zeros if n_src > default_nsrc
-                s = np.zeros((seg_len, ))
+                s = np.zeros((seg_len,))
             else:
-                s, _ = sf.read(src[idx][0], start=rand_start,
-                               stop=stop, dtype='float32')
+                s, _ = sf.read(src[idx][0], start=rand_start, stop=stop, dtype="float32")
             source_arrays.append(s)
         sources = torch.from_numpy(np.vstack(source_arrays))
         mixture = torch.from_numpy(x)
@@ -175,22 +185,22 @@ class WhamDataset(data.Dataset):
             dict, dataset infos with keys `dataset`, `task` and `licences`.
         """
         infos = dict()
-        infos['dataset'] = self.dataset_name
-        infos['task'] = self.task
-        if self.task == 'sep_clean':
+        infos["dataset"] = self.dataset_name
+        infos["task"] = self.task
+        if self.task == "sep_clean":
             data_license = [wsj0_license]
         else:
             data_license = [wsj0_license, wham_noise_license]
-        infos['licenses'] = data_license
+        infos["licenses"] = data_license
         return infos
 
 
 wham_noise_license = dict(
-    title='The WSJ0 Hipster Ambient Mixtures dataset',
-    title_link='http://wham.whisper.ai/',
-    author='Whisper.ai',
-    author_link='https://whisper.ai/',
-    license='CC BY-NC 4.0',
-    license_link='https://creativecommons.org/licenses/by-nc/4.0/',
+    title="The WSJ0 Hipster Ambient Mixtures dataset",
+    title_link="http://wham.whisper.ai/",
+    author="Whisper.ai",
+    author_link="https://whisper.ai/",
+    license="CC BY-NC 4.0",
+    license_link="https://creativecommons.org/licenses/by-nc/4.0/",
     non_commercial=True,
 )

@@ -23,8 +23,10 @@ def to_cuda(tensors):  # pragma: no cover (No CUDA on travis)
         for key in tensors.keys():
             tensors[key] = to_cuda(tensors[key])
         return tensors
-    raise TypeError('tensors must be a tensor or a list or dict of tensors. '
-                    ' Got tensors of type {}'.format(type(tensors)))
+    raise TypeError(
+        "tensors must be a tensor or a list or dict of tensors. "
+        " Got tensors of type {}".format(type(tensors))
+    )
 
 
 def tensors_to_device(tensors, device):
@@ -82,8 +84,7 @@ def load_state_dict_in(state_dict, model):
     Returns:
         torch.nn.Module: model with loaded weights.
 
-    # Note :
-        Keys in a state_dict look like object1.object2.layer_name.weight.etc
+    # .. note:: Keys in a state_dict look like object1.object2.layer_name.weight.etc
         We first try to load the model in the classic way.
         If this fail we removes the first left part of the key to obtain
         object2.layer_name.weight.etc.
@@ -103,7 +104,7 @@ def load_state_dict_in(state_dict, model):
         # new_state_dict of the missing keys in the state_dict and the model.
         new_state_dict = OrderedDict()
         for k, v in state_dict.items():
-            new_k = k[k.find('.') + 1:]
+            new_k = k[k.find(".") + 1 :]
             new_state_dict[new_k] = v
         model.load_state_dict(new_state_dict, strict=True)
     return model

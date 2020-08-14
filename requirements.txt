@@ -8,3 +8,5 @@ pytorch-lightning>=0.7.5,<0.8
 pb_bss_eval>=0.0.2
 torch_stoi>=0.0.1
 torch_optimizer>=0.0.1a12
+pre-commit
+black==19.10b0

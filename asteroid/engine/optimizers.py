@@ -1,14 +1,54 @@
 from torch.optim.optimizer import Optimizer
-from torch.optim import (
-    Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, AdamW, ASGD
-)
+from torch.optim import Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, AdamW, ASGD
 from torch_optimizer import (
-    AccSGD, AdaBound, AdaMod, DiffGrad, Lamb, NovoGrad, PID, QHAdam,
-    QHM, RAdam, SGDW, Yogi, Ranger, RangerQH, RangerVA
+    AccSGD,
+    AdaBound,
+    AdaMod,
+    DiffGrad,
+    Lamb,
+    NovoGrad,
+    PID,
+    QHAdam,
+    QHM,
+    RAdam,
+    SGDW,
+    Yogi,
+    Ranger,
+    RangerQH,
+    RangerVA,
 )
 
 
-def make_optimizer(params, optimizer='adam', **kwargs):
+__all__ = [
+    "AccSGD",
+    "AdaBound",
+    "AdaMod",
+    "DiffGrad",
+    "Lamb",
+    "NovoGrad",
+    "PID",
+    "QHAdam",
+    "QHM",
+    "RAdam",
+    "SGDW",
+    "Yogi",
+    "Ranger",
+    "RangerQH",
+    "RangerVA",
+    "Adam",
+    "RMSprop",
+    "SGD",
+    "Adadelta",
+    "Adagrad",
+    "Adamax",
+    "AdamW",
+    "ASGD",
+    "make_optimizer",
+    "get",
+]
+
+
+def make_optimizer(params, optimizer="adam", **kwargs):
     """
 
     Args:
@@ -44,6 +84,6 @@ def get(identifier):
         to_get = {k.lower(): v for k, v in globals().items()}
         cls = to_get.get(identifier.lower())
         if cls is None:
-            raise ValueError(f'Could not interpret optimizer : {str(identifier)}')
+            raise ValueError(f"Could not interpret optimizer : {str(identifier)}")
         return cls
-    raise ValueError(f'Could not interpret optimizer : {str(identifier)}')
+    raise ValueError(f"Could not interpret optimizer : {str(identifier)}")

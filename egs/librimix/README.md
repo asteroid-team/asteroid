@@ -1,4 +1,4 @@
-### About the LibriMix dataset
+### LibriMix dataset
 
 The LibriMix dataset is an open source dataset 
 derived from LibriSpeech dataset. It's meant as an alternative and complement
@@ -6,7 +6,7 @@ to [WHAM](./../wham/).
 
 More info [here](https://github.com/JorisCos/LibriMix).
 
-### References
+**References**
 ```BibTeX
 @misc{cosentino2020librimix,
     title={LibriMix: An Open-Source Dataset for Generalizable Speech Separation},

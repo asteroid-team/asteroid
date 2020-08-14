@@ -17,6 +17,7 @@ class Filterbank(nn.Module):
     Attributes:
         n_feats_out (int): Number of output filters.
     """
+
     def __init__(self, n_filters, kernel_size, stride=None):
         super(Filterbank, self).__init__()
         self.n_filters = n_filters
@@ -34,10 +35,10 @@ class Filterbank(nn.Module):
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class. """
         config = {
-            'fb_name': self.__class__.__name__,
-            'n_filters': self.n_filters,
-            'kernel_size': self.kernel_size,
-            'stride': self.stride
+            "fb_name": self.__class__.__name__,
+            "n_filters": self.n_filters,
+            "kernel_size": self.kernel_size,
+            "stride": self.stride,
         }
         return config
 
@@ -57,6 +58,7 @@ class _EncDec(nn.Module):
         stride (int)
         is_pinv (bool)
     """
+
     def __init__(self, filterbank, is_pinv=False):
         super(_EncDec, self).__init__()
         self.filterbank = filterbank
@@ -84,7 +86,7 @@ class _EncDec(nn.Module):
 
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class."""
-        config = {'is_pinv': self.is_pinv}
+        config = {"is_pinv": self.is_pinv}
         base_config = self.filterbank.get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
@@ -105,17 +107,8 @@ class Encoder(_EncDec):
             If False, will output a tensor of shape (batch, 1, freq, conv_time).
         padding (int): Zero-padding added to both sides of the input.
 
-    Notes:
-        (time, ) --> (freq, conv_time)
-        (batch, time) --> (batch, freq, conv_time)  # Avoid
-        if as_conv1d:
-            (batch, 1, time) --> (batch, freq, conv_time)
-            (batch, chan, time) --> (batch, chan, freq, conv_time)
-        else:
-            (batch, chan, time) --> (batch, chan, freq, conv_time)
-        (batch, any, dim, time) --> (batch, any, dim, freq, conv_time)
-
     """
+
     def __init__(self, filterbank, is_pinv=False, as_conv1d=True, padding=0):
         super(Encoder, self).__init__(filterbank, is_pinv=is_pinv)
         self.as_conv1d = as_conv1d
@@ -132,31 +125,51 @@ class Encoder(_EncDec):
             return cls(filterbank.filterbank, is_pinv=True, **kwargs)
 
     def forward(self, waveform):
-        """ Convolve 1D torch.Tensor with the filters from a filterbank."""
+        """ Convolve input waveform with the filters from a filterbank.
+        Args:
+            waveform (:class:`torch.Tensor`): any tensor with samples along the
+                last dimension. The waveform representation with and
+                batch/channel etc.. dimension.
+        Returns:
+            :class:`torch.Tensor`: The corresponding TF domain signal.
+
+        Shapes:
+            >>> (time, ) --> (freq, conv_time)
+            >>> (batch, time) --> (batch, freq, conv_time)  # Avoid
+            >>> if as_conv1d:
+            >>>     (batch, 1, time) --> (batch, freq, conv_time)
+            >>>     (batch, chan, time) --> (batch, chan, freq, conv_time)
+            >>> else:
+            >>>     (batch, chan, time) --> (batch, chan, freq, conv_time)
+            >>> (batch, any, dim, time) --> (batch, any, dim, freq, conv_time)
+        """
         filters = self.get_filters()
         if waveform.ndim == 1:
             # Assumes 1D input with shape (time,)
             # Output will be (freq, conv_time)
-            return F.conv1d(waveform[None, None], filters,
-                            stride=self.stride, padding=self.padding).squeeze()
+            return F.conv1d(
+                waveform[None, None], filters, stride=self.stride, padding=self.padding
+            ).squeeze()
         elif waveform.ndim == 2:
             # Assume 2D input with shape (batch or channels, time)
             # Output will be (batch or channels, freq, conv_time)
-            warnings.warn("Input tensor was 2D. Applying the corresponding "
-                          "Decoder to the current output will result in a 3D "
-                          "tensor. This behaviours was introduced to match "
-                          "Conv1D and ConvTranspose1D, please use 3D inputs "
-                          "to avoid it. For example, this can be done with "
-                          "input_tensor.unsqueeze(1).")
-            return F.conv1d(waveform.unsqueeze(1), filters,
-                            stride=self.stride, padding=self.padding)
+            warnings.warn(
+                "Input tensor was 2D. Applying the corresponding "
+                "Decoder to the current output will result in a 3D "
+                "tensor. This behaviours was introduced to match "
+                "Conv1D and ConvTranspose1D, please use 3D inputs "
+                "to avoid it. For example, this can be done with "
+                "input_tensor.unsqueeze(1)."
+            )
+            return F.conv1d(
+                waveform.unsqueeze(1), filters, stride=self.stride, padding=self.padding
+            )
         elif waveform.ndim == 3:
             batch, channels, time_len = waveform.shape
             if channels == 1 and self.as_conv1d:
                 # That's the common single channel case (batch, 1, time)
                 # Output will be (batch, freq, stft_time), behaves as Conv1D
-                return F.conv1d(waveform, filters, stride=self.stride,
-                                padding=self.padding)
+                return F.conv1d(waveform, filters, stride=self.stride, padding=self.padding)
             else:
                 # Return batched convolution, input is (batch, 3, time),
                 # output will be (batch, 3, freq, conv_time).
@@ -172,16 +185,16 @@ class Encoder(_EncDec):
     def batch_1d_conv(self, inp, filters):
         # Here we perform multichannel / multi-source convolution. Ou
         # Output should be (batch, channels, freq, conv_time)
-        batched_conv = F.conv1d(inp.view(-1, 1, inp.shape[-1]),
-                                filters, stride=self.stride,
-                                padding=self.padding)
+        batched_conv = F.conv1d(
+            inp.view(-1, 1, inp.shape[-1]), filters, stride=self.stride, padding=self.padding
+        )
         output_shape = inp.shape[:-1] + batched_conv.shape[-2:]
         return batched_conv.view(output_shape)
 
 
 class Decoder(_EncDec):
     """ Decoder class.
-    
+
     Add decoding methods to Filterbank classes.
     Not intended to be subclassed.
 
@@ -196,6 +209,7 @@ class Decoder(_EncDec):
         `padding` and `output_padding` arguments are directly passed to
         F.conv_transpose1d.
     """
+
     def __init__(self, filterbank, is_pinv=False, padding=0, output_padding=0):
         super().__init__(filterbank, is_pinv=is_pinv)
         self.padding = padding
@@ -228,19 +242,26 @@ class Decoder(_EncDec):
                 filters,
                 stride=self.stride,
                 padding=self.padding,
-                output_padding=self.output_padding
+                output_padding=self.output_padding,
             ).squeeze()
         if spec.ndim == 3:
             # Input is (batch, freq, conv_time), output is (batch, 1, time)
-            return F.conv_transpose1d(spec, filters, stride=self.stride,
-                                      padding=self.padding,
-                                      output_padding=self.output_padding)
+            return F.conv_transpose1d(
+                spec,
+                filters,
+                stride=self.stride,
+                padding=self.padding,
+                output_padding=self.output_padding,
+            )
         elif spec.ndim > 3:
             # Multiply all the left dimensions together and group them in the
             # batch. Make the convolution and restore.
             view_as = (-1,) + spec.shape[-2:]
-            out = F.conv_transpose1d(spec.view(view_as),
-                                     filters, stride=self.stride,
-                                     padding=self.padding,
-                                     output_padding=self.output_padding)
+            out = F.conv_transpose1d(
+                spec.view(view_as),
+                filters,
+                stride=self.stride,
+                padding=self.padding,
+                output_padding=self.output_padding,
+            )
             return out.view(spec.shape[:-2] + (-1,))
