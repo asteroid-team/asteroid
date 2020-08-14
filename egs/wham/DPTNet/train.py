@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid import DPTNet
-from asteroid.engine.schedulers import DPTNetScheduler
+from asteroid.engine import schedulers
 
 from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.optimizers import make_optimizer
@@ -48,7 +48,11 @@ def main(conf):
 
     model = DPTNet(**conf['filterbank'], **conf['masknet'])
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
-    optimizer = DPTNetScheduler(optimizer, **conf["scheduler"])
+    from torch.optim.lr_scheduler import StepLR
+    from asteroid.engine.schedulers import DPTNetScheduler
+    schedulers = {"scheduler": DPTNetScheduler(optimizer, 1000, 64), "interval": "batch"}
+
+
     # Just after instantiating, save the args. Easy loading in the future.
     exp_dir = conf['main_args']['exp_dir']
     os.makedirs(exp_dir, exist_ok=True)
@@ -58,7 +62,7 @@ def main(conf):
 
     # Define Loss function.
     loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from='pw_mtx')
-    system = System(model=model, loss_func=loss_func, optimizer=optimizer,
+    system = System(model=model, loss_func=loss_func, optimizer=optimizer, scheduler= schedulers,
                     train_loader=train_loader, val_loader=val_loader,
                     config=conf)
 
@@ -78,7 +82,7 @@ def main(conf):
                          early_stop_callback=early_stopping,
                          default_save_path=exp_dir,
                          gpus=gpus,
-                         #distributed_backend='ddp',
+                         distributed_backend='ddp',
                          gradient_clip_val=conf['training']["gradient_clipping"])
     trainer.fit(system)
 
