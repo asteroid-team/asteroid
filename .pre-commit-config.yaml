@@ -1,9 +1,6 @@
-default_language_version:
-  python: python3.6
-
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v2.4.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
