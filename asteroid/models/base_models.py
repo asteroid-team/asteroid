@@ -4,6 +4,7 @@ import numpy as np
 
 from .. import torch_utils
 from ..utils.hub_utils import cached_download
+from ..masknn import activations
 
 
 class BaseTasNet(nn.Module):
@@ -15,11 +16,16 @@ class BaseTasNet(nn.Module):
         decoder (Decoder): Decoder instance.
     """
 
-    def __init__(self, encoder, masker, decoder):
+    def __init__(self, encoder, masker, decoder, encoder_activation=None):
         super().__init__()
         self.encoder = encoder
         self.masker = masker
         self.decoder = decoder
+
+        if encoder_activation:
+            self.enc_activation = activations.get(encoder_activation)()
+        else:
+            self.enc_activation = activations.get("linear")()
 
     def forward(self, wav):
         """ Enc/Mask/Dec model forward
@@ -38,7 +44,7 @@ class BaseTasNet(nn.Module):
         if wav.ndim == 2:
             wav = wav.unsqueeze(1)
         # Real forward
-        tf_rep = self.encoder(wav)
+        tf_rep = self.enc_activation(self.encoder(wav))
         est_masks = self.masker(tf_rep)
         masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
         out_wavs = torch_utils.pad_x_to_y(self.decoder(masked_tf_rep), wav)

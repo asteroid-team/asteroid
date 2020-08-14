@@ -89,7 +89,7 @@ class Oladd(nn.Module):
         return x
 
 
-class DPTNet(nn.Module):
+class DPTransformer(nn.Module):
     """ Dual-path Transformer
         introduced in [1].
 
@@ -130,7 +130,7 @@ class DPTNet(nn.Module):
         bidirectional=True,
         dropout=0,
     ):
-        super(DPTNet, self).__init__()
+        super(DPTransformer, self).__init__()
         self.in_chan = in_chan
         self.n_src = n_src
         self.n_heads = n_heads
@@ -225,5 +225,13 @@ class DPTNet(nn.Module):
 if __name__ == "__main__":
     import torch
     a = torch.rand((2, 64, 16000))
-    l = DPTNet(64, 2, n_repeats=1)
+    ola1 = Oladd(400, 200)
+    ola2 = Oladd(30, 15)
+
+    unfolded1 = ola1.unfold(a)
+    unfolded1 = ola1.inter_process(unfolded1, lambda x : ola2.fold(ola2.unfold(x)))
+    unfolded1 = ola1.intra_process(unfolded1, lambda x : ola2.fold(ola2.unfold(x)))
+
+    folded = ola1.fold(unfolded1)
+
 

@@ -1,9 +1,11 @@
 from torch.optim.optimizer import Optimizer
 
 
-class _BaseScheduler(Optimizer):
+class _BaseScheduler(object):
     def __init__(self, optimizer):
-        super(_BaseScheduler, self).__init__(optimizer.__dict__["param_groups"], optimizer.__dict__["defaults"])
+        self.__class__ = type(optimizer.__class__.__name__,
+                              (self.__class__, optimizer.__class__),
+                              {})
         self.optimizer = optimizer
         self.step_num = 0
 
