@@ -39,13 +39,13 @@ jobs:
 
     - name: Pytest and coverage
       run: |
-        COVERAGE_FILE=.coverage_main coverage run -m py.test tests  --ignore tests/models/publish_test.py
+        coverage run -p -m py.test tests  --ignore tests/models/publish_test.py
 
     # This tends to fail despite the code works, when Zenodo is slow.
     - name: Pytest and coverage (Model-sharing only)
       # coverage run -a appends cov data to .coverage
       run: |
-        COVERAGE_FILE=.coverage_pub coverage run -a -m py.test tests/models/publish_test.py
+        coverage run -a -p -m py.test tests/models/publish_test.py
 
     - name: Coverage report
       run: |
