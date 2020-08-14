@@ -51,11 +51,17 @@ jobs:
         python -m pip list
       shell: bash
 
-    - name: Test with pytest and coverage
+    - name: pytest and coverage
       run: |
         coverage run -m py.test tests  --ignore tests/models/publish_test.py
 
-    - name: Generate and upload the coverage report
+    # This tends to fail despite the code works, when Zenodo is slow.
+    - name: Model-sharing only | pytest and coverage,
+      # coverage run -a appends cov data to .coverage
+      run: |
+        coverage run -a -m py.test tests/models/publish_test.py
+
+    - name: Model-sharing only | Coverage report
       run: |
         coverage xml
         bash <(curl -s https://codecov.io/bash)
