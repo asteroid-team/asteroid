@@ -6,11 +6,8 @@ repos:
       - id: trailing-whitespace
       - id: check-yaml
 
-  - repo: local
+  - repo: https://github.com/psf/black
+    rev: 19.10b0
     hooks:
       - id: black
-        name: black
-        entry: python -m black
-        args: [--config, ./pyproject.toml]
-        language: system
         types: [python]
