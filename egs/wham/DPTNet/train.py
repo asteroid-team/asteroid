@@ -48,10 +48,9 @@ def main(conf):
 
     model = DPTNet(**conf['filterbank'], **conf['masknet'])
     optimizer = make_optimizer(model.parameters(), **conf['optim'])
-    from torch.optim.lr_scheduler import StepLR
     from asteroid.engine.schedulers import DPTNetScheduler
-    schedulers = {"scheduler": DPTNetScheduler(optimizer, 1000, 64), "interval": "batch"}
-
+    schedulers = {"scheduler": DPTNetScheduler(optimizer, len(train_loader) // conf["training"]["batch_size"], 64),
+                  "interval": "batch"}
 
     # Just after instantiating, save the args. Easy loading in the future.
     exp_dir = conf['main_args']['exp_dir']

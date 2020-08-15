@@ -200,7 +200,7 @@ class DualPathProcessing(nn.Module):
 
             Args:
                 x: (:class:`torch.Tensor`): spliced feature tensor of shape  (batch, channels, chunk_size, n_chunks).
-                    output_size: (int): sequence lenght of original feature tensor.
+                    output_size: (int, optional): sequence lenght of original feature tensor.
 
             Returns:
                 x: (:class:`torch.Tensor`):  feature tensor of shape (batch, channels, time).

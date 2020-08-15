@@ -7,6 +7,26 @@ from asteroid.dsp.overlap_add import DualPathProcessing
 
 
 class ImprovedTransformedLayer(nn.Module):
+    """
+    Improved Transformer module as used in [1].
+    It is Multi-Head self-attention followed by LSTM, activation and linear projection layer.
+
+    Args:
+        embed_dim (int): Number of input channels.
+        n_heads (int): Number of attention heads.
+        dim_ff (int): Number of neurons in the RNNs cell state.
+            Defaults to 256. RNN here replaces standard FF linear layer in plain Transformer.
+        dropout (float, optional): Dropout ratio, must be in [0,1].
+        activation (str, optional): activation function applied at the output of RNN.
+        bidirectional (bool, optional): True for bidirectional Inter-Chunk RNN
+            (Intra-Chunk is always bidirectional).
+        norm_type (str, optional): Type of normalization to use.
+
+    References:
+        [1] Chen, Jingjing, Qirong Mao, and Dong Liu.
+        "Dual-Path Transformer Network: Direct Context-Aware Modeling for End-to-End Monaural Speech Separation."
+         arXiv preprint arXiv:2007.13975 (2020).
+    """
     def __init__(self, embed_dim, n_heads, dim_ff, dropout=0., activation="relu", bidirectional=True, norm="gLN"):
         super(ImprovedTransformedLayer, self).__init__()
 
@@ -40,23 +60,25 @@ class DPTransformer(nn.Module):
     Args:
         in_chan (int): Number of input filters.
         n_src (int): Number of masks to estimate.
-        out_chan  (int or None): Number of bins in the estimated masks.
-            Defaults to `in_chan`.
+        n_heads (int): Number of attention heads.
         hid_ff (int): Number of neurons in the RNNs cell state.
-            Defaults to 128.
+            Defaults to 256.
         chunk_size (int): window size of overlap and add processing.
             Defaults to 100.
         hop_size (int or None): hop size (stride) of overlap and add processing.
             Default to `chunk_size // 2` (50% overlap).
         n_repeats (int): Number of repeats. Defaults to 6.
         norm_type (str, optional): Type of normalization to use.
+        ff_activation (str, optional): activation function applied at the output of RNN.
         mask_act (str, optional): Which non-linear function to generate mask.
         bidirectional (bool, optional): True for bidirectional Inter-Chunk RNN
             (Intra-Chunk is always bidirectional).
         dropout (float, optional): Dropout ratio, must be in [0,1].
 
     References:
-        [1]
+        [1] Chen, Jingjing, Qirong Mao, and Dong Liu.
+        "Dual-Path Transformer Network: Direct Context-Aware Modeling for End-to-End Monaural Speech Separation."
+         arXiv preprint arXiv:2007.13975 (2020).
     """
 
     def __init__(
