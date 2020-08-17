@@ -92,4 +92,5 @@ __all__ = [
     "MultiphaseGammatoneFB",
     "griffin_lim",
     "misi",
+    "make_enc_dec",
 ]
