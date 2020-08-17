@@ -59,6 +59,7 @@ class ConvTasNet(BaseTasNet):
         kernel_size=16,
         n_filters=512,
         stride=8,
+        encoder_activation="relu",
         **fb_kwargs,
     ):
         encoder, decoder = make_enc_dec(
@@ -86,4 +87,4 @@ class ConvTasNet(BaseTasNet):
             norm_type=norm_type,
             mask_act=mask_act,
         )
-        super().__init__(encoder, masker, decoder)
+        super().__init__(encoder, masker, decoder, encoder_activation=encoder_activation)

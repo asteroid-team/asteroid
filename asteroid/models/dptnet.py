@@ -43,7 +43,9 @@ class DPTNet(BaseTasNet):
             creation.
 
     References:
-        [1]
+        [1]: Jingjing Chen et al. "Dual-Path Transformer Network: Direct
+            Context-Aware Modeling for End-to-End Monaural Speech Separation"
+            Interspeech 2020.
     """
 
     def __init__(

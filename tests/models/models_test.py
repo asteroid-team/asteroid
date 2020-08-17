@@ -3,8 +3,8 @@ import pytest
 from torch.testing import assert_allclose
 import numpy as np
 import soundfile as sf
-from asteroid.models import ConvTasNet, DPRNNTasNet
-from asteroid.models.sudormrf import SuDORMRF, SuDORMRFImproved
+from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet
+from asteroid.models import SuDORMRF, SuDORMRFImproved
 
 
 def test_convtasnet_sep():
@@ -81,3 +81,12 @@ def test_sudormrf_imp():
     )
     test_input = torch.randn(1, 801)
     model(test_input)
+
+
+def test_dptnet():
+    model = DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2)
+    test_input = torch.randn(1, 801)
+
+    model_conf = model.serialize()
+    reconstructed_model = DPTNet.from_pretrained(model_conf)
+    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
