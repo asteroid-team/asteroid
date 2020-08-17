@@ -43,120 +43,16 @@ from ..filterbanks import make_enc_dec
 from ..masknn.norms import GlobLN
 
 
-class ConvNormAct(nn.Module):
-    """ Convolution layer with normalization and a PReLU activation.
-
-    Args
-        nIn: number of input channels
-        nOut: number of output channels
-        kSize: kernel size
-        stride: stride rate for down-sampling. Default is 1
-    """
-
-    def __init__(self, nIn, nOut, kSize, stride=1, groups=1, use_globln=False):
-
-        super().__init__()
-        padding = int((kSize - 1) / 2)
-        self.conv = nn.Conv1d(
-            nIn, nOut, kSize, stride=stride, padding=padding, bias=True, groups=groups
-        )
-        if use_globln:
-            self.norm = GlobLN(nOut)
-            self.act = nn.PReLU()
-        else:
-            self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
-            self.act = nn.PReLU(nOut)
-
-    def forward(self, input):
-        output = self.conv(input)
-        output = self.norm(output)
-        return self.act(output)
-
-
-class ConvNorm(nn.Module):
-    """ Convolution layer with normalization without activation.
-
-    Args:
-        nIn: number of input channels
-        nOut: number of output channels
-        kSize: kernel size
-        stride: stride rate for down-sampling. Default is 1
-    """
-
-    def __init__(self, nIn, nOut, kSize, stride=1, groups=1):
-
-        super().__init__()
-        padding = int((kSize - 1) / 2)
-        self.conv = nn.Conv1d(
-            nIn, nOut, kSize, stride=stride, padding=padding, bias=True, groups=groups
-        )
-        self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
-
-    def forward(self, input):
-        output = self.conv(input)
-        return self.norm(output)
-
-
-class NormAct(nn.Module):
-    """ Normalization and PReLU activation.
-
-    Args:
-         nOut: number of output channels
-    """
-
-    def __init__(self, nOut, use_globln=False):
-        super().__init__()
-        if use_globln:
-            self.norm = GlobLN(nOut)
-        else:
-            self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
-        self.act = nn.PReLU(nOut)
-
-    def forward(self, input):
-        output = self.norm(input)
-        return self.act(output)
-
-
-class DilatedConvNorm(nn.Module):
-    """ Dilated convolution with normalized output.
-
-    Args:
-        nIn: number of input channels
-        nOut: number of output channels
-        kSize: kernel size
-        stride: optional stride rate for down-sampling
-        d: optional dilation rate
-    """
-
-    def __init__(self, nIn, nOut, kSize, stride=1, d=1, groups=1, use_globln=False):
-        super().__init__()
-        self.conv = nn.Conv1d(
-            nIn,
-            nOut,
-            kSize,
-            stride=stride,
-            dilation=d,
-            padding=((kSize - 1) // 2) * d,
-            groups=groups,
-        )
-        if use_globln:
-            self.norm = GlobLN(nOut)
-        else:
-            self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
-
-    def forward(self, input):
-        output = self.conv(input)
-        return self.norm(output)
-
-
-class BaseUBlock(nn.Module):
+class _BaseUBlock(nn.Module):
     def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4, use_globln=False):
         super().__init__()
-        self.proj_1x1 = ConvNormAct(out_chan, in_chan, 1, stride=1, groups=1, use_globln=use_globln)
+        self.proj_1x1 = _ConvNormAct(
+            out_chan, in_chan, 1, stride=1, groups=1, use_globln=use_globln
+        )
         self.depth = upsampling_depth
         self.spp_dw = nn.ModuleList()
         self.spp_dw.append(
-            DilatedConvNorm(
+            _DilatedConvNorm(
                 in_chan, in_chan, kSize=5, stride=1, groups=in_chan, d=1, use_globln=use_globln,
             )
         )
@@ -167,7 +63,7 @@ class BaseUBlock(nn.Module):
             else:
                 stride = 2
             self.spp_dw.append(
-                DilatedConvNorm(
+                _DilatedConvNorm(
                     in_chan,
                     in_chan,
                     kSize=2 * stride + 1,
@@ -185,7 +81,7 @@ class BaseUBlock(nn.Module):
             )
 
 
-class UBlock(BaseUBlock):
+class UBlock(_BaseUBlock):
     """ Upsampling block.
 
     Based on the following principle:
@@ -194,9 +90,9 @@ class UBlock(BaseUBlock):
 
     def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4):
         super().__init__(out_chan, in_chan, upsampling_depth, use_globln=False)
-        self.conv_1x1_exp = ConvNorm(in_chan, out_chan, 1, 1, groups=1)
-        self.final_norm = NormAct(in_chan)
-        self.module_act = NormAct(out_chan)
+        self.conv_1x1_exp = _ConvNorm(in_chan, out_chan, 1, 1, groups=1)
+        self.final_norm = _NormAct(in_chan)
+        self.module_act = _NormAct(out_chan)
 
     def forward(self, x):
         """
@@ -226,14 +122,14 @@ class UBlock(BaseUBlock):
         return self.module_act(expanded + x)
 
 
-class UConvBlock(BaseUBlock):
+class UConvBlock(_BaseUBlock):
     """ Block which performs successive downsampling and upsampling
     in order to be able to analyze the input features in multiple resolutions.
     """
 
     def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4):
         super().__init__(out_chan, in_chan, upsampling_depth, use_globln=True)
-        self.final_norm = NormAct(in_chan, use_globln=True)
+        self.final_norm = _NormAct(in_chan, use_globln=True)
         self.res_conv = nn.Conv1d(in_chan, out_chan, 1)
 
     def forward(self, x):
@@ -528,3 +424,109 @@ class SuDORMRFImproved(_SuDORMRFBase):
         x = x.view(x.shape[0], self.n_src, self.n_filters, -1)
         x = self.mask_nl_class(x)
         return x
+
+
+class _ConvNormAct(nn.Module):
+    """ Convolution layer with normalization and a PReLU activation.
+
+    Args
+        nIn: number of input channels
+        nOut: number of output channels
+        kSize: kernel size
+        stride: stride rate for down-sampling. Default is 1
+    """
+
+    def __init__(self, nIn, nOut, kSize, stride=1, groups=1, use_globln=False):
+
+        super().__init__()
+        padding = int((kSize - 1) / 2)
+        self.conv = nn.Conv1d(
+            nIn, nOut, kSize, stride=stride, padding=padding, bias=True, groups=groups
+        )
+        if use_globln:
+            self.norm = GlobLN(nOut)
+            self.act = nn.PReLU()
+        else:
+            self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
+            self.act = nn.PReLU(nOut)
+
+    def forward(self, inp):
+        output = self.conv(inp)
+        output = self.norm(output)
+        return self.act(output)
+
+
+class _ConvNorm(nn.Module):
+    """ Convolution layer with normalization without activation.
+
+    Args:
+        nIn: number of input channels
+        nOut: number of output channels
+        kSize: kernel size
+        stride: stride rate for down-sampling. Default is 1
+    """
+
+    def __init__(self, nIn, nOut, kSize, stride=1, groups=1):
+
+        super().__init__()
+        padding = int((kSize - 1) / 2)
+        self.conv = nn.Conv1d(
+            nIn, nOut, kSize, stride=stride, padding=padding, bias=True, groups=groups
+        )
+        self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
+
+    def forward(self, inp):
+        output = self.conv(inp)
+        return self.norm(output)
+
+
+class _NormAct(nn.Module):
+    """ Normalization and PReLU activation.
+
+    Args:
+         nOut: number of output channels
+    """
+
+    def __init__(self, nOut, use_globln=False):
+        super().__init__()
+        if use_globln:
+            self.norm = GlobLN(nOut)
+        else:
+            self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
+        self.act = nn.PReLU(nOut)
+
+    def forward(self, inp):
+        output = self.norm(inp)
+        return self.act(output)
+
+
+class _DilatedConvNorm(nn.Module):
+    """ Dilated convolution with normalized output.
+
+    Args:
+        nIn: number of input channels
+        nOut: number of output channels
+        kSize: kernel size
+        stride: optional stride rate for down-sampling
+        d: optional dilation rate
+    """
+
+    def __init__(self, nIn, nOut, kSize, stride=1, d=1, groups=1, use_globln=False):
+        super().__init__()
+        self.conv = nn.Conv1d(
+            nIn,
+            nOut,
+            kSize,
+            stride=stride,
+            dilation=d,
+            padding=((kSize - 1) // 2) * d,
+            groups=groups,
+        )
+        if use_globln:
+            self.norm = GlobLN(nOut)
+        else:
+            self.norm = nn.GroupNorm(1, nOut, eps=1e-08)
+
+    def forward(self, inp):
+        output = self.conv(inp)
+        return self.norm(output)
