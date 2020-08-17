@@ -1,6 +1,7 @@
 import pytest
 import torch
 from torch.testing import assert_allclose
+import warnings
 
 from asteroid.filterbanks import STFTFB, Encoder, transforms
 from asteroid.losses import PITLossWrapper
@@ -136,4 +137,6 @@ def test_negstoi_pit(n_src, sample_rate, use_vad, extended):
     )
     loss_func = PITLossWrapper(singlesrc_negstoi, pit_from="pw_pt")
     # Assert forward ok.
-    loss_func(est, ref)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        loss_func(est, ref)
