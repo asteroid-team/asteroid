@@ -1,4 +1,13 @@
+import torch
 from torch import nn
+
+
+class Swish(nn.Module):
+    def __init__(self):
+        super(Swish, self).__init__()
+
+    def forward(self, x):
+        return x * torch.sigmoid(x)
 
 
 def linear():
@@ -27,6 +36,14 @@ def softmax(dim=None):
 
 def tanh():
     return nn.Tanh()
+
+
+def gelu():
+    return nn.GELU()
+
+
+def swish():
+    return Swish()
 
 
 def get(identifier):

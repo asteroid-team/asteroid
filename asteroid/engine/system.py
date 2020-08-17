@@ -1,6 +1,8 @@
 import torch
 import pytorch_lightning as pl
 from argparse import Namespace
+from typing import Callable, Optional
+from torch.optim.optimizer import Optimizer
 
 from ..utils import flatten_dict
 
@@ -112,6 +114,19 @@ class System(pl.LightningModule):
         tensorboard_logs = {"train_loss": loss}
         return {"loss": loss, "log": tensorboard_logs}
 
+    def optimizer_step(
+        self,
+        epoch: int,
+        batch_idx: int,
+        optimizer: Optimizer,
+        optimizer_idx: int,
+        second_order_closure: Optional[Callable] = None,
+    ) -> None:
+        for sched in self.scheduler:
+            if isinstance(sched, dict) and sched["interval"] == "batch":
+                sched["scheduler"].step()  # call step on each batch scheduler
+        self.optimizer.step()
+
     def validation_step(self, batch, batch_nb):
         """ Need to overwrite PL validation_step to do validation.
 
@@ -159,8 +174,22 @@ class System(pl.LightningModule):
 
     def configure_optimizers(self):
         """ Required by pytorch-lightning. """
+
         if self.scheduler is not None:
-            return [self.optimizer], [self.scheduler]
+            if not isinstance(self.scheduler, (list, tuple)):
+                self.scheduler = [self.scheduler]  # support multiple schedulers
+            epoch_schedulers = []
+            for sched in self.scheduler:
+                if not isinstance(sched, dict):
+                    epoch_schedulers.append(sched)
+                else:
+                    assert sched["interval"] in [
+                        "batch",
+                        "epoch",
+                    ], "Scheduler interval should be either batch or epoch"
+                    if sched["interval"] == "epoch":
+                        epoch_schedulers.append(sched)
+            return [self.optimizer], epoch_schedulers
         return self.optimizer
 
     def train_dataloader(self):

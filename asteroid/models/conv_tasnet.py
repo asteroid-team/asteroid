@@ -53,7 +53,7 @@ class ConvTasNet(BaseTasNet):
         skip_chan=128,
         conv_kernel_size=3,
         norm_type="gLN",
-        mask_act="relu",
+        mask_act="sigmoid",
         in_chan=None,
         fb_name="free",
         kernel_size=16,

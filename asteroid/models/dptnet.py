@@ -1,10 +1,10 @@
 from ..filterbanks import make_enc_dec
-from ..masknn import DPRNN
+from ..masknn import DPTransformer
 from .base_models import BaseTasNet
 
 
-class DPRNNTasNet(BaseTasNet):
-    """ DPRNN separation model, as described in [1].
+class DPTNet(BaseTasNet):
+    """ DPTNet separation model, as described in [1].
 
     Args:
         n_src (int): Number of masks to estimate.
@@ -43,25 +43,21 @@ class DPRNNTasNet(BaseTasNet):
             creation.
 
     References:
-        [1] "Dual-path RNN: efficient long sequence modeling for
-            time-domain single-channel speech separation", Yi Luo, Zhuo Chen
-            and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
+        [1]
     """
 
     def __init__(
         self,
         n_src,
-        out_chan=None,
-        bn_chan=128,
-        hid_size=128,
+        ff_hid=256,
         chunk_size=100,
         hop_size=None,
         n_repeats=6,
         norm_type="gLN",
-        mask_act="sigmoid",
+        ff_activation="relu",
+        encoder_activation="relu",
+        mask_act="relu",
         bidirectional=True,
-        rnn_type="LSTM",
-        num_layers=1,
         dropout=0,
         in_chan=None,
         fb_name="free",
@@ -82,20 +78,17 @@ class DPRNNTasNet(BaseTasNet):
                 f"{n_feats} and {in_chan}"
             )
         # Update in_chan
-        masker = DPRNN(
+        masker = DPTransformer(
             n_feats,
             n_src,
-            out_chan=out_chan,
-            bn_chan=bn_chan,
-            hid_size=hid_size,
+            ff_hid=ff_hid,
+            ff_activation=ff_activation,
             chunk_size=chunk_size,
             hop_size=hop_size,
             n_repeats=n_repeats,
             norm_type=norm_type,
             mask_act=mask_act,
             bidirectional=bidirectional,
-            rnn_type=rnn_type,
-            num_layers=num_layers,
             dropout=dropout,
         )
-        super().__init__(encoder, masker, decoder)
+        super().__init__(encoder, masker, decoder, encoder_activation=encoder_activation)
