@@ -7,7 +7,16 @@ from .griffin_lim import griffin_lim, misi
 from .multiphase_gammatone_fb import MultiphaseGammatoneFB
 
 
-def make_enc_dec(fb_name, n_filters, kernel_size, stride=None, who_is_pinv=None, **kwargs):
+def make_enc_dec(
+    fb_name,
+    n_filters,
+    kernel_size,
+    stride=None,
+    who_is_pinv=None,
+    padding=0,
+    output_padding=0,
+    **kwargs,
+):
     """ Creates congruent encoder and decoder from the same filterbank family.
 
     Args:
@@ -23,6 +32,10 @@ def make_enc_dec(fb_name, n_filters, kernel_size, stride=None, who_is_pinv=None,
             be used. If string (among [``'encoder'``, ``'decoder'``]), decides
             which of ``Encoder`` or ``Decoder`` will be the pseudo inverse of
             the other one.
+        padding (int): Zero-padding added to both sides of the input.
+            Passed to Encoder and Decoder.
+        output_padding (int): Additional size added to one side of the output shape.
+            Passed to Decoder.
         **kwargs: Arguments which will be passed to the filterbank class
             additionally to the usual `n_filters`, `kernel_size` and `stride`.
             Depends on the filterbank family.
@@ -33,20 +46,20 @@ def make_enc_dec(fb_name, n_filters, kernel_size, stride=None, who_is_pinv=None,
 
     if who_is_pinv in ["dec", "decoder"]:
         fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
-        enc = Encoder(fb)
+        enc = Encoder(fb, padding=padding)
         # Decoder filterbank is pseudo inverse of encoder filterbank.
         dec = Decoder.pinv_of(fb)
     elif who_is_pinv in ["enc", "encoder"]:
         fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
-        dec = Decoder(fb)
+        dec = Decoder(fb, padding=padding, output_padding=output_padding)
         # Encoder filterbank is pseudo inverse of decoder filterbank.
         enc = Encoder.pinv_of(fb)
     else:
         fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
-        enc = Encoder(fb)
+        enc = Encoder(fb, padding=padding)
         # Filters between encoder and decoder should not be shared.
         fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
-        dec = Decoder(fb)
+        dec = Decoder(fb, padding=padding, output_padding=output_padding)
     return enc, dec
 
 
