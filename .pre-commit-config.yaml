@@ -3,11 +3,11 @@ repos:
     rev: v2.4.0
     hooks:
       - id: end-of-file-fixer
-        files: ^notebooks/*
+        files: ^notebooks/
       - id: trailing-whitespace
-        files: ^notebooks/*
+        files: ^notebooks/
       - id: check-yaml
-        files: ^notebooks/*
+        files: ^notebooks/
 
   - repo: https://github.com/psf/black
     rev: 19.10b0
