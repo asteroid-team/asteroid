@@ -1,8 +1,6 @@
 from torch.optim.optimizer import Optimizer
 
 
-
-
 class _BaseScheduler(object):
     def __init__(self, optimizer):
         self.optimizer = optimizer
@@ -16,7 +14,7 @@ class _BaseScheduler(object):
 
     def _set_lr(self, lr):
         for param_group in self.optimizer.param_groups:
-            param_group['lr'] = lr
+            param_group["lr"] = lr
 
     def step(self):
         self.step_num += 1
@@ -38,14 +36,25 @@ class NoamScheduler(_BaseScheduler):
         self.warmup_steps = warmup_steps
 
     def _get_lr(self):
-        lr = self.scale * self.d_model ** (-0.5) * \
-                min(self.step_num ** (-0.5), self.step_num * self.warmup_steps ** (-1.5))
+        lr = (
+            self.scale
+            * self.d_model ** (-0.5)
+            * min(self.step_num ** (-0.5), self.step_num * self.warmup_steps ** (-1.5))
+        )
         return lr
 
 
 class DPTNetScheduler(_BaseScheduler):
-    def __init__(self, optimizer, steps_per_epoch, d_model, warmup_steps=4000, noam_scale=1.0,
-                 exp_max=0.0004, exp_base=0.98):
+    def __init__(
+        self,
+        optimizer,
+        steps_per_epoch,
+        d_model,
+        warmup_steps=4000,
+        noam_scale=1.0,
+        exp_max=0.0004,
+        exp_base=0.98,
+    ):
         super(DPTNetScheduler, self).__init__(optimizer)
         self.noam_scale = noam_scale
         self.d_model = d_model
@@ -64,6 +73,9 @@ class DPTNetScheduler(_BaseScheduler):
             lr = self.exp_max * (self.exp_base ** ((self.epoch - 1) // 2))
         else:
             # noam
-            lr = self.noam_scale * self.d_model ** (-0.5) * \
-                min(self.step_num ** (-0.5), self.step_num * self.warmup_steps ** (-1.5))
+            lr = (
+                self.noam_scale
+                * self.d_model ** (-0.5)
+                * min(self.step_num ** (-0.5), self.step_num * self.warmup_steps ** (-1.5))
+            )
         return lr

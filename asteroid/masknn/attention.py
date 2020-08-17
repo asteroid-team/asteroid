@@ -27,13 +27,23 @@ class ImprovedTransformedLayer(nn.Module):
         "Dual-Path Transformer Network: Direct Context-Aware Modeling for End-to-End Monaural Speech Separation."
          arXiv preprint arXiv:2007.13975 (2020).
     """
-    def __init__(self, embed_dim, n_heads, dim_ff, dropout=0., activation="relu", bidirectional=True, norm="gLN"):
+
+    def __init__(
+        self,
+        embed_dim,
+        n_heads,
+        dim_ff,
+        dropout=0.0,
+        activation="relu",
+        bidirectional=True,
+        norm="gLN",
+    ):
         super(ImprovedTransformedLayer, self).__init__()
 
         self.mha = MultiheadAttention(embed_dim, n_heads, dropout=dropout)
         self.recurrent = nn.LSTM(embed_dim, dim_ff, bidirectional=bidirectional)
         self.dropout = nn.Dropout(dropout)
-        ff_inner_dim = 2*dim_ff if bidirectional else dim_ff
+        ff_inner_dim = 2 * dim_ff if bidirectional else dim_ff
         self.linear = nn.Linear(ff_inner_dim, embed_dim)
         self.activation = activations.get(activation)()
         self.norm_mha = norms.get(norm)(embed_dim)
@@ -92,7 +102,7 @@ class DPTransformer(nn.Module):
         n_repeats=6,
         norm_type="gLN",
         ff_activation="relu",
-        mask_act='relu',
+        mask_act="relu",
         bidirectional=True,
         dropout=0,
     ):
@@ -117,12 +127,30 @@ class DPTransformer(nn.Module):
         # Succession of DPRNNBlocks.
         self.layers = nn.ModuleList([])
         for x in range(self.n_repeats):
-            self.layers.append(nn.ModuleList([ImprovedTransformedLayer(self.in_chan, self.n_heads, self.ff_hid,
-                                                                   self.dropout, self.ff_activation, True, self.norm_type),
-                                          ImprovedTransformedLayer(self.in_chan, self.n_heads, self.ff_hid,
-                                                                   self.dropout, self.ff_activation, self.bidirectional,
-                                                                   self.norm_type)
-                            ]))
+            self.layers.append(
+                nn.ModuleList(
+                    [
+                        ImprovedTransformedLayer(
+                            self.in_chan,
+                            self.n_heads,
+                            self.ff_hid,
+                            self.dropout,
+                            self.ff_activation,
+                            True,
+                            self.norm_type,
+                        ),
+                        ImprovedTransformedLayer(
+                            self.in_chan,
+                            self.n_heads,
+                            self.ff_hid,
+                            self.dropout,
+                            self.ff_activation,
+                            self.bidirectional,
+                            self.norm_type,
+                        ),
+                    ]
+                )
+            )
         net_out_conv = nn.Conv2d(self.in_chan, n_src * self.in_chan, 1)
         self.first_out = nn.Sequential(nn.PReLU(), net_out_conv)
         # Gating and masking in 2D space (after fold)
@@ -132,7 +160,7 @@ class DPTransformer(nn.Module):
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
         # For softmax, feed the source dimension.
-        if has_arg(mask_nl_class, 'dim'):
+        if has_arg(mask_nl_class, "dim"):
             self.output_act = mask_nl_class(dim=1)
         else:
             self.output_act = mask_nl_class()
@@ -169,17 +197,17 @@ class DPTransformer(nn.Module):
 
     def get_config(self):
         config = {
-            'in_chan': self.in_chan,
-            'ff_hid': self.hid_size,
-            'n_heads': self.n_heads,
-            'chunk_size': self.chunk_size,
-            'hop_size': self.hop_size,
-            'n_repeats': self.n_repeats,
-            'n_src': self.n_src,
-            'norm_type': self.norm_type,
-            'ff_activation': self.ff_activation,
-            'mask_act': self.mask_act,
-            'bidirectional': self.bidirectional,
-            'dropout': self.dropout,
+            "in_chan": self.in_chan,
+            "ff_hid": self.hid_size,
+            "n_heads": self.n_heads,
+            "chunk_size": self.chunk_size,
+            "hop_size": self.hop_size,
+            "n_repeats": self.n_repeats,
+            "n_src": self.n_src,
+            "norm_type": self.norm_type,
+            "ff_activation": self.ff_activation,
+            "mask_act": self.mask_act,
+            "bidirectional": self.bidirectional,
+            "dropout": self.dropout,
         }
         return config
