@@ -22,6 +22,7 @@ class BaseTasNet(nn.Module):
         self.masker = masker
         self.decoder = decoder
 
+        self.encoder_activation = encoder_activation
         if encoder_activation:
             self.enc_activation = activations.get(encoder_activation)()
         else:
@@ -166,7 +167,11 @@ class BaseTasNet(nn.Module):
             )
         # Merge all args under model_args.
         model_conf["model_name"] = self.__class__.__name__
-        model_conf["model_args"] = {**fb_config, **masknet_config}
+        model_conf["model_args"] = {
+            **fb_config,
+            **masknet_config,
+            "encoder_activation": self.encoder_activation,
+        }
         model_conf["state_dict"] = self.state_dict()
         # Additional infos
         infos = dict()
