@@ -38,13 +38,13 @@ OR OTHER DEALINGS WITH THE SOFTWARE.
 import torch
 import torch.nn as nn
 import math
-from asteroid.masknn.norms import GlobLN
+
+from ..filterbanks import make_enc_dec
+from ..masknn.norms import GlobLN
 
 
 class ConvNormAct(nn.Module):
-    """
-    This class defines the convolution layer with normalization and a PReLU
-    activation
+    """ Convolution layer with normalization and a PReLU activation.
 
     Args
         nIn: number of input channels
@@ -74,8 +74,7 @@ class ConvNormAct(nn.Module):
 
 
 class ConvNorm(nn.Module):
-    """
-    This class defines the convolution layer with normalization and PReLU activation
+    """ Convolution layer with normalization without activation.
 
     Args:
         nIn: number of input channels
@@ -99,9 +98,9 @@ class ConvNorm(nn.Module):
 
 
 class NormAct(nn.Module):
-    """
-    This class defines a normalization and PReLU activation
-    Args
+    """ Normalization and PReLU activation.
+
+    Args:
          nOut: number of output channels
     """
 
@@ -119,8 +118,8 @@ class NormAct(nn.Module):
 
 
 class DilatedConvNorm(nn.Module):
-    """
-    This class defines the dilated convolution with normalized output.
+    """ Dilated convolution with normalized output.
+
     Args:
         nIn: number of input channels
         nOut: number of output channels
@@ -151,22 +150,14 @@ class DilatedConvNorm(nn.Module):
 
 
 class BaseUBlock(nn.Module):
-    def __init__(self, out_channels=128, in_channels=512, upsampling_depth=4, use_globln=False):
+    def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4, use_globln=False):
         super().__init__()
-        self.proj_1x1 = ConvNormAct(
-            out_channels, in_channels, 1, stride=1, groups=1, use_globln=use_globln
-        )
+        self.proj_1x1 = ConvNormAct(out_chan, in_chan, 1, stride=1, groups=1, use_globln=use_globln)
         self.depth = upsampling_depth
         self.spp_dw = nn.ModuleList()
         self.spp_dw.append(
             DilatedConvNorm(
-                in_channels,
-                in_channels,
-                kSize=5,
-                stride=1,
-                groups=in_channels,
-                d=1,
-                use_globln=use_globln,
+                in_chan, in_chan, kSize=5, stride=1, groups=in_chan, d=1, use_globln=use_globln,
             )
         )
 
@@ -177,11 +168,11 @@ class BaseUBlock(nn.Module):
                 stride = 2
             self.spp_dw.append(
                 DilatedConvNorm(
-                    in_channels,
-                    in_channels,
+                    in_chan,
+                    in_chan,
                     kSize=2 * stride + 1,
                     stride=stride,
-                    groups=in_channels,
+                    groups=in_chan,
                     d=1,
                     use_globln=use_globln,
                 )
@@ -195,17 +186,17 @@ class BaseUBlock(nn.Module):
 
 
 class UBlock(BaseUBlock):
-    """
-    This class defines the Upsampling block, which is based on the following
-    principle:
-        REDUCE ---> SPLIT ---> TRANSFORM --> MERGE
+    """ Upsampling block.
+
+    Based on the following principle:
+        ``REDUCE ---> SPLIT ---> TRANSFORM --> MERGE``
     """
 
-    def __init__(self, out_channels=128, in_channels=512, upsampling_depth=4):
-        super().__init__(out_channels, in_channels, upsampling_depth, use_globln=False)
-        self.conv_1x1_exp = ConvNorm(in_channels, out_channels, 1, 1, groups=1)
-        self.final_norm = NormAct(in_channels)
-        self.module_act = NormAct(out_channels)
+    def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4):
+        super().__init__(out_chan, in_chan, upsampling_depth, use_globln=False)
+        self.conv_1x1_exp = ConvNorm(in_chan, out_chan, 1, 1, groups=1)
+        self.final_norm = NormAct(in_chan)
+        self.module_act = NormAct(out_chan)
 
     def forward(self, x):
         """
@@ -236,16 +227,14 @@ class UBlock(BaseUBlock):
 
 
 class UConvBlock(BaseUBlock):
-    """
-    This class defines the block which performs successive downsampling and
-    upsampling in order to be able to analyze the input features in multiple
-    resolutions.
+    """ Block which performs successive downsampling and upsampling
+    in order to be able to analyze the input features in multiple resolutions.
     """
 
-    def __init__(self, out_channels=128, in_channels=512, upsampling_depth=4):
-        super().__init__(out_channels, in_channels, upsampling_depth, use_globln=True)
-        self.final_norm = NormAct(in_channels, use_globln=True)
-        self.res_conv = nn.Conv1d(in_channels, out_channels, 1)
+    def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4):
+        super().__init__(out_chan, in_chan, upsampling_depth, use_globln=True)
+        self.final_norm = NormAct(in_chan, use_globln=True)
+        self.res_conv = nn.Conv1d(in_chan, out_chan, 1)
 
     def forward(self, x):
         """
@@ -275,31 +264,31 @@ class UConvBlock(BaseUBlock):
         return self.res_conv(expanded) + residual
 
 
-class SuDORMRFBase(nn.Module):
+class _SuDORMRFBase(nn.Module):
     def __init__(
         self,
-        out_channels=128,
-        in_channels=512,
+        out_chan=128,
+        in_chan=512,
         num_blocks=16,
         upsampling_depth=4,
-        enc_kernel_size=21,
-        enc_num_basis=512,
-        num_sources=2,
+        kernel_size=21,
+        n_filters=512,
+        n_src=2,
     ):
         super().__init__()
 
         # Number of sources to produce
-        self.in_channels = in_channels
-        self.out_channels = out_channels
+        self.in_chan = in_chan
+        self.out_chan = out_chan
         self.num_blocks = num_blocks
         self.upsampling_depth = upsampling_depth
-        self.enc_kernel_size = enc_kernel_size
-        self.enc_num_basis = enc_num_basis
-        self.num_sources = num_sources
+        self.kernel_size = kernel_size
+        self.n_filters = n_filters
+        self.n_src = n_src
 
         # Appropriate padding is needed for arbitrary lengths
-        self.lcm = abs(self.enc_kernel_size // 2 * 2 ** self.upsampling_depth) // math.gcd(
-            self.enc_kernel_size // 2, 2 ** self.upsampling_depth
+        self.lcm = abs(self.kernel_size // 2 * 2 ** self.upsampling_depth) // math.gcd(
+            self.kernel_size // 2, 2 ** self.upsampling_depth
         )
 
     # Forward pass
@@ -325,7 +314,7 @@ class SuDORMRFBase(nn.Module):
         return x, s
 
     def backend(self, x, s):
-        estimated_waveforms = self.decoder((x * s).view(x.shape[0], -1, x.shape[-1]))
+        estimated_waveforms = self.decoder((x * s).view(x.shape[0], self.n_src, -1, x.shape[-1]))
         # Remove padding
         estimated_waveforms = estimated_waveforms[..., : self.input_wav_shape[-1]]
         return estimated_waveforms
@@ -343,93 +332,103 @@ class SuDORMRFBase(nn.Module):
         return x
 
 
-class SuDORMRF(SuDORMRFBase):
+class SuDORMRF(_SuDORMRFBase):
+    """ SuDORMRF separation model, as described in [1].
+
+    Args:
+        n_src (int): Number of sources in the input mixtures.
+        out_chan (int, optional): Number of bins in the estimated masks.
+            If ``None``, `out_chan = in_chan`.
+        in_chan (int, optional): Number of input channels, should be equal to
+            n_filters.
+        num_blocks (int): Number of of UBlocks
+        upsampling_depth (int): Depth of upsampling
+        fb_name (str, className): Filterbank family from which to make encoder
+            and decoder. To choose among [``'free'``, ``'analytic_free'``,
+            ``'param_sinc'``, ``'stft'``].
+        n_filters (int): Number of filters / Input dimension of the masker net.
+        kernel_size (int): Length of the filters.
+        **fb_kwargs (dict): Additional kwards to pass to the filterbank
+            creation.
+
+    References:
+        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+            Tzinis et al. MLSP 2020.
+    """
+
     def __init__(
         self,
-        out_channels=128,
-        in_channels=512,
+        n_src,
+        out_chan=128,
+        in_chan=None,
         num_blocks=16,
         upsampling_depth=4,
-        enc_kernel_size=21,
-        enc_num_basis=512,
-        num_sources=2,
+        fb_name="free",
+        kernel_size=21,
+        n_filters=512,
+        **fb_kwargs,
     ):
-        super().__init__(
-            out_channels,
-            in_channels,
-            num_blocks,
-            upsampling_depth,
-            enc_kernel_size,
-            enc_num_basis,
-            num_sources,
+        # Need the encoder to determine the number of input channels
+        enc, dec = make_enc_dec(
+            fb_name,
+            kernel_size=kernel_size,
+            n_filters=n_filters,
+            stride=kernel_size // 2,
+            padding=kernel_size // 2,
+            output_padding=(kernel_size // 2) - 1,
+            **fb_kwargs,
         )
-        # Front end
-        self.encoder = nn.Sequential(
-            *[
-                nn.Conv1d(
-                    in_channels=1,
-                    out_channels=enc_num_basis,
-                    kernel_size=enc_kernel_size,
-                    stride=enc_kernel_size // 2,
-                    padding=enc_kernel_size // 2,
-                ),
-                nn.ReLU(),
-            ]
+        n_feats = enc.n_feats_out
+        if in_chan is not None:
+            assert in_chan == n_feats, (
+                "Number of filterbank output channels"
+                " and number of input channels should "
+                "be the same. Received "
+                f"{n_feats} and {in_chan}"
+            )
+        super().__init__(
+            out_chan, n_feats, num_blocks, upsampling_depth, kernel_size, n_feats, n_src,
         )
 
+        # Front end
+        self.encoder = nn.Sequential(enc, nn.ReLU())
+
         # Norm before the rest, and apply one more dense layer
-        self.ln = nn.GroupNorm(1, enc_num_basis, eps=1e-08)
-        self.l1 = nn.Conv1d(in_channels=enc_num_basis, out_channels=out_channels, kernel_size=1)
+        self.ln = nn.GroupNorm(1, n_feats, eps=1e-08)
+        self.l1 = nn.Conv1d(n_feats, out_chan, kernel_size=1)
 
         # Separation module
         self.sm = nn.Sequential(
             *[
-                UBlock(
-                    out_channels=out_channels,
-                    in_channels=in_channels,
-                    upsampling_depth=upsampling_depth,
-                )
-                for r in range(num_blocks)
+                UBlock(out_chan=out_chan, in_chan=in_chan, upsampling_depth=upsampling_depth,)
+                for _ in range(num_blocks)
             ]
         )
 
-        if out_channels != enc_num_basis:
-            self.reshape_before_masks = nn.Conv1d(
-                in_channels=out_channels, out_channels=enc_num_basis, kernel_size=1
-            )
+        if out_chan != n_feats:
+            self.reshape_before_masks = nn.Conv1d(out_chan, n_feats, kernel_size=1)
 
         # Masks layer
         self.m = nn.Conv2d(
-            in_channels=1,
-            out_channels=num_sources,
-            kernel_size=(enc_num_basis + 1, 1),
-            padding=(enc_num_basis - enc_num_basis // 2, 0),
+            1, n_src, kernel_size=(n_feats + 1, 1), padding=(n_feats - n_feats // 2, 0),
         )
 
         # Back end
-        self.decoder = nn.ConvTranspose1d(
-            in_channels=enc_num_basis * num_sources,
-            out_channels=num_sources,
-            output_padding=(enc_kernel_size // 2) - 1,
-            kernel_size=enc_kernel_size,
-            stride=enc_kernel_size // 2,
-            padding=enc_kernel_size // 2,
-            groups=num_sources,
-        )
-        self.ln_mask_in = nn.GroupNorm(1, enc_num_basis, eps=1e-08)
+        self.decoder = dec
+        self.ln_mask_in = nn.GroupNorm(1, n_feats, eps=1e-08)
 
     def separation(self, x):
         x = self.ln(x)
         x = self.l1(x)
         x = self.sm(x)
 
-        if self.out_channels != self.enc_num_basis:
+        if self.out_chan != self.n_filters:
             # x = self.ln_bef_out_reshape(x)
             x = self.reshape_before_masks(x)
 
         # Get masks and apply them
         x = self.m(x.unsqueeze(1))
-        if self.num_sources == 1:
+        if self.n_src == 1:
             x = torch.sigmoid(x)
         else:
             x = nn.functional.softmax(x, dim=1)
@@ -437,70 +436,87 @@ class SuDORMRF(SuDORMRFBase):
         return x
 
 
-class SuDORMRFImproved(SuDORMRFBase):
+class SuDORMRFImproved(_SuDORMRFBase):
+    """ Improved SuDORMRF separation model, as described in [1].
+
+    Args:
+        n_src (int): Number of sources in the input mixtures.
+        out_chan (int, optional): Number of bins in the estimated masks.
+            If ``None``, `out_chan = in_chan`.
+        in_chan (int, optional): Number of input channels, should be equal to
+            n_filters.
+        num_blocks (int): Number of of UBlocks
+        upsampling_depth (int): Depth of upsampling
+        fb_name (str, className): Filterbank family from which to make encoder
+            and decoder. To choose among [``'free'``, ``'analytic_free'``,
+            ``'param_sinc'``, ``'stft'``].
+        n_filters (int): Number of filters / Input dimension of the masker net.
+        kernel_size (int): Length of the filters.
+        **fb_kwargs (dict): Additional kwards to pass to the filterbank
+            creation.
+
+    References:
+        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+            Tzinis et al. MLSP 2020.
+    """
+
     def __init__(
         self,
-        out_channels=128,
-        in_channels=512,
+        n_src,
+        out_chan=128,
+        in_chan=512,
         num_blocks=16,
         upsampling_depth=4,
-        enc_kernel_size=21,
-        enc_num_basis=512,
-        num_sources=2,
+        fb_name="free",
+        kernel_size=21,
+        n_filters=512,
+        **fb_kwargs,
     ):
+        # Need the encoder to determine the number of input channels
+        enc, dec = make_enc_dec(
+            fb_name,
+            kernel_size=kernel_size,
+            n_filters=n_filters,
+            stride=kernel_size // 2,
+            padding=kernel_size // 2,
+            output_padding=(kernel_size // 2) - 1,
+            **fb_kwargs,
+        )
+        n_feats = enc.n_feats_out
+        if in_chan is not None:
+            assert in_chan == n_feats, (
+                "Number of filterbank output channels"
+                " and number of input channels should "
+                "be the same. Received "
+                f"{n_feats} and {in_chan}"
+            )
         super().__init__(
-            out_channels,
-            in_channels,
-            num_blocks,
-            upsampling_depth,
-            enc_kernel_size,
-            enc_num_basis,
-            num_sources,
+            out_chan, n_feats, num_blocks, upsampling_depth, kernel_size, n_feats, n_src,
         )
         # Front end
-        self.encoder = nn.Conv1d(
-            in_channels=1,
-            out_channels=enc_num_basis,
-            kernel_size=enc_kernel_size,
-            stride=enc_kernel_size // 2,
-            padding=enc_kernel_size // 2,
-            bias=False,
-        )
-        torch.nn.init.xavier_uniform_(self.encoder.weight)
+        self.encoder = enc
+        if fb_name in ["free", "analytic_free"]:
+            torch.nn.init.xavier_uniform_(self.encoder.filterbank._filters)
 
         # Norm before the rest, and apply one more dense layer
-        self.ln = GlobLN(enc_num_basis)
-        self.bottleneck = nn.Conv1d(
-            in_channels=enc_num_basis, out_channels=out_channels, kernel_size=1
-        )
+        self.ln = GlobLN(n_feats)
+        self.bottleneck = nn.Conv1d(n_feats, out_chan, kernel_size=1)
 
         # Separation module
         self.sm = nn.Sequential(
             *[
-                UConvBlock(
-                    out_channels=out_channels,
-                    in_channels=in_channels,
-                    upsampling_depth=upsampling_depth,
-                )
+                UConvBlock(out_chan=out_chan, in_chan=in_chan, upsampling_depth=upsampling_depth,)
                 for _ in range(num_blocks)
             ]
         )
 
-        mask_conv = nn.Conv1d(out_channels, num_sources * enc_num_basis, 1)
+        mask_conv = nn.Conv1d(out_chan, n_src * n_feats, 1)
         self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
 
         # Back end
-        self.decoder = nn.ConvTranspose1d(
-            in_channels=enc_num_basis * num_sources,
-            out_channels=num_sources,
-            output_padding=(enc_kernel_size // 2) - 1,
-            kernel_size=enc_kernel_size,
-            stride=enc_kernel_size // 2,
-            padding=enc_kernel_size // 2,
-            groups=1,
-            bias=False,
-        )
-        torch.nn.init.xavier_uniform_(self.decoder.weight)
+        self.decoder = dec
+        if fb_name in ["free", "analytic_free"]:
+            torch.nn.init.xavier_uniform_(self.decoder.filterbank._filters)
         self.mask_nl_class = nn.ReLU()
 
     def separation(self, x):
@@ -509,7 +525,6 @@ class SuDORMRFImproved(SuDORMRFBase):
         x = self.sm(x)
 
         x = self.mask_net(x)
-        x = x.view(x.shape[0], self.num_sources, self.enc_num_basis, -1)
+        x = x.view(x.shape[0], self.n_src, self.n_filters, -1)
         x = self.mask_nl_class(x)
-
         return x

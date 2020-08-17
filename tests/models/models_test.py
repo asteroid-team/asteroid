@@ -69,13 +69,7 @@ def test_save_and_load_dprnn(fb):
 
 def test_sudormrf():
     model = SuDORMRF(
-        out_channels=10,
-        in_channels=10,
-        num_blocks=4,
-        upsampling_depth=2,
-        enc_kernel_size=21,
-        enc_num_basis=10,
-        num_sources=2,
+        2, out_chan=10, in_chan=10, num_blocks=4, upsampling_depth=2, kernel_size=21, n_filters=10,
     )
     test_input = torch.randn(1, 801)
     model(test_input)
@@ -83,13 +77,7 @@ def test_sudormrf():
 
 def test_sudormrf_imp():
     model = SuDORMRFImproved(
-        out_channels=10,
-        in_channels=10,
-        num_blocks=4,
-        upsampling_depth=2,
-        enc_kernel_size=21,
-        enc_num_basis=10,
-        num_sources=2,
+        2, out_chan=10, in_chan=10, num_blocks=4, upsampling_depth=2, n_filters=10, kernel_size=21,
     )
     test_input = torch.randn(1, 801)
     model(test_input)
