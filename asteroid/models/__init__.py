@@ -12,6 +12,7 @@ __all__ = [
     "DPRNNTasNet",
     "SuDORMRFImproved",
     "SuDORMRF",
+    "DPTNet",
     "save_publishable",
     "upload_publishable",
 ]
