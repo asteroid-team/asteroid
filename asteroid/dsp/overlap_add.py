@@ -231,7 +231,8 @@ class DualPathProcessing(nn.Module):
 
         return x.reshape(batch, chan, self.n_orig_frames)
 
-    def intra_process(self, x, module):
+    @staticmethod
+    def intra_process(x, module):
         """ Performs intra-chunk processing.
 
         Args:
@@ -257,7 +258,8 @@ class DualPathProcessing(nn.Module):
         x = x.reshape(batch, n_chunks, channels, chunk_size).transpose(1, -1).transpose(1, 2)
         return x
 
-    def inter_process(self, x, module):
+    @staticmethod
+    def inter_process(x, module):
         """ Performs inter-chunk processing.
 
         Args:
