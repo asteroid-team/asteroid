@@ -68,6 +68,7 @@ class DPRNNTasNet(BaseTasNet):
         kernel_size=16,
         n_filters=64,
         stride=8,
+        encoder_activation="relu",
         **fb_kwargs,
     ):
         encoder, decoder = make_enc_dec(
@@ -98,4 +99,4 @@ class DPRNNTasNet(BaseTasNet):
             num_layers=num_layers,
             dropout=dropout,
         )
-        super().__init__(encoder, masker, decoder)
+        super().__init__(encoder, masker, decoder, encoder_activation=encoder_activation)

@@ -198,7 +198,7 @@ class DPTransformer(nn.Module):
     def get_config(self):
         config = {
             "in_chan": self.in_chan,
-            "ff_hid": self.hid_size,
+            "ff_hid": self.ff_hid,
             "n_heads": self.n_heads,
             "chunk_size": self.chunk_size,
             "hop_size": self.hop_size,
