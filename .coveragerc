@@ -7,6 +7,9 @@ exclude_lines =
 
 omit =
   asteroid/data/*
+  # Need ACCESS_TOKEN, not possible from fork.
+  asteroid/models/publisher.py
+  asteroid/models/zenodo.py
 
 [run]
 source=asteroid
