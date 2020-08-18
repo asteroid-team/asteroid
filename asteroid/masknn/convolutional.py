@@ -271,7 +271,7 @@ class SuDORMRF(nn.Module):
         x = self.l1(x)
         x = self.sm(x)
 
-        if self.out_chan != self.in_chan:
+        if self.bn_chan != self.in_chan:
             x = self.reshape_before_masks(x)
 
         # Get output + activation
