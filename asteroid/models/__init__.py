@@ -1,7 +1,7 @@
 # Models
 from .conv_tasnet import ConvTasNet
 from .dprnn_tasnet import DPRNNTasNet
-from .sudormrf import SuDORMRFImproved, SuDORMRF
+from .sudormrf import SuDORMRFImprovedNet, SuDORMRFNet
 from .dptnet import DPTNet
 from .lstm_tasnet import LSTMTasNet
 
@@ -11,8 +11,8 @@ from .publisher import save_publishable, upload_publishable
 __all__ = [
     "ConvTasNet",
     "DPRNNTasNet",
-    "SuDORMRFImproved",
-    "SuDORMRF",
+    "SuDORMRFImprovedNet",
+    "SuDORMRFNet",
     "DPTNet",
     "LSTMTasNet",
     "save_publishable",
