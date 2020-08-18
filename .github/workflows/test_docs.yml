@@ -44,3 +44,29 @@ jobs:
         cd docs
         make html
         touch build/html/.nojekyll  # prevents use jekyll to build doc
+
+    # Create an artifact of the html output.
+    - uses: actions/upload-artifact@v1
+      with:
+        name: DocumentationHTML
+        path: docs/build/html/
+
+    # Publish built docs to gh-pages branch.
+    - name: Commit documentation changes
+      run: |
+        git clone https://github.com/ammaraskar/sphinx-action-test.git --branch gh-pages --single-branch gh-pages
+        cp -r docs/build/html/* gh-pages/
+        cd gh-pages
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Update documentation" -a || true
+        # The above command will fail if no changes were present, so we ignore that.
+    - name: Push changes
+      if: github.ref == 'refs/heads/master'
+      uses: ad-m/github-push-action@master
+      with:
+        branch: gh-pages
+        directory: gh-pages
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+#        force: true
