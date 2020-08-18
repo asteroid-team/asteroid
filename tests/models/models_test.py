@@ -4,7 +4,7 @@ from torch.testing import assert_allclose
 import numpy as np
 import soundfile as sf
 from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet
-from asteroid.models import SuDORMRF, SuDORMRFImproved
+from asteroid.models import SuDORMRFNet, SuDORMRFImprovedNet
 
 
 def test_convtasnet_sep():
@@ -68,7 +68,7 @@ def test_save_and_load_dprnn(fb):
 
 
 def test_sudormrf():
-    model = SuDORMRF(
+    model = SuDORMRFNet(
         2, out_chan=10, in_chan=10, num_blocks=4, upsampling_depth=2, kernel_size=21, n_filters=10,
     )
     test_input = torch.randn(1, 801)
@@ -76,7 +76,7 @@ def test_sudormrf():
 
 
 def test_sudormrf_imp():
-    model = SuDORMRFImproved(
+    model = SuDORMRFImprovedNet(
         2, out_chan=10, in_chan=10, num_blocks=4, upsampling_depth=2, n_filters=10, kernel_size=21,
     )
     test_input = torch.randn(1, 801)
