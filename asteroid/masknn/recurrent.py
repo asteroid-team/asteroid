@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn.functional import fold, unfold
 
 from . import norms, activations
-from .norms import GlobLN
+from .norms import GlobLN, CumLN
 from ..utils import has_arg
 
 
@@ -447,7 +447,10 @@ class LSTMMasker(nn.Module):
 
         # Create TasNet masker
         out_size = hid_size * (int(bidirectional) + 1)
-        self.bn_layer = GlobLN(in_chan)
+        if bidirectional:
+            self.bn_layer = GlobLN(in_chan)
+        else:
+            self.bn_layer = CumLN(in_chan)
         self.masker = nn.Sequential(
             SingleRNN(
                 "lstm",
