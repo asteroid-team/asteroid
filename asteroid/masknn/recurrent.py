@@ -3,6 +3,7 @@ from torch import nn
 from torch.nn.functional import fold, unfold
 
 from . import norms, activations
+from .norms import GlobLN, CumLN
 from ..utils import has_arg
 
 
@@ -387,5 +388,99 @@ class DPRNN(nn.Module):
             "rnn_type": self.rnn_type,
             "num_layers": self.num_layers,
             "dropout": self.dropout,
+        }
+        return config
+
+
+class LSTMMasker(nn.Module):
+    """ LSTM mask network introduced in [1], without skip connections.
+
+    Args:
+        in_chan (int): Number of input filters.
+        n_src (int): Number of masks to estimate.
+        out_chan  (int or None): Number of bins in the estimated masks.
+            Defaults to `in_chan`.
+        rnn_type (str, optional): Type of RNN used. Choose between ``'RNN'``,
+            ``'LSTM'`` and ``'GRU'``.
+        n_layers (int, optional): Number of layers in each RNN.
+        hid_size (int): Number of neurons in the RNNs cell state.
+        mask_act (str, optional): Which non-linear function to generate mask.
+        bidirectional (bool, optional): Whether to use BiLSTM
+        dropout (float, optional): Dropout ratio, must be in [0,1].
+
+    References:
+        [1]: Yi Luo et al. "Real-time Single-channel Dereverberation and Separation
+            with Time-domain Audio Separation Network", Interspeech 2018
+    """
+
+    def __init__(
+        self,
+        in_chan,
+        n_src,
+        out_chan=None,
+        rnn_type="lstm",
+        n_layers=4,
+        hid_size=512,
+        dropout=0.3,
+        mask_act="sigmoid",
+        bidirectional=True,
+    ):
+        super().__init__()
+        self.in_chan = in_chan
+        self.n_src = n_src
+        out_chan = out_chan if out_chan is not None else in_chan
+        self.out_chan = out_chan
+        self.rnn_type = rnn_type
+        self.n_layers = n_layers
+        self.hid_size = hid_size
+        self.dropout = dropout
+        self.mask_act = mask_act
+        self.bidirectional = bidirectional
+
+        # Get activation function.
+        mask_nl_class = activations.get(mask_act)
+        # For softmax, feed the source dimension.
+        if has_arg(mask_nl_class, "dim"):
+            self.output_act = mask_nl_class(dim=1)
+        else:
+            self.output_act = mask_nl_class()
+
+        # Create TasNet masker
+        out_size = hid_size * (int(bidirectional) + 1)
+        if bidirectional:
+            self.bn_layer = GlobLN(in_chan)
+        else:
+            self.bn_layer = CumLN(in_chan)
+        self.masker = nn.Sequential(
+            SingleRNN(
+                "lstm",
+                in_chan,
+                hidden_size=hid_size,
+                n_layers=n_layers,
+                bidirectional=bidirectional,
+                dropout=dropout,
+            ),
+            nn.Linear(out_size, self.n_src * out_chan),
+            self.output_act,
+        )
+
+    def forward(self, x):
+        batch_size = x.shape[0]
+        to_sep = self.bn_layer(x)
+        est_masks = self.masker(to_sep.transpose(-1, -2)).transpose(-1, -2)
+        est_masks = est_masks.view(batch_size, self.n_src, self.out_chan, -1)
+        return est_masks
+
+    def get_config(self):
+        config = {
+            "in_chan": self.in_chan,
+            "n_src": self.n_src,
+            "out_chan": self.out_chan,
+            "rnn_type": self.rnn_type,
+            "n_layers": self.n_layers,
+            "hid_size": self.hid_size,
+            "dropout": self.dropout,
+            "mask_act": self.mask_act,
+            "bidirectional": self.bidirectional,
         }
         return config
