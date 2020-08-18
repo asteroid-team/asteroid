@@ -3,7 +3,7 @@ import pytest
 from torch.testing import assert_allclose
 import numpy as np
 import soundfile as sf
-from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet
+from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet
 from asteroid.models import SuDORMRF, SuDORMRFImproved
 
 
@@ -64,6 +64,16 @@ def test_save_and_load_dprnn(fb):
     model_conf = model1.serialize()
 
     reconstructed_model = DPRNNTasNet.from_pretrained(model_conf)
+    assert_allclose(model1.separate(test_input), reconstructed_model(test_input))
+
+
+@pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
+def test_save_and_load_tasnet(fb):
+    model1 = LSTMTasNet(n_src=2, hid_size=4, n_layers=1, n_filters=32, dropout=0.0, fb_name=fb,)
+    test_input = torch.randn(1, 800)
+    model_conf = model1.serialize()
+
+    reconstructed_model = LSTMTasNet.from_pretrained(model_conf)
     assert_allclose(model1.separate(test_input), reconstructed_model(test_input))
 
 
