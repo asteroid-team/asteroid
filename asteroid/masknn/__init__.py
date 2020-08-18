@@ -1,4 +1,4 @@
-from .convolutional import TDConvNet
+from .convolutional import TDConvNet, SuDORMRF, SuDORMRFImproved
 from .recurrent import DPRNN, LSTMMasker
 from .attention import DPTransformer
 
@@ -7,4 +7,6 @@ __all__ = [
     "DPRNN",
     "DPTransformer",
     "LSTMMasker",
+    "SuDORMRF",
+    "SuDORMRFImproved",
 ]

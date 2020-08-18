@@ -1,10 +1,12 @@
+import torch
 from torch import nn
 import warnings
-from ..utils.deprecation_utils import VisibleDeprecationWarning
-
 
 from . import norms, activations
+from .norms import GlobLN
 from ..utils import has_arg
+from ..utils.deprecation_utils import VisibleDeprecationWarning
+from ._local import _DilatedConvNorm, _NormAct, _ConvNormAct, _ConvNorm
 
 
 class Conv1DBlock(nn.Module):
@@ -207,3 +209,273 @@ class TDConvNet(nn.Module):
             "mask_act": self.mask_act,
         }
         return config
+
+
+class SuDORMRF(nn.Module):
+    """ SuDORMRF mask network, as described in [1].
+
+    Args:
+        in_chan (int): Number of input channels. Also number of output channels.
+        n_src (int): Number of sources in the input mixtures.
+        bn_chan (int, optional): Number of bins in the bottleneck layer and the UNet blocks.
+        num_blocks (int): Number of of UBlocks.
+        upsampling_depth (int): Depth of upsampling.
+        mask_act (str): Name of output activation.
+
+    References:
+        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+            Tzinis et al. MLSP 2020.
+    """
+
+    def __init__(
+        self, in_chan, n_src, bn_chan=128, num_blocks=16, upsampling_depth=4, mask_act="softmax",
+    ):
+        super().__init__()
+        self.in_chan = in_chan
+        self.n_src = n_src
+        self.bn_chan = bn_chan
+        self.num_blocks = num_blocks
+        self.upsampling_depth = upsampling_depth
+        self.mask_act = mask_act
+
+        # Norm before the rest, and apply one more dense layer
+        self.ln = nn.GroupNorm(1, in_chan, eps=1e-08)
+        self.l1 = nn.Conv1d(in_chan, bn_chan, kernel_size=1)
+
+        # Separation module
+        self.sm = nn.Sequential(
+            *[
+                UBlock(out_chan=bn_chan, in_chan=in_chan, upsampling_depth=upsampling_depth,)
+                for _ in range(num_blocks)
+            ]
+        )
+
+        if bn_chan != in_chan:
+            self.reshape_before_masks = nn.Conv1d(bn_chan, in_chan, kernel_size=1)
+
+        # Masks layer
+        self.m = nn.Conv2d(
+            1, n_src, kernel_size=(in_chan + 1, 1), padding=(in_chan - in_chan // 2, 0),
+        )
+
+        # Get activation function.
+        mask_nl_class = activations.get(mask_act)
+        # For softmax, feed the source dimension.
+        if has_arg(mask_nl_class, "dim"):
+            self.output_act = mask_nl_class(dim=1)
+        else:
+            self.output_act = mask_nl_class()
+
+    def forward(self, x):
+        x = self.ln(x)
+        x = self.l1(x)
+        x = self.sm(x)
+
+        if self.bn_chan != self.in_chan:
+            x = self.reshape_before_masks(x)
+
+        # Get output + activation
+        x = self.m(x.unsqueeze(1))
+        x = self.output_act(x)
+        return x
+
+    def get_config(self):
+        config = {
+            "in_chan": self.in_chan,
+            "n_src": self.n_src,
+            "bn_chan": self.bn_chan,
+            "num_blocks": self.num_blocks,
+            "upsampling_depth": self.upsampling_depth,
+            "mask_act": self.mask_act,
+        }
+        return config
+
+
+class SuDORMRFImproved(nn.Module):
+    """ Improved SuDORMRF mask network, as described in [1].
+
+    Args:
+        in_chan (int): Number of input channels. Also number of output channels.
+        n_src (int): Number of sources in the input mixtures.
+        bn_chan (int, optional): Number of bins in the bottleneck layer and the UNet blocks.
+        num_blocks (int): Number of of UBlocks
+        upsampling_depth (int): Depth of upsampling
+        mask_act (str): Name of output activation.
+
+
+    References:
+        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+            Tzinis et al. MLSP 2020.
+    """
+
+    def __init__(
+        self, in_chan, n_src, bn_chan=128, num_blocks=16, upsampling_depth=4, mask_act="relu",
+    ):
+        super().__init__()
+        self.in_chan = in_chan
+        self.n_src = n_src
+        self.bn_chan = bn_chan
+        self.num_blocks = num_blocks
+        self.upsampling_depth = upsampling_depth
+        self.mask_act = mask_act
+
+        # Norm before the rest, and apply one more dense layer
+        self.ln = GlobLN(in_chan)
+        self.bottleneck = nn.Conv1d(in_chan, bn_chan, kernel_size=1)
+
+        # Separation module
+        self.sm = nn.Sequential(
+            *[
+                UConvBlock(out_chan=bn_chan, in_chan=in_chan, upsampling_depth=upsampling_depth,)
+                for _ in range(num_blocks)
+            ]
+        )
+
+        mask_conv = nn.Conv1d(bn_chan, n_src * in_chan, 1)
+        self.mask_net = nn.Sequential(nn.PReLU(), mask_conv)
+
+        # Get activation function.
+        mask_nl_class = activations.get(mask_act)
+        # For softmax, feed the source dimension.
+        if has_arg(mask_nl_class, "dim"):
+            self.output_act = mask_nl_class(dim=1)
+        else:
+            self.output_act = mask_nl_class()
+
+    def forward(self, x):
+        x = self.ln(x)
+        x = self.bottleneck(x)
+        x = self.sm(x)
+
+        x = self.mask_net(x)
+        x = x.view(x.shape[0], self.n_src, self.in_chan, -1)
+        x = self.output_act(x)
+        return x
+
+    def get_config(self):
+        config = {
+            "in_chan": self.in_chan,
+            "n_src": self.n_src,
+            "bn_chan": self.bn_chan,
+            "num_blocks": self.num_blocks,
+            "upsampling_depth": self.upsampling_depth,
+            "mask_act": self.mask_act,
+        }
+        return config
+
+
+class _BaseUBlock(nn.Module):
+    def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4, use_globln=False):
+        super().__init__()
+        self.proj_1x1 = _ConvNormAct(
+            out_chan, in_chan, 1, stride=1, groups=1, use_globln=use_globln
+        )
+        self.depth = upsampling_depth
+        self.spp_dw = nn.ModuleList()
+        self.spp_dw.append(
+            _DilatedConvNorm(
+                in_chan, in_chan, kSize=5, stride=1, groups=in_chan, d=1, use_globln=use_globln,
+            )
+        )
+
+        for i in range(1, upsampling_depth):
+            if i == 0:
+                stride = 1
+            else:
+                stride = 2
+            self.spp_dw.append(
+                _DilatedConvNorm(
+                    in_chan,
+                    in_chan,
+                    kSize=2 * stride + 1,
+                    stride=stride,
+                    groups=in_chan,
+                    d=1,
+                    use_globln=use_globln,
+                )
+            )
+        if upsampling_depth > 1:
+            self.upsampler = torch.nn.Upsample(
+                scale_factor=2,
+                # align_corners=True,
+                # mode='bicubic'
+            )
+
+
+class UBlock(_BaseUBlock):
+    """ Upsampling block.
+
+    Based on the following principle:
+        ``REDUCE ---> SPLIT ---> TRANSFORM --> MERGE``
+    """
+
+    def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4):
+        super().__init__(out_chan, in_chan, upsampling_depth, use_globln=False)
+        self.conv_1x1_exp = _ConvNorm(in_chan, out_chan, 1, 1, groups=1)
+        self.final_norm = _NormAct(in_chan)
+        self.module_act = _NormAct(out_chan)
+
+    def forward(self, x):
+        """
+        Args:
+            x: input feature map
+
+        Returns:
+            transformed feature map
+        """
+
+        # Reduce --> project high-dimensional feature maps to low-dimensional space
+        output1 = self.proj_1x1(x)
+        output = [self.spp_dw[0](output1)]
+
+        # Do the downsampling process from the previous level
+        for k in range(1, self.depth):
+            out_k = self.spp_dw[k](output[-1])
+            output.append(out_k)
+
+        # Gather them now in reverse order
+        for _ in range(self.depth - 1):
+            resampled_out_k = self.upsampler(output.pop(-1))
+            output[-1] = output[-1] + resampled_out_k
+
+        expanded = self.conv_1x1_exp(self.final_norm(output[-1]))
+
+        return self.module_act(expanded + x)
+
+
+class UConvBlock(_BaseUBlock):
+    """ Block which performs successive downsampling and upsampling
+    in order to be able to analyze the input features in multiple resolutions.
+    """
+
+    def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4):
+        super().__init__(out_chan, in_chan, upsampling_depth, use_globln=True)
+        self.final_norm = _NormAct(in_chan, use_globln=True)
+        self.res_conv = nn.Conv1d(in_chan, out_chan, 1)
+
+    def forward(self, x):
+        """
+        Args
+            x: input feature map
+
+        Returns:
+            transformed feature map
+        """
+        residual = x.clone()
+        # Reduce --> project high-dimensional feature maps to low-dimensional space
+        output1 = self.proj_1x1(x)
+        output = [self.spp_dw[0](output1)]
+
+        # Do the downsampling process from the previous level
+        for k in range(1, self.depth):
+            out_k = self.spp_dw[k](output[-1])
+            output.append(out_k)
+
+        # Gather them now in reverse order
+        for _ in range(self.depth - 1):
+            resampled_out_k = self.upsampler(output.pop(-1))
+            output[-1] = output[-1] + resampled_out_k
+
+        expanded = self.final_norm(output[-1])
+
+        return self.res_conv(expanded) + residual
