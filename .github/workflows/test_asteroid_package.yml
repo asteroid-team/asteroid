@@ -39,25 +39,26 @@ jobs:
 
     - name: Source code tests
       run: |
-        coverage run -m py.test tests  --ignore tests/models/publish_test.py
-        coverage xml -o coverage_tests.xml
+        coverage run -a -m py.test tests  --ignore tests/models/publish_test.py
+#        coverage xml -o coverage_tests.xml
 #        bash <(curl -s https://codecov.io/bash)
 
     # This tends to fail despite the code works, when Zenodo is slow.
     - name: Model-sharing tests
       # coverage run -a appends cov data to .coverage
       run: |
-        coverage run -m py.test tests/models/publish_test.py
-        coverage xml -o coverage_publish.xml
+        coverage run -a -m py.test tests/models/publish_test.py
       env: #Access token as an env variable
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
     - name: Coverage report
       run: |
         coverage report -m
+        coverage xml -o coverage.xml
 #        coverage combine .coverage_main .coverage_pub
 
     - name: Codecov upload
       uses: codecov/codecov-action@v1
       with:
-        files: ./coverage_tests.xml, ./coverage_publish.xml
+        file: ./coverage.xml
+#        files: ./coverage_tests.xml, ./coverage_publish.xml
