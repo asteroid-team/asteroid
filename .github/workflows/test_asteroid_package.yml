@@ -37,28 +37,23 @@ jobs:
         python -m pip list
       shell: bash
 
-    - name: Pytest and coverage
+    - name: Source code tests
       run: |
-        coverage run -m py.test tests  --ignore tests/models/publish_test.py
-        coverage report -m
-        coverage xml
-        bash <(curl -s https://codecov.io/bash)
-#      env: #Access token as an env variable
-#        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        coverage run -a -m py.test tests  --ignore tests/models/publish_test.py
 
     # This tends to fail despite the code works, when Zenodo is slow.
-#    - name: Pytest and coverage (Model-sharing only)
-#      # coverage run -a appends cov data to .coverage
-#      run: |
-#        coverage run -m py.test tests/models/publish_test.py
-#        coverage xml -o coverage_publish.xml
+    - name: Model-sharing tests
+      run: |
+        coverage run -a -m py.test tests/models/publish_test.py
+      env:  # Access token as an env variable
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
-#    - name: Coverage report
-#      run: |
-#        coverage combine .coverage_main .coverage_pub
-#        coverage report -m
+    - name: Coverage report
+      run: |
+        coverage report -m
+        coverage xml -o coverage.xml
 
-#    - name: Codecov upload
-#      uses: codecov/codecov-action@v1
-#      with:
-#        files: ./coverage_tests.xml, ./coverage_publish.xml
+    - name: Codecov upload
+      uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage.xml

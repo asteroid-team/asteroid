@@ -42,6 +42,7 @@ def test_upload():
             affiliation="INRIA",
             use_sandbox=True,
             unit_test=True,  # Remove this argument and monkeypatch `input()`
+            git_username="mpariente",
         )
 
         # Assert metadata is correct
