@@ -212,13 +212,12 @@ class TDConvNet(nn.Module):
 
 
 class SuDORMRF(nn.Module):
-    """ SuDORMRF separation model, as described in [1].
+    """ SuDORMRF mask network, as described in [1].
 
     Args:
         in_chan (int): Number of input channels. Also number of output channels.
         n_src (int): Number of sources in the input mixtures.
-        bn_chan (int, optional): Number of bins in the bottleneck layer and the
-            UNet blocks.
+        bn_chan (int, optional): Number of bins in the bottleneck layer and the UNet blocks.
         num_blocks (int): Number of of UBlocks.
         upsampling_depth (int): Depth of upsampling.
         mask_act (str): Name of output activation.
@@ -293,13 +292,12 @@ class SuDORMRF(nn.Module):
 
 
 class SuDORMRFImproved(nn.Module):
-    """ Improved SuDORMRF separation model, as described in [1].
+    """ Improved SuDORMRF mask network, as described in [1].
 
     Args:
         in_chan (int): Number of input channels. Also number of output channels.
         n_src (int): Number of sources in the input mixtures.
-        bn_chan (int, optional): Number of bins in the bottleneck layer and the
-            UNet blocks.
+        bn_chan (int, optional): Number of bins in the bottleneck layer and the UNet blocks.
         num_blocks (int): Number of of UBlocks
         upsampling_depth (int): Depth of upsampling
         mask_act (str): Name of output activation.
