@@ -1,4 +1,4 @@
-from .convolutional import TDConvNet, SuDORMRF, SuDORMRFImproved
+from .convolutional import TDConvNet, TDConvNetpp, SuDORMRF, SuDORMRFImproved
 from .recurrent import DPRNN, LSTMMasker
 from .attention import DPTransformer
 
