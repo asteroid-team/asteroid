@@ -1,5 +1,5 @@
 import argparse
-import collections
+from collections.abc import MutableMapping
 import torch
 from torch.testing import assert_allclose
 import pytest
@@ -79,7 +79,7 @@ def test_flatten_dict():
     )
     flat_dic = utils.flatten_dict(to_test)
     for k, v in flat_dic.items():
-        assert not isinstance(v, collections.MutableMapping)
+        assert not isinstance(v, MutableMapping)
 
 
 def test_average_array_in_dic():
