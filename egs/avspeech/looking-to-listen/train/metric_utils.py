@@ -20,9 +20,10 @@ def snr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTens
     true_power = (true_signal ** 2).sum()
     inter_power = (inter_signal ** 2).sum()
 
-    snr = 10*torch.log10(true_power / inter_power)
+    snr = 10 * torch.log10(true_power / inter_power)
 
     return snr
+
 
 def sdr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTensor:
     """
@@ -45,4 +46,3 @@ def sdr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTens
     sdr, sir, sar, _ = mir_eval.separation.bss_eval_sources(y_wav, y_pred_wav)
 
     return sdr
-
