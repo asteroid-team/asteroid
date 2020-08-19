@@ -211,7 +211,7 @@ class TDConvNet(nn.Module):
         return config
 
 
-class TDCNpp(nn.Module):
+class TDConvNetpp(nn.Module):
     """ Improved Temporal Convolutional network used in [1] (TDCN++)
 
     Args:
