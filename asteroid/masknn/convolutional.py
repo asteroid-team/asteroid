@@ -259,7 +259,7 @@ class TDConvNetpp(nn.Module):
         bn_chan=128,
         hid_chan=512,
         skip_chan=128,
-        kernel_size=3,
+        conv_kernel_size=3,
         norm_type="fgLN",
         mask_act="relu",
     ):
@@ -273,7 +273,7 @@ class TDConvNetpp(nn.Module):
         self.bn_chan = bn_chan
         self.hid_chan = hid_chan
         self.skip_chan = skip_chan
-        self.kernel_size = kernel_size
+        self.conv_kernel_size = conv_kernel_size
         self.norm_type = norm_type
         self.mask_act = mask_act
 
@@ -284,13 +284,13 @@ class TDConvNetpp(nn.Module):
         self.TCN = nn.ModuleList()
         for r in range(n_repeats):
             for x in range(n_blocks):
-                padding = (kernel_size - 1) * 2 ** x // 2
+                padding = (conv_kernel_size - 1) * 2 ** x // 2
                 self.TCN.append(
                     Conv1DBlock(
                         bn_chan,
                         hid_chan,
                         skip_chan,
-                        kernel_size,
+                        conv_kernel_size,
                         padding=padding,
                         dilation=2 ** x,
                         norm_type=norm_type,
