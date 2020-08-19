@@ -1,5 +1,5 @@
 import inspect
-import collections
+from collections.abc import MutableMapping
 import numpy as np
 
 
@@ -30,7 +30,7 @@ def flatten_dict(d, parent_key="", sep="_"):
     flatten-nested-dictionaries-compressing-keys?answertab=votes#tab-top
 
     Args:
-        d (collections.MutableMapping): Dictionary to be flattened.
+        d (MutableMapping): Dictionary to be flattened.
         parent_key (str): String to use as a prefix to all subsequent keys.
         sep (str): String to use as a separator between two key levels.
 
@@ -40,7 +40,7 @@ def flatten_dict(d, parent_key="", sep="_"):
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.MutableMapping):
+        if isinstance(v, MutableMapping):
             items.extend(flatten_dict(v, new_key, sep=sep).items())
         else:
             items.append((new_key, v))
