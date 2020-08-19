@@ -23,41 +23,51 @@ from model import make_model_and_optimizer
 # By default train.py will use all available GPUs. The `id` option in run.sh
 # will limit the number of available GPUs for train.py .
 parser = argparse.ArgumentParser()
-parser.add_argument('--exp_dir', default='exp/model_logs',
-                    help='Full path to save best validation model')
+parser.add_argument(
+    "--exp_dir", default="exp/model_logs", help="Full path to save best validation model"
+)
 
 
-def get_data_loaders(conf, train_part='filterbank'):
-    train_set = WhamDataset(conf['data']['train_dir'], conf['data']['task'],
-                            sample_rate=conf['data']['sample_rate'],
-                            nondefault_nsrc=conf['data']['nondefault_nsrc'],
-                            normalize_audio=True)
-    val_set = WhamDataset(conf['data']['valid_dir'], conf['data']['task'],
-                          sample_rate=conf['data']['sample_rate'],
-                          nondefault_nsrc=conf['data']['nondefault_nsrc'],
-                          normalize_audio=True)
+def get_data_loaders(conf, train_part="filterbank"):
+    train_set = WhamDataset(
+        conf["data"]["train_dir"],
+        conf["data"]["task"],
+        sample_rate=conf["data"]["sample_rate"],
+        nondefault_nsrc=conf["data"]["nondefault_nsrc"],
+        normalize_audio=True,
+    )
+    val_set = WhamDataset(
+        conf["data"]["valid_dir"],
+        conf["data"]["task"],
+        sample_rate=conf["data"]["sample_rate"],
+        nondefault_nsrc=conf["data"]["nondefault_nsrc"],
+        normalize_audio=True,
+    )
 
-    if train_part not in ['filterbank', 'separator']:
-        raise ValueError('Part to train: {} is not available.'.format(
-            train_part))
+    if train_part not in ["filterbank", "separator"]:
+        raise ValueError("Part to train: {} is not available.".format(train_part))
 
-    train_loader = DataLoader(train_set, shuffle=True, drop_last=True,
-                              batch_size=conf[train_part + '_training'][
-                                  train_part[0] + '_batch_size'],
-                              num_workers=conf[train_part + '_training'][
-                                  train_part[0] + '_num_workers'])
-    val_loader = DataLoader(val_set, shuffle=False, drop_last=True,
-                            batch_size=conf[train_part + '_training'][
-                                train_part[0] + '_batch_size'],
-                            num_workers=conf[train_part + '_training'][
-                                train_part[0] + '_num_workers'])
+    train_loader = DataLoader(
+        train_set,
+        shuffle=True,
+        drop_last=True,
+        batch_size=conf[train_part + "_training"][train_part[0] + "_batch_size"],
+        num_workers=conf[train_part + "_training"][train_part[0] + "_num_workers"],
+    )
+    val_loader = DataLoader(
+        val_set,
+        shuffle=False,
+        drop_last=True,
+        batch_size=conf[train_part + "_training"][train_part[0] + "_batch_size"],
+        num_workers=conf[train_part + "_training"][train_part[0] + "_num_workers"],
+    )
     # Update number of source values (It depends on the task)
-    conf['masknet'].update({'n_src': train_set.n_src})
+    conf["masknet"].update({"n_src": train_set.n_src})
 
     return train_loader, val_loader
 
 
-def train_model_part(conf, train_part='filterbank', pretrained_filterbank=None):
+def train_model_part(conf, train_part="filterbank", pretrained_filterbank=None):
     train_loader, val_loader = get_data_loaders(conf, train_part=train_part)
 
     # Define model and optimizer in a local function (defined in the recipe).
@@ -68,42 +78,47 @@ def train_model_part(conf, train_part='filterbank', pretrained_filterbank=None):
     )
     # Define scheduler
     scheduler = None
-    if conf[train_part + '_training'][train_part[0] + '_half_lr']:
-        scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5,
-                                      patience=5)
+    if conf[train_part + "_training"][train_part[0] + "_half_lr"]:
+        scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5, patience=5)
     # Just after instantiating, save the args. Easy loading in the future.
     exp_dir, checkpoint_dir = get_encoded_paths(conf, train_part)
     os.makedirs(exp_dir, exist_ok=True)
-    conf_path = os.path.join(exp_dir, 'conf.yml')
-    with open(conf_path, 'w') as outfile:
+    conf_path = os.path.join(exp_dir, "conf.yml")
+    with open(conf_path, "w") as outfile:
         yaml.safe_dump(conf, outfile)
 
     # Define Loss function.
-    loss_func = PITLossWrapper(PairwiseNegSDR('sisdr', zero_mean=False),
-                               pit_from='pw_mtx')
-    system = SystemTwoStep(model=model, loss_func=loss_func,
-                           optimizer=optimizer, train_loader=train_loader,
-                           val_loader=val_loader, scheduler=scheduler,
-                           config=conf, module=train_part)
+    loss_func = PITLossWrapper(PairwiseNegSDR("sisdr", zero_mean=False), pit_from="pw_mtx")
+    system = SystemTwoStep(
+        model=model,
+        loss_func=loss_func,
+        optimizer=optimizer,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        scheduler=scheduler,
+        config=conf,
+        module=train_part,
+    )
 
     # Define callbacks
-    checkpoint = ModelCheckpoint(checkpoint_dir, monitor='val_loss',
-                                 mode='min', save_top_k=1, verbose=1)
+    checkpoint = ModelCheckpoint(
+        checkpoint_dir, monitor="val_loss", mode="min", save_top_k=1, verbose=1
+    )
     early_stopping = False
-    if conf[train_part + '_training'][train_part[0] + '_early_stop']:
-        early_stopping = EarlyStopping(monitor='val_loss', patience=30,
-                                       verbose=1)
+    if conf[train_part + "_training"][train_part[0] + "_early_stop"]:
+        early_stopping = EarlyStopping(monitor="val_loss", patience=30, verbose=1)
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(
-        max_nb_epochs=conf[train_part + '_training'][train_part[0] + '_epochs'],
+        max_nb_epochs=conf[train_part + "_training"][train_part[0] + "_epochs"],
         checkpoint_callback=checkpoint,
         early_stop_callback=early_stopping,
         default_save_path=exp_dir,
         gpus=gpus,
-        distributed_backend='dp',
+        distributed_backend="dp",
         train_percent_check=1.0,  # Useful for fast experiment
-        gradient_clip_val=5.)
+        gradient_clip_val=5.0,
+    )
     trainer.fit(system)
 
     with open(os.path.join(checkpoint_dir, "best_k_models.json"), "w") as file:
@@ -112,30 +127,31 @@ def train_model_part(conf, train_part='filterbank', pretrained_filterbank=None):
 
 def main(conf):
     filterbank = load_best_filterbank_if_available(conf)
-    _, checkpoint_dir = get_encoded_paths(conf, 'filterbank')
+    _, checkpoint_dir = get_encoded_paths(conf, "filterbank")
     if filterbank is None:
-        print('There are no available filterbanks under: {}. Going to '
-              'training.'.format(checkpoint_dir))
-        train_model_part(conf, train_part='filterbank')
+        print(
+            "There are no available filterbanks under: {}. Going to "
+            "training.".format(checkpoint_dir)
+        )
+        train_model_part(conf, train_part="filterbank")
         filterbank = load_best_filterbank_if_available(conf)
     else:
-        print('Found available filterbank at: {}'.format(checkpoint_dir))
-        if not conf['filterbank_training']['reuse_pretrained_filterbank']:
-            print('Refining filterbank...')
-            train_model_part(conf, train_part='filterbank')
+        print("Found available filterbank at: {}".format(checkpoint_dir))
+        if not conf["filterbank_training"]["reuse_pretrained_filterbank"]:
+            print("Refining filterbank...")
+            train_model_part(conf, train_part="filterbank")
             filterbank = load_best_filterbank_if_available(conf)
-    train_model_part(conf, train_part='separator',
-                     pretrained_filterbank=filterbank)
+    train_model_part(conf, train_part="separator", pretrained_filterbank=filterbank)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import yaml
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
 
     # We start with opening the config file conf.yml as a dictionary from
     # which we can create parsers. Each top level key in the dictionary defined
     # by the YAML file creates a group in the parser.
-    with open('local/conf.yml') as f:
+    with open("local/conf.yml") as f:
         def_conf = yaml.safe_load(f)
     parser = prepare_parser_from_dict(def_conf, parser=parser)
     # Arguments are then parsed into a hierarchical dictionary (instead of
