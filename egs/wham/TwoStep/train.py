@@ -102,18 +102,18 @@ def train_model_part(conf, train_part="filterbank", pretrained_filterbank=None):
 
     # Define callbacks
     checkpoint = ModelCheckpoint(
-        checkpoint_dir, monitor="val_loss", mode="min", save_top_k=1, verbose=1
+        checkpoint_dir, monitor="val_loss", mode="min", save_top_k=1, verbose=True
     )
     early_stopping = False
     if conf[train_part + "_training"][train_part[0] + "_early_stop"]:
-        early_stopping = EarlyStopping(monitor="val_loss", patience=30, verbose=1)
+        early_stopping = EarlyStopping(monitor="val_loss", patience=30, verbose=True)
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(
-        max_nb_epochs=conf[train_part + "_training"][train_part[0] + "_epochs"],
+        max_epochs=conf[train_part + "_training"][train_part[0] + "_epochs"],
         checkpoint_callback=checkpoint,
         early_stop_callback=early_stopping,
-        default_save_path=exp_dir,
+        default_root_dir=exp_dir,
         gpus=gpus,
         distributed_backend="dp",
         train_percent_check=1.0,  # Useful for fast experiment
