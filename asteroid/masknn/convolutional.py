@@ -316,7 +316,8 @@ class TDConvNetpp(nn.Module):
         else:
             self.output_act = mask_nl_class()
 
-        self.consistency = nn.Linear(bn_chan, n_src)
+        out_size = skip_chan if skip_chan else bn_chan
+        self.consistency = nn.Linear(out_size, n_src)
 
     def forward(self, mixture_w):
         """
