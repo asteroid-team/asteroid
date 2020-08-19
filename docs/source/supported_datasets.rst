@@ -1,6 +1,8 @@
 Datasets and tasks
 ==================
 The following is a list of supported datasets, sorted by task.
+If you're more interested in the corresponding PyTorch ``Dataset``, see
+`this page <package_reference/data.rst>`__
 
 Speech separation
 -----------------
@@ -35,4 +37,3 @@ Audio-visual source separation
 
 Speaker extraction
 -----------------
-
