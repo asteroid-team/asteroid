@@ -49,6 +49,7 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    package_reference/losses
    package_reference/system
    package_reference/optimizers
+   package_reference/dsp
    package_reference/utils
    package_reference/cli
 
