@@ -20,10 +20,7 @@ def download(link, path, final_name=None):
         return True
 
     p = subprocess.Popen(
-        command.format(link, path),
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        command.format(link, path), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     ).communicate()
     return False
 
@@ -87,9 +84,7 @@ def main(args):
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Download parameters")
     parse.add_argument("--jobs", type=int, default=1)
-    parse.add_argument(
-        "--path", type=str, default="../../data/audio_visual/avspeech_train.csv"
-    )
+    parse.add_argument("--path", type=str, default="../../data/audio_visual/avspeech_train.csv")
     parse.add_argument("--vid-dir", type=str, default=VIDEO_DIR)
     parse.add_argument("--start", type=int, default=0)
     parse.add_argument("--end", type=int, default=10_000)

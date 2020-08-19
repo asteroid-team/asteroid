@@ -23,15 +23,10 @@ class SNRCallback(MetricCallback):
         input_key: str = "targets",
         output_key: str = "logits",
         prefix: str = "snr",
-        mixed_audio_key: str="input_audio"
+        mixed_audio_key: str = "input_audio",
     ):
         self.mixed_audio_key = mixed_audio_key
-        super().__init__(
-            prefix=prefix,
-            metric_fn=snr,
-            input_key=input_key,
-            output_key=output_key
-        )
+        super().__init__(prefix=prefix, metric_fn=snr, input_key=input_key, output_key=output_key)
 
     def on_batch_end(self, state):
         output_audios = state.output[self.output_key]
@@ -70,15 +65,10 @@ class SDRCallback(MetricCallback):
         input_key: str = "targets",
         output_key: str = "logits",
         prefix: str = "sdr",
-        mixed_audio_key: str="input_audio"
+        mixed_audio_key: str = "input_audio",
     ):
         self.mixed_audio_key = mixed_audio_key
-        super().__init__(
-            prefix=prefix,
-            metric_fn=snr,
-            input_key=input_key,
-            output_key=output_key
-        )
+        super().__init__(prefix=prefix, metric_fn=snr, input_key=input_key, output_key=output_key)
 
     def on_batch_end(self, state):
         output_audios = state.output[self.output_key]

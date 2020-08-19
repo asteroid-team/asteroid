@@ -24,22 +24,20 @@ def make_model_and_optimizer(conf):
     and evaluation very simple.
     """
     # Define building blocks for local model
-    stft, istft = make_enc_dec('stft', **conf['filterbank'])
+    stft, istft = make_enc_dec("stft", **conf["filterbank"])
     # Because we concatenate (re, im, mag) as input and compute a complex mask.
-    if conf['main_args']['is_complex']:
+    if conf["main_args"]["is_complex"]:
         inp_size = int(stft.n_feats_out * 3 / 2)
         output_size = stft.n_feats_out
     else:
         inp_size = output_size = int(stft.n_feats_out / 2)
     # Add these fields to the mask model dict
-    conf['masknet'].update(dict(input_size=inp_size,
-                                output_size=output_size))
-    masker = SimpleModel(**conf['masknet'])
+    conf["masknet"].update(dict(input_size=inp_size, output_size=output_size))
+    masker = SimpleModel(**conf["masknet"])
     # Make the complete model
-    model = Model(stft, masker, istft,
-                  is_complex=conf['main_args']['is_complex'])
+    model = Model(stft, masker, istft, is_complex=conf["main_args"]["is_complex"])
     # Define optimizer of this model
-    optimizer = make_optimizer(model.parameters(), **conf['optim'])
+    optimizer = make_optimizer(model.parameters(), **conf["optim"])
     return model, optimizer
 
 
@@ -60,6 +58,7 @@ class Model(nn.Module):
     and the returns a **complex** speech estimate.
     The loss function needs to be adapted to complex representations.
     """
+
     def __init__(self, encoder, masker, decoder, is_complex=True):
         super().__init__()
         self.encoder = encoder
@@ -106,17 +105,19 @@ class SimpleModel(nn.Module):
         n_layers (int): Number of recurrent layers.
         dropout (float): dropout value between recurrent layers.
     """
-    def __init__(self, input_size, hidden_size, output_size=None,
-                 rnn_type='gru', n_layers=3, dropout=0.3):
+
+    def __init__(
+        self, input_size, hidden_size, output_size=None, rnn_type="gru", n_layers=3, dropout=0.3
+    ):
         super(SimpleModel, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         output_size = input_size if output_size is None else output_size
         self.output_size = output_size
         self.in_proj_layer = nn.Linear(input_size, hidden_size)
-        self.residual_rec = blocks.StackedResidualRNN(rnn_type, hidden_size,
-                                                      n_layers=n_layers,
-                                                      dropout=dropout)
+        self.residual_rec = blocks.StackedResidualRNN(
+            rnn_type, hidden_size, n_layers=n_layers, dropout=dropout
+        )
         self.out_proj_layer = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
@@ -174,13 +175,12 @@ def load_best_model(train_conf, exp_dir):
     # Create the model from recipe-local function
     model, _ = make_model_and_optimizer(train_conf)
     # Last best model summary
-    with open(os.path.join(exp_dir, 'best_k_models.json'), "r") as f:
+    with open(os.path.join(exp_dir, "best_k_models.json"), "r") as f:
         best_k = json.load(f)
     best_model_path = min(best_k, key=best_k.get)
     # Load checkpoint
-    checkpoint = torch.load(best_model_path, map_location='cpu')
+    checkpoint = torch.load(best_model_path, map_location="cpu")
     # Load state_dict into model.
-    model = torch_utils.load_state_dict_in(checkpoint['state_dict'],
-                                           model)
+    model = torch_utils.load_state_dict_in(checkpoint["state_dict"], model)
     model.eval()
     return model
