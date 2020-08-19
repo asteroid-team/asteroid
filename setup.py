@@ -23,13 +23,13 @@ setup(
         "pandas",
         "torch",
         "torchaudio",
-        "pytorch-lightning>=0.7.5,<0.8",
+        "pytorch-lightning>=0.8",
         "torch_optimizer",
         "soundfile",
         "pb_bss_eval",
         "torch_stoi",
     ],
-    extras_require={"visualize": ["seaborn"], "tests": ["pytest"],},
+    extras_require={"tests": ["pytest"],},
     entry_points={
         "console_scripts": [
             "asteroid-upload=asteroid.scripts.asteroid_cli:upload",
