@@ -1,6 +1,10 @@
 PyTorch Datasets
 ================
 
+This page lists the supported datasets and their corresponding
+PyTorch's ``Dataset`` class. If you're interested in the datasets more
+than in the code, see `this page <../supported_datasets.rst>`__.
+
 .. currentmodule:: asteroid.data
 
 LibriMix
