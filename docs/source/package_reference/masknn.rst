@@ -29,3 +29,19 @@ Normalization layers
 .. autofunction:: GlobLN
 .. autofunction:: ChanLN
 .. autofunction:: CumLN
+.. autofunction:: get
+
+Activation layers
+-----------------
+
+.. currentmodule:: asteroid.masknn.activations
+.. autofunction:: get
+.. autofunction:: linear
+.. autofunction:: relu
+.. autofunction:: prelu
+.. autofunction:: leaky_relu
+.. autofunction:: sigmoid
+.. autofunction:: softmax(dim=Non
+.. autofunction:: tanh
+.. autofunction:: gelu
+.. autofunction:: swish
