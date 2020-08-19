@@ -35,6 +35,10 @@ MUSDB18
 --------
 .. autoclass:: MUSDB18Dataset
 
+FUSS
+----
+.. autoclass:: FUSSDataset
+
 AVSpeech
 --------
 .. autoclass:: avspeech_dataset
