@@ -6,6 +6,8 @@ repository on GitHub:
 2. Make your changes, test them, commit them and push them to your fork.
 3. You can open a pull request on GitHub when you're satisfied.
 
+__Things don't need to be perfect for PRs to be opened__.
+
 If you made changes to the source code, you'll want to try them out without
 installing asteroid everytime you change something.
 To do that, install asteroid in develop mode either with pip
