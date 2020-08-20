@@ -122,10 +122,13 @@ class System(pl.LightningModule):
         optimizer_idx: int,
         second_order_closure: Optional[Callable] = None,
     ) -> None:
-        for sched in self.scheduler:
-            if isinstance(sched, dict) and sched["interval"] == "batch":
-                sched["scheduler"].step()  # call step on each batch scheduler
-        self.optimizer.step()
+        if self.scheduler is not None:
+            if not isinstance(self.scheduler, (list, tuple)):
+                self.scheduler = [self.scheduler]  # support multiple schedulers
+            for sched in self.scheduler:
+                if isinstance(sched, dict) and sched["interval"] == "batch":
+                    sched["scheduler"].step()  # call step on each batch scheduler
+            self.optimizer.step()
 
     def validation_step(self, batch, batch_nb):
         """ Need to overwrite PL validation_step to do validation.
