@@ -29,6 +29,7 @@ __all__ = [
     "deep_clustering_loss",
     "SingleSrcPMSQE",
     "SingleSrcNegSTOI",
+    "SingleSrcMultiScaleSpectral",
     "pairwise_neg_sisdr",
     "nosrc_neg_sisdr",
     "nonpit_neg_sisdr",
