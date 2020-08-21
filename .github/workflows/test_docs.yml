@@ -1,4 +1,4 @@
-name: Docs
+name: Latest docs
 
 # Trigger the workflow on push or pull request, but only for the master branch
 # https://help.github.com/en/actions/reference/events-that-trigger-workflows
