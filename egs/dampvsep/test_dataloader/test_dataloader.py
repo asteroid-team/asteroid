@@ -8,8 +8,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Dataset dataset test')
 
     parser.add_argument(
-        '--root', type=str, help='root path of dataset',
-        default='/media/gerardo/TOSHIBA/DataSets/DAMP/DAMP-VSEP'
+        '--root', type=str, help='root path of dataset'
     )
 
     parser.add_argument('--batch-size', type=int, default=16)

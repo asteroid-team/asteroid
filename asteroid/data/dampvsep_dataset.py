@@ -29,6 +29,7 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         task (str): one of ``'enh_vocal'``,``'enh_both'``
             * ``'enh_vocal'`` for vocal enhanced.
             * ``'enh_both'`` for vocal and background separation.
+        split (str): one of ``'train'``, ``'valid'`` and ``'test'``
         samples_per_track (int, optional):
             Number of samples yielded from each track, can be used to increase
             dataset size, defaults to `1`.
@@ -37,17 +38,21 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
             Default 16000 Hz
         segment (float, optional): Duration of segments in seconds,
             Defaults to ``None`` which loads the full-length audio tracks.
+        snr (float): SNR between vocal and background. Default 0.
         silence_in_segment (float, optional): Max duration of continuous silence in a segment.
             Default ``None`` which allows any silence length
         num_workers (int, optional): Number of workers.
             Default to ``None`` which utilise all available workers
+        norm (Str): Type of normalisation to use
+            * ``'song_level'`` use mixture mean and std.
+            * ```None``` no normalisation
      """
 
     dataset_name = 'DAMP-VSEP'
 
-    def __init__(self, root_path, task, split, samples_per_track=1,
+    def __init__(self, root_path, task='enh_both', split=None, samples_per_track=1,
                  random_segments=False, sample_rate=16000,
-                 segment=None, silence_in_segment=None, num_workers=None, norm=None):
+                 segment=None, snr=0, silence_in_segment=None, num_workers=None, norm=None):
 
         self.root_path = Path(root_path).expanduser()
 
@@ -64,6 +69,7 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         self.random_segments = random_segments
         self.sample_rate = sample_rate
         self.segment = segment
+        self.snr = snr
         self.silence_in_segment = silence_in_segment
         self.num_workers = cpu_count() if num_workers is None else num_workers
         self.tracks = self.get_tracks()
@@ -150,7 +156,7 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         
     @staticmethod
     def _build_metadata(inputs):
-        sample, root, sample_rate = inputs
+        sample, root, sample_rate, snr = inputs
         back, _ = librosa.load(root / sample['background_path'],
                                sr=sample_rate, res_type='polyphase')
         back_dur = librosa.get_duration(back, sr=sample_rate)
@@ -162,16 +168,16 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         min_dur = min(back_dur, vocal_dur)
         mix = vocal[:int(min_dur * sample_rate)] + back[:int(min_dur * sample_rate)]
 
-        amplitude_scaler = _get_amplitude_scaling_factor(vocal, back, snr=0)
+        amplitude_scaler = _get_amplitude_scaling_factor(vocal, back, snr=snr)
 
-        return (sample['perf_key'],
-                {'mean': f"{mix.mean():.16f}",
-                 'std': f"{mix.std():.16f}",
-                 'scaler': f"{amplitude_scaler:.16f}",
-                 'vocal': sample['vocal_path'],
-                 'background': sample['background_path'],
-                 'vocal_duration': vocal_dur,
-                 'background_duration': back_dur})
+        track_info = {'mean': f"{mix.mean():.16f}",
+                     'std': f"{mix.std():.16f}",
+                     'scaler': f"{amplitude_scaler:.16f}",
+                     'vocal': sample['vocal_path'],
+                     'background': sample['background_path'],
+                     'vocal_duration': vocal_dur,
+                     'background_duration': back_dur}
+        return sample['perf_key'], track_info
 
     def build_metadata(self, tracks):
         """
@@ -180,7 +186,7 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         """
         metadata = []
         pool = Pool(processes=self.num_workers)
-        track_inputs = [(t, self.root_path, self.sample_rate) for i, t in tracks.iterrows()]
+        track_inputs = [(t, self.root_path, self.sample_rate, self.snr) for i, t in tracks.iterrows()]
         for meta in tqdm(pool.imap_unordered(self._build_metadata, track_inputs), total=len(track_inputs)):
             if meta:
                 metadata.append(meta)
@@ -206,7 +212,7 @@ def _get_amplitude_scaling_factor(v, b, snr=0):
       v: ndarray, vocal.
       b: ndarray, backgroun.
       snr: float, SNR. Default=0
-    Outputs:
+    Returns:
       float, scaler.
     """
     def _rms(y):
