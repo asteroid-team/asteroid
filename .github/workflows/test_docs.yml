@@ -31,8 +31,8 @@ jobs:
     - name: Install theme
       run: |
         pip install -e git+https://github.com/asteroid-team/asteroid_sphinx_theme
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install python dependencies
       run: |
