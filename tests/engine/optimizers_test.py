@@ -83,3 +83,6 @@ def test_register():
     optimizers.register_optimizer(Custom)
     cls = optimizers.get("Custom")
     assert cls == Custom
+
+    with pytest.raises(ValueError):
+        optimizers.register_optimizer(optimizers.Adam)

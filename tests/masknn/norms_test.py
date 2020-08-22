@@ -41,3 +41,6 @@ def test_register():
     norms.register_norm(Custom)
     cls = norms.get("Custom")
     assert cls == Custom
+
+    with pytest.raises(ValueError):
+        norms.register_norm(norms.CumLN)
