@@ -47,7 +47,7 @@ mask_firs = {
 }
 
 
-class SyntMask(Dataset):
+class DeMaskDataset(Dataset):
     def __init__(
         self, configs, clean_speech_datasets, train, rirs_datasets=None,
     ):
