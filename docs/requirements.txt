@@ -4,7 +4,7 @@ sphinx>=1.8.3, <3.0
 recommonmark  # fails with badges
 nbsphinx
 m2r2
-# m2r  # fails with multi-line text
+asteroid_sphinx_theme
 # pandoc
 # docutils
 # git+https://github.com/mpariente/asteroid_sphinx_theme
