@@ -30,7 +30,7 @@ jobs:
 
     - name: Install theme
       run: |
-        pip install -e git+https://github.com/asteroid-team/asteroid_sphinx_theme
+        pip install -e git+https://github.com/asteroid-team/asteroid_sphinx_theme#egg=asteroid_sphinx_theme
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
