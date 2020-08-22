@@ -50,7 +50,7 @@ def register_activation(custom_act):
     """ Register a custom activation, gettable with `activation.get`.
 
     Args:
-        custom_act (nn.Module)
+        custom_act: Custom activation function to register.
 
     """
     if custom_act.__name__ in globals().keys() or custom_act.__name__.lower() in globals().keys():

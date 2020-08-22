@@ -72,7 +72,7 @@ def register_optimizer(custom_opt):
     """ Register a custom opt, gettable with `optimzers.get`.
 
     Args:
-        custom_opt (Optimizer)
+        custom_opt: Custom optimizer to register.
 
     """
     if custom_opt.__name__ in globals().keys() or custom_opt.__name__.lower() in globals().keys():

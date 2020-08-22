@@ -124,7 +124,7 @@ def register_norm(custom_norm):
     """ Register a custom norm, gettable with `norms.get`.
 
     Args:
-        custom_norm (nn.Module)
+        custom_norm: Custom norm to register.
 
     """
     if custom_norm.__name__ in globals().keys() or custom_norm.__name__.lower() in globals().keys():
