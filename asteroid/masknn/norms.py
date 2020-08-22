@@ -120,6 +120,18 @@ cgLN = CumLN
 bN = BatchNorm
 
 
+def register_norm(custom_norm):
+    """ Register a custom norm, gettable with `norms.get`.
+
+    Args:
+        custom_norm (nn.Module)
+
+    """
+    if custom_norm.__name__ in globals().keys() or custom_norm.__name__.lower() in globals().keys():
+        raise ValueError(f"Norm {custom_norm.__name__} already exists. Choose another name.")
+    globals().update({custom_norm.__name__: custom_norm})
+
+
 def get(identifier):
     """ Returns a norm class from a string. Returns its input if it
     is callable (already a :class:`._LayerNorm` for example).

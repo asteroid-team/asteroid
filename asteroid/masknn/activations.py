@@ -46,6 +46,18 @@ def swish():
     return Swish()
 
 
+def register_activation(custom_act):
+    """ Register a custom activation, gettable with `activation.get`.
+
+    Args:
+        custom_act (nn.Module)
+
+    """
+    if custom_act.__name__ in globals().keys() or custom_act.__name__.lower() in globals().keys():
+        raise ValueError(f"Activation {custom_act.__name__} already exists. Choose another name.")
+    globals().update({custom_act.__name__: custom_act})
+
+
 def get(identifier):
     """ Returns an activation function from a string. Returns its input if it
     is callable (already an activation for example).
