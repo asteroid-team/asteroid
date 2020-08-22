@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid import DPRNNTasNet
-from asteroid.data.wham_dataset import WhamDataset
+from .local.demask_dataset import DeMaskDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import singlesrc_neg_sisdr
@@ -19,16 +19,16 @@ from asteroid.losses import singlesrc_neg_sisdr
 # found at dic['main_args'][key]
 
 # By default train.py will use all available GPUs. The `id` option in run.sh
-# will limit the number of available GPUs for train.py .
+# will limit the number of available GPUs for train.py.
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best validation model")
 
 
 def main(conf):
-    train_set = DeMaskDataset(
-        conf, conf["data"]["clean_train"], conf["data"]["rirs_train"], train=True,
-    )
-    val_set = DeMaskDataset(conf, conf["data"]["clean_dev"], conf["data"]["rirs_dev"], train=True,)
+
+    train_set = DeMaskDataset(conf, conf["data"]["clean_train"], True, conf["data"]["rirs_train"])
+
+    val_set = DeMaskDataset(conf, conf["data"]["clean_dev"], False, conf["data"]["rirs_dev"])
 
     train_loader = DataLoader(
         train_set,
