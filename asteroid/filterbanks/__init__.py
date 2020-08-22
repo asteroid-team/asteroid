@@ -63,6 +63,18 @@ def make_enc_dec(
     return enc, dec
 
 
+def register_filterbank(custom_fb):
+    """ Register a custom filterbank, gettable with `filterbanks.get`.
+
+    Args:
+        custom_fb (Filterbank)
+
+    """
+    if custom_fb.__name__ in globals().keys() or custom_fb.__name__.lower() in globals().keys():
+        raise ValueError(f"Filterbank {custom_fb.__name__} already exists. Choose another name.")
+    globals().update({custom_fb.__name__: custom_fb})
+
+
 def get(identifier):
     """ Returns a filterbank class from a string. Returns its input if it
     is callable (already a :class:`.Filterbank` for example).
