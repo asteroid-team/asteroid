@@ -143,3 +143,6 @@ def test_register():
     filterbanks.register_filterbank(Custom)
     cls = filterbanks.get("Custom")
     assert cls == Custom
+
+    with pytest.raises(ValueError):
+        filterbanks.register_filterbank(filterbanks.STFTFB)

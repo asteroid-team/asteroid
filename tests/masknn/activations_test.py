@@ -57,3 +57,6 @@ def test_register():
     activations.register_activation(Custom)
     cls = activations.get("Custom")
     assert cls == Custom
+
+    with pytest.raises(ValueError):
+        activations.register_activation(activations.relu)
