@@ -132,3 +132,14 @@ def test_get_errors(wrong):
 
 def test_get_none():
     assert filterbanks.get(None) is None
+
+
+def test_register():
+    class Custom(filterbanks.Filterbank):
+        @property
+        def filters(self):
+            return None
+
+    filterbanks.register_filterbank(Custom)
+    cls = filterbanks.get("Custom")
+    assert cls == Custom

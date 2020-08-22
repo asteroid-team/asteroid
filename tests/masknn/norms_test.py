@@ -1,5 +1,6 @@
 import pytest
 import torch
+from torch import nn
 
 from asteroid.masknn import norms
 
@@ -30,3 +31,13 @@ def test_get_errors(wrong):
 
 def test_get_none():
     assert norms.get(None) is None
+
+
+def test_register():
+    class Custom(nn.Module):
+        def __init__(self):
+            super().__init__()
+
+    norms.register_norm(Custom)
+    cls = norms.get("Custom")
+    assert cls == Custom
