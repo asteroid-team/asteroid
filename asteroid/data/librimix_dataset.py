@@ -3,7 +3,7 @@ import pandas as pd
 import soundfile as sf
 import torch
 from torch import hub
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import random as random
 import os
 import shutil
@@ -111,6 +111,33 @@ class LibriMix(Dataset):
         # Convert sources to tensor
         sources = torch.from_numpy(sources)
         return mixture, sources
+
+    @classmethod
+    def loaders_from_mini(cls, batch_size=4, **kwargs):
+        """ Downloads MiniLibriMix and returns train and validation DataLoader.
+
+        Args:
+            batch_size (int): Batch size of the Dataloader. Only DataLoader param.
+                To have more control on Dataloader, call `mini_from_download` and
+                instantiate the DatalLoader.
+            **kwargs: keyword arguments to pass the `LibriMix`, see `__init__`.
+                The kwargs will be fed to both the training set and validation
+                set
+
+        Returns:
+            train_loader, val_loader: training and validation DataLoader out of
+                `LibriMix` Dataset.
+
+        Examples:
+            >>> from asteroid.data import LibriMix
+            >>> train_set, val_set = LibriMix.loaders_from_mini(
+            >>>     task='sep_clean', batch_size=4
+            >>> )
+        """
+        train_set, val_set = cls.mini_from_download(**kwargs)
+        train_loader = DataLoader(train_set, batch_size=batch_size, drop_last=True)
+        val_loader = DataLoader(val_set, batch_size=batch_size, drop_last=True)
+        return train_loader, val_loader
 
     @classmethod
     def mini_from_download(cls, **kwargs):
