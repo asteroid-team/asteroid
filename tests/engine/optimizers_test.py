@@ -73,3 +73,16 @@ def test_get_errors(wrong):
 
 def test_make_optimizer():
     optimizers.make_optimizer(global_model.parameters(), "adam", lr=1e-3)
+
+
+def test_register():
+    class Custom(optim.Optimizer):
+        def __init__(self):
+            super().__init__()
+
+    optimizers.register_optimizer(Custom)
+    cls = optimizers.get("Custom")
+    assert cls == Custom
+
+    with pytest.raises(ValueError):
+        optimizers.register_optimizer(optimizers.Adam)
