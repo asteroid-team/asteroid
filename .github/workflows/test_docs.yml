@@ -28,6 +28,12 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Install theme
+      run: |
+        pip install -e git+https://github.com/asteroid-team/asteroid_sphinx_theme
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade --user pip --quiet
