@@ -78,8 +78,8 @@ class BaseModel(nn.Module):
         """
         return self(wav, *args, **kwargs)
 
-    @classmethod
-    def from_pretrained(cls, pretrained_model_conf_or_path, *args, **kwargs):
+    @staticmethod
+    def from_pretrained(pretrained_model_conf_or_path, *args, **kwargs):
         """ Instantiate separation model from a model config (file or dict).
 
         Args:
