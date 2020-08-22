@@ -67,7 +67,7 @@ def register_filterbank(custom_fb):
     """ Register a custom filterbank, gettable with `filterbanks.get`.
 
     Args:
-        custom_fb (Filterbank)
+        custom_fb: Custom filterbank to register.
 
     """
     if custom_fb.__name__ in globals().keys() or custom_fb.__name__.lower() in globals().keys():
