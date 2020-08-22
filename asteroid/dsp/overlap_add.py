@@ -14,6 +14,21 @@ class LambdaOverlapAdd(torch.nn.Module):
         hop_size (int): segmentation hop size.
         window (str): Name of the window (see scipy.signal.get_window)
         reorder_chunks (bool): whether to reorder each consecutive segment.
+
+     Examples:
+        >>> from asteroid import ConvTasNet
+        >>> nnet = ConvTasNet(n_src=2)
+        >>> continuous_nnet = LambdaOverlapAdd(
+        >>>     nnet=nnet,
+        >>>     n_src=2,
+        >>>     window_size=64000,
+        >>>     hop_size=None,
+        >>>     window="hanning",
+        >>>     reorder_chunks=True,
+        >>>     enable_grad=False,
+        >>> )
+        >>> wav = torch.randn(1, 1, 500000)
+        >>> out_wavs = continuous_nnet.forward(wav)
     """
 
     def __init__(

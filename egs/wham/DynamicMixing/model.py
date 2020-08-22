@@ -42,11 +42,11 @@ def make_model_and_optimizer(conf):
     and evaluation very simple.
     """
     # Define building blocks for local model
-    enc, dec = fb.make_enc_dec('free', **conf['filterbank'])
-    masker = DPRNN(**conf['masknet'])
+    enc, dec = fb.make_enc_dec("free", **conf["filterbank"])
+    masker = DPRNN(**conf["masknet"])
     model = Model(enc, masker, dec)
     # Define optimizer of this model
-    optimizer = make_optimizer(model.parameters(), **conf['optim'])
+    optimizer = make_optimizer(model.parameters(), **conf["optim"])
     return model, optimizer
 
 
@@ -64,13 +64,12 @@ def load_best_model(train_conf, exp_dir):
     # Create the model from recipe-local function
     model, _ = make_model_and_optimizer(train_conf)
     # Last best model summary
-    with open(os.path.join(exp_dir, 'best_k_models.json'), "r") as f:
+    with open(os.path.join(exp_dir, "best_k_models.json"), "r") as f:
         best_k = json.load(f)
     best_model_path = min(best_k, key=best_k.get)
     # Load checkpoint
-    checkpoint = torch.load(best_model_path, map_location='cpu')
+    checkpoint = torch.load(best_model_path, map_location="cpu")
     # Load state_dict into model.
-    model = torch_utils.load_state_dict_in(checkpoint['state_dict'],
-                                           model)
+    model = torch_utils.load_state_dict_in(checkpoint["state_dict"], model)
     model.eval()
     return model

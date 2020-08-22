@@ -4,6 +4,58 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [0.3.2] - 2020-08-21
+
+#### Added
+- [tests] Add scheduler tests (#220)
+- [docs] Add schedulers, activations docs and improve datasets' docs (#219)
+- [docs] Add DSP section to docs (#218)
+- [docs] Add FUSSdataset to docs
+- [docs] Add schedulers in docs
+- [docs] Add activations to docs
+- [src] Add FUSS dataset from FUSS PR (#215)
+- [src & tests] Add TDCN++ to masknn (#214)
+- [hub] Add LSTMTasNet/DPTNet/SuDORMRFNet to torch.hub! (#210)
+- [src & tests] Add LSTMTasNet to serializable models  (#209)
+- [src] Continuous Speech separation with LambdaOverlapAdd (#193)
+- [src] Continuous Speech separation with OverlappadWrapper (#191)
+- [src & tests] Add SuDoRM-RF model & online mixing collate function (#174)
+- [src, tests & egs] Batchwise learning rate schedulers + DPProcessing + Dual Path Transformer Network + recipe (#200)
+- [docs] Add black code-style
+- [hub] Add Brij's LibriMix enhancement model
+- [src] Adds Dataset for SmsWsj (#179)
+- [docs] STOI loss example: Add sample rate (#189)
+- [src & tests] Add feature-wise global layernorm (#170)
+
+#### Changed
+- [src & tests] Split SuDORMRF architectures in encoder/masker/decoder (#208)
+- [src] Code-style + docs
+- [src & tests] (BWI) Gather DSP methods in dsp folder (#194)
+- [egs] EarlyStopping Patience to 30 instead of 10. (#178)
+
+#### Fixed
+- [src & tests] Fix bug when scheduler=None in System (#223)
+- [src] Fix docs append problem in STOI.
+- [black] Apply black to recipes (#216)
+- [tests & CI] Fix tests for publishing (#211)
+- [notebooks] Fix notebooks (#206)
+- [src & tests] Fix serialization issues introduced in previous PR + some docs (#204)
+- [egs] Remove file librimix/model.py as model is imported from asteroid.models (#176)
+- [egs] Dynamic Mixing fix  (#173)
+- [instal] Fix pytorch-lightning dependency (#159)
+- [egs] Fix empty audio, multi gpu and reduced storage issues in avspeech (#169)
+- [egs] Fix style in model.py
+- [egs] Fix bugs in generating wsj0-mix dataset with wv1 (#166)
+- [egs] Fix wrong rel path in wham/DPRNN prepare_data.sh (#167)
+- [egs] Fix clipping problems when saving estimate wav file for Wham ConvTasNet (#160)
+
+#### Backward incompatible changes
+- Move `mixture_consistency` in `dsp` folder.
+
+## [0.3.1] - 2020-08-20
+Use 0.3.2 instead.
+
+
 ## [0.3.0] - 2020-06-16
 
 #### Added

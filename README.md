@@ -4,13 +4,17 @@
 **The PyTorch-based audio source separation toolkit for researchers.**
 
 [![PyPI Status](https://badge.fury.io/py/asteroid.svg)](https://badge.fury.io/py/asteroid)
+[![Build Status](https://github.com/mpariente/asteroid/workflows/CI/badge.svg)](https://github.com/mpariente/asteroid/actions?query=workflow%3ACI+branch%3Amaster+event%3Apush)
+[![codecov][codecov-badge]][codecov]
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Documentation Status](https://img.shields.io/badge/docs-0.3.2-blue)](https://asteroid.readthedocs.io/en/v0.3.2/)
+[![Latest Docs Status](https://github.com/mpariente/asteroid/workflows/Latest%20docs/badge.svg)](https://mpariente.github.io/asteroid/)
+
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/mpariente/asteroid/pulls)
+[![Python Versions](https://img.shields.io/pypi/pyversions/asteroid.svg)](https://pypi.org/project/asteroid/)
 [![PyPI Status](https://pepy.tech/badge/asteroid)](https://pepy.tech/project/asteroid)
 [![Slack][slack-badge]][slack-invite]
-
-[![Build Status][travis-badge]][travis]
-[![codecov][codecov-badge]][codecov]
-
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 </div>
 
@@ -69,6 +73,7 @@ Here is a list of notebooks showing example usage of Asteroid's features.
 - [Getting started with Asteroid](./notebooks/01_AsteroidGettingStarted.ipynb)
 - [Filterbank API](./notebooks/02_Filterbank.ipynb)
 - [Permutation invariant training wrapper `PITLossWrapper`](./notebooks/03_PITLossWrapper.ipynb)
+- [Process large wav files](./notebooks/04_ProcessLargeAudioFiles.ipynb)
 
 
 ## Running a recipe
