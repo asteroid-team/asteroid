@@ -8,6 +8,14 @@ from scipy.signal import firwin2
 from pysndfx import AudioEffectsChain
 
 mask_firs = {
+    """
+    We approximate the effect of a surgical or tissue mask with an ad-hoc FIR filter whose frequency response is taken
+    from [1].
+
+    [1] Corey, Ryan M., Uriah Jones, and Andrew C. Singer.
+    "Acoustic effects of medical, cloth, and transparent face masks on speech signals."
+     arXiv preprint arXiv:2008.04521 (2020).
+    """
     "surgical": {
         "gain": [1, 1, 1, 1, 0.94, 0.82, 0.53, 0.80, 0.56, 0.5, 0.42, 0.63, 0.71, 0],
         "freq": [0, 250, 1000, 1500, 2000, 2500, 2815, 3175, 3500, 4000, 5000, 6000, 7000, 8000],
@@ -80,7 +88,7 @@ class DeMaskDataset(Dataset):
         speed = eval(self.configs["training"]["speed_augm"])
         c_gain = eval(self.configs["training"]["gain_augm"])
 
-        fx = AudioEffectsChain().speed(speed)  # speed perturb and then apply gain
+        fx = AudioEffectsChain().speed(speed)  # speed perturb
 
         clean = fx(clean)
 
@@ -90,9 +98,7 @@ class DeMaskDataset(Dataset):
             assert fs == self.configs["data"]["fs"]
             clean = fftconvolve(clean, c_rir)
 
-        fx = AudioEffectsChain().custom(
-            "norm {}".format(c_gain)
-        )  # speed perturb and then apply gain
+        fx = AudioEffectsChain().custom("norm {}".format(c_gain))  # random gain
 
         return fx(clean)
 
@@ -122,7 +128,7 @@ class DeMaskDataset(Dataset):
         freqs = np.array(c_mask["freq"])
 
         if self.train:
-            # augment the gains
+            # augment the gains with random noise: no mask is created equal
             snr = 10 ** (eval(self.configs["training"]["gaussian_mask_noise_snr_dB"]) / 20)
             gains += np.random.normal(0, np.var(gains) / snr, gains.shape)
 
