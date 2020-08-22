@@ -130,7 +130,7 @@ class LibriMix(Dataset):
 
         Examples:
             >>> from asteroid.data import LibriMix
-            >>> train_set, val_set = LibriMix.loaders_from_mini(
+            >>> train_loader, val_loader = LibriMix.loaders_from_mini(
             >>>     task='sep_clean', batch_size=4
             >>> )
         """
