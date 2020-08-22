@@ -68,6 +68,18 @@ def make_optimizer(params, optimizer="adam", **kwargs):
     return get(optimizer)(params, **kwargs)
 
 
+def register_optimizer(custom_opt):
+    """ Register a custom opt, gettable with `optimzers.get`.
+
+    Args:
+        custom_opt: Custom optimizer to register.
+
+    """
+    if custom_opt.__name__ in globals().keys() or custom_opt.__name__.lower() in globals().keys():
+        raise ValueError(f"Activation {custom_opt.__name__} already exists. Choose another name.")
+    globals().update({custom_opt.__name__: custom_opt})
+
+
 def get(identifier):
     """ Returns an optimizer function from a string. Returns its input if it
     is callable (already a :class:`torch.optim.Optimizer` for example).
