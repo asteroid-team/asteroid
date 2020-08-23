@@ -16,5 +16,7 @@ __all__ = [
     "ConvTasNet",
     "DPRNNTasNet",
     "DPTNet",
+    "LSTMTasNet",
+    "DeMask",
     "show_available_models",
 ]

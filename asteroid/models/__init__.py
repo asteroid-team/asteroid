@@ -16,6 +16,7 @@ __all__ = [
     "SuDORMRFNet",
     "DPTNet",
     "LSTMTasNet",
+    "DeMask",
     "save_publishable",
     "upload_publishable",
 ]
