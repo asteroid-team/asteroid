@@ -114,7 +114,8 @@ class DeMaskDataset(Dataset):
 
         clean = clean[offset : offset + target_len]
 
-        clean = self.augment(clean)
+        if self.train:
+            clean = self.augment(clean)
 
         # we add reverberation, speed perturb and random scaling
 
@@ -141,11 +142,12 @@ class DeMaskDataset(Dataset):
         clean = clean[trim_start:trim_end]
         masked = masked[trim_start:trim_end]
 
-        snr = 10 ** (eval(self.configs["training"]["white_noise_dB"]) / 20)
-        noise = np.random.normal(0, np.var(masked) / snr, masked.shape)
+        if self.train:
+            snr = 10 ** (eval(self.configs["training"]["white_noise_dB"]) / 20)
+            noise = np.random.normal(0, np.var(masked) / snr, masked.shape)
 
-        masked += noise
-        clean += noise
+            masked += noise
+            clean += noise
 
         if len(clean) > target_len:
             clean = clean[:target_len]

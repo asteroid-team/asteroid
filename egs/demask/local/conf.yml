@@ -15,8 +15,8 @@ data:
   fs: 16000
   clean_train: /media/sam/Data/LibriSpeech/dev-clean/**/*.flac
   clean_dev: /media/sam/Data/LibriSpeech/test-clean/**/*.flac
-  rirs_train: #/media/sam/Data/myRIRS/**/*.wav
-  rirs_dev: #/media/sam/Data/myRIRS/**/*.wav
+  rirs_train: /media/sam/Data/myRIRS/**/*.wav
+  rirs_dev: /media/sam/Data/myRIRS/**/*.wav
   length: 4
 optim:
   lr: 0.001
