@@ -221,7 +221,7 @@ class Decoder(_EncDec):
         elif isinstance(filterbank, Encoder):
             return cls(filterbank.filterbank, is_pinv=True)
 
-    def forward(self, spec):
+    def forward(self, spec) -> torch.Tensor:
         """ Applies transposed convolution to a TF representation.
 
         This is equivalent to overlap-add.
@@ -251,7 +251,7 @@ class Decoder(_EncDec):
                 padding=self.padding,
                 output_padding=self.output_padding,
             )
-        elif spec.ndim > 3:
+        else:
             # Multiply all the left dimensions together and group them in the
             # batch. Make the convolution and restore.
             view_as = (-1,) + spec.shape[-2:]
