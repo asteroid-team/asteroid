@@ -19,6 +19,8 @@ class FUSSDataset(Dataset):
             Sound Separation Data?", 2020, in preparation.
     """
 
+    dataset_name = "Free Universal Sound Separation"
+
     def __init__(self, file_list_path, return_bg=False):
         super().__init__()
         # Arguments
@@ -61,3 +63,26 @@ class FUSSDataset(Dataset):
             bg = sf.read(line["bg"], dtype="float32")[0]
             return torch.from_numpy(mix), sources, torch.from_numpy(bg)
         return torch.from_numpy(mix), sources
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos["dataset"] = self.dataset_name
+        infos["task"] = "universal_sound_separation"
+        infos["licenses"] = [fuss_license]
+        return infos
+
+
+fuss_license = dict(
+    title="Free Universal Sound Separation",
+    title_link="https://github.com/google-research/sound-separation/tree/master/datasets/fuss",
+    author="Google",
+    author_link="https://www.google.com/",
+    license="CC BY-NC 4.0",
+    license_link="https://creativecommons.org/licenses/by-nc/4.0/",
+    non_commercial=False,
+)
