@@ -1,3 +1,5 @@
+import os
+import warnings
 import torch
 from torch import nn
 import numpy as np
@@ -15,13 +17,17 @@ class BaseModel(nn.Module):
         raise NotImplementedError
 
     @torch.no_grad()
-    def separate(self, wav, *args, **kwargs):
+    def separate(self, wav, save_dir=None, force_overwrite=False, **kwargs):
         """ Infer separated sources from input waveforms.
         Also supports filenames.
 
         Args:
             wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
+            save_dir (str): path to save all the wav files. If None,
+                estimated sources will be saved next to the original ones.
+            force_overwrite (bool): whether to overwrite existing files.
+            **kwargs: keyword arguments to be passed to `_separate`.
 
         Returns:
             Union[torch.Tensor, numpy.ndarray, None], the estimated sources.
@@ -51,7 +57,7 @@ class BaseModel(nn.Module):
         model_device = next(self.parameters()).device
         wav = wav.to(model_device)
         # Forward
-        out_wavs = self._separate(wav, *args, **kwargs)
+        out_wavs = self._separate(wav, **kwargs)
         # Back to input device (and numpy if necessary)
         out_wavs = out_wavs.to(input_device)
         if was_numpy:
@@ -62,6 +68,14 @@ class BaseModel(nn.Module):
             for src_idx, est_src in enumerate(to_save):
                 base = ".".join(filename.split(".")[:-1])
                 save_name = base + "_est{}.".format(src_idx + 1) + filename.split(".")[-1]
+                if os.path.isfile(save_name) and not force_overwrite:
+                    warnings.warn(
+                        f"File {save_name} already exists, pass `force_overwrite=True` to overwrite it",
+                        UserWarning,
+                    )
+                    return
+                if save_dir is not None:
+                    save_name = os.path.join(save_dir, save_name.split("/")[-1])
                 sf.write(save_name, est_src, fs)
             return
         return out_wavs
