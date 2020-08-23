@@ -6,7 +6,7 @@ from torch.nn import functional as F
 
 class Filterbank(nn.Module):
     """ Base Filterbank class.
-    Each subclass has to implement a `filters` property.
+    Each subclass has to implement a `filters` method.
 
     Args:
         n_filters (int): Number of filters.
@@ -27,7 +27,6 @@ class Filterbank(nn.Module):
         # number of features is equal to number of required filters.
         self.n_feats_out = n_filters
 
-    @property
     def filters(self):
         """ Abstract method for filters. """
         raise NotImplementedError
@@ -65,9 +64,8 @@ class _EncDec(nn.Module):
         self.stride = self.filterbank.stride
         self.is_pinv = is_pinv
 
-    @property
     def filters(self):
-        return self.filterbank.filters
+        return self.filterbank.filters()
 
     def compute_filter_pinv(self, filters):
         """ Computes pseudo inverse filterbank of given filters."""
@@ -80,9 +78,9 @@ class _EncDec(nn.Module):
     def get_filters(self):
         """ Returns filters or pinv filters depending on `is_pinv` attribute """
         if self.is_pinv:
-            return self.compute_filter_pinv(self.filters)
+            return self.compute_filter_pinv(self.filters())
         else:
-            return self.filters
+            return self.filters()
 
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class."""

@@ -1,8 +1,7 @@
 import torch
 from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm
-
-EPS = 1e-8
+from typing import List
 
 
 class _LayerNorm(nn.Module):
@@ -22,7 +21,7 @@ class _LayerNorm(nn.Module):
 class GlobLN(_LayerNorm):
     """Global Layer Normalization (globLN)."""
 
-    def forward(self, x):
+    def forward(self, x, EPS: float = 1e-8):
         """ Applies forward pass.
 
         Works for any input size > 2D.
@@ -33,16 +32,17 @@ class GlobLN(_LayerNorm):
         Returns:
             :class:`torch.Tensor`: gLN_x `[batch, chan, *]`
         """
-        dims = list(range(1, len(x.shape)))
+        dims: List[int] = torch.arange(1, len(x.shape)).tolist()
         mean = x.mean(dim=dims, keepdim=True)
         var = torch.pow(x - mean, 2).mean(dim=dims, keepdim=True)
-        return self.apply_gain_and_bias((x - mean) / (var + EPS).sqrt())
+        value = torch.sqrt((x - mean) / (var + EPS))
+        return self.apply_gain_and_bias(value)
 
 
 class ChanLN(_LayerNorm):
     """Channel-wise Layer Normalization (chanLN)."""
 
-    def forward(self, x):
+    def forward(self, x, EPS: float = 1e-8):
         """ Applies forward pass.
 
         Works for any input size > 2D.
@@ -61,7 +61,7 @@ class ChanLN(_LayerNorm):
 class CumLN(_LayerNorm):
     """Cumulative Global layer normalization(cumLN)."""
 
-    def forward(self, x):
+    def forward(self, x, EPS: float = 1e-8):
         """
 
         Args:
@@ -84,7 +84,7 @@ class FeatsGlobLN(_LayerNorm):
     """feature-wise global Layer Normalization (FeatsGlobLN).
     Applies normalization over frames for each channel."""
 
-    def forward(self, x):
+    def forward(self, x, EPS: float = 1e-8):
         """ Applies forward pass.
 
         Works for any input size > 2D.

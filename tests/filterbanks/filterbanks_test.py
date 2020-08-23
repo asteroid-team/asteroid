@@ -136,7 +136,6 @@ def test_get_none():
 
 def test_register():
     class Custom(filterbanks.Filterbank):
-        @property
         def filters(self):
             return None
 

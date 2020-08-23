@@ -73,7 +73,6 @@ class ParamSincFB(Filterbank):
         self.low_hz_ = nn.Parameter(torch.from_numpy(hz[:-1]).view(-1, 1))
         self.band_hz_ = nn.Parameter(torch.from_numpy(np.diff(hz)).view(-1, 1))
 
-    @property
     def filters(self):
         """ Compute filters from parameters """
         low = self.min_low_hz + torch.abs(self.low_hz_)
