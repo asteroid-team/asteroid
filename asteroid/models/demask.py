@@ -150,5 +150,7 @@ class DeMask(BaseModel):
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
 
-        model_args = self.__dict__
+        model_args = {
+            k: v for k, v in self.__dict__.items() if not k.startswith("_") and k != "training"
+        }
         return model_args
