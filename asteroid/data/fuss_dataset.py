@@ -19,6 +19,8 @@ class FUSSDataset(Dataset):
             Sound Separation Data?", 2020, in preparation.
     """
 
+    dataset_name = "FUSS"
+
     def __init__(self, file_list_path, return_bg=False):
         super().__init__()
         # Arguments
@@ -61,3 +63,26 @@ class FUSSDataset(Dataset):
             bg = sf.read(line["bg"], dtype="float32")[0]
             return torch.from_numpy(mix), sources, torch.from_numpy(bg)
         return torch.from_numpy(mix), sources
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos["dataset"] = self.dataset_name
+        infos["task"] = "sep_noisy"
+        infos["licenses"] = [fuss_license]
+        return infos
+
+
+fuss_license = dict(
+    title="Free Universal Sound Separation Dataset",
+    title_link="https://zenodo.org/record/3743844#.X0Jtehl8Jkg",
+    author="Scott Wisdom; Hakan Erdogan; Dan Ellis and John R. Hershey",
+    author_link="https://scholar.google.com/citations?user=kJM6N7IAAAAJ&hl=en",
+    license="Creative Commons Attribution 4.0 International",
+    license_link="https://creativecommons.org/licenses/by/4.0/legalcode",
+    non_commercial=False,
+)
