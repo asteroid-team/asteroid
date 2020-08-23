@@ -42,6 +42,7 @@ class DeMask(BaseModel):
         activation="relu",
         mask_act="relu",
         norm_type="gLN",
+        fb_type="stft",
         n_filters=512,
         stride=256,
         kernel_size=512,
@@ -49,20 +50,27 @@ class DeMask(BaseModel):
     ):
 
         super().__init__()
-
         self.input_type = input_type
         self.output_type = output_type
 
         self.encoder, self.decoder = make_enc_dec(
-            "stft", kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
+            fb_type, kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
         )
 
         if self.input_type == "mag":
-            n_feats_input = (self.encoder.filterbank.n_filters) // 2 + 1
+            if fb_type == "stft":
+                n_feats_input = (self.encoder.filterbank.n_filters) // 2 + 1
+            else:
+                n_feats_input = (self.encoder.filterbank.n_filters) // 2
         elif self.input_type == "cat":
-            n_feats_input = (
-                (self.encoder.filterbank.n_filters // 2) + 1 + self.encoder.filterbank.n_filters
-            )
+            if fb_type == "stft":
+                n_feats_input = (
+                    (self.encoder.filterbank.n_filters // 2) + 1 + self.encoder.filterbank.n_filters
+                )
+            else:
+                n_feats_input = (
+                    self.encoder.filterbank.n_filters // 2
+                ) + self.encoder.filterbank.n_filters
         elif self.input_type == "reim":
             n_feats_input = self.encoder.filterbank.n_filters
         else:
@@ -70,7 +78,10 @@ class DeMask(BaseModel):
             raise NotImplementedError
 
         if self.output_type == "mag":
-            n_feats_output = self.encoder.filterbank.n_filters // 2 + 1
+            if fb_type == "stft":
+                n_feats_output = self.encoder.filterbank.n_filters // 2 + 1
+            else:
+                n_feats_output = self.encoder.filterbank.n_filters // 2
         elif self.input_type == "reim":
             n_feats_output = self.encoder.filterbank.n_filters
         else:
