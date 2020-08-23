@@ -124,9 +124,10 @@ class BaseModel(nn.Module):
         # Attempt to find the model and instantiate it.
         try:
             model_class = get(conf["model_name"])
-            model = model_class(*args, **conf["model_args"])
         except ValueError:  # Couldn't get the model, maybe custom.
             model = cls(*args, **conf["model_args"])  # Child class.
+        else:
+            model = model_class(*args, **conf["model_args"])
         model.load_state_dict(conf["state_dict"])
         return model
 
