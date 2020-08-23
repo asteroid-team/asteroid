@@ -27,6 +27,7 @@ class BaseModel(nn.Module):
             save_dir (str): path to save all the wav files. If None,
                 estimated sources will be saved next to the original ones.
             force_overwrite (bool): whether to overwrite existing files.
+            **kwargs: keyword arguments to be passed to `_separate`.
 
         Returns:
             Union[torch.Tensor, numpy.ndarray, None], the estimated sources.
