@@ -78,8 +78,8 @@ class BaseModel(nn.Module):
         """
         return self(wav, *args, **kwargs)
 
-    @staticmethod
-    def from_pretrained(pretrained_model_conf_or_path, *args, **kwargs):
+    @classmethod
+    def from_pretrained(cls, pretrained_model_conf_or_path, *args, **kwargs):
         """ Instantiate separation model from a model config (file or dict).
 
         Args:
@@ -120,9 +120,13 @@ class BaseModel(nn.Module):
                 "Expected config dictionary to have field "
                 "model_args`. Found only: {}".format(conf.keys())
             )
-        model_class = get(conf["model_name"])
         conf["model_args"].update(kwargs)  # kwargs overwrite config.
-        model = model_class(*args, **conf["model_args"])
+        # Attempt to find the model and instantiate it.
+        try:
+            model_class = get(conf["model_name"])
+            model = model_class(*args, **conf["model_args"])
+        except ValueError:  # Couldn't get the model, maybe custom.
+            model = cls(*args, **conf["model_args"])  # Child class.
         model.load_state_dict(conf["state_dict"])
         return model
 
