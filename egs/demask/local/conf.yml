@@ -1,0 +1,28 @@
+data:
+  fs: 16000
+  clean_train:
+    - /media/sam/Data/LibriSpeech/train-clean-100/**/*.flac
+    - /media/sam/Data/LibriSpeech/train-clean-360/**/*.flac
+  clean_dev:
+    - /media/sam/Data/LibriSpeech/test-clean/**/*.flac
+  rirs_train:
+    - /media/sam/Data/myRIRS/room_0
+  rirs_dev:
+    - /media/sam/Data/myRIRS/room_0
+  mask_irs_path: /media/sam/Data/DeMask/simulated/mask_irs.wav
+  length: 4
+opt:
+  lr: 0.001
+training:
+  gaussian_mask_noise_snr_dB: np.random.randint(3, 12)
+  white_noise_dB: np.random.randint(-3, 30)
+  n_epochs: 400
+  gradient_clip: 5
+  accumulate_batches: 1
+  batch_size: 4
+  save_top_k: 20
+  num_workers: 8
+  patience: 20
+  speed_augm: np.random.uniform(0.95, 1.05)
+  gain_augm: np.random.randint(-30, -2)
+  n_taps: 97
