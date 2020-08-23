@@ -58,7 +58,7 @@ class DPRNNTasNet(BaseTasNet):
         hop_size=None,
         n_repeats=6,
         norm_type="gLN",
-        mask_act='sigmoid',
+        mask_act="sigmoid",
         bidirectional=True,
         rnn_type="LSTM",
         num_layers=1,

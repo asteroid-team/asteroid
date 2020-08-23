@@ -173,7 +173,6 @@ class DPTransformer(nn.Module):
         Returns:
             :class:`torch.Tensor`
                 estimated mask of shape [batch, n_src, n_filters, n_frames]
-
         """
         mixture_w = self.in_norm(mixture_w)  # [batch, bn_chan, n_frames]
 

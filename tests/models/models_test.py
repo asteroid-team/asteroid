@@ -4,7 +4,7 @@ from torch.testing import assert_allclose
 import numpy as np
 import soundfile as sf
 from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet
-from asteroid.models import SuDORMRF, SuDORMRFImproved
+from asteroid.models import SuDORMRFNet, SuDORMRFImprovedNet
 
 
 def test_convtasnet_sep():
@@ -78,19 +78,25 @@ def test_save_and_load_tasnet(fb):
 
 
 def test_sudormrf():
-    model = SuDORMRF(
-        2, out_chan=10, in_chan=10, num_blocks=4, upsampling_depth=2, kernel_size=21, n_filters=10,
+    model = SuDORMRFNet(
+        2, bn_chan=10, num_blocks=4, upsampling_depth=2, kernel_size=21, n_filters=12,
     )
     test_input = torch.randn(1, 801)
-    model(test_input)
+    model_conf = model.serialize()
+
+    reconstructed_model = SuDORMRFNet.from_pretrained(model_conf)
+    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
 
 
 def test_sudormrf_imp():
-    model = SuDORMRFImproved(
-        2, out_chan=10, in_chan=10, num_blocks=4, upsampling_depth=2, n_filters=10, kernel_size=21,
+    model = SuDORMRFImprovedNet(
+        2, bn_chan=10, num_blocks=4, upsampling_depth=2, kernel_size=21, n_filters=12,
     )
     test_input = torch.randn(1, 801)
-    model(test_input)
+    model_conf = model.serialize()
+
+    reconstructed_model = SuDORMRFImprovedNet.from_pretrained(model_conf)
+    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
 
 
 def test_dptnet():

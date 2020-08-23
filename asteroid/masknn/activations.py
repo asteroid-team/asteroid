@@ -1,12 +1,22 @@
 import torch
 from torch import nn
 
+
 class Swish(nn.Module):
     def __init__(self):
         super(Swish, self).__init__()
 
     def forward(self, x):
-        return x*torch.sigmoid(x)
+        return x * torch.sigmoid(x)
+
+
+class Swish(nn.Module):
+    def __init__(self):
+        super(Swish, self).__init__()
+
+    def forward(self, x):
+        return x * torch.sigmoid(x)
+
 
 class Swish(nn.Module):
     def __init__(self):
@@ -43,12 +53,33 @@ def softmax(dim=None):
 def tanh():
     return nn.Tanh()
 
+
 def gelu():
     return nn.GELU()
 
 
 def swish():
     return Swish()
+
+
+def gelu():
+    return nn.GELU()
+
+
+def swish():
+    return Swish()
+
+
+def register_activation(custom_act):
+    """ Register a custom activation, gettable with `activation.get`.
+
+    Args:
+        custom_act: Custom activation function to register.
+
+    """
+    if custom_act.__name__ in globals().keys() or custom_act.__name__.lower() in globals().keys():
+        raise ValueError(f"Activation {custom_act.__name__} already exists. Choose another name.")
+    globals().update({custom_act.__name__: custom_act})
 
 
 def gelu():

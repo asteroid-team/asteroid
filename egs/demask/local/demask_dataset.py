@@ -56,17 +56,6 @@ mask_firs = {
 
 
 class DeMaskDataset(Dataset):
-    """
-    Surgical mask speech enhancement dataset,
-    the mask is simulated with a FIR filter.
-
-    Args:
-        configs (dict): configuration dictionary.
-        clean_speech_datasets (list): list of clean speech files.
-        train (bool): whether to apply augmentation (for training) or not (validation).
-        rirs_datasets (list, optional): list of Room Impulse responses files.
-    """
-
     def __init__(
         self, configs, clean_speech_datasets, train, rirs_datasets=None,
     ):
@@ -84,6 +73,7 @@ class DeMaskDataset(Dataset):
             self.clean.append(c)
 
         self.firs = mask_firs
+
         self.rirs = None
         if rirs_datasets:
             self.rirs = []
