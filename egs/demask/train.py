@@ -9,6 +9,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid import DeMask
+from asteroid.models import save_publishable
 from local.demask_dataset import DeMaskDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
@@ -113,6 +114,13 @@ def main(conf):
     to_save = system.model.serialize()
     to_save.update(train_set.get_infos())
     torch.save(to_save, os.path.join(exp_dir, "best_model.pth"))
+    save_publishable(
+        os.path.join(exp_dir, "publish_dir"),
+        to_save,
+        metrics=dict(),
+        train_conf=conf,
+        recipe="asteroid/demask",
+    )
 
 
 if __name__ == "__main__":
