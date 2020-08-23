@@ -18,7 +18,7 @@ CC_SA_LINK = "https://creativecommons.org/licenses/by-sa/3.0/"
 ASTEROID_REF = HREF.format("https://github.com/mpariente/asteroid", "Asteroid")
 
 
-def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None):
+def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None, recipe=None):
     """ Save models to prepare for publication / model sharing.
 
     Args:
@@ -28,6 +28,7 @@ def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None):
             `state_dict`,`dataset` or `licenses`
         metrics (dict): dict with evaluation metrics.
         train_conf (dict): Training configuration dict (from conf.yml).
+        recipe (str): Name of the recipe.
 
     Returns:
         dict, same as `model_dict` with added fields.
@@ -42,11 +43,15 @@ def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None):
     assert "licenses" in model_dict.keys(), "`licenses` not found in model dict."
     assert isinstance(metrics, dict), "Cannot upload a model without metrics."
     # Additional infos.
-    if os.path.exists(os.path.join(publish_dir, "recipe_name.txt")):
-        recipe_name = next(open(os.path.join(publish_dir, "recipe_name.txt")))
-        recipe_name.replace("\n", "")  # remove next line
+    if recipe is not None:
+        assert isinstance(recipe, str), "`recipe` should be a string."
+        recipe_name = recipe
     else:
-        recipe_name = "Unknown"
+        if os.path.exists(os.path.join(publish_dir, "recipe_name.txt")):
+            recipe_name = next(open(os.path.join(publish_dir, "recipe_name.txt")))
+            recipe_name.replace("\n", "")  # remove next line
+        else:
+            recipe_name = "Unknown"
     model_dict["infos"]["recipe_name"] = recipe_name
     model_dict["infos"]["training_config"] = train_conf
     model_dict["infos"]["final_metrics"] = metrics
