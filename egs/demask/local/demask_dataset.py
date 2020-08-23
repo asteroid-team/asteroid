@@ -6,6 +6,8 @@ import numpy as np
 from scipy.signal import fftconvolve
 from scipy.signal import firwin2
 from pysndfx import AudioEffectsChain
+from asteroid.data.librimix_dataset import librispeech_license
+from asteroid.data.fuss_dataset import fuss_dataset
 
 mask_firs = {
     """
@@ -56,15 +58,16 @@ mask_firs = {
 
 
 class DeMaskDataset(Dataset):
+
+    dataset_name = "Surgical mask speech enhancement"
+
     def __init__(
-        self, configs, clean_speech_datasets, train, rirs_datasets=None,
+        self, configs, clean_speech_dataset, train, rirs_dataset=None,
     ):
         self.configs = configs
         self.train = train
 
-        clean = []
-        for dataset in clean_speech_datasets:
-            clean.extend(glob.glob(dataset, recursive=True))
+        clean = glob.glob(clean_speech_dataset, recursive=True)
 
         self.clean = []
         for c in clean:
@@ -75,10 +78,9 @@ class DeMaskDataset(Dataset):
         self.firs = mask_firs
 
         self.rirs = None
-        if rirs_datasets:
-            self.rirs = []
-            for dataset in rirs_datasets:
-                self.rirs.extend(glob.glob(dataset, recursive=True))
+
+        if rirs_dataset:
+            self.rirs = glob.glob(rirs_dataset, recursive=True)
 
     def __len__(self):
         return len(self.clean)
@@ -99,8 +101,9 @@ class DeMaskDataset(Dataset):
             clean = fftconvolve(clean, c_rir)
 
         fx = AudioEffectsChain().custom("norm {}".format(c_gain))  # random gain
+        clean = fx(clean)
 
-        return fx(clean)
+        return clean
 
     def __getitem__(self, item):
 
@@ -116,7 +119,8 @@ class DeMaskDataset(Dataset):
 
         clean = clean[offset : offset + target_len]
 
-        clean = self.augment(clean)
+        if self.train:
+            clean = self.augment(clean)
 
         # we add reverberation, speed perturb and random scaling
 
@@ -143,10 +147,40 @@ class DeMaskDataset(Dataset):
         clean = clean[trim_start:trim_end]
         masked = masked[trim_start:trim_end]
 
-        snr = 10 ** (eval(self.configs["training"]["white_noise_dB"]) / 20)
-        noise = np.random.normal(0, np.var(masked) / snr, masked.shape)
+        if self.train:
+            snr = 10 ** (eval(self.configs["training"]["white_noise_dB"]) / 20)
+            noise = np.random.normal(0, np.var(masked) / snr, masked.shape)
 
-        masked += noise
-        clean += noise
+            masked += noise
+            clean += noise
+
+        if len(clean) > target_len:
+            clean = clean[:target_len]
+            masked = masked[:target_len]
+        elif len(clean) < target_len:
+            clean = np.pad(
+                clean,
+                (0, int(self.configs["data"]["fs"] * self.configs["data"]["length"]) - len(clean)),
+                mode="constant",
+            )
+            masked = np.pad(
+                masked,
+                (0, int(self.configs["data"]["fs"] * self.configs["data"]["length"]) - len(masked)),
+                mode="constant",
+            )
+        else:
+            pass
 
         return torch.from_numpy(masked).float(), torch.from_numpy(clean).float()
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos["dataset"] = self.dataset_name
+        infos["task"] = "enhancement"
+        infos["licenses"] = [librispeech_license, fuss_dataset]
+        return infos
