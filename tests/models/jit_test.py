@@ -14,12 +14,8 @@ class TestModels(JitTestCase):
         # set model to eval due to non-deterministic behaviour of dropout
         model = DeMask().eval().to(device)
 
-        # test trace
-        # self.checkTrace(model, (example,), export_import=check_export_import)
-
         # test scripting of the separator
         torch.jit.script(model)
-
 
     def test_demask(self):
         self._test_demask(self, device='cpu')
