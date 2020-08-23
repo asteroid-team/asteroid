@@ -104,6 +104,7 @@ def main(conf):
         gpus=gpus,
         distributed_backend="ddp",
         gradient_clip_val=conf["training"]["gradient_clipping"],
+        train_percent_check=0.1,
     )
     trainer.fit(system)
 
@@ -112,9 +113,9 @@ def main(conf):
         json.dump(best_k, f, indent=0)
 
     # Save best model (next PL version will make this easier)
-    best_path = [b for b, v in best_k.items() if v == min(best_k.values())][0]
-    state_dict = torch.load(best_path)
-    system.load_state_dict(state_dict=state_dict["state_dict"])
+    # best_path = [b for b, v in best_k.items() if v == min(best_k.values())][0]
+    # state_dict = torch.load(best_path)
+    # system.load_state_dict(state_dict=state_dict["state_dict"])
     system.cpu()
 
     to_save = system.model.serialize()
