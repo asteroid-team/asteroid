@@ -3,7 +3,7 @@ from asteroid import models
 dependencies = ["torch"]
 
 
-def conv_tasnet(name_url_or_file=None, *args, **kwargs):
+def conv_tasnet(name_url_or_file=None, **kwargs):
     """ Load (pretrained) ConvTasNet model
 
     Args:
@@ -11,7 +11,6 @@ def conv_tasnet(name_url_or_file=None, *args, **kwargs):
             model URL to download model, path to model file.
             If None (default), ConvTasNet is instantiated but no pretrained
             weights are loaded.
-        *args: Arguments to pass to ConvTasNet.
         **kwargs: Keyword arguments to pass to ConvTasNet.
 
     Returns:
@@ -27,11 +26,11 @@ def conv_tasnet(name_url_or_file=None, *args, **kwargs):
     """
     # No pretrained weights
     if name_url_or_file is None:
-        return models.ConvTasNet(*args, **kwargs)
-    return models.ConvTasNet.from_pretrained(name_url_or_file, *args, **kwargs)
+        return models.ConvTasNet(**kwargs)
+    return models.ConvTasNet.from_pretrained(name_url_or_file, **kwargs)
 
 
-def dprnn_tasnet(name_url_or_file=None, *args, **kwargs):
+def dprnn_tasnet(name_url_or_file=None, **kwargs):
     """ Load (pretrained) DPRNNTasNet model
 
     Args:
@@ -39,7 +38,6 @@ def dprnn_tasnet(name_url_or_file=None, *args, **kwargs):
             model URL to download model, path to model file.
             If None (default), DPRNNTasNet is instantiated but no pretrained
             weights are loaded.
-        *args: Arguments to pass to DPRNNTasNet.
         **kwargs: Keyword arguments to pass to DPRNNTasNet.
 
     Returns:
@@ -55,11 +53,11 @@ def dprnn_tasnet(name_url_or_file=None, *args, **kwargs):
     """
     # No pretrained weights
     if name_url_or_file is None:
-        return models.DPRNNTasNet(*args, **kwargs)
-    return models.DPRNNTasNet.from_pretrained(name_url_or_file)
+        return models.DPRNNTasNet(**kwargs)
+    return models.DPRNNTasNet.from_pretrained(name_url_or_file, **kwargs)
 
 
-def lstm_tasnet(name_url_or_file=None, *args, **kwargs):
+def lstm_tasnet(name_url_or_file=None, **kwargs):
     """ Load (pretrained) LSTM TasNet model
 
     Args:
@@ -67,7 +65,6 @@ def lstm_tasnet(name_url_or_file=None, *args, **kwargs):
             model URL to download model, path to model file.
             If None (default), LSTMTasNet is instantiated but no pretrained
             weights are loaded.
-        *args: Arguments to pass to LSTMTasNet.
         **kwargs: Keyword arguments to pass to LSTMTasNet.
 
     Returns:
@@ -83,11 +80,11 @@ def lstm_tasnet(name_url_or_file=None, *args, **kwargs):
     """
     # No pretrained weights
     if name_url_or_file is None:
-        return models.LSTMTasNet(*args, **kwargs)
-    return models.LSTMTasNet.from_pretrained(name_url_or_file)
+        return models.LSTMTasNet(**kwargs)
+    return models.LSTMTasNet.from_pretrained(name_url_or_file, **kwargs)
 
 
-def dpt_net(name_url_or_file=None, *args, **kwargs):
+def dpt_net(name_url_or_file=None, **kwargs):
     """ Load (pretrained) DualPathTransformer (DPTNet) model
 
     Args:
@@ -95,7 +92,6 @@ def dpt_net(name_url_or_file=None, *args, **kwargs):
             model URL to download model, path to model file.
             If None (default), DPTNet is instantiated but no pretrained
             weights are loaded.
-        *args: Arguments to pass to DPTNet.
         **kwargs: Keyword arguments to pass to DPTNet.
 
     Returns:
@@ -111,11 +107,11 @@ def dpt_net(name_url_or_file=None, *args, **kwargs):
     """
     # No pretrained weights
     if name_url_or_file is None:
-        return models.DPTNet(*args, **kwargs)
-    return models.DPTNet.from_pretrained(name_url_or_file)
+        return models.DPTNet(**kwargs)
+    return models.DPTNet.from_pretrained(name_url_or_file, **kwargs)
 
 
-def sudormrf_net(name_url_or_file=None, *args, **kwargs):
+def sudormrf_net(name_url_or_file=None, **kwargs):
     """ Load (pretrained) SuDORMRF model.
 
     Args:
@@ -123,7 +119,6 @@ def sudormrf_net(name_url_or_file=None, *args, **kwargs):
             model URL to download model, path to model file.
             If None (default), SuDORMRFNet is instantiated but no pretrained
             weights are loaded.
-        *args: Arguments to pass to SuDORMRFNet.
         **kwargs: Keyword arguments to pass to SuDORMRFNet.
 
     Returns:
@@ -139,11 +134,11 @@ def sudormrf_net(name_url_or_file=None, *args, **kwargs):
     """
     # No pretrained weights
     if name_url_or_file is None:
-        return models.SuDORMRFNet(*args, **kwargs)
-    return models.SuDORMRFNet.from_pretrained(name_url_or_file)
+        return models.SuDORMRFNet(**kwargs)
+    return models.SuDORMRFNet.from_pretrained(name_url_or_file, **kwargs)
 
 
-def sudormrf_improved_net(name_url_or_file=None, *args, **kwargs):
+def sudormrf_improved_net(name_url_or_file=None, **kwargs):
     """ Load (pretrained) SuDORMRFImprovedNet improved model
 
     Args:
@@ -151,7 +146,6 @@ def sudormrf_improved_net(name_url_or_file=None, *args, **kwargs):
             model URL to download model, path to model file.
             If None (default), SuDORMRFImprovedNet is instantiated but no pretrained
             weights are loaded.
-        *args: Arguments to pass to SuDORMRFImprovedNet.
         **kwargs: Keyword arguments to pass to SuDORMRFImprovedNet.
 
     Returns:
@@ -167,5 +161,5 @@ def sudormrf_improved_net(name_url_or_file=None, *args, **kwargs):
     """
     # No pretrained weights
     if name_url_or_file is None:
-        return models.SuDORMRFImprovedNet(*args, **kwargs)
-    return models.SuDORMRFImprovedNet.from_pretrained(name_url_or_file)
+        return models.SuDORMRFImprovedNet(**kwargs)
+    return models.SuDORMRFImprovedNet.from_pretrained(name_url_or_file, **kwargs)

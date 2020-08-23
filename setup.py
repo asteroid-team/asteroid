@@ -21,15 +21,21 @@ setup(
         "numpy",
         "scipy",
         "pandas",
-        "soundfile",
         "torch",
+        "torchaudio",
         "pytorch-lightning>=0.7.5,<0.8",
         "torch_optimizer",
+        "soundfile",
         "pb_bss_eval",
         "torch_stoi",
     ],
     extras_require={"visualize": ["seaborn"], "tests": ["pytest"],},
-    entry_points={"console_scripts": ["asteroid-upload=asteroid.scripts.asteroid_cli:upload"],},
+    entry_points={
+        "console_scripts": [
+            "asteroid-upload=asteroid.scripts.asteroid_cli:upload",
+            "asteroid-infer=asteroid.scripts.asteroid_cli:infer",
+        ],
+    },
     packages=find_packages(),
     include_package_data=True,
     classifiers=[
