@@ -3,6 +3,9 @@ import pytest
 from torch.testing import assert_allclose
 import numpy as np
 import soundfile as sf
+import asteroid
+from asteroid import models
+from asteroid.models.base_models import BaseModel
 from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet
 from asteroid.models import SuDORMRFNet, SuDORMRFImprovedNet
 
@@ -106,3 +109,35 @@ def test_dptnet():
     model_conf = model.serialize()
     reconstructed_model = DPTNet.from_pretrained(model_conf)
     assert_allclose(model.separate(test_input), reconstructed_model(test_input))
+
+
+@pytest.mark.parametrize(
+    "model", [LSTMTasNet, ConvTasNet, DPRNNTasNet, DPTNet, SuDORMRFImprovedNet, SuDORMRFNet]
+)
+def test_get(model):
+    retrieved = models.get(model.__name__)
+    assert retrieved == model
+
+
+@pytest.mark.parametrize("wrong", ["wrong_string", 12, object()])
+def test_get_errors(wrong):
+    with pytest.raises(ValueError):
+        # Should raise for anything not a Optimizer instance + unknown string
+        models.get(wrong)
+
+
+def test_register():
+    class Custom(BaseModel):
+        def __init__(self):
+            super().__init__()
+
+    models.register_model(Custom)
+    cls = models.get("Custom")
+    assert cls == Custom
+
+    with pytest.raises(ValueError):
+        models.register_model(models.DPRNNTasNet)
+
+
+def test_show():
+    asteroid.show_available_models()
