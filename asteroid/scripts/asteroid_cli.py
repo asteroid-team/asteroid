@@ -131,5 +131,10 @@ def _process_files_as_list(files_str: List) -> List:
 def glob_dir(d):
     """ Return all filenames in directory that match the supported extensions."""
     return list(
-        itertools.chain(*[glob.glob(os.path.join(d, "**/*" + ext)) for ext in SUPPORTED_EXTENSIONS])
+        itertools.chain(
+            *[
+                glob.glob(os.path.join(d, "**/*" + ext), recursive=True)
+                for ext in SUPPORTED_EXTENSIONS
+            ]
+        )
     )
