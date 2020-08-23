@@ -90,6 +90,13 @@ def upload():
 
 
 def infer():
+    """ CLI function to run pretrained model inference on wav files.
+
+    Args:
+        url_or_path(str): Path to the pretrained model.
+        files (List(str)): Path to the wav files to separate. Also support list
+            of filenames, directory names and globs.
+    """
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -98,7 +105,8 @@ def infer():
         "--files",
         default=None,
         type=str,
-        help="Path to the wav files to separate. Also support list of filenames, directory names and globs.",
+        help="Path to the wav files to separate. Also support list of filenames, "
+        "directory names and globs.",
         nargs="+",
     )
     args = parser.parse_args()
