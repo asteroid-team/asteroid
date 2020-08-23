@@ -57,14 +57,12 @@ mask_firs = {
 
 class DeMaskDataset(Dataset):
     def __init__(
-        self, configs, clean_speech_datasets, train, rirs_datasets=None,
+        self, configs, clean_speech_dataset, train, rirs_dataset=None,
     ):
         self.configs = configs
         self.train = train
 
-        clean = []
-        for dataset in clean_speech_datasets:
-            clean.extend(glob.glob(dataset, recursive=True))
+        clean = glob.glob(clean_speech_dataset, recursive=True)
 
         self.clean = []
         for c in clean:
@@ -75,10 +73,9 @@ class DeMaskDataset(Dataset):
         self.firs = mask_firs
 
         self.rirs = None
-        if rirs_datasets:
-            self.rirs = []
-            for dataset in rirs_datasets:
-                self.rirs.extend(glob.glob(dataset, recursive=True))
+
+        if rirs_dataset:
+            self.rirs = glob.glob(rirs_dataset, recursive=True)
 
     def __len__(self):
         return len(self.clean)
@@ -99,8 +96,9 @@ class DeMaskDataset(Dataset):
             clean = fftconvolve(clean, c_rir)
 
         fx = AudioEffectsChain().custom("norm {}".format(c_gain))  # random gain
+        clean = fx(clean)
 
-        return fx(clean)
+        return clean
 
     def __getitem__(self, item):
 
@@ -148,5 +146,22 @@ class DeMaskDataset(Dataset):
 
         masked += noise
         clean += noise
+
+        if len(clean) > target_len:
+            clean = clean[:target_len]
+            masked = masked[:target_len]
+        elif len(clean) < target_len:
+            clean = np.pad(
+                clean,
+                (0, int(self.configs["data"]["fs"] * self.configs["data"]["length"]) - len(clean)),
+                mode="constant",
+            )
+            masked = np.pad(
+                masked,
+                (0, int(self.configs["data"]["fs"] * self.configs["data"]["length"]) - len(masked)),
+                mode="constant",
+            )
+        else:
+            pass
 
         return torch.from_numpy(masked).float(), torch.from_numpy(clean).float()

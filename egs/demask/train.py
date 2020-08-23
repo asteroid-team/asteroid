@@ -8,8 +8,8 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from asteroid import DPRNNTasNet
-from .local.demask_dataset import DeMaskDataset
+from asteroid import DeMask
+from local.demask_dataset import DeMaskDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import singlesrc_neg_sisdr
@@ -24,10 +24,18 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best validation model")
 
 
+class DeMaskSystem(System):
+    def common_step(self, batch, batch_nb, train=True):
+        inputs, targets = batch
+        est_targets = self(inputs)
+        loss = self.loss_func(est_targets.squeeze(1), targets).mean()
+
+        return loss
+
+
 def main(conf):
 
     train_set = DeMaskDataset(conf, conf["data"]["clean_train"], True, conf["data"]["rirs_train"])
-
     val_set = DeMaskDataset(conf, conf["data"]["clean_dev"], False, conf["data"]["rirs_dev"])
 
     train_loader = DataLoader(
@@ -44,10 +52,8 @@ def main(conf):
         num_workers=conf["training"]["num_workers"],
         drop_last=True,
     )
-    # Update number of source values (It depends on the task)
-    conf["masknet"].update({"n_src": train_set.n_src})
 
-    model = DPRNNTasNet(**conf["filterbank"], **conf["masknet"])
+    model = DeMask(**conf["filterbank"], **conf["demask_net"])
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     # Define scheduler
     scheduler = None
@@ -62,7 +68,7 @@ def main(conf):
 
     # Define Loss function.
     loss_func = singlesrc_neg_sisdr
-    system = System(
+    system = DeMaskSystem(
         model=model,
         loss_func=loss_func,
         optimizer=optimizer,
