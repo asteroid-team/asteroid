@@ -166,15 +166,6 @@ class System(pl.LightningModule):
         tensorboard_logs = {"val_loss": avg_loss}
         return {"val_loss": avg_loss, "log": tensorboard_logs, "progress_bar": tensorboard_logs}
 
-    def unsqueeze_if_dp_or_ddp(self, *values):
-        """ Apply unsqueeze(0) to all values if training is done with dp
-            or ddp. Unused now."""
-        if self.trainer.use_dp or self.trainer.use_ddp2:
-            values = [v.unsqueeze(0) for v in values]
-        if len(values) == 1:
-            return values[0]
-        return values
-
     def configure_optimizers(self):
         """ Required by pytorch-lightning. """
 
