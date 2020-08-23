@@ -42,7 +42,6 @@ class DeMask(BaseModel):
         activation="relu",
         mask_act="relu",
         norm_type="gLN",
-        fb_name="stft",
         n_filters=512,
         stride=256,
         kernel_size=512,
@@ -55,7 +54,7 @@ class DeMask(BaseModel):
         self.output_type = output_type
 
         self.encoder, self.decoder = make_enc_dec(
-            fb_name, kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
+            "stft", kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
         )
 
         if self.input_type == "mag":
