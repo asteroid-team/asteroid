@@ -3,7 +3,7 @@ import pytest
 from torch.testing import assert_allclose
 import numpy as np
 import soundfile as sf
-from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet
+from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet, DeMask
 from asteroid.models import SuDORMRFNet, SuDORMRFImprovedNet
 
 
@@ -105,4 +105,13 @@ def test_dptnet():
 
     model_conf = model.serialize()
     reconstructed_model = DPTNet.from_pretrained(model_conf)
+    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
+
+
+def test_demask():
+    model = DeMask()
+    test_input = torch.randn(1, 801)
+
+    model_conf = model.serialize()
+    reconstructed_model = DeMask.from_pretrained(model_conf)
     assert_allclose(model.separate(test_input), reconstructed_model(test_input))

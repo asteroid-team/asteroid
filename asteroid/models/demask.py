@@ -52,6 +52,16 @@ class DeMask(BaseModel):
         super().__init__()
         self.input_type = input_type
         self.output_type = output_type
+        self.hidden_dims = hidden_dims
+        self.dropout = dropout
+        self.activation = activation
+        self.mask_act = mask_act
+        self.norm_type = norm_type
+        self.fb_type = fb_type
+        self.n_filters = n_filters
+        self.stride = stride
+        self.kernel_size = kernel_size
+        self.fb_kwargs = fb_kwargs
 
         self.encoder, self.decoder = make_enc_dec(
             fb_type, kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
@@ -139,17 +149,6 @@ class DeMask(BaseModel):
 
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
-        fb_config = self.encoder.filterbank.get_config()
-        masknet_config = self.masker.get_config()
-        # Assert both dict are disjoint
-        if not all(k not in fb_config for k in masknet_config):
-            raise AssertionError(
-                "Filterbank and Mask network config share" "common keys. Merging them is not safe."
-            )
-        # Merge all args under model_args.
-        model_args = {
-            **fb_config,
-            **masknet_config,
-            "encoder_activation": self.encoder_activation,
-        }
+
+        model_args = self.__dict__
         return model_args
