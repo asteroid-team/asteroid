@@ -40,3 +40,8 @@ def test_system_no_scheduler():
     )
     trainer = Trainer(max_epochs=1, fast_dev_run=True)
     trainer.fit(system)
+
+
+def test_config_to_hparams():
+    conf = {"data": {"a": 1, "b": 2}, "nnet": {"c": 3}, "optim": {"d": None, "e": [1, 2, 3]}}
+    System.config_to_hparams(conf)
