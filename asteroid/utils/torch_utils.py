@@ -55,7 +55,7 @@ def tensors_to_device(tensors, device):
         return tensors
 
 
-def pad_x_to_y(x, y, axis=-1):
+def pad_x_to_y(x: torch.Tensor, y: torch.Tensor, axis: int = -1) -> torch.Tensor:
     """  Pad first argument to have same size as second argument
 
     Args:
