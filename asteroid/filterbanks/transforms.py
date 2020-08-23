@@ -1,10 +1,8 @@
 import torch
 import numpy as np
 
-EPS = 1e-8
 
-
-def mul_c(inp, other, dim=-2):
+def mul_c(inp, other, dim: int = -2):
     """ Entrywise product for complex valued tensors.
 
     Operands are assumed to have the real parts of each entry followed by the
@@ -45,11 +43,11 @@ def mul_c(inp, other, dim=-2):
     return torch.cat([real1 * real2 - imag1 * imag2, real1 * imag2 + imag1 * real2], dim=dim)
 
 
-def take_reim(x, dim=-2):
+def take_reim(x, dim: int = -2):
     return x
 
 
-def take_mag(x, dim=-2):
+def take_mag(x, dim: int = -2, EPS: float = 1e-8):
     """ Takes the magnitude of a complex tensor.
 
     The operands is assumed to have the real parts of each entry followed by
@@ -84,11 +82,11 @@ def take_mag(x, dim=-2):
     return power.pow(0.5)
 
 
-def take_cat(x, dim=-2):
+def take_cat(x, dim: int = -2):
     return torch.cat([take_mag(x, dim=dim), x], dim=dim)
 
 
-def apply_real_mask(tf_rep, mask, dim=-2):
+def apply_real_mask(tf_rep, mask, dim: int = -2):
     """ Applies a real-valued mask to a real-valued representation.
 
     It corresponds to ReIm mask in [1].
@@ -104,7 +102,7 @@ def apply_real_mask(tf_rep, mask, dim=-2):
     return tf_rep * mask
 
 
-def apply_mag_mask(tf_rep, mask, dim=-2):
+def apply_mag_mask(tf_rep, mask, dim: int = -2):
     """ Applies a real-valued mask to a complex-valued representation.
 
     If `tf_rep` has 2N elements along `dim`, `mask` has N elements, `mask` is
@@ -142,7 +140,7 @@ def apply_mag_mask(tf_rep, mask, dim=-2):
     return tf_rep * mask
 
 
-def apply_complex_mask(tf_rep, mask, dim=-2):
+def apply_complex_mask(tf_rep, mask, dim: int = -2):
     """ Applies a complex-valued mask to a complex-valued representation.
 
     Operands are assumed to have the real parts of each entry followed by the
@@ -178,7 +176,7 @@ def apply_complex_mask(tf_rep, mask, dim=-2):
     return mul_c(tf_rep, mask, dim=dim)
 
 
-def check_complex(tensor, dim=-2):
+def check_complex(tensor, dim: int = -2):
     """ Assert tensor in complex-like in a given dimension.
 
     Args:
@@ -198,7 +196,7 @@ def check_complex(tensor, dim=-2):
         )
 
 
-def to_numpy(tensor, dim=-2):
+def to_numpy(tensor, dim: int = -2):
     """ Convert complex-like torch tensor to numpy complex array
 
     Args:
@@ -214,7 +212,7 @@ def to_numpy(tensor, dim=-2):
     return real.data.numpy() + 1j * imag.data.numpy()
 
 
-def from_numpy(array, dim=-2):
+def from_numpy(array, dim: int = -2):
     """ Convert complex numpy array to complex-like torch tensor.
 
     Args:
@@ -229,7 +227,7 @@ def from_numpy(array, dim=-2):
     return torch.cat([torch.from_numpy(np.real(array)), torch.from_numpy(np.imag(array))], dim=dim)
 
 
-def to_torchaudio(tensor, dim=-2):
+def to_torchaudio(tensor, dim: int = -2):
     """ Converts complex-like torch tensor to torchaudio style complex tensor.
 
     Args:
@@ -244,7 +242,7 @@ def to_torchaudio(tensor, dim=-2):
     return torch.stack(torch.chunk(tensor, 2, dim=dim), dim=-1)
 
 
-def from_torchaudio(tensor, dim=-2):
+def from_torchaudio(tensor, dim: int = -2):
     """ Converts torchaudio style complex tensor to complex-like torch tensor.
 
     Args:
@@ -259,7 +257,7 @@ def from_torchaudio(tensor, dim=-2):
     return torch.cat([tensor[..., 0], tensor[..., 1]], dim=dim)
 
 
-def angle(tensor, dim=-2):
+def angle(tensor, dim: int = -2):
     """ Return the angle of the complex-like torch tensor.
 
     Args:
@@ -278,7 +276,7 @@ def angle(tensor, dim=-2):
     return torch.atan2(imag, real)
 
 
-def from_mag_and_phase(mag, phase, dim=-2):
+def from_mag_and_phase(mag, phase, dim: int = -2):
     """ Return a complex-like torch tensor from magnitude and phase components.
 
     Args:
