@@ -83,13 +83,9 @@ def audio_mixer(
     train_files = audio_files[:total_train_files]
     val_files = audio_files[-total_val_files:]
 
-    storage_space_train, excess_storage = requires_excess_storage_space(
-        len(train_files), n_src
-    )
+    storage_space_train, excess_storage = requires_excess_storage_space(len(train_files), n_src)
 
-    storage_space_val, _ = requires_excess_storage_space(
-        len(val_files), n_src
-    )
+    storage_space_val, _ = requires_excess_storage_space(len(val_files), n_src)
 
     storage_space = storage_space_train + storage_space_val
     if excess_storage:
@@ -100,7 +96,6 @@ def audio_mixer(
         )
 
     print(f"Occupying space: {storage_space:,} Kbytes")
-
 
     def retrieve_name(f):
         f = os.path.splitext(os.path.basename(f))[0]
@@ -119,9 +114,7 @@ def audio_mixer(
         noises = []
 
         total_comb_size = nCr(len(audio_filtered_files), n_src)
-        for indx, audio_comb in tqdm(
-            enumerate(audio_combinations), total=total_comb_size
-        ):
+        for indx, audio_comb in tqdm(enumerate(audio_combinations), total=total_comb_size):
             # skip few combinations if required storage is very high
             try:
                 if excess_storage and random.random() < remove_random_chance:
@@ -139,19 +132,14 @@ def audio_mixer(
                 audio_inputs.append(audio_comb)
                 # Convert audio file path to corresponding video path
                 video_inputs.append(
-                    tuple(
-                        os.path.join(VIDEO_DIR, retrieve_name(f) + video_ext)
-                        for f in audio_comb
-                    )
+                    tuple(os.path.join(VIDEO_DIR, retrieve_name(f) + video_ext) for f in audio_comb)
                 )
 
                 audio_mix_input = ""
                 for audio in audio_comb:
                     audio_mix_input += f"-i {audio} "
 
-                mixed_audio_name = os.path.join(
-                    MIXED_AUDIO_DIR, f"{indx+offset}{audio_ext}"
-                )
+                mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx+offset}{audio_ext}")
                 audio_command = (
                     AUDIO_MIX_COMMAND_PREFIX
                     + audio_mix_input
@@ -160,10 +148,7 @@ def audio_mixer(
                 )
 
                 process = subprocess.Popen(
-                    audio_command,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
+                    audio_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 )  # .communicate()
                 mixed_audio.append(mixed_audio_name)
                 # print(video_inputs, audio_inputs, mixed_audio, noises)
@@ -206,9 +191,7 @@ def audio_mixer(
         df.to_csv(file_name_df, index=False)
 
         if audio_set:
-            pd.Series(noises).to_csv(
-                "../../data/noise_only.csv", index=False, header=False
-            )
+            pd.Series(noises).to_csv("../../data/noise_only.csv", index=False, header=False)
         return df.shape[0]
 
     offset = mix(train_files, "../../data/train.csv", 0, excess_storage)
@@ -219,15 +202,9 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     parser.add_argument(
-        "--remove-random",
-        "-r",
-        default=0.9,
-        type=float,
-        help="ratio of combination to remove",
+        "--remove-random", "-r", default=0.9, type=float, help="ratio of combination to remove",
     )
-    parser.add_argument(
-        "--use-audio-set", "-u", dest="use_audio_set", action="store_true"
-    )
+    parser.add_argument("--use-audio-set", "-u", dest="use_audio_set", action="store_true")
     parser.add_argument(
         "--file-limit",
         "-l",

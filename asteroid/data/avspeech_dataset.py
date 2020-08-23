@@ -1,5 +1,4 @@
 import re
-import os
 import cv2
 import librosa
 import numpy as np
@@ -8,8 +7,8 @@ import torch
 from torch.utils import data
 from torch.nn import functional as F
 import pandas as pd
-from typing import Callable, Tuple, List, Union
-from asteroid.filterbanks import Encoder, Decoder, STFTFB, transforms
+from typing import Union
+from asteroid.filterbanks import Encoder, Decoder, STFTFB
 
 EPS = 1e-8
 
@@ -19,9 +18,7 @@ def get_frames(video):
     frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    buffer_video = np.empty(
-        (frame_count, frame_height, frame_width, 3), np.dtype("uint8")
-    )
+    buffer_video = np.empty((frame_count, frame_height, frame_width, 3), np.dtype("uint8"))
 
     frame = 0
     ret = True
@@ -47,8 +44,7 @@ class Signal:
             fps (int): fps of video.
             signal_len (int): length of the signal
 
-        Note:
-            [1]: each video consists of multiple parts which consists of fps*signal_len frames.
+        .. note:: each video consists of multiple parts which consists of fps*signal_len frames.
     """
 
     def __init__(
@@ -130,9 +126,7 @@ class AVSpeechDataset(data.Dataset):
 
     dataset_name = "AVSpeech"
 
-    def __init__(
-        self, input_df_path: Union[str, Path], embed_dir: Union[str, Path], n_src=2
-    ):
+    def __init__(self, input_df_path: Union[str, Path], embed_dir: Union[str, Path], n_src=2):
         if isinstance(input_df_path, str):
             input_df_path = Path(input_df_path)
         if isinstance(embed_dir, str):
@@ -192,10 +186,7 @@ class AVSpeechDataset(data.Dataset):
                 video_length_idx = int(re_match.group(0)[-1])
 
             signal = Signal(
-                video_path,
-                audio_path,
-                self.embed_dir,
-                video_start_length=video_length_idx,
+                video_path, audio_path, self.embed_dir, video_start_length=video_length_idx,
             )
             all_signals.append(signal)
 
@@ -208,9 +199,7 @@ class AVSpeechDataset(data.Dataset):
 
         for i in range(self.n_src):
             # audio to spectrogram
-            spectrogram = self.encode(
-                all_signals[i].get_audio(), stft_encoder=self.stft_encoder
-            )
+            spectrogram = self.encode(all_signals[i].get_audio(), stft_encoder=self.stft_encoder)
             audio_tensors.append(spectrogram)
 
             # get embed

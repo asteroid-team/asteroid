@@ -1,6 +1,8 @@
 import torch
 import pytorch_lightning as pl
 from argparse import Namespace
+from typing import Callable, Optional
+from torch.optim.optimizer import Optimizer
 
 from ..utils import flatten_dict
 
@@ -27,8 +29,17 @@ class System(pl.LightningModule):
         loop and the validation loop, overwrite both `training_step` and
         `validation_step` instead.
     """
-    def __init__(self, model, optimizer, loss_func, train_loader,
-                 val_loader=None, scheduler=None, config=None):
+
+    def __init__(
+        self,
+        model,
+        optimizer,
+        loss_func,
+        train_loader,
+        val_loader=None,
+        scheduler=None,
+        config=None,
+    ):
         super().__init__()
         self.model = model
         self.optimizer = optimizer
@@ -100,8 +111,24 @@ class System(pl.LightningModule):
 
         """
         loss = self.common_step(batch, batch_nb, train=True)
-        tensorboard_logs = {'train_loss': loss}
-        return {'loss': loss, 'log': tensorboard_logs}
+        tensorboard_logs = {"train_loss": loss}
+        return {"loss": loss, "log": tensorboard_logs}
+
+    def optimizer_step(
+        self,
+        epoch: int,
+        batch_idx: int,
+        optimizer: Optimizer,
+        optimizer_idx: int,
+        second_order_closure: Optional[Callable] = None,
+    ) -> None:
+        if self.scheduler is not None:
+            if not isinstance(self.scheduler, (list, tuple)):
+                self.scheduler = [self.scheduler]  # support multiple schedulers
+            for sched in self.scheduler:
+                if isinstance(sched, dict) and sched["interval"] == "batch":
+                    sched["scheduler"].step()  # call step on each batch scheduler
+            self.optimizer.step()
 
     def validation_step(self, batch, batch_nb):
         """ Need to overwrite PL validation_step to do validation.
@@ -117,7 +144,7 @@ class System(pl.LightningModule):
             ``'val_loss'``: loss
         """
         loss = self.common_step(batch, batch_nb, train=False)
-        return {'val_loss': loss}
+        return {"val_loss": loss}
 
     def validation_epoch_end(self, outputs):
         """ How to aggregate outputs of `validation_step` for logging.
@@ -135,24 +162,28 @@ class System(pl.LightningModule):
 
             ``'progress_bar'``: Tensorboard logs
         """
-        avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
-        tensorboard_logs = {'val_loss': avg_loss}
-        return {'val_loss': avg_loss, 'log': tensorboard_logs,
-                'progress_bar': tensorboard_logs}
-
-    def unsqueeze_if_dp_or_ddp(self, *values):
-        """ Apply unsqueeze(0) to all values if training is done with dp
-            or ddp. Unused now."""
-        if self.trainer.use_dp or self.trainer.use_ddp2:
-            values = [v.unsqueeze(0) for v in values]
-        if len(values) == 1:
-            return values[0]
-        return values
+        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
+        tensorboard_logs = {"val_loss": avg_loss}
+        return {"val_loss": avg_loss, "log": tensorboard_logs, "progress_bar": tensorboard_logs}
 
     def configure_optimizers(self):
         """ Required by pytorch-lightning. """
+
         if self.scheduler is not None:
-            return [self.optimizer], [self.scheduler]
+            if not isinstance(self.scheduler, (list, tuple)):
+                self.scheduler = [self.scheduler]  # support multiple schedulers
+            epoch_schedulers = []
+            for sched in self.scheduler:
+                if not isinstance(sched, dict):
+                    epoch_schedulers.append(sched)
+                else:
+                    assert sched["interval"] in [
+                        "batch",
+                        "epoch",
+                    ], "Scheduler interval should be either batch or epoch"
+                    if sched["interval"] == "epoch":
+                        epoch_schedulers.append(sched)
+            return [self.optimizer], epoch_schedulers
         return self.optimizer
 
     def train_dataloader(self):
@@ -163,7 +194,7 @@ class System(pl.LightningModule):
 
     def on_save_checkpoint(self, checkpoint):
         """ Overwrite if you want to save more things in the checkpoint."""
-        checkpoint['training_config'] = self.config
+        checkpoint["training_config"] = self.config
         return checkpoint
 
     def on_batch_start(self, batch):

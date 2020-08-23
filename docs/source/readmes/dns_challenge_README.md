@@ -1,0 +1,1 @@
+../../../egs/dns_challenge/README.md

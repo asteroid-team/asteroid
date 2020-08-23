@@ -27,9 +27,7 @@ class DiscriminativeLoss(torch.nn.Module):
             sum_mtr += (target[:, i, ...] - input[:, i, ...]) ** 2
             for j in range(self.n_src):
                 if i != j:
-                    sum_mtr -= self.gamma * (
-                        (target[:, i, ...] - input[:, j, ...]) ** 2
-                    )
+                    sum_mtr -= self.gamma * ((target[:, i, ...] - input[:, j, ...]) ** 2)
         sum_mtr = torch.mean(sum_mtr.view(-1))
 
         return sum_mtr
@@ -45,17 +43,11 @@ def main(conf):
         learning_rate=conf["optim"]["lr"],
     )
 
-    dataset = AVSpeechDataset(
-        Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"]
-    )
-    val_dataset = AVSpeechDataset(
-        Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"]
-    )
+    dataset = AVSpeechDataset(Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"])
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"])
 
     model, optimizer = make_model_and_optimizer(conf)
-    print(
-        f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters"
-    )
+    print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
 
     criterion = DiscriminativeLoss()
 
@@ -94,9 +86,7 @@ if __name__ == "__main__":
         "--n-src", type=int, help="number of inputs to neural network", default=2,
     )
     parser.add_argument(
-        "--exp_dir",
-        default="exp/logdir",
-        help="Full path to save best validation model",
+        "--exp_dir", default="exp/logdir", help="Full path to save best validation model",
     )
 
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict

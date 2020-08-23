@@ -1,5 +1,5 @@
 import inspect
-import collections
+from collections.abc import MutableMapping
 import numpy as np
 
 
@@ -18,17 +18,19 @@ def has_arg(fn, name):
     parameter = signature.parameters.get(name)
     if parameter is None:
         return False
-    return (parameter.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                               inspect.Parameter.KEYWORD_ONLY))
+    return parameter.kind in (
+        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        inspect.Parameter.KEYWORD_ONLY,
+    )
 
 
-def flatten_dict(d, parent_key='', sep='_'):
+def flatten_dict(d, parent_key="", sep="_"):
     """ Flattens a dictionary into a single-level dictionary while preserving
     parent keys. Taken from https://stackoverflow.com/questions/6027558/
     flatten-nested-dictionaries-compressing-keys?answertab=votes#tab-top
 
     Args:
-        d (collections.MutableMapping): Dictionary to be flattened.
+        d (MutableMapping): Dictionary to be flattened.
         parent_key (str): String to use as a prefix to all subsequent keys.
         sep (str): String to use as a separator between two key levels.
 
@@ -38,7 +40,7 @@ def flatten_dict(d, parent_key='', sep='_'):
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.MutableMapping):
+        if isinstance(v, MutableMapping):
             items.extend(flatten_dict(v, new_key, sep=sep).items())
         else:
             items.append((new_key, v))
@@ -63,7 +65,7 @@ def average_arrays_in_dic(dic):
     return dic
 
 
-def get_wav_random_start_stop(signal_len, desired_len=4*8000):
+def get_wav_random_start_stop(signal_len, desired_len=4 * 8000):
     """ Get indexes for a chunk of signal of a given length.
 
     Args:

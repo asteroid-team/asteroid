@@ -1,4 +1,4 @@
-### Results 
+### Results
 
 |      |   task    | n_blocks | n_repeats | batch size |SI-SNRi(dB) | SDRi(dB)|
 |:----:|:---------:|:--------:|:---------:|:----------:|:----------:|:-------:|
@@ -24,4 +24,4 @@ If you use this model, please cite the original work.
 }
 ```
 
-and if you like using `asteroid` you can give us a star ! :star:
+and if you like using `asteroid` you can give us a star! :star:

@@ -47,3 +47,16 @@ def test_get_errors(wrong):
 
 def test_get_none():
     assert activations.get(None) is None
+
+
+def test_register():
+    class Custom(nn.Module):
+        def __init__(self):
+            super().__init__()
+
+    activations.register_activation(Custom)
+    cls = activations.get("Custom")
+    assert cls == Custom
+
+    with pytest.raises(ValueError):
+        activations.register_activation(activations.relu)

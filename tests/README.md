@@ -25,4 +25,3 @@ coverage run --source asteroid -m py.test tests -v --doctest-modules
 # print coverage stats
 coverage report -m
 ```
-

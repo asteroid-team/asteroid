@@ -1,0 +1,59 @@
+name: CI
+
+# see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
+# Trigger the workflow on push or pull request
+on: [push, pull_request]
+
+jobs:
+  src-test:
+    name: unit-tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6]  #, 3.7, 3.8]
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install libnsdfile
+      run: |
+        sudo apt update
+        sudo apt install libsndfile1-dev libsndfile1
+
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade --user pip --quiet
+        python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
+        python -m pip install pytest coverage codecov --upgrade-strategy only-if-needed --quiet
+        python -m pip install -r requirements.txt --quiet
+        python --version
+        pip --version
+        python -m pip list
+      shell: bash
+
+    - name: Source code tests
+      run: |
+        coverage run -a -m py.test tests  --ignore tests/models/publish_test.py
+
+    # This tends to fail despite the code works, when Zenodo is slow.
+    - name: Model-sharing tests
+      run: |
+        coverage run -a -m py.test tests/models/publish_test.py
+      env:  # Access token as an env variable
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+    - name: Coverage report
+      run: |
+        coverage report -m
+        coverage xml -o coverage.xml
+
+    - name: Codecov upload
+      uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage.xml
