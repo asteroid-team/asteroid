@@ -7,7 +7,7 @@ from scipy.signal import fftconvolve
 from scipy.signal import firwin2
 from pysndfx import AudioEffectsChain
 from asteroid.data.librimix_dataset import librispeech_license
-from asteroid.data import fuss_dataset
+from asteroid.data.fuss_dataset import fuss_license
 
 # We approximate the effect of a surgical or tissue mask with an ad-hoc FIR
 # filter whose frequency response is taken from [1].
@@ -173,5 +173,5 @@ class DeMaskDataset(Dataset):
         infos = dict()
         infos["dataset"] = self.dataset_name
         infos["task"] = "enhancement"
-        infos["licenses"] = [librispeech_license, fuss_dataset]
+        infos["licenses"] = [librispeech_license, fuss_license]
         return infos
