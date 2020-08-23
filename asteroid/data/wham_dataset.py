@@ -61,7 +61,7 @@ class WhamDataset(data.Dataset):
         Wichern et al. 2019
     """
 
-    dataset_name = "WHAM!"
+    dataset_name = "WHAM"
 
     def __init__(
         self,
