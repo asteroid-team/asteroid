@@ -14,10 +14,9 @@ import os
 import sys
 import glob
 import shutil
-
 import builtins
+import asteroid_sphinx_theme
 
-# TODO : change it to asteroid_sphinx_theme
 
 PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 PATH_ROOT = os.path.join(PATH_HERE, "..", "..")
@@ -29,9 +28,9 @@ project = "asteroid"
 copyright = "2019, Oncoming"
 author = "Manuel Pariente et al."
 # The short X.Y version
-version = "0.0.1"
+version = "0.4.0"
 # The full version, including alpha/beta/rc tags
-release = "0.0.1"
+release = "0.4.0alpha"
 
 # -- General configuration ---------------------------------------------------
 
@@ -115,15 +114,8 @@ pygments_style = None
 # html_theme = 'bizstyle'
 # https://sphinx-themes.org
 
-html_theme = "sphinx_rtd_theme"
-
-# import pt_lightning_sphinx_theme
-# html_theme = 'pt_lightning_sphinx_theme'
-# html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
-
-# import pytorch_sphinx_theme
-# html_theme = 'pytorch_sphinx_theme'
-# html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
+html_theme = "asteroid_sphinx_theme"
+html_theme_path = [asteroid_sphinx_theme.get_html_theme_path()]
 #
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -135,6 +127,7 @@ html_theme_options = {
     "collapse_navigation": False,
     "display_version": True,
     "logo_only": False,
+    "asteroid_project": "docs",
 }
 
 html_logo = "_static/images/favicon.ico"
