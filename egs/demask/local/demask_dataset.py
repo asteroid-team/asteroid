@@ -6,6 +6,8 @@ import numpy as np
 from scipy.signal import fftconvolve
 from scipy.signal import firwin2
 from pysndfx import AudioEffectsChain
+from asteroid.data.librimix_dataset import librispeech_license
+from asteroid.data.fuss_dataset import fuss_dataset
 
 mask_firs = {
     """
@@ -56,6 +58,9 @@ mask_firs = {
 
 
 class DeMaskDataset(Dataset):
+
+    dataset_name = "Surgical mask speech enhancement"
+
     def __init__(
         self, configs, clean_speech_dataset, train, rirs_dataset=None,
     ):
@@ -167,3 +172,15 @@ class DeMaskDataset(Dataset):
             pass
 
         return torch.from_numpy(masked).float(), torch.from_numpy(clean).float()
+
+    def get_infos(self):
+        """ Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos["dataset"] = self.dataset_name
+        infos["task"] = "enhancement"
+        infos["licenses"] = [librispeech_license, fuss_dataset]
+        return infos
