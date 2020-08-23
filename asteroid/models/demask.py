@@ -149,8 +149,19 @@ class DeMask(BaseModel):
 
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
-
         model_args = {
-            k: v for k, v in self.__dict__.items() if not k.startswith("_") and k != "training"
+            "input_type": self.input_type,
+            "output_type": self.output_type,
+            "hidden_dims": self.hidden_dims,
+            "dropout": self.dropout,
+            "activation": self.activation,
+            "mask_act": self.mask_act,
+            "norm_type": self.norm_type,
+            "fb_type": self.fb_type,
+            "n_filters": self.n_filters,
+            "stride": self.stride,
+            "kernel_size": self.kernel_size,
+            "fb_kwargs": self.fb_kwargs,
         }
+        model_args.update(self.fb_kwargs)
         return model_args
