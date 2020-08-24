@@ -22,13 +22,13 @@ optim:
   lr: 0.001
   weight_decay: !!float 1e-5
 training:
-  epochs: 400
+  epochs: 200
   batch_size: 4
   gradient_clipping: 5
   accumulate_batches: 1
   save_top_k: 10
   num_workers: 8
-  patience: 20
+  patience: 30
   half_lr: true
   early_stop: true
   gaussian_mask_noise_snr_dB: np.random.randint(3, 12)

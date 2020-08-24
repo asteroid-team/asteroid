@@ -1,8 +1,20 @@
 import os
 import yaml
+import itertools
+import glob
+import warnings
+from typing import List
 
 import asteroid
 from asteroid.models.publisher import upload_publishable
+from asteroid.models.base_models import BaseModel
+
+
+SUPPORTED_EXTENSIONS = [
+    ".wav",
+    ".flac",
+    ".ogg",
+]
 
 
 def upload():
@@ -75,3 +87,62 @@ def upload():
             "Thanks a lot for sharing your model! Don't forget to create"
             "a model card in the repo! "
         )
+
+
+def infer():
+    """ CLI function to run pretrained model inference on wav files.
+
+    Args:
+        url_or_path(str): Path to the pretrained model.
+        files (List(str)): Path to the wav files to separate. Also support list
+            of filenames, directory names and globs.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("url_or_path", type=str, help="Path to the pretrained model.")
+    parser.add_argument(
+        "--files",
+        default=None,
+        type=str,
+        help="Path to the wav files to separate. Also support list of filenames, "
+        "directory names and globs.",
+        nargs="+",
+    )
+    args = parser.parse_args()
+
+    model = BaseModel.from_pretrained(pretrained_model_conf_or_path=args.url_or_path)
+    file_list = _process_files_as_list(args.files)
+
+    for f in file_list:
+        model.separate(f)
+
+
+def _process_files_as_list(files_str: List) -> List:
+    """ Support filename, folder name, and globs. Returns list of filenames."""
+    all_files = []
+    for f in files_str:
+        # Existing file
+        if os.path.isfile(f):
+            all_files.append(f)
+        # Glob folder and append.
+        elif os.path.isdir(f):
+            all_files.extend(glob_dir(f))
+        else:
+            local_list = glob.glob(f)
+            if not local_list:
+                warnings.warn(f"Could find any file that matched {f}", UserWarning)
+            all_files.extend(local_list)
+    return all_files
+
+
+def glob_dir(d):
+    """ Return all filenames in directory that match the supported extensions."""
+    return list(
+        itertools.chain(
+            *[
+                glob.glob(os.path.join(d, "**/*" + ext), recursive=True)
+                for ext in SUPPORTED_EXTENSIONS
+            ]
+        )
+    )

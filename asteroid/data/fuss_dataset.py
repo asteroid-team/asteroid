@@ -19,7 +19,7 @@ class FUSSDataset(Dataset):
             Sound Separation Data?", 2020, in preparation.
     """
 
-    dataset_name = "Free Universal Sound Separation"
+    dataset_name = "FUSS"
 
     def __init__(self, file_list_path, return_bg=False):
         super().__init__()
@@ -72,17 +72,17 @@ class FUSSDataset(Dataset):
         """
         infos = dict()
         infos["dataset"] = self.dataset_name
-        infos["task"] = "universal_sound_separation"
+        infos["task"] = "sep_noisy"
         infos["licenses"] = [fuss_license]
         return infos
 
 
 fuss_license = dict(
-    title="Free Universal Sound Separation",
-    title_link="https://github.com/google-research/sound-separation/tree/master/datasets/fuss",
-    author="Google",
-    author_link="https://www.google.com/",
-    license="CC BY-NC 4.0",
-    license_link="https://creativecommons.org/licenses/by-nc/4.0/",
+    title="Free Universal Sound Separation Dataset",
+    title_link="https://zenodo.org/record/3743844#.X0Jtehl8Jkg",
+    author="Scott Wisdom; Hakan Erdogan; Dan Ellis and John R. Hershey",
+    author_link="https://scholar.google.com/citations?user=kJM6N7IAAAAJ&hl=en",
+    license="Creative Commons Attribution 4.0 International",
+    license_link="https://creativecommons.org/licenses/by/4.0/legalcode",
     non_commercial=False,
 )

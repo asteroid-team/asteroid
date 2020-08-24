@@ -80,9 +80,9 @@ def main(conf):
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(
-        max_nb_epochs=conf["training"]["epochs"],
+        max_epochs=conf["training"]["epochs"],
         checkpoint_callback=checkpoint,
-        default_save_path=exp_dir,
+        default_root_dir=exp_dir,
         gpus=gpus,
         distributed_backend="dp",
     )

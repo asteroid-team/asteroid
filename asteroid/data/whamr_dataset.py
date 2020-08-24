@@ -77,7 +77,7 @@ class WhamRDataset(data.Dataset):
         Maciejewski et al. 2020
     """
 
-    dataset_name = "WHAMR!"
+    dataset_name = "WHAMR"
 
     def __init__(self, json_dir, task, sample_rate=8000, segment=4.0, nondefault_nsrc=None):
         super(WhamRDataset, self).__init__()

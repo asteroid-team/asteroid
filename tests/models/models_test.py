@@ -3,6 +3,9 @@ import pytest
 from torch.testing import assert_allclose
 import numpy as np
 import soundfile as sf
+import asteroid
+from asteroid import models
+from asteroid.models.base_models import BaseModel
 from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet, DeMask
 from asteroid.models import SuDORMRFNet, SuDORMRFImprovedNet
 
@@ -40,7 +43,7 @@ def test_save_and_load_convtasnet(fb):
     model_conf = model1.serialize()
 
     reconstructed_model = ConvTasNet.from_pretrained(model_conf)
-    assert_allclose(model1.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model1(test_input), reconstructed_model(test_input))
 
 
 def test_dprnntasnet_sep():
@@ -64,7 +67,7 @@ def test_save_and_load_dprnn(fb):
     model_conf = model1.serialize()
 
     reconstructed_model = DPRNNTasNet.from_pretrained(model_conf)
-    assert_allclose(model1.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model1(test_input), reconstructed_model(test_input))
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
@@ -74,7 +77,7 @@ def test_save_and_load_tasnet(fb):
     model_conf = model1.serialize()
 
     reconstructed_model = LSTMTasNet.from_pretrained(model_conf)
-    assert_allclose(model1.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model1(test_input), reconstructed_model(test_input))
 
 
 def test_sudormrf():
@@ -85,7 +88,7 @@ def test_sudormrf():
     model_conf = model.serialize()
 
     reconstructed_model = SuDORMRFNet.from_pretrained(model_conf)
-    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model(test_input), reconstructed_model(test_input))
 
 
 def test_sudormrf_imp():
@@ -96,7 +99,7 @@ def test_sudormrf_imp():
     model_conf = model.serialize()
 
     reconstructed_model = SuDORMRFImprovedNet.from_pretrained(model_conf)
-    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model(test_input), reconstructed_model(test_input))
 
 
 def test_dptnet():
@@ -105,6 +108,47 @@ def test_dptnet():
 
     model_conf = model.serialize()
     reconstructed_model = DPTNet.from_pretrained(model_conf)
+    assert_allclose(model(test_input), reconstructed_model(test_input))
+
+
+@pytest.mark.parametrize(
+    "model", [LSTMTasNet, ConvTasNet, DPRNNTasNet, DPTNet, SuDORMRFImprovedNet, SuDORMRFNet]
+)
+def test_get(model):
+    retrieved = models.get(model.__name__)
+    assert retrieved == model
+
+
+@pytest.mark.parametrize("wrong", ["wrong_string", 12, object()])
+def test_get_errors(wrong):
+    with pytest.raises(ValueError):
+        # Should raise for anything not a Optimizer instance + unknown string
+        models.get(wrong)
+
+
+def test_register():
+    class Custom(BaseModel):
+        def __init__(self):
+            super().__init__()
+
+    models.register_model(Custom)
+    cls = models.get("Custom")
+    assert cls == Custom
+
+    with pytest.raises(ValueError):
+        models.register_model(models.DPRNNTasNet)
+
+
+def test_show():
+    asteroid.show_available_models()
+
+
+def test_demask():
+    model = DeMask()
+    test_input = torch.randn(1, 801)
+
+    model_conf = model.serialize()
+    reconstructed_model = DeMask.from_pretrained(model_conf)
     assert_allclose(model.separate(test_input), reconstructed_model(test_input))
 
 

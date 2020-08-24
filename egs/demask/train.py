@@ -9,6 +9,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid import DeMask
+from asteroid.models import save_publishable
 from local.demask_dataset import DeMaskDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
@@ -81,22 +82,29 @@ def main(conf):
     # Define callbacks
     checkpoint_dir = os.path.join(exp_dir, "checkpoints/")
     checkpoint = ModelCheckpoint(
-        checkpoint_dir, monitor="val_loss", mode="min", save_top_k=5, verbose=1
+        checkpoint_dir,
+        monitor="val_loss",
+        mode="min",
+        save_top_k=conf["training"]["save_top_k"],
+        verbose=True,
     )
     early_stopping = False
     if conf["training"]["early_stop"]:
-        early_stopping = EarlyStopping(monitor="val_loss", patience=30, verbose=1)
+        early_stopping = EarlyStopping(
+            monitor="val_loss", patience=conf["training"]["patience"], verbose=True
+        )
 
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(
-        max_nb_epochs=conf["training"]["epochs"],
+        max_epochs=conf["training"]["epochs"],
         checkpoint_callback=checkpoint,
         early_stop_callback=early_stopping,
-        default_save_path=exp_dir,
+        default_root_dir=exp_dir,
         gpus=gpus,
         distributed_backend="ddp",
         gradient_clip_val=conf["training"]["gradient_clipping"],
+        train_percent_check=0.1,
     )
     trainer.fit(system)
 
@@ -104,15 +112,20 @@ def main(conf):
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
         json.dump(best_k, f, indent=0)
 
-    # Save best model (next PL version will make this easier)
-    best_path = [b for b, v in best_k.items() if v == min(best_k.values())][0]
-    state_dict = torch.load(best_path)
+    state_dict = torch.load(checkpoint.best_model_path)
     system.load_state_dict(state_dict=state_dict["state_dict"])
     system.cpu()
 
     to_save = system.model.serialize()
     to_save.update(train_set.get_infos())
     torch.save(to_save, os.path.join(exp_dir, "best_model.pth"))
+    save_publishable(
+        os.path.join(exp_dir, "publish_dir"),
+        to_save,
+        metrics=dict(),
+        train_conf=conf,
+        recipe="asteroid/demask",
+    )
 
 
 if __name__ == "__main__":

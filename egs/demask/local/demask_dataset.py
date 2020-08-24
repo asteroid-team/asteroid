@@ -7,17 +7,16 @@ from scipy.signal import fftconvolve
 from scipy.signal import firwin2
 from pysndfx import AudioEffectsChain
 from asteroid.data.librimix_dataset import librispeech_license
-from asteroid.data.fuss_dataset import fuss_dataset
+from asteroid.data.fuss_dataset import fuss_license
+
+# We approximate the effect of a surgical or tissue mask with an ad-hoc FIR
+# filter whose frequency response is taken from [1].
+#
+# [1] Corey, Ryan M., Uriah Jones, and Andrew C. Singer.
+# "Acoustic effects of medical, cloth, and transparent face masks on speech signals."
+#  arXiv preprint arXiv:2008.04521 (2020).
 
 mask_firs = {
-    """
-    We approximate the effect of a surgical or tissue mask with an ad-hoc FIR filter whose frequency response is taken
-    from [1].
-
-    [1] Corey, Ryan M., Uriah Jones, and Andrew C. Singer.
-    "Acoustic effects of medical, cloth, and transparent face masks on speech signals."
-     arXiv preprint arXiv:2008.04521 (2020).
-    """
     "surgical": {
         "gain": [1, 1, 1, 1, 0.94, 0.82, 0.53, 0.80, 0.56, 0.5, 0.42, 0.63, 0.71, 0],
         "freq": [0, 250, 1000, 1500, 2000, 2500, 2815, 3175, 3500, 4000, 5000, 6000, 7000, 8000],
@@ -59,7 +58,7 @@ mask_firs = {
 
 class DeMaskDataset(Dataset):
 
-    dataset_name = "Surgical mask speech enhancement"
+    dataset_name = "Surgical_mask_speech_enhancement_v1"
 
     def __init__(
         self, configs, clean_speech_dataset, train, rirs_dataset=None,
@@ -68,7 +67,6 @@ class DeMaskDataset(Dataset):
         self.train = train
 
         clean = glob.glob(clean_speech_dataset, recursive=True)
-
         self.clean = []
         for c in clean:
             if len(sf.SoundFile(c)) < self.configs["data"]["fs"] * self.configs["data"]["length"]:
@@ -76,9 +74,7 @@ class DeMaskDataset(Dataset):
             self.clean.append(c)
 
         self.firs = mask_firs
-
         self.rirs = None
-
         if rirs_dataset:
             self.rirs = glob.glob(rirs_dataset, recursive=True)
 
@@ -91,7 +87,6 @@ class DeMaskDataset(Dataset):
         c_gain = eval(self.configs["training"]["gain_augm"])
 
         fx = AudioEffectsChain().speed(speed)  # speed perturb
-
         clean = fx(clean)
 
         if self.rirs:
@@ -102,11 +97,9 @@ class DeMaskDataset(Dataset):
 
         fx = AudioEffectsChain().custom("norm {}".format(c_gain))  # random gain
         clean = fx(clean)
-
         return clean
 
     def __getitem__(self, item):
-
         # 1 we sample a clean utterance
         clean = self.clean[item]
         clean, fs = sf.read(clean)
@@ -123,7 +116,6 @@ class DeMaskDataset(Dataset):
             clean = self.augment(clean)
 
         # we add reverberation, speed perturb and random scaling
-
         masks = list(self.firs.keys())
         c_mask = np.random.choice(masks, 1)[0]
         c_mask = self.firs[c_mask]
@@ -150,7 +142,6 @@ class DeMaskDataset(Dataset):
         if self.train:
             snr = 10 ** (eval(self.configs["training"]["white_noise_dB"]) / 20)
             noise = np.random.normal(0, np.var(masked) / snr, masked.shape)
-
             masked += noise
             clean += noise
 
@@ -182,5 +173,5 @@ class DeMaskDataset(Dataset):
         infos = dict()
         infos["dataset"] = self.dataset_name
         infos["task"] = "enhancement"
-        infos["licenses"] = [librispeech_license, fuss_dataset]
+        infos["licenses"] = [librispeech_license, fuss_license]
         return infos

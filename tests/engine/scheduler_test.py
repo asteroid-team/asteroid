@@ -25,6 +25,8 @@ def test_state_dict():
     sched.load_state_dict(state_dict)
     state_dict_c = sched.state_dict()
     assert state_dict == state_dict_c
+    # Test zero_grad
+    sched.zero_grad()
 
 
 def test_noam_scheduler():

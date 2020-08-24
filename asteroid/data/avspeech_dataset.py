@@ -1,5 +1,4 @@
 import re
-import cv2
 import librosa
 import numpy as np
 from pathlib import Path
@@ -14,6 +13,8 @@ EPS = 1e-8
 
 
 def get_frames(video):
+    import cv2  # Fix sphinx import
+
     frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
     frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -80,6 +81,8 @@ class Signal:
         self._check_video_embed()
 
     def _load(self, sr: int):
+        import cv2  # Fix sphinx import
+
         self.audio, _ = librosa.load(self.audio_path.as_posix(), sr=sr)
         self.video = cv2.VideoCapture(self.video_path.as_posix())
 

@@ -114,21 +114,14 @@ class System(pl.LightningModule):
         tensorboard_logs = {"train_loss": loss}
         return {"loss": loss, "log": tensorboard_logs}
 
-    def optimizer_step(
-        self,
-        epoch: int,
-        batch_idx: int,
-        optimizer: Optimizer,
-        optimizer_idx: int,
-        second_order_closure: Optional[Callable] = None,
-    ) -> None:
+    def optimizer_step(self, *args, **kwargs) -> None:
         if self.scheduler is not None:
             if not isinstance(self.scheduler, (list, tuple)):
                 self.scheduler = [self.scheduler]  # support multiple schedulers
             for sched in self.scheduler:
                 if isinstance(sched, dict) and sched["interval"] == "batch":
                     sched["scheduler"].step()  # call step on each batch scheduler
-            self.optimizer.step()
+            super().optimizer_step(*args, **kwargs)
 
     def validation_step(self, batch, batch_nb):
         """ Need to overwrite PL validation_step to do validation.
@@ -165,15 +158,6 @@ class System(pl.LightningModule):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         tensorboard_logs = {"val_loss": avg_loss}
         return {"val_loss": avg_loss, "log": tensorboard_logs, "progress_bar": tensorboard_logs}
-
-    def unsqueeze_if_dp_or_ddp(self, *values):
-        """ Apply unsqueeze(0) to all values if training is done with dp
-            or ddp. Unused now."""
-        if self.trainer.use_dp or self.trainer.use_ddp2:
-            values = [v.unsqueeze(0) for v in values]
-        if len(values) == 1:
-            return values[0]
-        return values
 
     def configure_optimizers(self):
         """ Required by pytorch-lightning. """
