@@ -1,0 +1,38 @@
+filterbank:
+  fb_type: stft
+  n_filters: 512
+  kernel_size: 512
+  stride: 256
+demask_net:
+  input_type: mag
+  output_type: mag
+  hidden_dims: [1024]
+  dropout: 0
+  activation: relu
+  mask_act: relu
+  norm_type: gLN
+data:
+  fs: 16000
+  clean_train: /media/sam/Data/LibriSpeech/dev-clean/**/*.flac
+  clean_dev: /media/sam/Data/LibriSpeech/test-clean/**/*.flac
+  rirs_train: /media/sam/Data/myRIRS/**/*.wav
+  rirs_dev: /media/sam/Data/myRIRS/**/*.wav
+  length: 4
+optim:
+  lr: 0.001
+  weight_decay: !!float 1e-5
+training:
+  epochs: 200
+  batch_size: 4
+  gradient_clipping: 5
+  accumulate_batches: 1
+  save_top_k: 10
+  num_workers: 8
+  patience: 30
+  half_lr: true
+  early_stop: true
+  gaussian_mask_noise_snr_dB: np.random.randint(3, 12)
+  white_noise_dB: np.random.randint(-3, 30)
+  speed_augm: np.random.uniform(0.95, 1.05)
+  gain_augm: np.random.randint(-30, -2)
+  n_taps: 97

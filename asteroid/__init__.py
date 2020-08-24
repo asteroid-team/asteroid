@@ -1,6 +1,6 @@
 import pathlib
 from .utils import deprecation_utils, torch_utils  # noqa
-from .models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet
+from .models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet, DeMask
 
 project_root = str(pathlib.Path(__file__).expanduser().absolute().parent.parent)
 __version__ = "0.3.2"
@@ -16,5 +16,7 @@ __all__ = [
     "ConvTasNet",
     "DPRNNTasNet",
     "DPTNet",
+    "LSTMTasNet",
+    "DeMask",
     "show_available_models",
 ]

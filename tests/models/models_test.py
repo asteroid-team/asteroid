@@ -6,7 +6,7 @@ import soundfile as sf
 import asteroid
 from asteroid import models
 from asteroid.models.base_models import BaseModel
-from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet
+from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet, DeMask
 from asteroid.models import SuDORMRFNet, SuDORMRFImprovedNet
 
 
@@ -141,3 +141,12 @@ def test_register():
 
 def test_show():
     asteroid.show_available_models()
+
+
+def test_demask():
+    model = DeMask()
+    test_input = torch.randn(1, 801)
+
+    model_conf = model.serialize()
+    reconstructed_model = DeMask.from_pretrained(model_conf)
+    assert_allclose(model.separate(test_input), reconstructed_model(test_input))

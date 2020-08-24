@@ -55,6 +55,7 @@ def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None, rec
     model_dict["infos"]["recipe_name"] = recipe_name
     model_dict["infos"]["training_config"] = train_conf
     model_dict["infos"]["final_metrics"] = metrics
+    os.makedirs(publish_dir, exist_ok=True)
     torch.save(model_dict, os.path.join(publish_dir, "model.pth"))
     print(PLEASE_PUBLISH.format(publish_dir))
     return model_dict
