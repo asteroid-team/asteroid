@@ -11,3 +11,4 @@ torch_optimizer>=0.0.1a12
 SoundFile>=0.10.2
 pre-commit
 black==19.10b0
+librosa>=0.8.0

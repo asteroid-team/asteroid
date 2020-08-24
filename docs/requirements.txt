@@ -4,10 +4,10 @@ sphinx>=1.8.3, <3.0
 recommonmark  # fails with badges
 nbsphinx
 m2r2
-asteroid_sphinx_theme>=0.0.3
+-e git+https://github.com/asteroid-team/asteroid_sphinx_theme#egg=asteroid_sphinx_theme
+# asteroid_sphinx_theme>=0.0.3
 # pandoc
 # docutils
-# git+https://github.com/mpariente/asteroid_sphinx_theme
 # sphinxcontrib-fulltoc
 # sphinxcontrib-mockautodoc
 # pip_shims
