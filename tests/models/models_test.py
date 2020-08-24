@@ -43,7 +43,7 @@ def test_save_and_load_convtasnet(fb):
     model_conf = model1.serialize()
 
     reconstructed_model = ConvTasNet.from_pretrained(model_conf)
-    assert_allclose(model1.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model1(test_input), reconstructed_model(test_input))
 
 
 def test_dprnntasnet_sep():
@@ -67,7 +67,7 @@ def test_save_and_load_dprnn(fb):
     model_conf = model1.serialize()
 
     reconstructed_model = DPRNNTasNet.from_pretrained(model_conf)
-    assert_allclose(model1.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model1(test_input), reconstructed_model(test_input))
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
@@ -77,7 +77,7 @@ def test_save_and_load_tasnet(fb):
     model_conf = model1.serialize()
 
     reconstructed_model = LSTMTasNet.from_pretrained(model_conf)
-    assert_allclose(model1.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model1(test_input), reconstructed_model(test_input))
 
 
 def test_sudormrf():
@@ -88,7 +88,7 @@ def test_sudormrf():
     model_conf = model.serialize()
 
     reconstructed_model = SuDORMRFNet.from_pretrained(model_conf)
-    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model(test_input), reconstructed_model(test_input))
 
 
 def test_sudormrf_imp():
@@ -99,7 +99,7 @@ def test_sudormrf_imp():
     model_conf = model.serialize()
 
     reconstructed_model = SuDORMRFImprovedNet.from_pretrained(model_conf)
-    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model(test_input), reconstructed_model(test_input))
 
 
 def test_dptnet():
@@ -108,7 +108,7 @@ def test_dptnet():
 
     model_conf = model.serialize()
     reconstructed_model = DPTNet.from_pretrained(model_conf)
-    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model(test_input), reconstructed_model(test_input))
 
 
 @pytest.mark.parametrize(
