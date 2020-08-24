@@ -121,7 +121,6 @@ def main(conf):
     to_save = system.model.serialize()
     to_save.update(train_set.get_infos())
     torch.save(to_save, os.path.join(exp_dir, "best_model.pth"))
-    os.makedirs(os.path.join(exp_dir, "publish_dir"), exist_ok=True)
     save_publishable(
         os.path.join(exp_dir, "publish_dir"),
         to_save,
