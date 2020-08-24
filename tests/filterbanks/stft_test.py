@@ -27,8 +27,8 @@ def test_stft_def(fb_config):
     enc = Encoder(fb)
     dec = Decoder(fb)
     enc2, dec2 = make_enc_dec("stft", **fb_config)
-    testing.assert_allclose(enc.filterbank.filters, enc2.filterbank.filters)
-    testing.assert_allclose(dec.filterbank.filters, dec2.filterbank.filters)
+    testing.assert_allclose(enc.filterbank.filters(), enc2.filterbank.filters())
+    testing.assert_allclose(dec.filterbank.filters(), dec2.filterbank.filters())
 
 
 @pytest.mark.parametrize("fb_config", fb_config_list())
@@ -46,7 +46,7 @@ def test_filter_shape(fb_config):
     # Instantiate STFT
     fb = STFTFB(**fb_config)
     # Check filter shape.
-    assert fb.filters.shape == (fb_config["n_filters"] + 2, 1, fb_config["kernel_size"])
+    assert fb.filters().shape == (fb_config["n_filters"] + 2, 1, fb_config["kernel_size"])
 
 
 @pytest.mark.parametrize("fb_config", fb_config_list())
