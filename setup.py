@@ -22,7 +22,6 @@ setup(
         "scipy",
         "pandas",
         "torch",
-        "torchaudio",
         "pytorch-lightning>=0.8",
         "torch_optimizer",
         "soundfile",
