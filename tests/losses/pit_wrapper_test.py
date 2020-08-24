@@ -114,3 +114,19 @@ def test_permreduce_args():
     loss_func = PITLossWrapper(pairwise_mse, pit_from="pw_mtx", perm_reduce=reduce_func)
     weights = torch.softmax(torch.randn(10, n_src), dim=-1)
     loss_func(est_sources, sources, reduce_kwargs={"class_weights": weights})
+
+
+def best_perm():
+    sources = torch.randn(6, 10, 1000)
+    pwl = torch.randn(6, 10, 10)
+
+    min_loss, min_idx = PITLossWrapper.find_best_perm(pwl, 10)
+    min_loss_hun = PITLossWrapper.find_best_perm_hungarian(pwl, 10)
+
+    PITLossWrapper.reorder_source(sources, 10, min_idx)
+
+    # assert_allclose(min_loss, min_loss_hun)
+
+
+if __name__ == "__main__":
+    best_perm()
