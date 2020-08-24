@@ -8,7 +8,7 @@ set -o pipefail
 # files if you start from sphere files.
 storage_dir=
 
-librispeech_dir=$storage_dir/LibriSpeech
+librispeech_dir=/media/sam/Data/LibriSpeech/
 rir_dir=$storage_dir/rir_data
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
@@ -62,7 +62,12 @@ fi
 
 if [[ $stage -le  1 ]]; then
 	echo "Stage 1: parsing the datasets"
-  python local/parse_data.py --librispeech_path $librispeech_dir --rir_path $rir_dir --out $dumpdir
+	for librispeech_split in train-clean-360 dev-clean ; do
+    python local/parse_data.py --input_dir $librispeech_dir/$librispeech_split --output_json $dumpdir/${librispeech_split}.json --regex **/*.flac
+  done
+  for rir_split in train validation ; do
+    python local/parse_data.py --input_dir $rir_dir/$rir_split --output_json $dumpdir/${rir_split}.json --regex **/*.wav
+  done
 fi
 
 # Generate a random ID for the run if no tag is specified
@@ -70,7 +75,7 @@ uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
 	tag=${task}_${sr_string}k${mode}_${uuid}
 fi
-expdir=exp/train_dprnn_${tag}
+expdir=exp/train_demask_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
@@ -88,5 +93,5 @@ if [[ $stage -le 2 ]]; then
 
 	# Get ready to publish
 	mkdir -p $expdir/publish_dir
-	echo "wham/DPRNN" > $expdir/publish_dir/recipe_name.txt
+	echo "DeMask" > $expdir/publish_dir/recipe_name.txt
 fi

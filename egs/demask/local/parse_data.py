@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument("--input_dir", type=str)
 parser.add_argument("--output_json", type=str)
-parser.add_argument("--regex", type=str, default="**/*.wav")
+parser.add_argument("--regex", type=str)
 
 if __name__ == "__main__":
     args = parser.parse_args()
