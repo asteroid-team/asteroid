@@ -21,7 +21,7 @@ def demask(name_url_or_file=None, **kwargs):
         >>> # Instantiate without pretrained weights
         >>> model = hub.load('mpariente/asteroid', 'demask')
         >>> # Use pretrained weights
-        >>> URL = "TOCOME"
+        >>> URL = "popcornell/DeMask_Surgical_mask_speech_enhancement_v1"
         >>> model = hub.load('mpariente/asteroid', 'demask', URL)
     """
     # No pretrained weights
