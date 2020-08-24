@@ -15,8 +15,6 @@ from asteroid.filterbanks.transforms import take_mag, ebased_vad
 from asteroid.data.kinect_wsj import make_dataloaders
 from model import make_model_and_optimizer
 
-EPS = 1e-8
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best validation model")
 
@@ -130,7 +128,7 @@ class ChimeraSystem(System):
             "progress_bar": {"val_loss": avg_loss},
         }
 
-    def unpack_data(self, batch):
+    def unpack_data(self, batch, EPS=1e-8):
         mix, sources, noise = batch
         # Take only the first channel
         mix = mix[..., 0]

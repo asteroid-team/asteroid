@@ -6,7 +6,6 @@ from asteroid.data.wham_dataset import normalize_tensor_wav
 
 from .wsj0_mix import wsj0_license
 
-EPS = 1e-8
 
 DATASET = "SMS_WSJ"
 # SMS_WSJ targets
@@ -109,6 +108,7 @@ class SmsWsjDataset(data.Dataset):
             self.n_src = nondefault_nsrc
         self.like_test = self.seg_len is None
         self.dset = dset
+        self.EPS = 1e-8
 
         # Load json files
 
@@ -217,8 +217,8 @@ class SmsWsjDataset(data.Dataset):
 
         if self.normalize_audio:
             m_std = mixture.std(-1, keepdim=True)
-            mixture = normalize_tensor_wav(mixture, eps=EPS, std=m_std)
-            sources = normalize_tensor_wav(sources, eps=EPS, std=m_std)
+            mixture = normalize_tensor_wav(mixture, eps=self.EPS, std=m_std)
+            sources = normalize_tensor_wav(sources, eps=self.EPS, std=m_std)
         return mixture, sources
 
     def get_infos(self):
