@@ -1,10 +1,11 @@
 from itertools import permutations
 import torch
 from torch import nn
+from scipy.optimize import linear_sum_assignment
 
 
 class PITLossWrapper(nn.Module):
-    """Permutation invariant loss wrapper.
+    r"""Permutation invariant loss wrapper.
 
     Args:
         loss_func: function with signature (targets, est_targets, **kwargs).
@@ -234,6 +235,10 @@ class PITLossWrapper(nn.Module):
         # Indexes and values of min losses for each batch element
         min_loss_idx = torch.argmin(loss_set, dim=1)
         min_loss, _ = torch.min(loss_set, dim=1, keepdim=True)
+
+        # Have a look here, would this be helful
+        batch_indices = torch.stack([perms[m] for m in min_loss_idx], dim=0)
+
         return min_loss, min_loss_idx
 
     @staticmethod
@@ -264,3 +269,14 @@ class PITLossWrapper(nn.Module):
             for c in range(n_src):
                 reordered_sources[b, c] = source[b, min_loss_perm[b][c]]
         return reordered_sources
+
+    @staticmethod
+    def find_best_perm_hungarian(pair_wise_losses: torch.Tensor, n_src):
+        # After transposition, dim 1 corresp. to sources and dim 2 to estimates
+        pwl = pair_wise_losses.transpose(-1, -2)
+        # Just bring the numbers to cpu(), not the graph
+        pwl_copy = pwl.detach().cpu()
+        # Loop over batch + row indices are always ordered for square matrices.
+        batch_indices = [linear_sum_assignment(pwl)[1] for pwl in pwl_copy]
+        min_loss = torch.gather(pwl, 2, torch.tensor(batch_indices)[..., None]).mean([-1, -2])
+        return min_loss
