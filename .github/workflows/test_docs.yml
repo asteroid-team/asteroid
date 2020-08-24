@@ -28,6 +28,11 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Install libnsdfile
+      run: |
+        sudo apt update
+        sudo apt install git-all
+
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade --user pip --quiet
