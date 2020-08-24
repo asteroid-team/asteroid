@@ -39,7 +39,9 @@ class BaseModel(nn.Module):
             overwrite `_separate` to return waveform tensors.
         """
         if isinstance(wav, str):
-            self.file_separate(wav, save_dir=output_dir, force_overwrite=force_overwrite, **kwargs)
+            self.file_separate(
+                wav, output_dir=output_dir, force_overwrite=force_overwrite, **kwargs
+            )
         elif isinstance(wav, np.ndarray):
             return self.numpy_separate(wav, **kwargs)
         elif isinstance(wav, torch.Tensor):
