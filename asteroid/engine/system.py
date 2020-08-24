@@ -114,21 +114,14 @@ class System(pl.LightningModule):
         tensorboard_logs = {"train_loss": loss}
         return {"loss": loss, "log": tensorboard_logs}
 
-    def optimizer_step(
-        self,
-        epoch: int,
-        batch_idx: int,
-        optimizer: Optimizer,
-        optimizer_idx: int,
-        second_order_closure: Optional[Callable] = None,
-    ) -> None:
+    def optimizer_step(self, *args, **kwargs) -> None:
         if self.scheduler is not None:
             if not isinstance(self.scheduler, (list, tuple)):
                 self.scheduler = [self.scheduler]  # support multiple schedulers
             for sched in self.scheduler:
                 if isinstance(sched, dict) and sched["interval"] == "batch":
                     sched["scheduler"].step()  # call step on each batch scheduler
-            self.optimizer.step()
+            super().optimizer_step(*args, **kwargs)
 
     def validation_step(self, batch, batch_nb):
         """ Need to overwrite PL validation_step to do validation.
