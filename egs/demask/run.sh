@@ -83,10 +83,10 @@ if [[ $stage -le 2 ]]; then
   echo "Stage 3: Training"
   mkdir -p logs
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-		--clean_speech_train $clean_speech_train \
-		--clean_speech_valid $clean_speech_valid \
-	  --rir_train $rir_train \
-	  --rir_valid $rir_valid \
+		--clean_speech_train $dumpdir/train-clean-360.json \
+		--clean_speech_valid $dumpdir/dev-clean.json \
+	  --rir_train $dumpdir/train.json \
+	  --rir_valid dumpdir/validation.json \
 		--sample_rate $sample_rate \
 		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
