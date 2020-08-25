@@ -107,7 +107,7 @@ if [[ $stage -le 2 ]]; then
 		--clean_speech_train $dumpdir/clean/train-clean-360.json \
 		--clean_speech_valid $dumpdir/clean/dev-clean.json \
 	  --rir_train $dumpdir/rirs/train.json \
-	  --rir_valid dumpdir/rirs/validation.json \
+	  --rir_valid $dumpdir/rirs/validation.json \
 		--fs $sample_rate \
 		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log

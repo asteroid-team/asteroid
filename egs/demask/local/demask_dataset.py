@@ -194,7 +194,14 @@ class DeMaskDataset(Dataset):
         else:
             pass
 
-        clean, masked = self.add_noise(clean, masked, c_gain)
+        if self.noises:
+            clean, masked = self.add_noise(clean, masked, c_gain)
+        else:  # if no noises still add gaussian noise when training
+            if self.train:
+                snr = 10 ** (eval(self.configs["training"]["white_noise_dB"]) / 20)
+                noise = np.random.normal(0, np.var(masked) / snr, masked.shape)
+                masked += noise
+                clean += noise
 
         return torch.from_numpy(masked).float(), torch.from_numpy(clean).float()
 
