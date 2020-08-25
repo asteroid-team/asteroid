@@ -14,6 +14,10 @@ demask_net:
 data:
   fs: 16000
   length: 4
+  clean_speech_train: ./data/clean/train-clean-360.json
+  clean_speech_valid: ./data/clean/dev-clean.json
+  rir_train: ./data/rirs/train.json
+  rir_valid: ./data/rirs/validation.json
 optim:
   lr: 0.001
   weight_decay: !!float 1e-5
