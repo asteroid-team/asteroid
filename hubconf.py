@@ -3,6 +3,33 @@ from asteroid import models
 dependencies = ["torch"]
 
 
+def demask(name_url_or_file=None, **kwargs):
+    """ Load (pretrained) DeMask model
+
+    Args:
+        name_url_or_file (str): Model name (we'll find the URL),
+            model URL to download model, path to model file.
+            If None (default), DeMask is instantiated but no pretrained
+            weights are loaded.
+        **kwargs: Keyword arguments to pass to DeMask.
+
+    Returns:
+        DeMask instance (with ot without pretrained weights).
+
+    Examples:
+        >>> from torch import hub
+        >>> # Instantiate without pretrained weights
+        >>> model = hub.load('mpariente/asteroid', 'demask')
+        >>> # Use pretrained weights
+        >>> URL = "popcornell/DeMask_Surgical_mask_speech_enhancement_v1"
+        >>> model = hub.load('mpariente/asteroid', 'demask', URL)
+    """
+    # No pretrained weights
+    if name_url_or_file is None:
+        return models.DeMask(**kwargs)
+    return models.DeMask.from_pretrained(name_url_or_file, **kwargs)
+
+
 def conv_tasnet(name_url_or_file=None, **kwargs):
     """ Load (pretrained) ConvTasNet model
 
