@@ -8,8 +8,8 @@ set -o pipefail
 # files if you start from sphere files.
 storage_dir=./datasets
 
-librispeech_dir=/media/sam/Data/LibriSpeech #$storage_dir/LibriSpeech
-rir_dir=/media/sam/Data/dcase/rir_data #$storage_dir/rir_data
+librispeech_dir=$storage_dir/LibriSpeech #$storage_dir/LibriSpeech
+rir_dir=$storage_dir/rir_data #$storage_dir/rir_data
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
 # Path to the python you'll use for the experiment. Defaults to the current python
@@ -56,20 +56,28 @@ fi
 
 if [[ $stage -le  0 ]]; then
   echo "Stage 0: Downloading required Datasets"
-  echo "Downloading LibriSpeech/train-clean-360 into $librispeech_dir"
-	# If downloading stalls for more than 20s, relaunch from previous state.
 
-	wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/dev-clean.tar.gz -P $storage_dir
-	tar -xzf $storage_dir/dev-clean.tar.gz -C $storage_dir
-	rm -rf $storage_dir/dev-clean.tar.gz
+  #if ! test -e $librispeech_dir/train-clean-360; then
+   #  echo "Downloading LibriSpeech/train-clean-360 into $storage_dir"
+    # wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/train-clean-360.tar.gz -P $storage_dir
+	  # tar -xzf $storage_dir/dev-clean.tar.gz -C $storage_dir
+	  # rm -rf $storage_dir/dev-clean.tar.gz
+	#fi
 
-	wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/dev-clean.tar.gz -P $storage_dir
-	tar -xzf $storage_dir/dev-clean.tar.gz -C $storage_dir
-	rm -rf $storage_dir/dev-clean.tar.gz
 
-  wget -c --tries=0 --read-timeout=20 https://zenodo.org/record/3743844/files/FUSS_rir_data.tar.gz $storage_dir
-	tar -xzf $storage_dir/FUSS_rir_data.tar.gz -C $rir_dir
-	rm -rf $storage_dir/FUSS_rir_data.tar.gz
+  if ! test -e $librispeech_dir/dev-clean; then
+     echo "Downloading LibriSpeech/dev-clean into $storage_dir"
+	   wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/dev-clean.tar.gz -P $storage_dir
+	   tar -xzf $storage_dir/dev-clean.tar.gz -C $storage_dir
+	   rm -rf $storage_dir/dev-clean.tar.gz
+	fi
+
+  if ! test -e $rir_dir; then
+     echo "Downloading FUSS rir data"
+     wget -c --tries=0 --read-timeout=20 https://zenodo.org/record/3743844/files/FUSS_rir_data.tar.gz -P $storage_dir
+	   tar -xzf $storage_dir/FUSS_rir_data.tar.gz -C $storage_dir
+	   rm -rf $storage_dir/FUSS_rir_data.tar.gz
+	fi
 
 fi
 
