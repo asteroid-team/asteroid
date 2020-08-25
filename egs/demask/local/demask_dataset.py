@@ -173,5 +173,15 @@ class DeMaskDataset(Dataset):
         infos = dict()
         infos["dataset"] = self.dataset_name
         infos["task"] = "enhancement"
-        infos["licenses"] = [librispeech_license, fuss_license]
+        infos["licenses"] = [librispeech_license, fuss_license, demask_license]
         return infos
+
+
+demask_license = dict(
+    title="Acoustic effects of medical, cloth, and transparent face masks on speech signals",
+    title_link="https://arxiv.org/abs/2008.04521",
+    author="Corey, Ryan M and Jones, Uriah and Singer, Andrew C",
+    license="CC BY-NC 4.0",
+    license_link="https://creativecommons.org/licenses/by-nc/4.0/",
+    non_commercial=True,
+)
