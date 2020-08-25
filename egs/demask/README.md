@@ -1,13 +1,14 @@
-<div align="center">
-[Inspiration](#inspiration) •
-[What it does](#what-it-does) •
-[How we built it](#how-we-built-it) •
-[Asteroid highlights](#asteroid-highlights) •
-[Challenges and Accomplishments](#challenges-we-ran-into) •
-[Acknowledgement](#acknowledgement)
-</div>
-
 ## Inspiration
+
+#### DeMask's inspiration
+
+We were having a fast call and one of us was in the train.
+We couldn't hear him well because he was wearing a mask.
+We directly thought about building surgically masked speech enhancement model with
+Asteroid!
+In the current covid pandemic situation, we can build better mask-adapted
+speech technologies to help people keep their masks on and spread their words without
+spreading the virus.
 
 #### Asteroid's inspiration
 It all started during a speech processing research project.
@@ -21,14 +22,15 @@ While sharing research code is already a step in the right direction,
 sharing readable and reproducible code should be the standard.
 Asteroid aims at empowering developers and researchers with tools that makes this even easier.
 
-#### DeMask's inspiration
-
-We were having a fast call and one of us was in the train.
-We couldn't hear him well because he was wearing a mask.
-We directly thought about building surgically masked speech enhancement model with
-Asteroid and we were on it !
-
 ## What it does
+
+#### About DeMask
+
+DeMask is a simple, yet effective, end-to-end model to enhance speech when wearing face masks.
+It restores the frequency content which is distorted by the face mask,
+making the muffled speech sound cleaner.
+The recipe to train the model is [here](https://github.com/mpariente/asteroid/tree/master/egs/demask) and the
+pretrained model [here](https://zenodo.org/record/3997047#.X0Qw5Bl8Jkg),
 
 #### About Asteroid
 
@@ -47,19 +49,21 @@ You can check, [our landing page](https://asteroid-team.github.io/),
 [our latest docs](https://mpariente.github.io/asteroid/)
 and [our model hub](https://zenodo.org/communities/asteroid-models).
 
-To try Asteroid, install it with `pip install asteroid` !
-
-#### About DeMask
-
-DeMask is a simple, yet effective, end-to-end muffled speech enhancement built with Asteroid.
-It restores the frequency content which is distorted by the face mask,
-making the muffled speech sound cleaner.
-The recipe to train the model is [here](https://github.com/mpariente/asteroid/tree/master/egs/demask) and the
-pretrained model is [here](https://zenodo.org/record/3997047#.X0Qw5Bl8Jkg),
-Check out the [highlights](#asteroid-highlights) to see how to load it and use it !
+To try Asteroid, install the latest release with `pip install asteroid` or the
+ current version with `pip install git+https://github.com/mpariente/asteroid` !
 
 
 ## How we built it
+
+- Demask is trained on synthetic data generated from LibriSpeech's ([Panayotov et al. 2015](https://ieeexplore.ieee.org/document/7178964))
+clean speech, distorted by approximate surgical mask finite impulse response (FIR) filters taken from [Corey et al. 2020](https://arxiv.org/abs/2008.04521).
+The synthetic data is then augmented using room impulse responses (RIRs) from the FUSS dataset
+([Wisdom et al. 2020](https://zenodo.org/record/3743844#.X0JZEhl8Jkg)).
+A simple neural network estimates a time-frequency mask to correct the speech distortions.
+Thanks to Asteroid's filterbanks (formulated using `torch.nn`), we could use a time domain loss with a time-frequency model
+which yielded better results.
+
+
 - Asteroid uses native PyTorch for layers and modules, a thin wrapper around
 PyTorchLightning for training.
 Most objects (models, filterbanks, optimizers, activation functions, normalizations) are retrievable
@@ -73,16 +77,34 @@ We use Zenodo's REST API to upload and download pretrained models.
 Our favorite `torch` op? We love `unfold` and `fold` and built cool end-to-end
 signal processing tools with it !
 
-- Demask is trained on synthetic data generated from LibriSpeech's ([Panayotov et al. 2015](https://ieeexplore.ieee.org/document/7178964))
-clean speech, distorted by approximate surgical mask finite impulse response (FIR) filters taken from [Corey et al. 2020](https://arxiv.org/abs/2008.04521).
-The synthetic data is then augmented using room impulse responses (RIRs) from the FUSS dataset
-([Wisdom et al. 2020](https://zenodo.org/record/3743844#.X0JZEhl8Jkg)).
-A simple neural network estimates a time-frequency mask to correct the speech distortions.
-Thanks to Asteroid's filterbanks (formulated using `torch.nn`), we could use a time domain loss with a time-frequency model
-which yielded better results.
+## Examples
 
-## Asteroid highlights
+- Load DeMask's pretrained model using Hub or Asteroid
+
+```python
+# Without installing Asteroid
+from torch import hub
+model = hub.load(
+"mpariente/asteroid", "demask", "popcornell/DeMask_Surgical_mask_speech_enhancement_v1"
+)
+
+# With asteroid install from master
+from asteroid import DeMask
+model = DeMask.from_pretrained("popcornell/DeMask_Surgical_mask_speech_enhancement_v1")
+```
+
+- Directly use it to enhance your muffled speech recordings using the `asteroid-infer` CLI
+
+```bash
+asteroid-infer popcornell/DeMask_Surgical_mask_speech_enhancement_v1 --files muffled.wav
+```
+
+To find the name of the model, we browsed our [Zenodo community](https://zenodo.org/communities/asteroid-models)
+and picked the DeMask pretrained model
+([snapshot here](https://challengepost-s3-challengepost.netdna-ssl.com/photos/production/software_photos/001/198/924/datas/original.png)).
+
 - Train a speech separation model in 20 lines.
+
 ```python
 from torch import optim
 from pytorch_lightning import Trainer
@@ -96,46 +118,14 @@ train_loader, val_loader = LibriMix.loaders_from_mini(task='sep_clean', batch_si
 model = ConvTasNet(n_src=2)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 loss = PITLossWrapper(
-    lambda x, y: (x - y).pow(2).mean(-1),
-    pit_from="pw_pt",
+    lambda x, y: (x - y).pow(2).mean(-1),  # MSE
+    pit_from="pw_pt",  # Point in the pairwise matrix.
 )
-
 
 system = System(model, optimizer, loss, train_loader, val_loader)
 trainer = Trainer(fast_dev_run=True)
-#trainer.fit(system)
+trainer.fit(system)
 ```
-
-
-- Load a pretrained model using Asteroid
-```python
-from asteroid.models import DPRNNTasNet
-
-model = DPRNNTasNet.from_pretrained("mpariente/DPRNNTasNet(ks=16)_WHAM!_sepclean")
-```
-
-- Load a pretrained model
-```python
-# Without installing Asteroid
-from torch import hub
-model = hub.load("mpariente/asteroid", "demask", "popcornell/DeMask_Surgical_mask_speech_enhancement_v1")
-
-# With asteroid install from master
-from asteroid import DeMask
-model = DeMask.from_pretrained("popcornell/DeMask_Surgical_mask_speech_enhancement_v1")
-```
-
-- Directly use it to enhance your muffled speech recordings using the `asteroid-infer` CLI
-```bash
-asteroid-infer popcornell/DeMask_Surgical_mask_speech_enhancement_v1 --files muffled.wav
-```
-
-To find the name of the model, we browsed our Zenodo community and picked the DeMask pretrained model
-
-TODO: fix the image is low  quality
-<p align="center">
-  <img src="https://iili.io/dUF0va.md.jpg" width="80%" />
-</p>
 
 ## Challenges we ran into
 
@@ -149,12 +139,8 @@ approximate the frequency response of the masks in ([Corey et al. 2020](https://
 The filters were dynamically generated at training time to augment the available data.
 Approximating the filters by hand saved us in the end !
 
-
-- TODO Maybe a word about torch.script/jit
-
-- Maybe a word on moving fast, git conflicts and CI
-
-- What else?
+- We would have loved to create a live demo of DeMask on the browser but the model
+was not jitable, we'll definitely work on it in the future.
 
 
 ## Accomplishments that we are proud of
@@ -168,7 +154,7 @@ appropriate license notices on them !
 less than a week before the challenge's deadline, ran into technical issues for generating
 the training data but didn't quit !
 - We've adapted PyTorch's sphinx template to create [our beautiful docs](https://mpariente.github.io/asteroid/).
-- We've made our very own :heart_eyes: [landing page](https://asteroid-team.github.io/) :heart_eyes: and we love it.
+- We've made our very own [landing page](https://asteroid-team.github.io/) and we love it.
 - We've gathered [more than 20 contributors](https://github.com/mpariente/asteroid/graphs/contributors) from both academia and industry.
 - We opened a [leaderboard in PapersWithCode](https://paperswithcode.com/sota/speech-separation-on-wsj0-2mix)
 and we see new entries all the time.
@@ -177,7 +163,7 @@ and we see new entries all the time.
 Individually, we've learned to work as a team, set our goals, separate tasks and act fast.
 
 ## What's next for Asteroid
-Pretty much everything is next.
+Pretty much everything is next:
 - A tighter integration with `torchaudio` and torch's `ComplexTensor`.
 - `TorchScript` support.
 - End to end separation to ASR with [ESPNet](https://github.com/espnet/espnet)
@@ -186,24 +172,9 @@ Pretty much everything is next.
 - A growing community of users and contributors.
 and the list can go on..
 
-
-## More detail on how we improved Asteroid _during_ the hackathon period
-
-- Multiply by three the number of supported models
-- Improve model sharing by refactoring the publishing's base class.
-- End to end DSP
-- Continuous speech separation
-- Inference engine with enhancement/separation CLI.
-- Upgrade to the latest version PyTorchLightning
-- Start to plan integration with torch's `ComplexTensor`
-- More efficient and accessible `PITLossWrapper`
-
-
-TODO: link to the query.
-
 ## Acknowledgement
 
-We'd like to thank all Asteroid's contributors
+We'd like to thank all Asteroid's contributors !
 <p align="center">
     •
     <a href="https://github.com/mhu-coder"> mhu-coder </a> •
@@ -217,10 +188,10 @@ We'd like to thank all Asteroid's contributors
     <a href="https://github.com/saurabh-kataria"> saurabh-kataria </a> •
     <a href="https://github.com/subhanjansaha"> subhanjansaha </a> •
     <a href="https://github.com/mdjuamart"> mdjuamart </a> •
-    •
     <a href="https://github.com/hangtingchen"> hangtingchen </a> •
     <a href="https://github.com/groadabike"> groadabike </a> •
     <a href="https://github.com/dditter"> dditter </a> •
     <a href="https://github.com/bmorris3"> bmorris3 </a> •
     <a href="https://github.com/DizzyProtos"> DizzyProtos </a> •
+
 </p>
