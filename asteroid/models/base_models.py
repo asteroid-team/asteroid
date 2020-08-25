@@ -70,9 +70,9 @@ class BaseModel(nn.Module):
     def numpy_separate(self, wav: np.ndarray, **kwargs) -> np.ndarray:
         """ Numpy interface to `separate`."""
         wav = torch.from_numpy(wav)
-        self.torch_separate(wav, **kwargs)
-        wav = wav.data.numpy()
-        return wav
+        out_wav = self.torch_separate(wav, **kwargs)
+        out_wav = out_wav.data.numpy()
+        return out_wav
 
     def file_separate(
         self, filename: str, output_dir=None, force_overwrite=False, **kwargs
