@@ -28,18 +28,13 @@ id=$CUDA_VISIBLE_DEVICES
 # Data
 sample_rate=16000
 
-# Evaluation
-eval_use_gpu=1
 
 . utils/parse_options.sh
 
 sr_string=$(($sample_rate/1000))
-suffix=wav${sr_string}k/$mode
+suffix=wav${sr_string}k
 dumpdir=data/$suffix  # directory to put generated json file
 
-train_dir=$dumpdir/tr
-valid_dir=$dumpdir/cv
-test_dir=$dumpdir/tt
 
 
 # Check if sox is installed
@@ -93,7 +88,7 @@ fi
 # Generate a random ID for the run if no tag is specified
 uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
-	tag=${task}_${sr_string}k${mode}_${uuid}
+	tag=${sr_string}k_${uuid}
 fi
 expdir=exp/train_demask_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
