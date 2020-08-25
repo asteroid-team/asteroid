@@ -142,9 +142,12 @@ TODO: fix the image is low  quality
 - In our first approach, we wanted to use the Compare dataset (classification with unpaired data),
 and use style transfer to perform enhancement but the amount of data was too small and the
 differences between mask vs. no-mask too subtle.
-When we got the impulse responses (IRs) from [Corey et al. 2020](https://arxiv.org/abs/2008.04521),
+When we got the impulse responses (IRs) from ([Corey et al. 2020](https://arxiv.org/abs/2008.04521)),
 none of our first ideas worked because the filters contained the IR of the microphone and the room, and the phase
-was noisy. Approximating the filters by hand to be linear-phase saved us !
+was noisy. We then resorted to design ad-hoc FIR filters which directly
+approximate the frequency response of the masks in ([Corey et al. 2020](https://arxiv.org/abs/2008.04521))).
+The filters were dynamically generated at training time to augment the available data.
+Approximating the filters by hand saved us in the end !
 
 
 - TODO Maybe a word about torch.script/jit
@@ -152,6 +155,7 @@ was noisy. Approximating the filters by hand to be linear-phase saved us !
 - Maybe a word on moving fast, git conflicts and CI
 
 - What else?
+
 
 ## Accomplishments that we are proud of
 - Our `PITLossWrapper` takes any loss function and turns it into an efficient permutation invariant one !
@@ -174,11 +178,12 @@ Individually, we've learned to work as a team, set our goals, separate tasks and
 
 ## What's next for Asteroid
 Pretty much everything is next.
-- A growing community of users and contributors.
-- A nice refactoring of the bash recipes into Python CLI.
-- A tighter integration with `torchaudio`.
-- Hopefully `TorchScript` support.
+- A tighter integration with `torchaudio` and torch's `ComplexTensor`.
+- `TorchScript` support.
 - End to end separation to ASR with [ESPNet](https://github.com/espnet/espnet)
+- Multi-channel extensions
+- A nice refactoring of the bash recipes into Python CLI.
+- A growing community of users and contributors.
 and the list can go on..
 
 
@@ -187,10 +192,12 @@ and the list can go on..
 - Multiply by three the number of supported models
 - Improve model sharing by refactoring the publishing's base class.
 - End to end DSP
+- Continuous speech separation
 - Inference engine with enhancement/separation CLI.
 - Upgrade to the latest version PyTorchLightning
 - Start to plan integration with torch's `ComplexTensor`
 - More efficient and accessible `PITLossWrapper`
+
 
 TODO: link to the query.
 
