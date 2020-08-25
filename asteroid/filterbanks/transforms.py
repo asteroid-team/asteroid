@@ -1,5 +1,4 @@
 import torch
-import numpy as np
 
 EPS = 1e-8
 
@@ -226,6 +225,8 @@ def from_numpy(array, dim=-2):
         :class:`torch.Tensor`:
             Corresponding torch.Tensor (complex axis in dim `dim`=
     """
+    import numpy as np  # Hub-importable
+
     return torch.cat([torch.from_numpy(np.real(array)), torch.from_numpy(np.imag(array))], dim=dim)
 
 
