@@ -36,8 +36,12 @@ class DeMaskSystem(System):
 
 def main(conf):
 
-    train_set = DeMaskDataset(conf, conf["data"]["clean_train"], True, conf["data"]["rirs_train"])
-    val_set = DeMaskDataset(conf, conf["data"]["clean_dev"], False, conf["data"]["rirs_dev"])
+    train_set = DeMaskDataset(
+        conf, conf["data"]["clean_speech_train"], True, conf["data"]["rir_train"]
+    )
+    val_set = DeMaskDataset(
+        conf, conf["data"]["clean_speech_valid"], False, conf["data"]["rir_valid"]
+    )
 
     train_loader = DataLoader(
         train_set,
