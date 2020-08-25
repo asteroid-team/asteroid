@@ -50,39 +50,38 @@ fi
 
 # Install pysndfx if not instaled
 if not python -c "import pysndfx" &> /dev/null; then
-    echo 'This recipe requires pysndfx. Installing requirements.'
-    $python_path -m pip install -r requirements.txt
+  echo 'This recipe requires pysndfx. Installing requirements.'
+  $python_path -m pip install -r requirements.txt
 fi
 
 if [[ $stage -le  0 ]]; then
   echo "Stage 0: Downloading required Datasets"
 
-  #if ! test -e $librispeech_dir/train-clean-360; then
-   #  echo "Downloading LibriSpeech/train-clean-360 into $storage_dir"
-    # wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/train-clean-360.tar.gz -P $storage_dir
-	  # tar -xzf $storage_dir/dev-clean.tar.gz -C $storage_dir
-	  # rm -rf $storage_dir/dev-clean.tar.gz
-	#fi
-
+  if ! test -e $librispeech_dir/train-clean-360; then
+    echo "Downloading LibriSpeech/train-clean-360 into $storage_dir"
+    wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/train-clean-360.tar.gz -P $storage_dir
+	  tar -xzf $storage_dir/dev-clean.tar.gz -C $storage_dir
+	  rm -rf $storage_dir/dev-clean.tar.gz
+	fi
 
   if ! test -e $librispeech_dir/dev-clean; then
-     echo "Downloading LibriSpeech/dev-clean into $storage_dir"
-	   wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/dev-clean.tar.gz -P $storage_dir
-	   tar -xzf $storage_dir/dev-clean.tar.gz -C $storage_dir
-	   rm -rf $storage_dir/dev-clean.tar.gz
+    echo "Downloading LibriSpeech/dev-clean into $storage_dir"
+	  wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/dev-clean.tar.gz -P $storage_dir
+	  tar -xzf $storage_dir/dev-clean.tar.gz -C $storage_dir
+	  rm -rf $storage_dir/dev-clean.tar.gz
 	fi
 
   if ! test -e $rir_dir; then
-     echo "Downloading FUSS rir data"
-     wget -c --tries=0 --read-timeout=20 https://zenodo.org/record/3743844/files/FUSS_rir_data.tar.gz -P $storage_dir
-	   tar -xzf $storage_dir/FUSS_rir_data.tar.gz -C $storage_dir
-	   rm -rf $storage_dir/FUSS_rir_data.tar.gz
+    echo "Downloading FUSS rir data"
+    wget -c --tries=0 --read-timeout=20 https://zenodo.org/record/3743844/files/FUSS_rir_data.tar.gz -P $storage_dir
+	  tar -xzf $storage_dir/FUSS_rir_data.tar.gz -C $storage_dir
+	  rm -rf $storage_dir/FUSS_rir_data.tar.gz
 	fi
 
 fi
 
 if [[ $stage -le  1 ]]; then
-	echo "Stage 1: parsing the datasets"
+  echo "Stage 1: parsing the datasets"
 	for librispeech_split in train-clean-360 dev-clean ; do
     python local/parse_data.py --input_dir $librispeech_dir/$librispeech_split --output_json $dumpdir/clean/${librispeech_split}.json --regex **/*.flac
   done
