@@ -96,6 +96,8 @@ def infer():
         url_or_path(str): Path to the pretrained model.
         files (List(str)): Path to the wav files to separate. Also support list
             of filenames, directory names and globs.
+        force_overwrite (bool): Whether to overwrite output wav files.
+        output_dir (str): Output directory to save files.
     """
     import argparse
 
@@ -109,13 +111,22 @@ def infer():
         "directory names and globs.",
         nargs="+",
     )
+    parser.add_argument(
+        "-f",
+        "--force-overwrite",
+        action="store_true",
+        help="Whether to overwrite output wav files.",
+    )
+    parser.add_argument(
+        "-o", "--output-dir", default=None, type=str, help="Output directory to save files."
+    )
     args = parser.parse_args()
 
     model = BaseModel.from_pretrained(pretrained_model_conf_or_path=args.url_or_path)
     file_list = _process_files_as_list(args.files)
 
     for f in file_list:
-        model.separate(f)
+        model.separate(f, force_overwrite=args.force_overwrite, output_dir=args.output_dir)
 
 
 def _process_files_as_list(files_str: List) -> List:

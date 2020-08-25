@@ -17,14 +17,14 @@ class BaseModel(nn.Module):
         raise NotImplementedError
 
     @torch.no_grad()
-    def separate(self, wav, save_dir=None, force_overwrite=False, **kwargs):
+    def separate(self, wav, output_dir=None, force_overwrite=False, **kwargs):
         """ Infer separated sources from input waveforms.
         Also supports filenames.
 
         Args:
             wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
-            save_dir (str): path to save all the wav files. If None,
+            output_dir (str): path to save all the wav files. If None,
                 estimated sources will be saved next to the original ones.
             force_overwrite (bool): whether to overwrite existing files.
             **kwargs: keyword arguments to be passed to `_separate`.
@@ -38,50 +38,65 @@ class BaseModel(nn.Module):
             For models whose `forward` doesn't return waveform tensors,
             overwrite `_separate` to return waveform tensors.
         """
-        # Handle filename inputs
-        was_file = False
         if isinstance(wav, str):
-            import soundfile as sf
+            self.file_separate(
+                wav, output_dir=output_dir, force_overwrite=force_overwrite, **kwargs
+            )
+        elif isinstance(wav, np.ndarray):
+            return self.numpy_separate(wav, **kwargs)
+        elif isinstance(wav, torch.Tensor):
+            return self.torch_separate(wav, **kwargs)
+        else:
+            raise ValueError(
+                f"Only support filenames, numpy arrays and torch tensors, received {type(wav)}"
+            )
 
-            was_file = True
-            filename = wav
-            wav, fs = sf.read(wav, dtype="float32")
-            wav = torch.from_numpy(wav)
-        # Handle numpy inputs
-        was_numpy = False
-        if isinstance(wav, np.ndarray):
-            was_numpy = True
-            wav = torch.from_numpy(wav)
+    def torch_separate(self, wav: torch.Tensor, **kwargs) -> torch.Tensor:
+        """ Core logic of `separate`."""
         # Handle device placement
         input_device = wav.device
         model_device = next(self.parameters()).device
         wav = wav.to(model_device)
         # Forward
         out_wavs = self._separate(wav, **kwargs)
+
         # FIXME: for now this is the best we can do.
         out_wavs *= wav.abs().sum() / (out_wavs.abs().sum())
 
         # Back to input device (and numpy if necessary)
         out_wavs = out_wavs.to(input_device)
-        if was_numpy:
-            return out_wavs.cpu().data.numpy()
-        if was_file:
-            # Save wav files to filename_est1.wav etc...
-            to_save = out_wavs.cpu().data.numpy()
-            for src_idx, est_src in enumerate(to_save):
-                base = ".".join(filename.split(".")[:-1])
-                save_name = base + "_est{}.".format(src_idx + 1) + filename.split(".")[-1]
-                if os.path.isfile(save_name) and not force_overwrite:
-                    warnings.warn(
-                        f"File {save_name} already exists, pass `force_overwrite=True` to overwrite it",
-                        UserWarning,
-                    )
-                    return
-                if save_dir is not None:
-                    save_name = os.path.join(save_dir, save_name.split("/")[-1])
-                sf.write(save_name, est_src, fs)
-            return
         return out_wavs
+
+    def numpy_separate(self, wav: np.ndarray, **kwargs) -> np.ndarray:
+        """ Numpy interface to `separate`."""
+        wav = torch.from_numpy(wav)
+        out_wav = self.torch_separate(wav, **kwargs)
+        out_wav = out_wav.data.numpy()
+        return out_wav
+
+    def file_separate(
+        self, filename: str, output_dir=None, force_overwrite=False, **kwargs
+    ) -> None:
+        """Filename interface to `separate`."""
+        import soundfile as sf
+
+        wav, fs = sf.read(filename, dtype="float32", always_2d=True)
+        # FIXME: support only single-channel files for now.
+        to_save = self.numpy_separate(wav[:, 0], **kwargs)
+
+        # Save wav files to filename_est1.wav etc...
+        for src_idx, est_src in enumerate(to_save):
+            base = ".".join(filename.split(".")[:-1])
+            save_name = base + "_est{}.".format(src_idx + 1) + filename.split(".")[-1]
+            if os.path.isfile(save_name) and not force_overwrite:
+                warnings.warn(
+                    f"File {save_name} already exists, pass `force_overwrite=True` to overwrite it",
+                    UserWarning,
+                )
+                return
+            if output_dir is not None:
+                save_name = os.path.join(output_dir, save_name.split("/")[-1])
+            sf.write(save_name, est_src, fs)
 
     def _separate(self, wav, *args, **kwargs):
         """ Hidden separation method
