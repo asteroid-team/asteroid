@@ -134,7 +134,7 @@ class DeMaskDataset(Dataset):
         noise = noise[offset : offset + target_len]
         assert fs == self.configs["data"]["fs"]
         noise = fx(noise)
-        clean = clean + noise
+        clean = clean + noise  # NB demask is not doing denoising
         masked = masked + noise
 
         return clean, masked
@@ -200,7 +200,7 @@ class DeMaskDataset(Dataset):
             if self.train:
                 snr = 10 ** (eval(self.configs["training"]["white_noise_dB"]) / 20)
                 noise = np.random.normal(0, np.var(masked) / snr, masked.shape)
-                masked += noise
+                masked += noise  # NB demask is not doing denoising
                 clean += noise
 
         return torch.from_numpy(masked).float(), torch.from_numpy(clean).float()
