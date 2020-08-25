@@ -149,4 +149,4 @@ def test_demask():
 
     model_conf = model.serialize()
     reconstructed_model = DeMask.from_pretrained(model_conf)
-    assert_allclose(model.separate(test_input), reconstructed_model(test_input))
+    assert_allclose(model(test_input), reconstructed_model(test_input))
