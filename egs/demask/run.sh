@@ -60,8 +60,8 @@ if [[ $stage -le  0 ]]; then
   if ! test -e $librispeech_dir/train-clean-360; then
     echo "Downloading LibriSpeech/train-clean-360 into $storage_dir"
     wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/train-clean-360.tar.gz -P $storage_dir
-	  tar -xzf $storage_dir/dev-clean.tar.gz -C $storage_dir
-	  rm -rf $storage_dir/dev-clean.tar.gz
+	  tar -xzf $storage_dir/train-clean-360.tar.gz -C $storage_dir
+	  rm -rf $storage_dir/train-clean-360.tar.gz
 	fi
 
   if ! test -e $librispeech_dir/dev-clean; then
