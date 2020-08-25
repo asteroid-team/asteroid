@@ -129,10 +129,13 @@ trainer.fit(system)
 
 ## Challenges we ran into
 
-- In our first approach, we wanted to use the Compare dataset (classification with unpaired data),
+- In our first approach, we wanted to use the MASC dataset from the Compare challenge
+(classification with unpaired data, [see here](http://www.compare.openaudio.eu/data/),
 and use style transfer to perform enhancement but the amount of data was too small and the
-differences between mask vs. no-mask too subtle.
-When we got the impulse responses (IRs) from ([Corey et al. 2020](https://arxiv.org/abs/2008.04521)),
+differences between mask vs. no-mask too subtle. We suspect that surgical masks don't affect
+speech as much as self-made coths masks do.
+
+- When we got the impulse responses (IRs) from ([Corey et al. 2020](https://arxiv.org/abs/2008.04521)),
 none of our first ideas worked because the filters contained the IR of the microphone and the room, and the phase
 was noisy. We then resorted to design ad-hoc FIR filters which directly
 approximate the frequency response of the masks in ([Corey et al. 2020](https://arxiv.org/abs/2008.04521))).
@@ -146,7 +149,7 @@ was not jitable, we'll definitely work on it in the future.
 ## Accomplishments that we are proud of
 - Our `PITLossWrapper` takes any loss function and turns it into an efficient permutation invariant one !
 Check out our [notebook about it](https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb).
-- Using Zenodo's RESP API to automatize model sharing from the command line was
+- Using Zenodo's REST API to automatize model sharing from the command line was
 quite challenging and we believe it's a game changer to allow users to share their pretrained models.
 - Giving proper credit is underrated: we're proud to release pretrained models with automatically-generated
 appropriate license notices on them !
@@ -162,8 +165,12 @@ and we see new entries all the time.
 ## What we learned
 Individually, we've learned to work as a team, set our goals, separate tasks and act fast.
 
-## What's next for Asteroid
-Pretty much everything is next:
+## What's next
+
+For DeMask, integrating end-to-end denoising and dereverberation with demasking
+would make a good candidate for an open source version of NVIDIA RTX Voice.
+
+For Asteroid, pretty much everything is next:
 - A tighter integration with `torchaudio` and torch's `ComplexTensor`.
 - `TorchScript` support.
 - End to end separation to ASR with [ESPNet](https://github.com/espnet/espnet)
