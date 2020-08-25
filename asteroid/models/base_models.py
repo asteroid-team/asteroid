@@ -58,6 +58,9 @@ class BaseModel(nn.Module):
         wav = wav.to(model_device)
         # Forward
         out_wavs = self._separate(wav, **kwargs)
+        # FIXME: for now this is the best we can do.
+        out_wavs *= wav.abs().sum() / (out_wavs.abs().sum())
+
         # Back to input device (and numpy if necessary)
         out_wavs = out_wavs.to(input_device)
         if was_numpy:
