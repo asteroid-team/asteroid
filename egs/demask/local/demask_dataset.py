@@ -3,6 +3,7 @@ import torch
 import glob
 import soundfile as sf
 import numpy as np
+import json
 from scipy.signal import fftconvolve
 from scipy.signal import firwin2
 from pysndfx import AudioEffectsChain
@@ -61,27 +62,41 @@ class DeMaskDataset(Dataset):
     dataset_name = "Surgical_mask_speech_enhancement_v1"
 
     def __init__(
-        self, configs, clean_speech_dataset, train, rirs_dataset=None,
+        self, configs, clean_speech_dataset, train, rirs_dataset=None, noises_dataset=None
     ):
         self.configs = configs
         self.train = train
 
-        clean = glob.glob(clean_speech_dataset, recursive=True)
+        with open(clean_speech_dataset, "r") as f:
+            clean = json.load(f)
+
         self.clean = []
         for c in clean:
-            if len(sf.SoundFile(c)) < self.configs["data"]["fs"] * self.configs["data"]["length"]:
+            if c["length"] < self.configs["data"]["fs"] * self.configs["data"]["length"]:
                 continue
-            self.clean.append(c)
+            self.clean.append(c["file"])
 
         self.firs = mask_firs
+
         self.rirs = None
         if rirs_dataset:
-            self.rirs = glob.glob(rirs_dataset, recursive=True)
+            with open(rirs_dataset, "r") as f:
+                rirs = json.load(f)
+            self.rirs = [x["file"] for x in rirs]
+
+        self.noises = None
+        if noises_dataset:
+            with open(noises_dataset, "r") as f:
+                noises = json.load(f)
+                for n in noises:
+                    if n["length"] < self.configs["data"]["fs"] * self.configs["data"]["length"]:
+                        continue
+                    self.clean.append(n["file"])
 
     def __len__(self):
         return len(self.clean)
 
-    def augment(self, clean):
+    def augment_clean(self, clean):
 
         speed = eval(self.configs["training"]["speed_augm"])
         c_gain = eval(self.configs["training"]["gain_augm"])
@@ -97,7 +112,32 @@ class DeMaskDataset(Dataset):
 
         fx = AudioEffectsChain().custom("norm {}".format(c_gain))  # random gain
         clean = fx(clean)
-        return clean
+
+        return clean, c_gain
+
+    def add_noise(self, clean, masked, c_gain):
+
+        fx = AudioEffectsChain().custom(
+            "norm {}".format(eval(c_gain - self.configs["training"]["snr"]))
+        )
+
+        noise = np.random.choice(self.noises, 1)[0]
+        noise, fs = sf.read(noise)
+        if len(noise.shape) > 2:
+            # select random channel
+            noise = noise[:, np.random.randint(0, noise.shape - 1)]
+        offset = 0
+        target_len = int(self.configs["data"]["fs"] * self.configs["data"]["length"])
+        if len(noise) > target_len:
+            offset = np.random.randint(0, len(noise) - target_len)
+
+        noise = noise[offset : offset + target_len]
+        assert fs == self.configs["data"]["fs"]
+        noise = fx(noise)
+        clean = clean + noise  # NB demask is not doing denoising
+        masked = masked + noise
+
+        return clean, masked
 
     def __getitem__(self, item):
         # 1 we sample a clean utterance
@@ -111,9 +151,7 @@ class DeMaskDataset(Dataset):
             offset = np.random.randint(0, len(clean) - target_len)
 
         clean = clean[offset : offset + target_len]
-
-        if self.train:
-            clean = self.augment(clean)
+        clean, c_gain = self.augment_clean(clean)
 
         # we add reverberation, speed perturb and random scaling
         masks = list(self.firs.keys())
@@ -139,12 +177,6 @@ class DeMaskDataset(Dataset):
         clean = clean[trim_start:trim_end]
         masked = masked[trim_start:trim_end]
 
-        if self.train:
-            snr = 10 ** (eval(self.configs["training"]["white_noise_dB"]) / 20)
-            noise = np.random.normal(0, np.var(masked) / snr, masked.shape)
-            masked += noise
-            clean += noise
-
         if len(clean) > target_len:
             clean = clean[:target_len]
             masked = masked[:target_len]
@@ -162,6 +194,15 @@ class DeMaskDataset(Dataset):
         else:
             pass
 
+        if self.noises:
+            clean, masked = self.add_noise(clean, masked, c_gain)
+        else:  # if no noises still add gaussian noise when training
+            if self.train:
+                snr = 10 ** (eval(self.configs["training"]["white_noise_dB"]) / 20)
+                noise = np.random.normal(0, np.var(masked) / snr, masked.shape)
+                masked += noise  # NB demask is not doing denoising
+                clean += noise
+
         return torch.from_numpy(masked).float(), torch.from_numpy(clean).float()
 
     def get_infos(self):
@@ -173,5 +214,15 @@ class DeMaskDataset(Dataset):
         infos = dict()
         infos["dataset"] = self.dataset_name
         infos["task"] = "enhancement"
-        infos["licenses"] = [librispeech_license, fuss_license]
+        infos["licenses"] = [librispeech_license, fuss_license, demask_license]
         return infos
+
+
+demask_license = dict(
+    title="Acoustic effects of medical, cloth, and transparent face masks on speech signals",
+    title_link="https://arxiv.org/abs/2008.04521",
+    author="Corey, Ryan M and Jones, Uriah and Singer, Andrew C",
+    license="CC BY 4.0",
+    license_link="https://creativecommons.org/licenses/by/4.0/",
+    non_commercial=False,
+)

@@ -1,8 +1,8 @@
 from torch import nn
 from .base_models import BaseModel
-from asteroid.filterbanks import make_enc_dec
-from asteroid.masknn import norms, activations
-from asteroid.filterbanks.transforms import take_mag, take_cat
+from ..filterbanks import make_enc_dec
+from ..masknn import norms, activations
+from ..filterbanks.transforms import take_mag, take_cat
 from .. import torch_utils
 
 

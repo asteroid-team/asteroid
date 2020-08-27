@@ -13,11 +13,11 @@ demask_net:
   norm_type: gLN
 data:
   fs: 16000
-  clean_train: /media/sam/Data/LibriSpeech/dev-clean/**/*.flac
-  clean_dev: /media/sam/Data/LibriSpeech/test-clean/**/*.flac
-  rirs_train: /media/sam/Data/myRIRS/**/*.wav
-  rirs_dev: /media/sam/Data/myRIRS/**/*.wav
   length: 4
+  clean_speech_train: ./data/clean/train-clean-360.json
+  clean_speech_valid: ./data/clean/dev-clean.json
+  rir_train: ./data/rirs/train.json
+  rir_valid: ./data/rirs/validation.json
 optim:
   lr: 0.001
   weight_decay: !!float 1e-5
