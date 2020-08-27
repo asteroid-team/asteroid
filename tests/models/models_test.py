@@ -143,8 +143,9 @@ def test_show():
     asteroid.show_available_models()
 
 
-def test_demask():
-    model = DeMask()
+@pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
+def test_demask(fb):
+    model = DeMask(fb_type=fb)
     test_input = torch.randn(1, 801)
 
     model_conf = model.serialize()
