@@ -62,7 +62,7 @@ class Conv1DBlock(nn.Module):
         shared_out = self.shared_block(x)
         res_out = self.res_conv(shared_out)
         if not self.skip_out_chan:
-            return res_out
+            return res_out, res_out
         skip_out = self.skip_conv(shared_out)
         return res_out, skip_out
 
@@ -175,17 +175,17 @@ class TDConvNet(nn.Module):
             :class:`torch.Tensor`:
                 estimated mask of shape [batch, n_src, n_filters, n_frames]
         """
-        batch, n_filters, n_frames = mixture_w.size()
+        batch, _, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)
-        skip_connection = 0.0
-        for i in range(len(self.TCN)):
+        skip_connection = torch.tensor([0.0])
+        for layer in self.TCN:
             # Common to w. skip and w.o skip architectures
-            tcn_out = self.TCN[i](output)
+            tcn_out = layer(output)
             if self.skip_chan:
                 residual, skip = tcn_out
                 skip_connection = skip_connection + skip
             else:
-                residual = tcn_out
+                residual, _ = tcn_out
             output = output + residual
         # Use residual output when no skip connection
         mask_inp = skip_connection if self.skip_chan else output
@@ -350,7 +350,7 @@ class TDConvNetpp(nn.Module):
                     residual, skip = tcn_out
                     skip_connection = skip_connection + skip
                 else:
-                    residual = tcn_out
+                    residual, _ = tcn_out
                 # Initialized exp decay scale factor TDCNpp for residual connections
                 scale = self.scaling_param[r, x - 1] if x > 0 else 1.0
                 residual = residual * scale

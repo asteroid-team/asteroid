@@ -83,7 +83,7 @@ class ParamSincFB(Filterbank):
         sin_filters = self.make_filters(low, high, filt_type="sin")
         return torch.cat([cos_filters, sin_filters], dim=0)
 
-    def make_filters(self, low, high, filt_type="cos"):
+    def make_filters(self, low, high, filt_type: str = "cos"):
         band = (high - low)[:, 0]
         ft_low = torch.matmul(low, self.n_)
         ft_high = torch.matmul(high, self.n_)
