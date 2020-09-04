@@ -38,9 +38,38 @@ def small_model_params():
             'n_filters': 32,
             'dropout': 0.0,
         },
+        DeMask.__name__: {
+            'input_type': "mag",
+            'output_type': "mag",
+            'hidden_dims': [64],
+            'dropout': 0,
+            'activation': "relu",
+            'mask_act': "relu",
+            'norm_type': "gLN",
+            'n_filters': 8,
+            'stride': 4,
+            'kernel_size': 8
+        }
     }
 
     return params
+
+
+def test_enhancement_model(small_model_params):
+    params = small_model_params['DeMask']
+    filter_banks = ['free', 'stft', 'analytic_free', 'param_sinc']
+    device = get_default_device()
+    inputs = ((torch.rand(1, 1000, device=device) - 0.5) * 2,)
+    test_data = torch.rand(1, 32, device=device)
+    for filter_bank in filter_banks:
+        model = DeMask(**params, fb_type=filter_bank).eval().to(device)
+        traced = torch.jit.trace(model, inputs)
+
+        # check forward
+        with torch.no_grad():
+            ref = model(test_data)
+            out = traced(test_data)
+            assert torch.allclose(ref, out)
 
 
 @pytest.mark.parametrize('model_def',
