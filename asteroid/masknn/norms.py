@@ -35,7 +35,7 @@ class GlobLN(_LayerNorm):
         dims: List[int] = torch.arange(1, len(x.shape)).tolist()
         mean = x.mean(dim=dims, keepdim=True)
         var = torch.pow(x - mean, 2).mean(dim=dims, keepdim=True)
-        value = torch.sqrt((x - mean) / (var + EPS))
+        value = (x - mean) / torch.sqrt((var + EPS))
         return self.apply_gain_and_bias(value)
 
 
