@@ -25,6 +25,12 @@ def small_model_params():
             'chunk_size': 20,
             'n_filters': 32,
         },
+        DPTNet.__name__: {
+            'n_src': 2,
+            'ff_hid': 10,
+            'chunk_size': 4,
+            'n_repeats': 2,
+        },
     }
 
     return params
@@ -34,6 +40,7 @@ def small_model_params():
     (
         ConvTasNet,
         DPRNNTasNet,
+        DPTNet,
     )
 )
 def test_trace_bss_model(small_model_params, model_def):
