@@ -17,6 +17,14 @@ def small_model_params():
             'skip_chan': 8,
             'n_filters': 32,
         },
+        DPRNNTasNet.__name__: {
+            'n_src': 2,
+            'n_repeats': 2,
+            'bn_chan': 16,
+            'hid_size': 4,
+            'chunk_size': 20,
+            'n_filters': 32,
+        },
     }
 
     return params
@@ -25,6 +33,7 @@ def small_model_params():
 @pytest.mark.parametrize('model_def',
     (
         ConvTasNet,
+        DPRNNTasNet,
     )
 )
 def test_trace_bss_model(small_model_params, model_def):
