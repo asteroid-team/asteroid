@@ -1,9 +1,9 @@
 from ..filterbanks import make_enc_dec
 from ..masknn import DPTransformer
-from .base_models import BaseTasNet
+from .base_models import BaseEMDNet
 
 
-class DPTNet(BaseTasNet):
+class DPTNet(BaseEMDNet):
     """DPTNet separation model, as described in [1].
 
     Args:

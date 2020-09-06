@@ -4,10 +4,10 @@ import math
 
 from ..filterbanks import make_enc_dec
 from ..masknn import SuDORMRF, SuDORMRFImproved
-from .base_models import BaseTasNet
+from .base_models import BaseEMDNet
 
 
-class SuDORMRFNet(BaseTasNet):
+class SuDORMRFNet(BaseEMDNet):
     """SuDORMRF separation model, as described in [1].
 
     Args:
@@ -79,7 +79,7 @@ class SuDORMRFNet(BaseTasNet):
         super().__init__(enc, masker, dec, encoder_activation="relu")
 
 
-class SuDORMRFImprovedNet(BaseTasNet):
+class SuDORMRFImprovedNet(BaseEMDNet):
     """Improved SuDORMRF separation model, as described in [1].
 
     Args:

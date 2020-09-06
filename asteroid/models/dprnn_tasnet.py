@@ -1,9 +1,9 @@
 from ..filterbanks import make_enc_dec
 from ..masknn import DPRNN
-from .base_models import BaseTasNet
+from .base_models import BaseEMDNet
 
 
-class DPRNNTasNet(BaseTasNet):
+class DPRNNTasNet(BaseEMDNet):
     """DPRNN separation model, as described in [1].
 
     Args:
