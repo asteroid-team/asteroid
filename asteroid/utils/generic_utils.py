@@ -75,12 +75,8 @@ def get_wav_random_start_stop(signal_len, desired_len=4 * 8000):
     Returns:
         tuple: random start integer, stop integer.
     """
-    if signal_len == desired_len or desired_len is None:
-        rand_start = 0
-    else:
-        rand_start = np.random.randint(0, signal_len - desired_len)
     if desired_len is None:
-        stop = None
-    else:
-        stop = rand_start + desired_len
+        return 0, signal_len
+    rand_start = np.random.randint(0, max(1, signal_len - desired_len))
+    stop = min(signal_len, rand_start + desired_len)
     return rand_start, stop
