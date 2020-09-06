@@ -13,7 +13,7 @@ def get_metrics(
     average=True,
     compute_permutation=False,
 ):
-    """ Get speech separation/enhancement metrics from mix/clean/estimate.
+    """Get speech separation/enhancement metrics from mix/clean/estimate.
 
     Args:
         mix (np.array): 'Shape(D, N)' or 'Shape(N, )'.

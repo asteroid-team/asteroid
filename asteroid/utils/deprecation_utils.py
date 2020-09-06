@@ -26,7 +26,7 @@ class DeprecationMixin:
 
 
 def deprecate_func(func, old_name):
-    """ Function to return DeprecationWarning when a deprecated function
+    """Function to return DeprecationWarning when a deprecated function
     is called. Example to come."""
 
     def func_with_warning(*args, **kwargs):

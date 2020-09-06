@@ -31,7 +31,7 @@ def make_dataloaders(
 
 
 class KinectWsjMixDataset(Wsj0mixDataset):
-    """ Dataset class for the KinectWSJ-mix source separation dataset.
+    """Dataset class for the KinectWSJ-mix source separation dataset.
 
     Args:
         json_dir (str): The path to the directory containing the json files.
@@ -60,7 +60,7 @@ class KinectWsjMixDataset(Wsj0mixDataset):
         self.noises = noises
 
     def __getitem__(self, idx):
-        """ Gets a mixture/sources pair.
+        """Gets a mixture/sources pair.
         Returns:
             mixture, stack([source_arrays]), noise
             mixture is of dimension [samples, channels]
@@ -97,7 +97,7 @@ class KinectWsjMixDataset(Wsj0mixDataset):
         return torch.from_numpy(x), sources, torch.from_numpy(noise)
 
     def get_infos(self):
-        """ Get dataset infos (for publishing models).
+        """Get dataset infos (for publishing models).
 
         Returns:
             dict, dataset infos with keys `dataset`, `task` and `licences`.

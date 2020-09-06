@@ -6,40 +6,40 @@ EPS = 1e-8
 
 
 class PairwiseNegSDR(_Loss):
-    """ Base class for pairwise negative SI-SDR, SD-SDR and SNR on a batch.
+    """Base class for pairwise negative SI-SDR, SD-SDR and SNR on a batch.
 
-        Args:
-            sdr_type (str): choose between "snr" for plain SNR, "sisdr" for
-                SI-SDR and "sdsdr" for SD-SDR [1].
-            zero_mean (bool, optional): by default it zero mean the target
-                and estimate before computing the loss.
-            take_log (bool, optional): by default the log10 of sdr is returned.
+    Args:
+        sdr_type (str): choose between "snr" for plain SNR, "sisdr" for
+            SI-SDR and "sdsdr" for SD-SDR [1].
+        zero_mean (bool, optional): by default it zero mean the target
+            and estimate before computing the loss.
+        take_log (bool, optional): by default the log10 of sdr is returned.
 
-        Shape:
-            est_targets (:class:`torch.Tensor`): Expected shape
-                [batch, n_src, time]. Batch of target estimates.
-            targets (:class:`torch.Tensor`): Expected shape
-                [batch, n_src, time]. Batch of training targets.
+    Shape:
+        est_targets (:class:`torch.Tensor`): Expected shape
+            [batch, n_src, time]. Batch of target estimates.
+        targets (:class:`torch.Tensor`): Expected shape
+            [batch, n_src, time]. Batch of training targets.
 
-        Returns:
-            :class:`torch.Tensor`: with shape [batch, n_src, n_src].
-            Pairwise losses.
+    Returns:
+        :class:`torch.Tensor`: with shape [batch, n_src, n_src].
+        Pairwise losses.
 
-        Examples:
+    Examples:
 
-            >>> import torch
-            >>> from asteroid.losses import PITLossWrapper
-            >>> targets = torch.randn(10, 2, 32000)
-            >>> est_targets = torch.randn(10, 2, 32000)
-            >>> loss_func = PITLossWrapper(PairwiseNegSDR("sisdr"),
-            >>>                            pit_from='pairwise')
-            >>> loss = loss_func(est_targets, targets)
+        >>> import torch
+        >>> from asteroid.losses import PITLossWrapper
+        >>> targets = torch.randn(10, 2, 32000)
+        >>> est_targets = torch.randn(10, 2, 32000)
+        >>> loss_func = PITLossWrapper(PairwiseNegSDR("sisdr"),
+        >>>                            pit_from='pairwise')
+        >>> loss = loss_func(est_targets, targets)
 
-        References:
-            [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
-            International Conference on Acoustics, Speech and Signal
-            Processing (ICASSP) 2019.
-        """
+    References:
+        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+        International Conference on Acoustics, Speech and Signal
+        Processing (ICASSP) 2019.
+    """
 
     def __init__(self, sdr_type, zero_mean=True, take_log=True):
         super(PairwiseNegSDR, self).__init__()
@@ -84,45 +84,45 @@ class PairwiseNegSDR(_Loss):
 
 
 class SingleSrcNegSDR(_Loss):
-    """ Base class for single-source negative SI-SDR, SD-SDR and SNR.
+    """Base class for single-source negative SI-SDR, SD-SDR and SNR.
 
-        Args:
-            sdr_type (string): choose between "snr" for plain SNR, "sisdr" for
-                SI-SDR and "sdsdr" for SD-SDR [1].
-            zero_mean (bool, optional): by default it zero mean the target and
-                estimate before computing the loss.
-            take_log (bool, optional): by default the log10 of sdr is returned.
-            reduction (string, optional): Specifies the reduction to apply to
-                the output:
-            ``'none'`` | ``'mean'``. ``'none'``: no reduction will be applied,
-            ``'mean'``: the sum of the output will be divided by the number of
-            elements in the output.
+    Args:
+        sdr_type (string): choose between "snr" for plain SNR, "sisdr" for
+            SI-SDR and "sdsdr" for SD-SDR [1].
+        zero_mean (bool, optional): by default it zero mean the target and
+            estimate before computing the loss.
+        take_log (bool, optional): by default the log10 of sdr is returned.
+        reduction (string, optional): Specifies the reduction to apply to
+            the output:
+        ``'none'`` | ``'mean'``. ``'none'``: no reduction will be applied,
+        ``'mean'``: the sum of the output will be divided by the number of
+        elements in the output.
 
-        Shape:
-            est_targets (:class:`torch.Tensor`): Expected shape [batch, time].
-                Batch of target estimates.
-            targets (:class:`torch.Tensor`): Expected shape [batch, time].
-                Batch of training targets.
+    Shape:
+        est_targets (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of target estimates.
+        targets (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of training targets.
 
-        Returns:
-            :class:`torch.Tensor`: with shape [batch] if reduction='none' else
-                [] scalar if reduction='mean'.
+    Returns:
+        :class:`torch.Tensor`: with shape [batch] if reduction='none' else
+            [] scalar if reduction='mean'.
 
-        Examples:
+    Examples:
 
-            >>> import torch
-            >>> from asteroid.losses import PITLossWrapper
-            >>> targets = torch.randn(10, 2, 32000)
-            >>> est_targets = torch.randn(10, 2, 32000)
-            >>> loss_func = PITLossWrapper(SingleSrcNegSDR("sisdr"),
-            >>>                            pit_from='pw_pt')
-            >>> loss = loss_func(est_targets, targets)
+        >>> import torch
+        >>> from asteroid.losses import PITLossWrapper
+        >>> targets = torch.randn(10, 2, 32000)
+        >>> est_targets = torch.randn(10, 2, 32000)
+        >>> loss_func = PITLossWrapper(SingleSrcNegSDR("sisdr"),
+        >>>                            pit_from='pw_pt')
+        >>> loss = loss_func(est_targets, targets)
 
-        References:
-            [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
-            International Conference on Acoustics, Speech and Signal
-            Processing (ICASSP) 2019.
-        """
+    References:
+        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+        International Conference on Acoustics, Speech and Signal
+        Processing (ICASSP) 2019.
+    """
 
     def __init__(self, sdr_type, zero_mean=True, take_log=True, reduction="none"):
         assert reduction != "sum", NotImplementedError
@@ -165,42 +165,42 @@ class SingleSrcNegSDR(_Loss):
 
 
 class MultiSrcNegSDR(_Loss):
-    """ Base class for computing negative SI-SDR, SD-SDR and SNR for a given
-        permutation of source and their estimates.
+    """Base class for computing negative SI-SDR, SD-SDR and SNR for a given
+    permutation of source and their estimates.
 
-        Args:
-            sdr_type (string): choose between "snr" for plain SNR, "sisdr" for
-                SI-SDR and "sdsdr" for SD-SDR [1].
-            zero_mean (bool, optional): by default it zero mean the target
-                and estimate before computing the loss.
-            take_log (bool, optional): by default the log10 of sdr is returned.
+    Args:
+        sdr_type (string): choose between "snr" for plain SNR, "sisdr" for
+            SI-SDR and "sdsdr" for SD-SDR [1].
+        zero_mean (bool, optional): by default it zero mean the target
+            and estimate before computing the loss.
+        take_log (bool, optional): by default the log10 of sdr is returned.
 
-        Shape:
-            est_targets (:class:`torch.Tensor`): Expected shape [batch, time].
-                Batch of target estimates.
-            targets (:class:`torch.Tensor`): Expected shape [batch, time].
-                Batch of training targets.
+    Shape:
+        est_targets (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of target estimates.
+        targets (:class:`torch.Tensor`): Expected shape [batch, time].
+            Batch of training targets.
 
-        Returns:
-            :class:`torch.Tensor`: with shape [batch] if reduction='none' else
-                [] scalar if reduction='mean'.
+    Returns:
+        :class:`torch.Tensor`: with shape [batch] if reduction='none' else
+            [] scalar if reduction='mean'.
 
-        Examples:
+    Examples:
 
-            >>> import torch
-            >>> from asteroid.losses import PITLossWrapper
-            >>> targets = torch.randn(10, 2, 32000)
-            >>> est_targets = torch.randn(10, 2, 32000)
-            >>> loss_func = PITLossWrapper(MultiSrcNegSDR("sisdr"),
-            >>>                            pit_from='perm_avg')
-            >>> loss = loss_func(est_targets, targets)
+        >>> import torch
+        >>> from asteroid.losses import PITLossWrapper
+        >>> targets = torch.randn(10, 2, 32000)
+        >>> est_targets = torch.randn(10, 2, 32000)
+        >>> loss_func = PITLossWrapper(MultiSrcNegSDR("sisdr"),
+        >>>                            pit_from='perm_avg')
+        >>> loss = loss_func(est_targets, targets)
 
-        References:
-            [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
-            International Conference on Acoustics, Speech and Signal
-            Processing (ICASSP) 2019.
+    References:
+        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+        International Conference on Acoustics, Speech and Signal
+        Processing (ICASSP) 2019.
 
-        """
+    """
 
     def __init__(self, sdr_type, zero_mean=True, take_log=True):
         super().__init__()

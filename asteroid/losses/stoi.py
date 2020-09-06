@@ -2,7 +2,7 @@ from torch_stoi import NegSTOILoss as _NegSTOILoss
 
 
 class NegSTOILoss(_NegSTOILoss):
-    """ Negated Short Term Objective Intelligibility (STOI) metric, to be used
+    """Negated Short Term Objective Intelligibility (STOI) metric, to be used
         as a loss function.
         Inspired from [1, 2, 3] but not exactly the same : cannot be used as
         the STOI metric directly (use pystoi instead). See Notes.

@@ -3,7 +3,7 @@ from torch.utils.data._utils.collate import default_collate
 
 
 def online_mixing_collate(batch):
-    """ Mix target sources to create new mixtures.
+    """Mix target sources to create new mixtures.
     Output of the default collate function is expected to return two objects:
     inputs and targets.
     """

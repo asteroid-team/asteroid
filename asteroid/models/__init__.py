@@ -23,7 +23,7 @@ __all__ = [
 
 
 def register_model(custom_model):
-    """ Register a custom model, gettable with `models.get`.
+    """Register a custom model, gettable with `models.get`.
 
     Args:
         custom_model: Custom model to register.
@@ -38,7 +38,7 @@ def register_model(custom_model):
 
 
 def get(identifier):
-    """ Returns an model class from a string (case-insensitive).
+    """Returns an model class from a string (case-insensitive).
 
     Args:
         identifier (str): the model name.

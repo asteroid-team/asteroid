@@ -5,7 +5,7 @@ from torch import nn
 
 
 class LambdaOverlapAdd(torch.nn.Module):
-    """ Segment signal, apply func, combine with OLA.
+    """Segment signal, apply func, combine with OLA.
 
     Args:
         nnet (callable): function to apply to each segment.
@@ -108,7 +108,7 @@ class LambdaOverlapAdd(torch.nn.Module):
         return out.squeeze(-1).reshape(batch, self.n_src, -1)
 
     def forward(self, x):
-        """ Forward module: segment signal, apply func, combine with OLA.
+        """Forward module: segment signal, apply func, combine with OLA.
 
         Args:
             x (:class:`torch.Tensor`): waveform signal of shape (batch, 1, time).
@@ -165,7 +165,7 @@ def _reorder_sources(
 
 
 class DualPathProcessing(nn.Module):
-    """ Perform Dual-Path processing via overlap-add as in DPRNN [1].
+    """Perform Dual-Path processing via overlap-add as in DPRNN [1].
 
      Args:
         chunk_size (int): Size of segmenting window.
@@ -184,7 +184,7 @@ class DualPathProcessing(nn.Module):
         self.n_orig_frames = None
 
     def unfold(self, x):
-        """ Unfold the feature tensor from
+        """Unfold the feature tensor from
 
         (batch, channels, time) to (batch, channels, chunk_size, n_chunks).
 
@@ -212,7 +212,7 @@ class DualPathProcessing(nn.Module):
         )  # (batch, chan, chunk_size, n_chunks)
 
     def fold(self, x, output_size=None):
-        """ Folds back the spliced feature tensor.
+        """Folds back the spliced feature tensor.
 
         Input shape (batch, channels, chunk_size, n_chunks) to original shape
         (batch, channels, time) using overlap-add.
@@ -248,7 +248,7 @@ class DualPathProcessing(nn.Module):
 
     @staticmethod
     def intra_process(x, module):
-        """ Performs intra-chunk processing.
+        """Performs intra-chunk processing.
 
         Args:
             x (:class:`torch.Tensor`): spliced feature tensor of shape
@@ -275,7 +275,7 @@ class DualPathProcessing(nn.Module):
 
     @staticmethod
     def inter_process(x, module):
-        """ Performs inter-chunk processing.
+        """Performs inter-chunk processing.
 
         Args:
             x (:class:`torch.Tensor`): spliced feature tensor of shape

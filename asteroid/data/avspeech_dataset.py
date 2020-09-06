@@ -36,16 +36,16 @@ def get_frames(video):
 class Signal:
     """This class holds the video frames and the audio signal.
 
-        Args:
-            video_path (str,Path): Path to video (mp4).
-            audio_path (str,Path): Path to audio (wav).
-            embed_dir (str,Path): Path to directory that stores embeddings.
-            sr (int): sampling rate of audio.
-            video_start_length: video part no. [1]
-            fps (int): fps of video.
-            signal_len (int): length of the signal
+    Args:
+        video_path (str,Path): Path to video (mp4).
+        audio_path (str,Path): Path to audio (wav).
+        embed_dir (str,Path): Path to directory that stores embeddings.
+        sr (int): sampling rate of audio.
+        video_start_length: video part no. [1]
+        fps (int): fps of video.
+        signal_len (int): length of the signal
 
-        .. note:: each video consists of multiple parts which consists of fps*signal_len frames.
+    .. note:: each video consists of multiple parts which consists of fps*signal_len frames.
     """
 
     def __init__(
@@ -116,15 +116,15 @@ class Signal:
 class AVSpeechDataset(data.Dataset):
     """Audio Visual Speech Separation dataset as described in [1].
 
-        Args:
-            input_df_path (str,Path): path for combination dataset.
-            embed_dir (str,Path): path where embeddings are stored.
-            n_src (int): number of sources.
+    Args:
+        input_df_path (str,Path): path for combination dataset.
+        embed_dir (str,Path): path where embeddings are stored.
+        n_src (int): number of sources.
 
-        References:
-            [1]: 'Looking to Listen at the Cocktail Party:
-            A Speaker-Independent Audio-Visual Model for Speech Separation' Ephrat et. al
-            https://arxiv.org/abs/1804.03619
+    References:
+        [1]: 'Looking to Listen at the Cocktail Party:
+        A Speaker-Independent Audio-Visual Model for Speech Separation' Ephrat et. al
+        https://arxiv.org/abs/1804.03619
     """
 
     dataset_name = "AVSpeech"

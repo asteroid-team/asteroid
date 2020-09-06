@@ -39,7 +39,7 @@ class Model(nn.Module):
 
 
 def make_model_and_optimizer(conf):
-    """ Function to define the model and optimizer for a config dictionary.
+    """Function to define the model and optimizer for a config dictionary.
     Args:
         conf: Dictionary containing the output of hierachical argparse.
     Returns:

@@ -60,7 +60,7 @@ class SystemTwoStep(SystemCore):
         self.module = module
 
     def common_step(self, batch, train=True):
-        """ Common forward step between training and validation.
+        """Common forward step between training and validation.
 
         The function of this method is to unpack the data given by the loader,
         forward the batch through the model and compute the loss for the

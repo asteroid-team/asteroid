@@ -8,7 +8,7 @@ from .base_models import BaseTasNet
 
 
 class LSTMTasNet(BaseTasNet):
-    """ TasNet separation model, as described in [1].
+    """TasNet separation model, as described in [1].
 
     Args:
         n_src (int): Number of masks to estimate.

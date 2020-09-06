@@ -3,7 +3,7 @@ from torch.nn.modules.loss import _Loss
 
 
 class PairwiseMSE(_Loss):
-    """ Measure pairwise mean square error on a batch.
+    """Measure pairwise mean square error on a batch.
 
     Shape:
         est_targets (:class:`torch.Tensor`): Expected shape [batch, nsrc, *].
@@ -34,7 +34,7 @@ class PairwiseMSE(_Loss):
 
 
 class SingleSrcMSE(_Loss):
-    """ Measure mean square error on a batch.
+    """Measure mean square error on a batch.
     Supports both tensors with and without source axis.
 
     Shape:

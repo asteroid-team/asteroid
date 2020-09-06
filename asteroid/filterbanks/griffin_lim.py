@@ -8,7 +8,7 @@ from ..dsp.consistency import mixture_consistency
 
 
 def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, momentum=0.9):
-    """ Estimates matching phase from magnitude spectogram using the
+    """Estimates matching phase from magnitude spectogram using the
     'fast' Griffin Lim algorithm [1].
 
     Args:
@@ -83,7 +83,7 @@ def misi(
     src_weights=None,
     dim=1,
 ):
-    """ Jointly estimates matching phase from magnitude spectograms using the
+    """Jointly estimates matching phase from magnitude spectograms using the
     Multiple Input Spectrogram Inversion (MISI) algorithm [1].
 
     Args:

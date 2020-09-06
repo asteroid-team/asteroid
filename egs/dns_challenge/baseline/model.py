@@ -15,7 +15,7 @@ from asteroid import torch_utils
 
 
 def make_model_and_optimizer(conf):
-    """ Function to define the model and optimizer for a config dictionary.
+    """Function to define the model and optimizer for a config dictionary.
     Args:
         conf: Dictionary containing the output of hierachical argparse.
     Returns:
@@ -42,7 +42,7 @@ def make_model_and_optimizer(conf):
 
 
 class Model(nn.Module):
-    """ Speech enhancement model.
+    """Speech enhancement model.
 
     Args:
         encoder (~.Encoder): instance of a complex filterbank encoder
@@ -94,7 +94,7 @@ class Model(nn.Module):
 
 
 class SimpleModel(nn.Module):
-    """ Simple recurrent model for the DNS challenge.
+    """Simple recurrent model for the DNS challenge.
 
     Args:
         input_size (int): input size along the features dimension
@@ -140,7 +140,7 @@ class SimpleSystem(System):
 
 
 def distance(estimate, target, is_complex=True):
-    """ Compute the average distance in the complex plane. Makes more sense
+    """Compute the average distance in the complex plane. Makes more sense
     when the network computes a complex mask.
 
     Args:
@@ -162,7 +162,7 @@ def distance(estimate, target, is_complex=True):
 
 
 def load_best_model(train_conf, exp_dir):
-    """ Load best model after training.
+    """Load best model after training.
 
     Args:
         train_conf (dict): dictionary as expected by `make_model_and_optimizer`

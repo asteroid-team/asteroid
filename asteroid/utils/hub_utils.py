@@ -19,7 +19,7 @@ MODELS_URLS_HASHTABLE = {
 
 
 def cached_download(filename_or_url):
-    """ Download from URL with torch.hub and cache the result in ASTEROID_CACHE.
+    """Download from URL with torch.hub and cache the result in ASTEROID_CACHE.
 
     Args:
         filename_or_url (str): Name of a model as named on the Zenodo Community

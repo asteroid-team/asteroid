@@ -22,7 +22,7 @@ from constants import (
 
 def sample_audio_set():
     """
-        sample random audio files as a noise from audio set dataset
+    sample random audio files as a noise from audio set dataset
     """
     audio_files = glob.glob(os.path.join(AUDIO_SET_DIR, "*"))
     total_files = len(audio_files)
@@ -63,15 +63,15 @@ def audio_mixer(
     remove_random_chance=0.9,
 ) -> None:
     """
-        generate the combination dataframe used in data_loader.py
+    generate the combination dataframe used in data_loader.py
 
-        Args:
-            dataset_size: restrict total possible combinations
-            n_src: input size
-            video_ext: extension of video
-            audio_ext: extension of audio
-            file_name: file name of combination dataframe to save
-            audio_set: use audio set dataset
+    Args:
+        dataset_size: restrict total possible combinations
+        n_src: input size
+        video_ext: extension of video
+        audio_ext: extension of audio
+        file_name: file name of combination dataframe to save
+        audio_set: use audio set dataset
     """
     audio_mix_command_suffix = "-filter_complex amix=inputs={}:duration=longest "
     audio_files = glob.glob(os.path.join(AUDIO_DIR, "*"))

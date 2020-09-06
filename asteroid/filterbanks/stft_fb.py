@@ -4,7 +4,7 @@ from .enc_dec import Filterbank
 
 
 class STFTFB(Filterbank):
-    """ STFT filterbank.
+    """STFT filterbank.
 
     Args:
         n_filters (int): Number of filters. Determines the length of the STFT
@@ -59,7 +59,7 @@ class STFTFB(Filterbank):
 
 
 def perfect_synthesis_window(analysis_window, hop_size):
-    """ Computes a window for perfect synthesis given an analysis window and
+    """Computes a window for perfect synthesis given an analysis window and
         a hop size.
 
     Args:

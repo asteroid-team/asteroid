@@ -206,7 +206,7 @@ class DeMaskDataset(Dataset):
         return torch.from_numpy(masked).float(), torch.from_numpy(clean).float()
 
     def get_infos(self):
-        """ Get dataset infos (for publishing models).
+        """Get dataset infos (for publishing models).
 
         Returns:
             dict, dataset infos with keys `dataset`, `task` and `licences`.

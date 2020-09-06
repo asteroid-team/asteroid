@@ -4,7 +4,7 @@ from .enc_dec import Filterbank
 
 
 class MultiphaseGammatoneFB(Filterbank):
-    """ Multi-Phase Gammatone Filterbank as described in [1].
+    """Multi-Phase Gammatone Filterbank as described in [1].
     Please cite [1] whenever using this.
     Original code repository: `<https://github.com/sp-uhh/mp-gtf>`
 
@@ -113,8 +113,8 @@ def freq_hz_2_erb_scale(freq_hz):
 
 
 def normalize_filters(filterbank):
-    """ Normalizes a filterbank such that all filters
-    have the same root mean square (RMS). """
+    """Normalizes a filterbank such that all filters
+    have the same root mean square (RMS)."""
     rms_per_filter = np.sqrt(np.mean(np.square(filterbank), axis=1))
     rms_normalization_values = 1.0 / (rms_per_filter / np.amax(rms_per_filter))
     normalized_filterbank = filterbank * rms_normalization_values[:, np.newaxis]

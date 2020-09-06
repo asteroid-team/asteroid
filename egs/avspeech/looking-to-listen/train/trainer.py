@@ -23,15 +23,15 @@ def train(
     resume: Union[str, None] = "logdir/checkpoints/best_full.pth",
 ) -> None:
     """
-        train the model with specified paremeters
-        Args:
-            model: neural network model
-            dataset: training dataset
-            optimizer: optimizer
-            criterion: loss function
-            val_dataset: validation dataset
-            logdir: logdir location to save checkpoints
-            resume: path where the partially trained model is stored
+    train the model with specified paremeters
+    Args:
+        model: neural network model
+        dataset: training dataset
+        optimizer: optimizer
+        criterion: loss function
+        val_dataset: validation dataset
+        logdir: logdir location to save checkpoints
+        resume: path where the partially trained model is stored
     """
 
     loaders = collections.OrderedDict()

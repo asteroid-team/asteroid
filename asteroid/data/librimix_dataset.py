@@ -15,7 +15,7 @@ MINI_URL = "https://zenodo.org/record/3871592/files/MiniLibriMix.zip?download=1"
 
 
 class LibriMix(Dataset):
-    """" Dataset class for Librimix source separation tasks.
+    """ " Dataset class for Librimix source separation tasks.
 
     Args:
         csv_dir (str): The path to the metatdata file
@@ -114,7 +114,7 @@ class LibriMix(Dataset):
 
     @classmethod
     def loaders_from_mini(cls, batch_size=4, **kwargs):
-        """ Downloads MiniLibriMix and returns train and validation DataLoader.
+        """Downloads MiniLibriMix and returns train and validation DataLoader.
 
         Args:
             batch_size (int): Batch size of the Dataloader. Only DataLoader param.
@@ -141,7 +141,7 @@ class LibriMix(Dataset):
 
     @classmethod
     def mini_from_download(cls, **kwargs):
-        """ Downloads MiniLibriMix and returns train and validation Dataset.
+        """Downloads MiniLibriMix and returns train and validation Dataset.
         If you want to instantiate the Dataset by yourself, call
         `mini_download` that returns the path to the path to the metadata files.
 
@@ -176,7 +176,7 @@ class LibriMix(Dataset):
 
     @staticmethod
     def mini_download():
-        """ Downloads MiniLibriMix from Zenodo in current directory
+        """Downloads MiniLibriMix from Zenodo in current directory
 
         Returns:
             The path to the metadata directory.
@@ -205,7 +205,7 @@ class LibriMix(Dataset):
         return "./MiniLibriMix/metadata"
 
     def get_infos(self):
-        """ Get dataset infos (for publishing models).
+        """Get dataset infos (for publishing models).
 
         Returns:
             dict, dataset infos with keys `dataset`, `task` and `licences`.

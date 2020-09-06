@@ -207,7 +207,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                     yield ({"path": track_path, "min_duration": None})
 
     def get_infos(self):
-        """ Get dataset infos (for publishing models).
+        """Get dataset infos (for publishing models).
 
         Returns:
             dict, dataset infos with keys `dataset`, `task` and `licences`.

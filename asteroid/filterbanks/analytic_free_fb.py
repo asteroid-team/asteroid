@@ -5,7 +5,7 @@ from .enc_dec import Filterbank
 
 
 class AnalyticFreeFB(Filterbank):
-    """ Free analytic (fully learned with analycity constraints) filterbank.
+    """Free analytic (fully learned with analycity constraints) filterbank.
     For more details, see [1].
 
     Args:

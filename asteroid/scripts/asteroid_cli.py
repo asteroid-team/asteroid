@@ -18,7 +18,7 @@ SUPPORTED_EXTENSIONS = [
 
 
 def upload():
-    """ CLI function to upload pretrained models.
+    """CLI function to upload pretrained models.
 
     Args:
         publish_dir (str): Path to the publishing directory.
@@ -90,7 +90,7 @@ def upload():
 
 
 def infer():
-    """ CLI function to run pretrained model inference on wav files.
+    """CLI function to run pretrained model inference on wav files.
 
     Args:
         url_or_path(str): Path to the pretrained model.

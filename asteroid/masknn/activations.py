@@ -47,7 +47,7 @@ def swish():
 
 
 def register_activation(custom_act):
-    """ Register a custom activation, gettable with `activation.get`.
+    """Register a custom activation, gettable with `activation.get`.
 
     Args:
         custom_act: Custom activation function to register.
@@ -59,7 +59,7 @@ def register_activation(custom_act):
 
 
 def get(identifier):
-    """ Returns an activation function from a string. Returns its input if it
+    """Returns an activation function from a string. Returns its input if it
     is callable (already an activation for example).
 
     Args:

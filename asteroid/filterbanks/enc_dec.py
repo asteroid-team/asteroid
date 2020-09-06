@@ -5,7 +5,7 @@ from torch.nn import functional as F
 
 
 class Filterbank(nn.Module):
-    """ Base Filterbank class.
+    """Base Filterbank class.
     Each subclass has to implement a `filters` property.
 
     Args:
@@ -44,7 +44,7 @@ class Filterbank(nn.Module):
 
 
 class _EncDec(nn.Module):
-    """ Base private class for Encoder and Decoder.
+    """Base private class for Encoder and Decoder.
 
     Common parameters and methods.
 
@@ -92,7 +92,7 @@ class _EncDec(nn.Module):
 
 
 class Encoder(_EncDec):
-    """ Encoder class.
+    """Encoder class.
 
     Add encoding methods to Filterbank classes.
     Not intended to be subclassed.
@@ -117,7 +117,7 @@ class Encoder(_EncDec):
 
     @classmethod
     def pinv_of(cls, filterbank, **kwargs):
-        """ Returns an :class:`~.Encoder`, pseudo inverse of a
+        """Returns an :class:`~.Encoder`, pseudo inverse of a
         :class:`~.Filterbank` or :class:`~.Decoder`."""
         if isinstance(filterbank, Filterbank):
             return cls(filterbank, is_pinv=True, **kwargs)
@@ -125,7 +125,7 @@ class Encoder(_EncDec):
             return cls(filterbank.filterbank, is_pinv=True, **kwargs)
 
     def forward(self, waveform):
-        """ Convolve input waveform with the filters from a filterbank.
+        """Convolve input waveform with the filters from a filterbank.
         Args:
             waveform (:class:`torch.Tensor`): any tensor with samples along the
                 last dimension. The waveform representation with and
@@ -193,7 +193,7 @@ class Encoder(_EncDec):
 
 
 class Decoder(_EncDec):
-    """ Decoder class.
+    """Decoder class.
 
     Add decoding methods to Filterbank classes.
     Not intended to be subclassed.
@@ -224,7 +224,7 @@ class Decoder(_EncDec):
             return cls(filterbank.filterbank, is_pinv=True)
 
     def forward(self, spec):
-        """ Applies transposed convolution to a TF representation.
+        """Applies transposed convolution to a TF representation.
 
         This is equivalent to overlap-add.
 

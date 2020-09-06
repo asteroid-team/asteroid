@@ -4,7 +4,7 @@ from .base_models import BaseTasNet
 
 
 class DPRNNTasNet(BaseTasNet):
-    """ DPRNN separation model, as described in [1].
+    """DPRNN separation model, as described in [1].
 
     Args:
         n_src (int): Number of masks to estimate.

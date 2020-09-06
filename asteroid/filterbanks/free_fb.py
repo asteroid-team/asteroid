@@ -4,7 +4,7 @@ from .enc_dec import Filterbank
 
 
 class FreeFB(Filterbank):
-    """ Free filterbank without any constraints. Equivalent to
+    """Free filterbank without any constraints. Equivalent to
     :class:`nn.Conv1d`.
 
     Args:

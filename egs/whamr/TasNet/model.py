@@ -12,7 +12,7 @@ from asteroid.masknn.norms import GlobLN
 
 
 class TasNet(nn.Module):
-    """ Some kind of TasNet, but not the original one
+    """Some kind of TasNet, but not the original one
     Differences:
         - Overlap-add support (strided convolutions)
         - No frame-wise normalization on the wavs
@@ -66,7 +66,7 @@ class TasNet(nn.Module):
 
 
 def make_model_and_optimizer(conf):
-    """ Function to define the model and optimizer for a config dictionary.
+    """Function to define the model and optimizer for a config dictionary.
     Args:
         conf: Dictionary containing the output of hierachical argparse.
     Returns:
@@ -81,7 +81,7 @@ def make_model_and_optimizer(conf):
 
 
 def load_best_model(train_conf, exp_dir):
-    """ Load best model after training.
+    """Load best model after training.
 
     Args:
         train_conf (dict): dictionary as expected by `make_model_and_optimizer`

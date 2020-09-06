@@ -64,7 +64,7 @@ class ImprovedTransformedLayer(nn.Module):
 
 
 class DPTransformer(nn.Module):
-    """ Dual-path Transformer
+    """Dual-path Transformer
         introduced in [1].
 
     Args:
