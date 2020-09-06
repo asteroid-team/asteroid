@@ -158,9 +158,9 @@ def get(identifier):
 
 
 def get_complex(identifier):
-    """Like `.get` but returns a complex norm created with `asteroid.complex_nn.OnComponents`."""
+    """Like `.get` but returns a complex norm created with `asteroid.complex_nn.OnReIm`."""
     norm = get(identifier)
     if norm is None:
         return None
     else:
-        return partial(complex_nn.OnComponents, norm)
+        return partial(complex_nn.OnReIm, norm)

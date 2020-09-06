@@ -5,9 +5,19 @@ import numpy as np
 import soundfile as sf
 import asteroid
 from asteroid import models
+from asteroid.filterbanks import make_enc_dec
+from asteroid.models import (
+    ConvTasNet,
+    DCCRNet,
+    DCUNet,
+    DeMask,
+    DPRNNTasNet,
+    DPTNet,
+    LSTMTasNet,
+    SuDORMRFImprovedNet,
+    SuDORMRFNet,
+)
 from asteroid.models.base_models import BaseModel
-from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet, DeMask
-from asteroid.models import SuDORMRFNet, SuDORMRFImprovedNet
 
 
 def test_convtasnet_sep():
@@ -106,6 +116,15 @@ def test_sudormrf_imp():
 
 def test_dptnet():
     _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2))
+
+
+def test_dcunet():
+    _, istft = make_enc_dec("stft", 512, 512)
+    _default_test_model(DCUNet("DCUNet-10"), input_samples=istft(torch.zeros((514, 17))).shape[0])
+
+
+def test_dccrnet():
+    _default_test_model(DCCRNet("DCCRN-CL"), input_samples=1300)
 
 
 def _default_test_model(model, input_samples=801):

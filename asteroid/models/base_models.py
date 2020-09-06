@@ -5,8 +5,8 @@ import numpy as np
 import torch
 from torch import nn
 
-from .. import torch_utils
 from ..masknn import activations
+from ..utils.torch_utils import pad_x_to_y
 from ..utils.hub_utils import cached_download
 
 
@@ -87,7 +87,7 @@ class BaseModel(nn.Module):
     def file_separate(
         self, filename: str, output_dir=None, force_overwrite=False, **kwargs
     ) -> None:
-        """Filename interface to `separate`."""
+        """ Filename interface to `separate`."""
         import soundfile as sf
 
         wav, fs = sf.read(filename, dtype="float32", always_2d=True)
@@ -254,7 +254,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         decoded = self.decoder(masked_tf_rep)
         decoded = self.postprocess_decoded(decoded)
 
-        reconstructed = torch_utils.pad_x_to_y(decoded, wav)
+        reconstructed = pad_x_to_y(decoded, wav)
         if was_one_d:
             return reconstructed.squeeze(0)
         else:
