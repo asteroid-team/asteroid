@@ -1,5 +1,7 @@
+from functools import partial
 import torch
 from torch import nn
+from .. import complex_nn
 
 
 class Swish(nn.Module):
@@ -79,3 +81,12 @@ def get(identifier):
         return cls
     else:
         raise ValueError("Could not interpret activation identifier: " + str(identifier))
+
+
+def get_complex(identifier):
+    """Like `.get` but returns a complex activation created with `asteroid.complex_nn.OnReIm`."""
+    activation = get(identifier)
+    if activation is None:
+        return None
+    else:
+        return partial(complex_nn.OnReIm, activation)
