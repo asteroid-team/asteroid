@@ -68,7 +68,7 @@ class LambdaOverlapAdd(torch.nn.Module):
         batch, channels, n_frames = x.size()
         # Overlap and add:
         # [batch, chans, n_frames] -> [batch, chans, win_size, n_chunks]
-        folded = torch.nn.functional.unfold(
+        unfolded = torch.nn.functional.unfold(
             x.unsqueeze(-1),
             kernel_size=(self.window_size, 1),
             padding=(self.window_size, 0),
@@ -76,24 +76,26 @@ class LambdaOverlapAdd(torch.nn.Module):
         )
 
         out = []
-        n_chunks = folded.shape[-1]
+        n_chunks = unfolded.shape[-1]
         for frame_idx in range(n_chunks):  # for loop to spare memory
-            tmp = self.nnet(folded[..., frame_idx])
+            frame = self.nnet(unfolded[..., frame_idx])
             # user must handle multichannel by reshaping to batch
             if frame_idx == 0:
-                assert tmp.ndim == 3, "nnet should return (batch, n_src, time)"
-                assert tmp.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
-            tmp = tmp.reshape(batch * self.n_src, -1)
+                assert frame.ndim == 3, "nnet should return (batch, n_src, time)"
+                assert frame.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
+            frame = frame.reshape(batch * self.n_src, -1)
 
             if frame_idx != 0 and self.reorder_chunks:
                 # we determine best perm based on xcorr with previous sources
-                tmp = _reorder_sources(tmp, out[-1], self.n_src, self.window_size, self.hop_size)
+                frame = _reorder_sources(
+                    frame, out[-1], self.n_src, self.window_size, self.hop_size
+                )
 
             if self.use_window:
-                tmp = tmp * self.window
+                frame = frame * self.window
             else:
-                tmp = tmp / (self.window_size / self.hop_size)
-            out.append(tmp)
+                frame = frame / (self.window_size / self.hop_size)
+            out.append(frame)
 
         out = torch.stack(out).reshape(n_chunks, batch * self.n_src, self.window_size)
         out = out.permute(1, 2, 0)
