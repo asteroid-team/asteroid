@@ -1,0 +1,36 @@
+# Filterbank config
+filterbank:
+  n_filters: 256
+  kernel_size: 20
+  stride: 10
+# Network config
+masknet:
+  n_blocks: 10
+  n_repeats: 3
+  mask_act: relu
+  bn_chan: 128
+  skip_chan: 128
+  hid_chan: 512
+# Training config
+training:
+  epochs: 1
+  batch_size: 1
+  num_workers: 0
+  half_lr: yes
+  early_stop: yes
+  random_seed: 42
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.003
+  weight_decay: 0.
+# Data config
+data:
+  json_dir: data/inst2poly/wav44k
+  validation_split: 0.1
+  n_inst: 1
+  n_poly: 2
+  task: sep_clean
+  sample_rate: 32000
+  segment: 5.0
+  threshold: 0.1
