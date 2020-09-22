@@ -158,9 +158,6 @@ class SourceFolderDataset(data.Dataset):
         start = 0
         max_dur = 6
         for i in range(len(sorted_mix_infos)):
-            if int(sorted_mix_infos[i][1]) > max_dur * sample_rate:
-                start = end
-                continue
             minibatch.append(
                 [
                     sorted_mix_infos[i][0],
