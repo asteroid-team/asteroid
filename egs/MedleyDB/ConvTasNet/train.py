@@ -30,20 +30,25 @@ def main(conf):
         segment=conf["data"]["segment"],
         threshold=conf["data"]["threshold"],
     )
-    
+
     validation_size = int(conf["data"]["validation_split"] * len(total_set))
     train_size = len(total_set) - validation_size
     torch.manual_seed(conf["training"]["random_seed"])
-    train_set, val_set = data.random_split(
-        total_set,
-        [train_size, validation_size]
-    )
+    train_set, val_set = data.random_split(total_set, [train_size, validation_size])
 
     train_loader = data.DataLoader(
-        train_set, shuffle=False, batch_size=conf["training"]["batch_size"], num_workers=conf["training"]["num_workers"], drop_last=True
+        train_set,
+        shuffle=False,
+        batch_size=conf["training"]["batch_size"],
+        num_workers=conf["training"]["num_workers"],
+        drop_last=True,
     )
     val_loader = data.DataLoader(
-        val_set, shuffle=False, batch_size=conf["training"]["batch_size"], num_workers=conf["training"]["num_workers"], drop_last=True
+        val_set,
+        shuffle=False,
+        batch_size=conf["training"]["batch_size"],
+        num_workers=conf["training"]["num_workers"],
+        drop_last=True,
     )
     conf["masknet"].update({"n_src": conf["data"]["n_inst"] * conf["data"]["n_poly"]})
 
@@ -81,7 +86,7 @@ def main(conf):
     early_stopping = False
     if conf["training"]["early_stop"]:
         early_stopping = EarlyStopping(monitor="val_loss", patience=15, verbose=1)
-    #gpus = 1
+    # gpus = 1
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(

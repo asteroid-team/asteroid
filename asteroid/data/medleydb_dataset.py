@@ -7,11 +7,12 @@ import soundfile as sf
 import random
 import torchaudio
 
+
 class MedleydbDataset(data.Dataset):
     dataset_name = "MedleyDB"
 
     def __init__(self, json_dir, n_src=1, n_poly=2, sample_rate=44100, segment=5.0, threshold=0.1):
-        super(MedleydbDataset,self).__init__()
+        super(MedleydbDataset, self).__init__()
         # Task setting
         self.json_dir = json_dir
         self.sample_rate = sample_rate
@@ -38,17 +39,17 @@ class MedleydbDataset(data.Dataset):
         drop_utt, drop_len, orig_len = 0, 0, 0
         sources_infos = []
         index_array = []
-        
+
         if not self.like_test:
             for i in range(len(sources_conf)):
                 conf = sources_conf[i][1]
-                #print(sources_conf[i][0])
-                #index_array = []
+                # print(sources_conf[i][0])
+                # index_array = []
                 duration = sources_conf[i][1][-1][0]
-                index_array.append(np.zeros(int(duration//segment) + 1))
+                index_array.append(np.zeros(int(duration // segment) + 1))
                 for timestamp, confidence in conf:
                     j = int(timestamp // segment)
-                    #print(j)
+                    # print(j)
                     index_array[i][j] = index_array[i][j] + confidence
                 orig_len = orig_len + duration
                 seg_dur = duration / len(index_array[i])
@@ -68,7 +69,7 @@ class MedleydbDataset(data.Dataset):
             )
         )
         # self.mix = mix_infos
-        #print(sources_infos[0])
+        # print(sources_infos[0])
         self.sources = sources_infos
 
     def __len__(self):
@@ -81,7 +82,7 @@ class MedleydbDataset(data.Dataset):
         """
         # Load sources
         source_arrays = []
-        
+
         for i in range(self.n_poly):
             if i:
                 idx = random.choice(range(len(self.sources)))
@@ -99,8 +100,8 @@ class MedleydbDataset(data.Dataset):
                 s, sr = sf.read(self.sources[idx][0], start=start, stop=stop, dtype="float32")
             source_arrays.append(s)
         source = torch.from_numpy(np.vstack(source_arrays))
-        if sr is not self.sample_rate :
-            source = torchaudio.transforms.Resample(sr,self.sample_rate)(source) 
+        if sr is not self.sample_rate:
+            source = torchaudio.transforms.Resample(sr, self.sample_rate)(source)
         mix = torch.stack(list(source)).sum(0)
         return mix, source
 
@@ -116,11 +117,12 @@ class MedleydbDataset(data.Dataset):
         infos["licenses"] = [mdb_license]
         return infos
 
+
 class SourceFolderDataset(data.Dataset):
     dataset_name = "SourceFolder"
 
     def __init__(self, json_dir, wav_dir, n_src=1, sample_rate=44100, batch_size=1):
-        super(SourceFolderDataset,self).__init__()
+        super(SourceFolderDataset, self).__init__()
         # Task setting
         self.json_dir = json_dir
         self.wav_dir = wav_dir
@@ -129,20 +131,23 @@ class SourceFolderDataset(data.Dataset):
         self.like_test = True
         self.batch_size = batch_size
         # Make and load json files
-        for speaker in ['mix', 's1', 's2']:
-            preprocess_one_dir(os.path.join(wav_dir, speaker), json_dir, speaker,
-                                sample_rate=sample_rate)
-        mix_json = os.path.join(json_dir, 'mix.json')
-        s1_json = os.path.join(json_dir, 's1.json')
-        s2_json = os.path.join(json_dir, 's2.json')
-        with open(mix_json, 'r') as f:
+        for speaker in ["mix", "s1", "s2"]:
+            preprocess_one_dir(
+                os.path.join(wav_dir, speaker), json_dir, speaker, sample_rate=sample_rate
+            )
+        mix_json = os.path.join(json_dir, "mix.json")
+        s1_json = os.path.join(json_dir, "s1.json")
+        s2_json = os.path.join(json_dir, "s2.json")
+        with open(mix_json, "r") as f:
             mix_infos = json.load(f)
-        with open(s1_json, 'r') as f:
+        with open(s1_json, "r") as f:
             s1_infos = json.load(f)
-        with open(s2_json, 'r') as f:
+        with open(s2_json, "r") as f:
             s2_infos = json.load(f)
-        def sort(infos): return sorted(
-            infos, key=lambda info: int(info[1]), reverse=True)
+
+        def sort(infos):
+            return sorted(infos, key=lambda info: int(info[1]), reverse=True)
+
         sorted_mix_infos = sort(mix_infos)
         sorted_s1_infos = sort(s1_infos)
         sorted_s2_infos = sort(s2_infos)
@@ -156,11 +161,14 @@ class SourceFolderDataset(data.Dataset):
             if int(sorted_mix_infos[i][1]) > max_dur * sample_rate:
                 start = end
                 continue
-            minibatch.append([sorted_mix_infos[i][0],
-                                sorted_s1_infos[i][0],
-                                sorted_s2_infos[i][0],
-                                #sorted_s3_infos[start],
-                                ])
+            minibatch.append(
+                [
+                    sorted_mix_infos[i][0],
+                    sorted_s1_infos[i][0],
+                    sorted_s2_infos[i][0],
+                    # sorted_s3_infos[start],
+                ]
+            )
         self.sources = minibatch
 
     def __len__(self):
@@ -173,16 +181,16 @@ class SourceFolderDataset(data.Dataset):
         """
         # Load sources
         source_arrays = []
-        for i in range(self.n_src):   
-            s, sr = sf.read(self.sources[idx][i+1], dtype="float32")
+        for i in range(self.n_src):
+            s, sr = sf.read(self.sources[idx][i + 1], dtype="float32")
             source_arrays.append(s)
         x, sr = sf.read(self.sources[idx][0], dtype="float32")
         source = torch.from_numpy(np.vstack(source_arrays))
         mix = torch.from_numpy(x)
         mix = mix.unsqueeze(0)
-        if sr is not self.sample_rate :
-            source = torchaudio.transforms.Resample(sr,self.sample_rate)(source) 
-            mix = torchaudio.transforms.Resample(sr,self.sample_rate)(mix) 
+        if sr is not self.sample_rate:
+            source = torchaudio.transforms.Resample(sr, self.sample_rate)(source)
+            mix = torchaudio.transforms.Resample(sr, self.sample_rate)(mix)
         return mix, source
 
     def get_infos(self):
@@ -197,19 +205,20 @@ class SourceFolderDataset(data.Dataset):
         infos["licenses"] = [mdb_license]
         return infos
 
+
 def preprocess_one_dir(in_dir, out_dir, out_filename, sample_rate=44100):
     file_infos = []
     in_dir = os.path.abspath(in_dir)
     wav_list = os.listdir(in_dir)
     for wav_file in wav_list:
-        if not wav_file.endswith('.wav'):
+        if not wav_file.endswith(".wav"):
             continue
         wav_path = os.path.join(in_dir, wav_file)
         samples, _ = sf.read(wav_path)
         file_infos.append((wav_path, len(samples)))
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    with open(os.path.join(out_dir, out_filename + '.json'), 'w') as f:
+    with open(os.path.join(out_dir, out_filename + ".json"), "w") as f:
         json.dump(file_infos, f, indent=4)
 
 

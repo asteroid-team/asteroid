@@ -21,24 +21,20 @@ from asteroid.models import save_publishable
 
 
 parser = argparse.ArgumentParser()
-#parser.add_argument(
+# parser.add_argument(
 #    "--task",
 #    type=str,
 #    required=True,
 #    help="One of `enh_single`, `enh_both`, " "`sep_clean` or `sep_noisy`",
-#)
+# )
 parser.add_argument(
     "--wav_dir", type=str, required=True, help="directory including the wav source and mix files"
 )
-#parser.add_argument(
+# parser.add_argument(
 #    "--json_dir", type=str, required=True, help="Test directory to save the json files"
-#)
-parser.add_argument(
-    "--n_src", type=int, default=2, help="Number of sources"
-)
-parser.add_argument(
-    "--batch_size", type=int, default=1, help="Batch size"
-)
+# )
+parser.add_argument("--n_src", type=int, default=2, help="Number of sources")
+parser.add_argument("--batch_size", type=int, default=1, help="Batch size")
 parser.add_argument(
     "--use_gpu", type=int, default=0, help="Whether to use the GPU for model execution"
 )
@@ -51,7 +47,7 @@ compute_metrics = ["si_sdr", "sdr", "sir", "sar"]
 
 
 def main(conf):
-    model_path = os.path.join(conf['exp_dir'], 'best_model.pth')
+    model_path = os.path.join(conf["exp_dir"], "best_model.pth")
     model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
     if conf["use_gpu"]:
@@ -62,7 +58,7 @@ def main(conf):
         conf["wav_dir"],
         conf["n_src"],
         conf["sample_rate"],
-        conf["batch_size"]
+        conf["batch_size"],
     )  # Uses all segment length
     # Used to reorder sources only
     loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx")
@@ -149,7 +145,5 @@ if __name__ == "__main__":
         train_conf = yaml.safe_load(f)
     arg_dic["sample_rate"] = train_conf["data"]["sample_rate"]
     arg_dic["train_conf"] = train_conf
-
-    
 
     main(arg_dic)

@@ -74,9 +74,10 @@ def preprocess_metadata(
                                         trim["stem_dir"],
                                         trim["stems"][stem]["filename"],
                                     ),
-                                    counter, trim["stems"][stem]["instrument"]
+                                    counter,
+                                    trim["stems"][stem]["instrument"],
                                 )
-                                #print(trim["stems"][stem]["instrument"])
+                                # print(trim["stems"][stem]["instrument"])
                                 inst_tracks.append(
                                     os.path.join(
                                         data_path[ver],
@@ -96,9 +97,10 @@ def preprocess_metadata(
                                             trim["raw_dir"],
                                             trim["stems"][stem]["raw"][raw]["filename"],
                                         ),
-                                        counter, trim["stems"][stem]["instrument"]
+                                        counter,
+                                        trim["stems"][stem]["instrument"],
                                     )
-                                    #print(trim["stems"][stem]["instrument"])
+                                    # print(trim["stems"][stem]["instrument"])
                                     inst_tracks.append(
                                         os.path.join(
                                             data_path[ver],
@@ -154,7 +156,7 @@ def compute_activation_confidence(
     # MATLAB equivalent to @hanning(win_len)
     win = scipy.signal.windows.hann(win_len + 2)[1:-1]
 
-    #audio, rate = librosa.load(track, mono=True)
+    # audio, rate = librosa.load(track, mono=True)
     audio, rate = sf.read(track)
     H.append(track_energy(audio.T, win_len, win))
 
