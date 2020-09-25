@@ -175,15 +175,14 @@ single script. This is an essential tool for the community!
 ([↑up to contents](#contents))
 If you loved using Asteroid and you want to cite us, use this :
 ```BibTex
-@article{Pariente2020Asteroid,
+@inproceedings{Pariente2020Asteroid,
     title={Asteroid: the {PyTorch}-based audio source separation toolkit for researchers},
     author={Manuel Pariente and Samuele Cornell and Joris Cosentino and Sunit Sivasankaran and
             Efthymios Tzinis and Jens Heitkaemper and Michel Olvera and Fabian-Robert Stöter and
             Mathieu Hu and Juan M. Martín-Doñas and David Ditter and Ariel Frank and Antoine Deleforge
             and Emmanuel Vincent},
     year={2020},
-    journal={arXiv preprint arXiv:2005.04132},
-    primaryClass={eess.AS}
+    booktitle={Proc. Interspeech},
 }
 ```
 
