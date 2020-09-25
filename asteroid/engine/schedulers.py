@@ -111,7 +111,7 @@ class DPTNetScheduler(_BaseScheduler):
         self.exp_max = exp_max
         self.exp_base = exp_base
         self.steps_per_epoch = steps_per_epoch
-        self.epoch = None
+        self.epoch = 0
 
     def _get_lr(self):
         if self.step_num % self.steps_per_epoch == 0:
