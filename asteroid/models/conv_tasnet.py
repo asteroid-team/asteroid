@@ -59,7 +59,7 @@ class ConvTasNet(BaseTasNet):
         kernel_size=16,
         n_filters=512,
         stride=8,
-        encoder_activation="relu",
+        encoder_activation=None,
         **fb_kwargs,
     ):
         encoder, decoder = make_enc_dec(
