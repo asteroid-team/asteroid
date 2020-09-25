@@ -121,7 +121,7 @@ class System(pl.LightningModule):
             for sched in self.scheduler:
                 if isinstance(sched, dict) and sched["interval"] == "batch":
                     sched["scheduler"].step()  # call step on each batch scheduler
-            super().optimizer_step(*args, **kwargs)
+        super().optimizer_step(*args, **kwargs)
 
     def validation_step(self, batch, batch_nb):
         """ Need to overwrite PL validation_step to do validation.
