@@ -291,6 +291,11 @@ def make_metadata_from_model(model):
     display_result = {k: v for k, v in infos["final_metrics"].items() if "pesq" not in k.lower()}
     description += display_one_level_dict(display_result)
 
+    # Software section
+    description += "<p>&nbsp;</p>"
+    description += "<p><strong>Versions:</strong></p>"
+    description += display_one_level_dict(infos["software_versions"])
+
     # License section
     description += "<p>&nbsp;</p>"
     description += "<p><strong>License notice:</strong></p>"
