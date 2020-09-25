@@ -93,7 +93,7 @@ def main(conf):
         max_epochs=conf["training"]["epochs"],
         checkpoint_callback=checkpoint,
         early_stop_callback=early_stopping,
-        default_save_path=exp_dir,
+        default_root_dir=exp_dir,
         gpus=gpus,
         distributed_backend="dp",
         train_percent_check=1.0,  # Useful for fast experiment
