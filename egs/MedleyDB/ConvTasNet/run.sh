@@ -3,7 +3,7 @@ set -e  # Exit on error
 
 #if starting from stage 0
 # Destination to save json files with list of track locations for instrument sets
-json_dir=/homes/ss404/projects/asteroid/egs/MedleyDB/ConvTasNet/data/1inst2poly44sr5.0sec
+json_dir=/homes/ss404/projects/temp
 # Location for tracklist for all data dirs
 tracklist=  # Directory containing tracklists for V1, V2, Bach10 and others
 
@@ -37,7 +37,7 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --loss_alpha 0.1 --id 0,1
 
 # General
-stage=0  # Controls from which stage to start
+stage=3  # Controls from which stage to start
 tag="test_8k"  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=$CUDA_VISIBLE_DEVICES

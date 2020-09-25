@@ -131,42 +131,26 @@ class SourceFolderDataset(data.Dataset):
         self.like_test = True
         self.batch_size = batch_size
         # Make and load json files
-        for speaker in ["mix", "s1", "s2"]:
+        speaker_list = ["mix"] + [f"s{n+1}" for n in range(n_src)]
+        for speaker in speaker_list:
             preprocess_one_dir(
                 os.path.join(wav_dir, speaker), json_dir, speaker, sample_rate=sample_rate
             )
+
+        sources_json = [
+            os.path.join(json_dir, source + ".json") for source in [f"s{n+1}" for n in range(n_src)]
+        ]
+        
         mix_json = os.path.join(json_dir, "mix.json")
-        s1_json = os.path.join(json_dir, "s1.json")
-        s2_json = os.path.join(json_dir, "s2.json")
         with open(mix_json, "r") as f:
             mix_infos = json.load(f)
-        with open(s1_json, "r") as f:
-            s1_infos = json.load(f)
-        with open(s2_json, "r") as f:
-            s2_infos = json.load(f)
-
-        def sort(infos):
-            return sorted(infos, key=lambda info: int(info[1]), reverse=True)
-
-        sorted_mix_infos = sort(mix_infos)
-        sorted_s1_infos = sort(s1_infos)
-        sorted_s2_infos = sort(s2_infos)
-        # Filter out short utterances only when segment is specified
-        # orig_len = len(mix_infos)
-        self.mix_infos = sorted_mix_infos
-        minibatch = []
-        start = 0
-        max_dur = 6
-        for i in range(len(sorted_mix_infos)):
-            minibatch.append(
-                [
-                    sorted_mix_infos[i][0],
-                    sorted_s1_infos[i][0],
-                    sorted_s2_infos[i][0],
-                    # sorted_s3_infos[start],
-                ]
-            )
-        self.sources = minibatch
+        
+        for src_json in sources_json:
+            with open(src_json, "r") as f:
+                sources_infos.append(json.load(f))
+            
+        self.mix = mix_infos
+        self.sources = sources_infos
 
     def __len__(self):
         return len(self.sources)
@@ -176,19 +160,26 @@ class SourceFolderDataset(data.Dataset):
         Returns:
             mixture, vstack([source_arrays])
         """
+        # Load mixture
+        x, _ = sf.read(self.mix[idx][0], dtype="float32")
+        seg_len = torch.as_tensor([len(x)])
         # Load sources
         source_arrays = []
-        for i in range(self.n_src):
-            s, sr = sf.read(self.sources[idx][i + 1], dtype="float32")
+        for src in self.sources:
+            if src[idx] is None:
+                # Target is filled with zeros if n_src > default_nsrc
+                s = np.zeros((seg_len,))
+            else:
+                s, _ = sf.read(src[idx][0], dtype="float32")
             source_arrays.append(s)
-        x, sr = sf.read(self.sources[idx][0], dtype="float32")
-        source = torch.from_numpy(np.vstack(source_arrays))
+        sources = torch.from_numpy(np.vstack(source_arrays))
+        
         mix = torch.from_numpy(x)
         mix = mix.unsqueeze(0)
         if sr is not self.sample_rate:
-            source = torchaudio.transforms.Resample(sr, self.sample_rate)(source)
+            sources = torchaudio.transforms.Resample(sr, self.sample_rate)(sources)
             mix = torchaudio.transforms.Resample(sr, self.sample_rate)(mix)
-        return mix, source
+        return mix, sources
 
     def get_infos(self):
         """ Get dataset infos (for publishing models).

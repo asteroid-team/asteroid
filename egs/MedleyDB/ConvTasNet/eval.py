@@ -21,18 +21,11 @@ from asteroid.models import save_publishable
 
 
 parser = argparse.ArgumentParser()
-# parser.add_argument(
-#    "--task",
-#    type=str,
-#    required=True,
-#    help="One of `enh_single`, `enh_both`, " "`sep_clean` or `sep_noisy`",
-# )
+
 parser.add_argument(
     "--wav_dir", type=str, required=True, help="directory including the wav source and mix files"
 )
-# parser.add_argument(
-#    "--json_dir", type=str, required=True, help="Test directory to save the json files"
-# )
+
 parser.add_argument("--n_src", type=int, default=2, help="Number of sources")
 parser.add_argument("--batch_size", type=int, default=1, help="Batch size")
 parser.add_argument(
@@ -74,12 +67,10 @@ def main(conf):
         # Forward the network on the mixture.
         mix, sources = tensors_to_device(test_set[idx], device=model_device)
         est_sources = model(mix)
-        print(est_sources.size(), sources.size(), mix.size())
         loss, reordered_sources = loss_func(est_sources, sources[None], return_est=True)
         mix_np = mix.squeeze(0).cpu().data.numpy()
         sources_np = sources.cpu().data.numpy()
         est_sources_np = reordered_sources.squeeze(0).cpu().data.numpy()
-        print(mix_np.ndim, sources_np.ndim)
         utt_metrics = get_metrics(
             mix_np,
             sources_np,
