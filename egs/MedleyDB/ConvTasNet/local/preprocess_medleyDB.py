@@ -5,12 +5,23 @@ import os
 import numpy as np
 import scipy
 import librosa
-import matplotlib.pyplot as plt
-
 import soundfile as sf
 
 
 def make_processed_filelist(track_list, out_dir, out_filename):
+    """
+    Given list of audio files, generates activity confidence array
+    Writes audio file path and confidence array to json file
+
+    Parameters
+    ----------
+    track_list : list
+        List of audio file paths
+    out_dir: str
+        Output directory to save json
+    out_filename : str
+        file name for json file
+    """
     file_infos = []
     counter = 0
     for track in track_list:
@@ -36,8 +47,33 @@ def preprocess_metadata(
     extra_path=None,
     is_stem=False,
 ):
-    """ Create .json file containing tracks containing given inst_list"""
-    # meta_infos = []
+    """ Reads track list for each data folder. Fetches metadata object for each track.
+    Given list of instrument tags, generates list of RAW/STEM audio files 
+    for corresponding instruments.
+
+    Parameters
+    ----------
+    metadata_path : str
+        Path containing metadata folders for each data subset
+    inst_list: list
+        List of instrument tags to use to filter RAW/STEM tracks
+    v1_path : str
+        Path containing MedleyDB v1 dataset
+    v2_path : str
+        Path containing MedleyDB v2 dataset
+    bach10_path : str
+        Path containing MedleyDB bach10 dataset
+    extra_path : str
+        Path containing additional files with MedleyDB metadata
+    is_stem: bool
+        To filter STEM or RAW tracks
+ 
+     Returns
+    -------
+    inst_tracks : list
+        List of RAW/STEM tracks belonging to given instrument tag list
+
+    """
     counter = 0
     meta_dir = metadata_path + "/medleydb/data/Metadata"
     resource_path = metadata_path + "/medleydb/resources"
@@ -50,11 +86,9 @@ def preprocess_metadata(
     data_path = {"v1": v1_path, "v2": v2_path, "bach10": bach10_path, "extra": extra_path}
     inst_tracks = []
     for ver, path in tracklist_path.items():
-        print(path)
         track_list = read_tracklist(path)
         for meta_file in track_list:
             meta_path = os.path.join(meta_dir, meta_file + "_METADATA.yaml")
-            # meta_path = meta_dir + meta_file + '.yaml'
             if not os.path.isfile(meta_path):
                 print(meta_path, " not found")
                 continue
@@ -77,7 +111,6 @@ def preprocess_metadata(
                                     counter,
                                     trim["stems"][stem]["instrument"],
                                 )
-                                # print(trim["stems"][stem]["instrument"])
                                 inst_tracks.append(
                                     os.path.join(
                                         data_path[ver],
@@ -100,7 +133,6 @@ def preprocess_metadata(
                                         counter,
                                         trim["stems"][stem]["instrument"],
                                     )
-                                    # print(trim["stems"][stem]["instrument"])
                                     inst_tracks.append(
                                         os.path.join(
                                             data_path[ver],
@@ -131,8 +163,7 @@ def compute_activation_confidence(
 
     Parameters
     ----------
-    mtrack : MultiTrack
-        Multitrack object
+    track : Audio path
     win_len : int, default=4096
         Number of samples in each window
     lpf_cutoff : float, default=0.075
@@ -237,54 +268,16 @@ def hwr(x):
     return (x + np.abs(x)) / 2
 
 
-"""
-def preprocess_one_dir(in_dir, out_dir, out_filename):
-    """ """ Create .json file for one condition.""" """
-    file_infos = []
-    in_dir = os.path.abspath(in_dir)
-    wav_list = os.listdir(in_dir)
-    wav_list.sort()
-    for wav_file in wav_list:
-        if not wav_file.endswith('.wav'):
-            continue
-        wav_path = os.path.join(in_dir, wav_file)
-        samples = sf.SoundFile(wav_path)
-        file_infos.append((wav_path, len(samples)))
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    with open(os.path.join(out_dir, out_filename + '.json'), 'w') as f:
-        json.dump(file_infos, f, indent=4)
-
-
-def preprocess(inp_args):
-    """ """Create .json files for all conditions.""" """
-    speaker_list = ['mix'] + [f"s{n+1}" for n in range(inp_args.n_src)]
-    for data_type in ['tr', 'cv', 'tt']:
-        for spk in speaker_list:
-            preprocess_one_dir(os.path.join(inp_args.in_dir, data_type, spk),
-                               os.path.join(inp_args.out_dir, data_type),
-                               spk)
-
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("WSJ0-MIX data preprocessing")
-    parser.add_argument('--in_dir', type=str, default=None,
-                        help='Directory path of wham including tr, cv and tt')
-    parser.add_argument('--n_src', type=int, default=2,
-                        help='Number of sources in wsj0-mix')
-    parser.add_argument('--out_dir', type=str, default=None,
-                        help='Directory path to put output files')
-    args = parser.parse_args()
-    print(args)
-    preprocess(args)
-"""
-if __name__ == "__main__":
+    """
+    To test metadata parsing and confidence array generation
+    """
     parser = argparse.ArgumentParser("MedleyDB data preprocessing")
     parser.add_argument(
         "--metadata_path", type=str, default=None, help="Directory path of MedleyDB git repo"
     )
-    # parser.add_argument('--inst_list', type=str, default=2,
-    #                    help='Number of sources in wsj0-mix')
+    
     parser.add_argument(
         "--inst_list",
         nargs="+",
@@ -324,6 +317,4 @@ if __name__ == "__main__":
     make_processed_filelist(
         tracklist, args.json_dir, "inst1",
     )
-    # print(A[:,1])
-    # plt.plot(A[:,0],A[:,1])
-    # plt.show()
+    

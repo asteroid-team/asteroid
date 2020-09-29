@@ -9,21 +9,51 @@ import torchaudio
 
 
 class MedleydbDataset(data.Dataset):
+    """MedleyDB: a dataset of annotated, royaltyfree multitrack recordings.
+
+    It provides a stereo mix and both dry and processed multitrack stems for 
+    each song in the dataset. The dataset covers a wide distribution of genres 
+    and primarily consists of full length songs with professional 
+    or nearprofessional audio quality.
+    
+    The dataset consists of 254 full lengths music tracks of
+    different genres. It provides a stereo mix and both dry and processed
+    multitrack stems for each song. 
+
+    This dataset contains a .yml object for each multitrack containining
+    metadata for each audio file in the multitrack. This dataloader utilises 
+    this metadata to select audio files and downmix them to create mixtures
+    of instruments belonging to a list of instrument tags with specified 
+    polyphony.
+
+
+    Args:
+        json_dir (str): Path containing .json file with list of audio files
+        n_src (int): Number of separate instrument classes (yet to be implemented)
+        n_poly (int): Number of instances of each class to be present in mixture.
+        segment (float, optional): Duration of segments in seconds,
+            defaults to ``None`` which loads the full-length audio tracks.
+        sample_rate (int, optional): Samplerate of files in dataset.
+        threshold (float): activity confidence threshold to exclude segments with
+            less than given fraction of time of activity in segment.
+
+    References:
+        "MedleyDB: A Multitrack Dataset for Annotation-Intensive MIR Research", 
+            R. Bittner et. al. ISMIR 2014
+    
+    """
+
     dataset_name = "MedleyDB"
 
     def __init__(self, json_dir, n_src=1, n_poly=2, sample_rate=44100, segment=5.0, threshold=0.1):
         super(MedleydbDataset, self).__init__()
-        # Task setting
+        
         self.json_dir = json_dir
         self.sample_rate = sample_rate
         self.n_poly = n_poly
         self.threshold = threshold
-        if segment is None:
-            self.seg_len = None
-        else:
-            self.seg_len = int(segment)
+        self.seg_len = segment
         self.n_src = n_src
-        self.like_test = self.seg_len is None
         # Load json files
         sources_json = [
             os.path.join(json_dir, source + ".json")
@@ -34,42 +64,35 @@ class MedleydbDataset(data.Dataset):
             with open(src_json, "r") as f:
                 sources_conf = np.array(json.load(f))
 
-        # Filter out short utterances only when segment is specified
-        # orig_len = len(mix_infos)
+        # Filter out utterances with activity less than threshold
         drop_utt, drop_len, orig_len = 0, 0, 0
         sources_infos = []
         index_array = []
 
-        if not self.like_test:
-            for i in range(len(sources_conf)):
-                conf = sources_conf[i][1]
-                # print(sources_conf[i][0])
-                # index_array = []
-                duration = sources_conf[i][1][-1][0]
-                index_array.append(np.zeros(int(duration // segment) + 1))
-                for timestamp, confidence in conf:
-                    j = int(timestamp // segment)
-                    # print(j)
-                    index_array[i][j] = index_array[i][j] + confidence
-                orig_len = orig_len + duration
-                seg_dur = duration / len(index_array[i])
-
-                for k in range(len(index_array[i])):
-                    conf_thresh = threshold * float(len(sources_conf[i][0]))
-                    if index_array[i][k] < conf_thresh:
-                        drop_utt += 1
-                        drop_len += seg_dur
-                        continue
-                    else:
-                        sources_infos.append((sources_conf[i][0], k, sources_conf[i][2]))
+        for i in range(len(sources_conf)):
+            conf = sources_conf[i][1]
+            duration = sources_conf[i][1][-1][0]
+            index_array.append(np.zeros(int(duration // segment) + 1))
+            for timestamp, confidence in conf:
+                j = int(timestamp // segment)
+                index_array[i][j] = index_array[i][j] + confidence
+            orig_len = orig_len + duration
+            seg_dur = duration / len(index_array[i])
+            #save list of segments with sufficient activity
+            for k in range(len(index_array[i])):
+                conf_thresh = threshold * float(len(sources_conf[i][0]))
+                if index_array[i][k] < conf_thresh:
+                    drop_utt += 1
+                    drop_len += seg_dur
+                    continue
+                else:
+                    sources_infos.append((sources_conf[i][0], k, sources_conf[i][2]))
 
         print(
             "Drop {} utts ({:.2f} h) from ({:.2f} h) with less than {} percent activity".format(
                 drop_utt, drop_len / 3600, orig_len / 3600, threshold
             )
         )
-        # self.mix = mix_infos
-        # print(sources_infos[0])
         self.sources = sources_infos
 
     def __len__(self):
