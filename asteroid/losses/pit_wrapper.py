@@ -109,7 +109,7 @@ class PITLossWrapper(nn.Module):
             mean_loss = torch.mean(min_loss)
             if not return_est:
                 return mean_loss
-            reordered = self.reorder_source(est_targets, n_src, min_loss_idx)
+            reordered = self.reorder_source(est_targets, batch_indices)
             return mean_loss, reordered
         else:
             return
@@ -120,13 +120,13 @@ class PITLossWrapper(nn.Module):
         assert pw_losses.shape[0] == targets.shape[0], "PIT loss needs same batch dim as input"
 
         reduce_kwargs = reduce_kwargs if reduce_kwargs is not None else dict()
-        min_loss, min_loss_idx = self.find_best_perm(
-            pw_losses, n_src, perm_reduce=self.perm_reduce, **reduce_kwargs
+        min_loss, batch_indices = self.find_best_perm(
+            pw_losses, perm_reduce=self.perm_reduce, **reduce_kwargs
         )
         mean_loss = torch.mean(min_loss)
         if not return_est:
             return mean_loss
-        reordered = self.reorder_source(est_targets, n_src, min_loss_idx)
+        reordered = self.reorder_source(est_targets, batch_indices)
         return mean_loss, reordered
 
     @staticmethod
@@ -178,19 +178,21 @@ class PITLossWrapper(nn.Module):
                 :class:`torch.Tensor`: The loss corresponding to the best
                 permutation of size (batch,).
 
-                :class:`torch.LongTensor`: The indexes of the best permutations.
+                :class:`torch.Tensor`: The indices of the best permutations.
         """
         n_src = targets.shape[1]
-        perms = list(permutations(range(n_src)))
+        perms = torch.tensor(list(permutations(range(n_src))), dtype=torch.long)
         loss_set = torch.stack(
             [loss_func(est_targets[:, perm], targets, **kwargs) for perm in perms], dim=1
         )
         # Indexes and values of min losses for each batch element
-        min_loss, min_loss_idx = torch.min(loss_set, dim=1, keepdim=True)
-        return min_loss, min_loss_idx[:, 0]
+        min_loss, min_loss_idx = torch.min(loss_set, dim=1)
+        # Permutation indices for each batch.
+        batch_indices = torch.stack([perms[m] for m in min_loss_idx], dim=0)
+        return min_loss, batch_indices
 
     @staticmethod
-    def find_best_perm(pair_wise_losses, n_src, perm_reduce=None, **kwargs):
+    def find_best_perm(pair_wise_losses, perm_reduce=None, **kwargs):
         """Find the best permutation, given the pair-wise losses.
 
         Args:
@@ -208,13 +210,14 @@ class PITLossWrapper(nn.Module):
                 :class:`torch.Tensor`: The loss corresponding to the best
                 permutation of size (batch,).
 
-                :class:`torch.LongTensor`: The indexes of the best permutations.
+                :class:`torch.Tensor`: The indices of the best permutations.
 
         MIT Copyright (c) 2018 Kaituo XU.
         See `Original code
         <https://github.com/kaituoxu/Conv-TasNet/blob/master>`__ and `License
         <https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`__.
         """
+        n_src = pair_wise_losses.shape[-1]
         # After transposition, dim 1 corresp. to sources and dim 2 to estimates
         pwl = pair_wise_losses.transpose(-1, -2)
         perms = pwl.new_tensor(list(permutations(range(n_src))), dtype=torch.long)
@@ -233,45 +236,46 @@ class PITLossWrapper(nn.Module):
             # Apply reduce [batch, n_src!, n_src] --> [batch, n_src!]
             loss_set = perm_reduce(pwl_set, **kwargs)
         # Indexes and values of min losses for each batch element
-        min_loss_idx = torch.argmin(loss_set, dim=1)
-        min_loss, _ = torch.min(loss_set, dim=1, keepdim=True)
+        min_loss, min_loss_idx = torch.min(loss_set, dim=1)
 
-        # Have a look here, would this be helful
+        # Permutation indices for each batch.
         batch_indices = torch.stack([perms[m] for m in min_loss_idx], dim=0)
-
-        return min_loss, min_loss_idx
+        return min_loss, batch_indices
 
     @staticmethod
-    def reorder_source(source, n_src, min_loss_idx):
-        """Reorder sources according to the best permutation.
+    def reorder_source(source, batch_indices):
+        """ Reorder sources according to the best permutation.
 
         Args:
             source (torch.Tensor): Tensor of shape [batch, n_src, time]
-            n_src (int): Number of sources.
-            min_loss_idx (torch.LongTensor): Tensor of shape [batch],
-                each item is in [0, n_src!).
+            batch_indices (torch.Tensor): Tensor of shape [batch, n_src].
+                Contains optimal permutation indices for each batch.
 
         Returns:
             :class:`torch.Tensor`:
                 Reordered sources of shape [batch, n_src, time].
-
-        MIT Copyright (c) 2018 Kaituo XU.
-        See `Original code
-        <https://github.com/kaituoxu/Conv-TasNet/blob/master>`__ and `License
-        <https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE>`__.
         """
-        perms = source.new_tensor(list(permutations(range(n_src))), dtype=torch.long)
-        # Reorder estimate targets according the best permutation
-        min_loss_perm = torch.index_select(perms, dim=0, index=min_loss_idx)
-        # maybe use torch.gather()/index_select()/scatter() to impl this?
-        reordered_sources = torch.zeros_like(source)
-        for b in range(source.shape[0]):
-            for c in range(n_src):
-                reordered_sources[b, c] = source[b, min_loss_perm[b][c]]
+        reordered_sources = torch.stack(
+            [torch.index_select(s, 0, b) for s, b in zip(source, batch_indices)]
+        )
         return reordered_sources
 
     @staticmethod
-    def find_best_perm_hungarian(pair_wise_losses: torch.Tensor, n_src):
+    def find_best_perm_hungarian(pair_wise_losses: torch.Tensor):
+        """Find the best permutation given the pair-wise losses, using the
+        Hungarian algorithm.
+
+        Args:
+            pair_wise_losses (:class:`torch.Tensor`):
+                Tensor of shape [batch, n_src, n_src]. Pairwise losses.
+
+        Returns:
+            tuple:
+                :class:`torch.Tensor`: The loss corresponding to the best
+                permutation of size (batch,).
+
+                :class:`torch.Tensor`: The indices of the best permutations.
+        """
         # After transposition, dim 1 corresp. to sources and dim 2 to estimates
         pwl = pair_wise_losses.transpose(-1, -2)
         # Just bring the numbers to cpu(), not the graph
@@ -279,4 +283,4 @@ class PITLossWrapper(nn.Module):
         # Loop over batch + row indices are always ordered for square matrices.
         batch_indices = [linear_sum_assignment(pwl)[1] for pwl in pwl_copy]
         min_loss = torch.gather(pwl, 2, torch.tensor(batch_indices)[..., None]).mean([-1, -2])
-        return min_loss
+        return min_loss, batch_indices
