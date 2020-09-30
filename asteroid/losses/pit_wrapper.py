@@ -195,6 +195,58 @@ class PITLossWrapper(nn.Module):
     def find_best_perm(pair_wise_losses, perm_reduce=None, **kwargs):
         """Find the best permutation, given the pair-wise losses.
 
+        Dispatch between factorial method if number of sources is small (<3)
+        and hungarian method for more sources. If `perm_reduce` is not None,
+        the factorial method is always used.
+
+        Args:
+            pair_wise_losses (:class:`torch.Tensor`):
+                Tensor of shape [batch, n_src, n_src]. Pairwise losses.
+            perm_reduce (Callable): torch function to reduce permutation losses.
+                Defaults to None (equivalent to mean). Signature of the func
+                (pwl_set, **kwargs) : (B, n_src!, n_src) --> (B, n_src!)
+            **kwargs: additional keyword argument that will be passed to the
+                permutation reduce function.
+
+        Returns:
+            tuple:
+                :class:`torch.Tensor`: The loss corresponding to the best
+                permutation of size (batch,).
+
+                :class:`torch.Tensor`: The indices of the best permutations.
+        """
+        n_src = pair_wise_losses.shape[-1]
+        if perm_reduce is not None or n_src <= 3:
+            min_loss, batch_indices = PITLossWrapper.find_best_perm_factorial(
+                pair_wise_losses, perm_reduce=perm_reduce, **kwargs
+            )
+        else:
+            min_loss, batch_indices = PITLossWrapper.find_best_perm_hungarian(pair_wise_losses)
+        return min_loss, batch_indices
+
+    @staticmethod
+    def reorder_source(source, batch_indices):
+        """ Reorder sources according to the best permutation.
+
+        Args:
+            source (torch.Tensor): Tensor of shape [batch, n_src, time]
+            batch_indices (torch.Tensor): Tensor of shape [batch, n_src].
+                Contains optimal permutation indices for each batch.
+
+        Returns:
+            :class:`torch.Tensor`:
+                Reordered sources of shape [batch, n_src, time].
+        """
+        reordered_sources = torch.stack(
+            [torch.index_select(s, 0, b) for s, b in zip(source, batch_indices)]
+        )
+        return reordered_sources
+
+    @staticmethod
+    def find_best_perm_factorial(pair_wise_losses, perm_reduce=None, **kwargs):
+        """Find the best permutation given the pair-wise losses by looping
+        through all the permutations.
+
         Args:
             pair_wise_losses (:class:`torch.Tensor`):
                 Tensor of shape [batch, n_src, n_src]. Pairwise losses.
@@ -243,24 +295,6 @@ class PITLossWrapper(nn.Module):
         return min_loss, batch_indices
 
     @staticmethod
-    def reorder_source(source, batch_indices):
-        """ Reorder sources according to the best permutation.
-
-        Args:
-            source (torch.Tensor): Tensor of shape [batch, n_src, time]
-            batch_indices (torch.Tensor): Tensor of shape [batch, n_src].
-                Contains optimal permutation indices for each batch.
-
-        Returns:
-            :class:`torch.Tensor`:
-                Reordered sources of shape [batch, n_src, time].
-        """
-        reordered_sources = torch.stack(
-            [torch.index_select(s, 0, b) for s, b in zip(source, batch_indices)]
-        )
-        return reordered_sources
-
-    @staticmethod
     def find_best_perm_hungarian(pair_wise_losses: torch.Tensor):
         """Find the best permutation given the pair-wise losses, using the
         Hungarian algorithm.
@@ -281,6 +315,6 @@ class PITLossWrapper(nn.Module):
         # Just bring the numbers to cpu(), not the graph
         pwl_copy = pwl.detach().cpu()
         # Loop over batch + row indices are always ordered for square matrices.
-        batch_indices = [linear_sum_assignment(pwl)[1] for pwl in pwl_copy]
-        min_loss = torch.gather(pwl, 2, torch.tensor(batch_indices)[..., None]).mean([-1, -2])
+        batch_indices = torch.tensor([linear_sum_assignment(pwl)[1] for pwl in pwl_copy])
+        min_loss = torch.gather(pwl, 2, batch_indices[..., None]).mean([-1, -2])
         return min_loss, batch_indices
