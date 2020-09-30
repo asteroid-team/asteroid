@@ -116,17 +116,17 @@ def test_permreduce_args():
     loss_func(est_sources, sources, reduce_kwargs={"class_weights": weights})
 
 
-def best_perm():
-    sources = torch.randn(6, 10, 1000)
-    pwl = torch.randn(6, 10, 10)
+@pytest.mark.parametrize("n_src", [2, 4, 5, 6, 8])
+def test_best_perm_match(n_src):
+    pwl = torch.randn(2, n_src, n_src)
 
-    min_loss, min_idx = PITLossWrapper.find_best_perm(pwl, 10)
-    min_loss_hun = PITLossWrapper.find_best_perm_hungarian(pwl, 10)
+    min_loss, min_idx = PITLossWrapper.find_best_perm_factorial(pwl)
+    min_loss_hun, min_idx_hun = PITLossWrapper.find_best_perm_hungarian(pwl)
 
-    PITLossWrapper.reorder_source(sources, 10, min_idx)
+    assert_allclose(min_loss, min_loss_hun)
+    assert_allclose(min_idx, min_idx_hun)
 
-    # assert_allclose(min_loss, min_loss_hun)
 
-
-if __name__ == "__main__":
-    best_perm()
+def test_raises_wrong_pit_from():
+    with pytest.raises(ValueError):
+        PITLossWrapper(lambda x: x, pit_from="unknown_mode")
