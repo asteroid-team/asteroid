@@ -4,7 +4,7 @@ from .base_models import BaseTasNet
 
 
 class ConvTasNet(BaseTasNet):
-    """ ConvTasNet separation model, as described in [1].
+    """ConvTasNet separation model, as described in [1].
 
     Args:
         n_src (int): Number of sources in the input mixtures.

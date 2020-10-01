@@ -8,7 +8,7 @@ from ..utils import has_arg
 
 
 class SingleRNN(nn.Module):
-    """ Module for a RNN block.
+    """Module for a RNN block.
 
     Inspired from https://github.com/yluo42/TAC/blob/master/utility/models.py
     Licensed under CC BY-NC-SA 3.0 US.
@@ -52,7 +52,7 @@ class SingleRNN(nn.Module):
 
 
 class StackedResidualRNN(nn.Module):
-    """ Stacked RNN with builtin residual connection.
+    """Stacked RNN with builtin residual connection.
     Only supports forward RNNs.
     See StackedResidualBiRNN for bidirectional ones.
 
@@ -86,8 +86,8 @@ class StackedResidualRNN(nn.Module):
         self.dropout_layer = nn.Dropout(self.dropout)
 
     def forward(self, x):
-        """ Builtin residual connections + dropout applied before residual.
-            Input shape : [batch, time_axis, feat_axis]
+        """Builtin residual connections + dropout applied before residual.
+        Input shape : [batch, time_axis, feat_axis]
         """
         for rnn in self.layers:
             rnn_out = rnn(x)
@@ -97,7 +97,7 @@ class StackedResidualRNN(nn.Module):
 
 
 class StackedResidualBiRNN(nn.Module):
-    """ Stacked Bidirectional RNN with builtin residual connection.
+    """Stacked Bidirectional RNN with builtin residual connection.
     Residual connections are applied on both RNN directions.
     Only supports bidiriectional RNNs.
     See StackedResidualRNN for unidirectional ones.
@@ -142,8 +142,8 @@ class StackedResidualBiRNN(nn.Module):
         self.dropout_layer = nn.Dropout(self.dropout)
 
     def forward(self, x):
-        """ Builtin residual connections + dropout applied before residual.
-            Input shape : [batch, time_axis, feat_axis]
+        """Builtin residual connections + dropout applied before residual.
+        Input shape : [batch, time_axis, feat_axis]
         """
         # First layer
         rnn_out = self.first_layer(x)
@@ -158,7 +158,7 @@ class StackedResidualBiRNN(nn.Module):
 
 
 class DPRNNBlock(nn.Module):
-    """ Dual-Path RNN Block as proposed in [1].
+    """Dual-Path RNN Block as proposed in [1].
 
     Args:
         in_chan (int): Number of input channels.
@@ -224,7 +224,7 @@ class DPRNNBlock(nn.Module):
 
 
 class DPRNN(nn.Module):
-    """ Dual-path RNN Network for Single-Channel Source Separation
+    """Dual-path RNN Network for Single-Channel Source Separation
         introduced in [1].
 
     Args:
@@ -393,7 +393,7 @@ class DPRNN(nn.Module):
 
 
 class LSTMMasker(nn.Module):
-    """ LSTM mask network introduced in [1], without skip connections.
+    """LSTM mask network introduced in [1], without skip connections.
 
     Args:
         in_chan (int): Number of input filters.

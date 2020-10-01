@@ -4,7 +4,7 @@ import numpy as np
 
 
 def has_arg(fn, name):
-    """ Checks if a callable accepts a given keyword argument.
+    """Checks if a callable accepts a given keyword argument.
 
     Args:
         fn (callable): Callable to inspect.
@@ -25,7 +25,7 @@ def has_arg(fn, name):
 
 
 def flatten_dict(d, parent_key="", sep="_"):
-    """ Flattens a dictionary into a single-level dictionary while preserving
+    """Flattens a dictionary into a single-level dictionary while preserving
     parent keys. Taken from https://stackoverflow.com/questions/6027558/
     flatten-nested-dictionaries-compressing-keys?answertab=votes#tab-top
 
@@ -48,7 +48,7 @@ def flatten_dict(d, parent_key="", sep="_"):
 
 
 def average_arrays_in_dic(dic):
-    """ Take average of numpy arrays in a dictionary.
+    """Take average of numpy arrays in a dictionary.
 
     Args:
         dic (dict): Input dictionary to take average from
@@ -66,7 +66,7 @@ def average_arrays_in_dic(dic):
 
 
 def get_wav_random_start_stop(signal_len, desired_len=4 * 8000):
-    """ Get indexes for a chunk of signal of a given length.
+    """Get indexes for a chunk of signal of a given length.
 
     Args:
         signal_len (int): length of the signal to trim.

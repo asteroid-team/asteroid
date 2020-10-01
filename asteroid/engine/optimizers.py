@@ -69,7 +69,7 @@ def make_optimizer(params, optimizer="adam", **kwargs):
 
 
 def register_optimizer(custom_opt):
-    """ Register a custom opt, gettable with `optimzers.get`.
+    """Register a custom opt, gettable with `optimzers.get`.
 
     Args:
         custom_opt: Custom optimizer to register.
@@ -81,7 +81,7 @@ def register_optimizer(custom_opt):
 
 
 def get(identifier):
-    """ Returns an optimizer function from a string. Returns its input if it
+    """Returns an optimizer function from a string. Returns its input if it
     is callable (already a :class:`torch.optim.Optimizer` for example).
 
     Args:

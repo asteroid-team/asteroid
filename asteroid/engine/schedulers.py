@@ -2,7 +2,7 @@ from torch.optim.optimizer import Optimizer
 
 
 class _BaseScheduler(object):
-    """ Base class for the step-wise scheduler logic.
+    """Base class for the step-wise scheduler logic.
 
     Args:
         optimizer (Optimize): Optimizer instance to apply lr schedule on.
@@ -73,7 +73,7 @@ class NoamScheduler(_BaseScheduler):
 
 
 class DPTNetScheduler(_BaseScheduler):
-    """ Dual Path Transformer Scheduler used in [1]
+    """Dual Path Transformer Scheduler used in [1]
 
     Args:
         optimizer (Optimizer): Optimizer instance to apply lr schedule on.

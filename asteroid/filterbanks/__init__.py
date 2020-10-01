@@ -17,7 +17,7 @@ def make_enc_dec(
     output_padding=0,
     **kwargs,
 ):
-    """ Creates congruent encoder and decoder from the same filterbank family.
+    """Creates congruent encoder and decoder from the same filterbank family.
 
     Args:
         fb_name (str, className): Filterbank family from which to make encoder
@@ -64,7 +64,7 @@ def make_enc_dec(
 
 
 def register_filterbank(custom_fb):
-    """ Register a custom filterbank, gettable with `filterbanks.get`.
+    """Register a custom filterbank, gettable with `filterbanks.get`.
 
     Args:
         custom_fb: Custom filterbank to register.
@@ -76,7 +76,7 @@ def register_filterbank(custom_fb):
 
 
 def get(identifier):
-    """ Returns a filterbank class from a string. Returns its input if it
+    """Returns a filterbank class from a string. Returns its input if it
     is callable (already a :class:`.Filterbank` for example).
 
     Args:

@@ -8,7 +8,7 @@ from .base_models import BaseTasNet
 
 
 class SuDORMRFNet(BaseTasNet):
-    """ SuDORMRF separation model, as described in [1].
+    """SuDORMRF separation model, as described in [1].
 
     Args:
         n_src (int): Number of sources in the input mixtures.
@@ -80,7 +80,7 @@ class SuDORMRFNet(BaseTasNet):
 
 
 class SuDORMRFImprovedNet(BaseTasNet):
-    """ Improved SuDORMRF separation model, as described in [1].
+    """Improved SuDORMRF separation model, as described in [1].
 
     Args:
         n_src (int): Number of sources in the input mixtures.

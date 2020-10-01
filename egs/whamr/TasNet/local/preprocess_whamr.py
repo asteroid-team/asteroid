@@ -5,7 +5,7 @@ import soundfile as sf
 
 
 def preprocess_one_dir(in_dir):
-    """ Create list of list for one condition, each list contains
+    """Create list of list for one condition, each list contains
     [path, wav_length]."""
     file_infos = []
     in_dir = os.path.abspath(in_dir)

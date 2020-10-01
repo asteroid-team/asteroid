@@ -34,7 +34,7 @@ def normalize_tensor_wav(wav_tensor, eps=1e-8, std=None):
 
 
 class WhamDataset(data.Dataset):
-    """ Dataset class for WHAM source separation and speech enhancement tasks.
+    """Dataset class for WHAM source separation and speech enhancement tasks.
 
     Args:
         json_dir (str): The path to the directory containing the json files.
@@ -144,7 +144,7 @@ class WhamDataset(data.Dataset):
         return len(self.mix)
 
     def __getitem__(self, idx):
-        """ Gets a mixture/sources pair.
+        """Gets a mixture/sources pair.
         Returns:
             mixture, vstack([source_arrays])
         """
@@ -179,7 +179,7 @@ class WhamDataset(data.Dataset):
         return mixture, sources
 
     def get_infos(self):
-        """ Get dataset infos (for publishing models).
+        """Get dataset infos (for publishing models).
 
         Returns:
             dict, dataset infos with keys `dataset`, `task` and `licences`.

@@ -4,7 +4,7 @@ dependencies = ["torch"]
 
 
 def demask(name_url_or_file=None, **kwargs):
-    """ Load (pretrained) DeMask model
+    """Load (pretrained) DeMask model
 
     Args:
         name_url_or_file (str): Model name (we'll find the URL),
@@ -31,7 +31,7 @@ def demask(name_url_or_file=None, **kwargs):
 
 
 def conv_tasnet(name_url_or_file=None, **kwargs):
-    """ Load (pretrained) ConvTasNet model
+    """Load (pretrained) ConvTasNet model
 
     Args:
         name_url_or_file (str): Model name (we'll find the URL),
@@ -58,7 +58,7 @@ def conv_tasnet(name_url_or_file=None, **kwargs):
 
 
 def dprnn_tasnet(name_url_or_file=None, **kwargs):
-    """ Load (pretrained) DPRNNTasNet model
+    """Load (pretrained) DPRNNTasNet model
 
     Args:
         name_url_or_file (str): Model name (we'll find the URL),
@@ -85,7 +85,7 @@ def dprnn_tasnet(name_url_or_file=None, **kwargs):
 
 
 def lstm_tasnet(name_url_or_file=None, **kwargs):
-    """ Load (pretrained) LSTM TasNet model
+    """Load (pretrained) LSTM TasNet model
 
     Args:
         name_url_or_file (str): Model name (we'll find the URL),
@@ -112,7 +112,7 @@ def lstm_tasnet(name_url_or_file=None, **kwargs):
 
 
 def dpt_net(name_url_or_file=None, **kwargs):
-    """ Load (pretrained) DualPathTransformer (DPTNet) model
+    """Load (pretrained) DualPathTransformer (DPTNet) model
 
     Args:
         name_url_or_file (str): Model name (we'll find the URL),
@@ -139,7 +139,7 @@ def dpt_net(name_url_or_file=None, **kwargs):
 
 
 def sudormrf_net(name_url_or_file=None, **kwargs):
-    """ Load (pretrained) SuDORMRF model.
+    """Load (pretrained) SuDORMRF model.
 
     Args:
         name_url_or_file (str): Model name (we'll find the URL),
@@ -166,7 +166,7 @@ def sudormrf_net(name_url_or_file=None, **kwargs):
 
 
 def sudormrf_improved_net(name_url_or_file=None, **kwargs):
-    """ Load (pretrained) SuDORMRFImprovedNet improved model
+    """Load (pretrained) SuDORMRFImprovedNet improved model
 
     Args:
         name_url_or_file (str): Model name (we'll find the URL),

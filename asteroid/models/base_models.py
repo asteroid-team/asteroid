@@ -18,7 +18,7 @@ class BaseModel(nn.Module):
 
     @torch.no_grad()
     def separate(self, wav, output_dir=None, force_overwrite=False, **kwargs):
-        """ Infer separated sources from input waveforms.
+        """Infer separated sources from input waveforms.
         Also supports filenames.
 
         Args:
@@ -99,7 +99,7 @@ class BaseModel(nn.Module):
             sf.write(save_name, est_src, fs)
 
     def _separate(self, wav, *args, **kwargs):
-        """ Hidden separation method
+        """Hidden separation method
 
         Args:
             wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
@@ -112,7 +112,7 @@ class BaseModel(nn.Module):
 
     @classmethod
     def from_pretrained(cls, pretrained_model_conf_or_path, *args, **kwargs):
-        """ Instantiate separation model from a model config (file or dict).
+        """Instantiate separation model from a model config (file or dict).
 
         Args:
             pretrained_model_conf_or_path (Union[dict, str]): model conf as
@@ -164,7 +164,7 @@ class BaseModel(nn.Module):
         return model
 
     def serialize(self):
-        """ Serialize model and output dictionary.
+        """Serialize model and output dictionary.
 
         Returns:
             dict, serialized model with keys `model_args` and `state_dict`.
@@ -196,7 +196,7 @@ class BaseModel(nn.Module):
 
 
 class BaseTasNet(BaseModel):
-    """ Base class for encoder-masker-decoder separation models.
+    """Base class for encoder-masker-decoder separation models.
 
     Args:
         encoder (Encoder): Encoder instance.
@@ -217,7 +217,7 @@ class BaseTasNet(BaseModel):
             self.enc_activation = activations.get("linear")()
 
     def forward(self, wav):
-        """ Enc/Mask/Dec model forward
+        """Enc/Mask/Dec model forward
 
         Args:
             wav (torch.Tensor): waveform tensor. 1D, 2D or 3D tensor, time last.

@@ -38,7 +38,7 @@ SMS_TARGETS = {"source": sep_source, "early": sep_early, "image": sep_image}
 
 
 class SmsWsjDataset(data.Dataset):
-    """ Dataset class for SMS WSJ source separation.
+    """Dataset class for SMS WSJ source separation.
 
     Args:
         json_path (str): The path to the sms_wsj json file.
@@ -148,7 +148,7 @@ class SmsWsjDataset(data.Dataset):
         return len(self.dataset)
 
     def __getitem__(self, idx):
-        """ Gets a mixture/sources pair.
+        """Gets a mixture/sources pair.
         Returns:
             mixture, vstack([source_arrays])
         """
@@ -222,7 +222,7 @@ class SmsWsjDataset(data.Dataset):
         return mixture, sources
 
     def get_infos(self):
-        """ Get dataset infos (for publishing models).
+        """Get dataset infos (for publishing models).
 
         Returns:
             dict, dataset infos with keys `dataset`, `task` and `target`.

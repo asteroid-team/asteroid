@@ -58,7 +58,7 @@ def main(conf):
 
 
 def get_wavs_dict_list(test_dir):
-    """ Creates a list of example pair dictionaries.
+    """Creates a list of example pair dictionaries.
 
     Args:
         test_dir (str): Directory where clean/ and noisy/ subdirectories can
@@ -125,7 +125,7 @@ def evaluate(dict_list, model, conf, save_dir=None):
 
 
 def load_wav_dic(wav_dic):
-    """ Load wavs files from a dictionary with path entries.
+    """Load wavs files from a dictionary with path entries.
 
     Returns:
         tuple: noisy speech waveform, clean speech waveform.

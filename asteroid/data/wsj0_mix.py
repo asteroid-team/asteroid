@@ -29,7 +29,7 @@ def make_dataloaders(
 
 
 class Wsj0mixDataset(data.Dataset):
-    """ Dataset class for the wsj0-mix source separation dataset.
+    """Dataset class for the wsj0-mix source separation dataset.
 
     Args:
         json_dir (str): The path to the directory containing the json files.
@@ -91,7 +91,7 @@ class Wsj0mixDataset(data.Dataset):
         return len(self.mix)
 
     def __getitem__(self, idx):
-        """ Gets a mixture/sources pair.
+        """Gets a mixture/sources pair.
         Returns:
             mixture, vstack([source_arrays])
         """
@@ -120,7 +120,7 @@ class Wsj0mixDataset(data.Dataset):
         return torch.from_numpy(x), sources
 
     def get_infos(self):
-        """ Get dataset infos (for publishing models).
+        """Get dataset infos (for publishing models).
 
         Returns:
             dict, dataset infos with keys `dataset`, `task` and `licences`.

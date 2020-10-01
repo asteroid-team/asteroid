@@ -148,7 +148,7 @@ class ChimeraSystem(System):
 
 
 class ChimeraLoss(nn.Module):
-    """ Combines Deep clustering loss and mask inference loss for ChimeraNet.
+    """Combines Deep clustering loss and mask inference loss for ChimeraNet.
 
     Args:
         alpha (float): loss weight. Total loss will be :

@@ -68,7 +68,7 @@ class Conv1DBlock(nn.Module):
 
 
 class TDConvNet(nn.Module):
-    """ Temporal Convolutional network used in ConvTasnet.
+    """Temporal Convolutional network used in ConvTasnet.
 
     Args:
         in_chan (int): Number of input filters.
@@ -212,7 +212,7 @@ class TDConvNet(nn.Module):
 
 
 class TDConvNetpp(nn.Module):
-    """ Improved Temporal Convolutional network used in [1] (TDCN++)
+    """Improved Temporal Convolutional network used in [1] (TDCN++)
 
     Args:
         in_chan (int): Number of input filters.
@@ -384,7 +384,7 @@ class TDConvNetpp(nn.Module):
 
 
 class SuDORMRF(nn.Module):
-    """ SuDORMRF mask network, as described in [1].
+    """SuDORMRF mask network, as described in [1].
 
     Args:
         in_chan (int): Number of input channels. Also number of output channels.
@@ -464,7 +464,7 @@ class SuDORMRF(nn.Module):
 
 
 class SuDORMRFImproved(nn.Module):
-    """ Improved SuDORMRF mask network, as described in [1].
+    """Improved SuDORMRF mask network, as described in [1].
 
     Args:
         in_chan (int): Number of input channels. Also number of output channels.
@@ -575,7 +575,7 @@ class _BaseUBlock(nn.Module):
 
 
 class UBlock(_BaseUBlock):
-    """ Upsampling block.
+    """Upsampling block.
 
     Based on the following principle:
         ``REDUCE ---> SPLIT ---> TRANSFORM --> MERGE``
@@ -616,7 +616,7 @@ class UBlock(_BaseUBlock):
 
 
 class UConvBlock(_BaseUBlock):
-    """ Block which performs successive downsampling and upsampling
+    """Block which performs successive downsampling and upsampling
     in order to be able to analyze the input features in multiple resolutions.
     """
 

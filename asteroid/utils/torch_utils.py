@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 
 def to_cuda(tensors):  # pragma: no cover (No CUDA on travis)
-    """ Transfer tensor, dict or list of tensors to GPU.
+    """Transfer tensor, dict or list of tensors to GPU.
 
     Args:
         tensors (:class:`torch.Tensor`, list or dict): May be a single, a
@@ -30,7 +30,7 @@ def to_cuda(tensors):  # pragma: no cover (No CUDA on travis)
 
 
 def tensors_to_device(tensors, device):
-    """ Transfer tensor, dict or list of tensors to device.
+    """Transfer tensor, dict or list of tensors to device.
 
     Args:
         tensors (:class:`torch.Tensor`): May be a single, a list or a
@@ -56,7 +56,7 @@ def tensors_to_device(tensors, device):
 
 
 def pad_x_to_y(x, y, axis=-1):
-    """  Pad first argument to have same size as second argument
+    """Pad first argument to have same size as second argument
 
     Args:
         x (torch.Tensor): Tensor to be padded.
@@ -74,7 +74,7 @@ def pad_x_to_y(x, y, axis=-1):
 
 
 def load_state_dict_in(state_dict, model):
-    """ Strictly loads state_dict in model, or the next submodel.
+    """Strictly loads state_dict in model, or the next submodel.
         Useful to load standalone model after training it with System.
 
     Args:
@@ -111,7 +111,7 @@ def load_state_dict_in(state_dict, model):
 
 
 def are_models_equal(model1, model2):
-    """ Check for weights equality between models.
+    """Check for weights equality between models.
 
     Args:
         model1 (nn.Module): model instance to be compared.
