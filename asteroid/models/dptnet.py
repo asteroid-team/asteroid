@@ -1,9 +1,9 @@
 from ..filterbanks import make_enc_dec
 from ..masknn import DPTransformer
-from .base_models import BaseEMDNet
+from .base_models import BaseEncoderMaskerDecoder
 
 
-class DPTNet(BaseEMDNet):
+class DPTNet(BaseEncoderMaskerDecoder):
     """DPTNet separation model, as described in [1].
 
     Args:

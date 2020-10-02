@@ -206,7 +206,7 @@ class BaseModel(nn.Module):
         raise NotImplementedError
 
 
-class BaseEMDNet(BaseModel):
+class BaseEncoderMaskerDecoder(BaseModel):
     """Base class for encoder-masker-decoder separation models.
 
     Args:
@@ -331,4 +331,4 @@ class BaseEMDNet(BaseModel):
 
 
 # Backwards compatibility
-BaseTasNet = BaseEMDNet
+BaseTasNet = BaseEncoderMaskerDecoder
