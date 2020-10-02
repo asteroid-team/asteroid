@@ -20,7 +20,10 @@ def download(link, path, final_name=None):
         return True
 
     p = subprocess.Popen(
-        command.format(link, path), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        command.format(link, path),
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     ).communicate()
     return False
 

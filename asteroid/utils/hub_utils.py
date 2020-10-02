@@ -3,7 +3,10 @@ from torch import hub
 from hashlib import sha256
 
 
-CACHE_DIR = os.getenv("ASTEROID_CACHE", os.path.expanduser("~/.cache/torch/asteroid"),)
+CACHE_DIR = os.getenv(
+    "ASTEROID_CACHE",
+    os.path.expanduser("~/.cache/torch/asteroid"),
+)
 MODELS_URLS_HASHTABLE = {
     "mpariente/ConvTasNet_WHAM!_sepclean": "https://zenodo.org/record/3862942/files/model.pth?download=1",
     "mpariente/DPRNNTasNet_WHAM!_sepclean": "https://zenodo.org/record/3873670/files/model.pth?download=1",
