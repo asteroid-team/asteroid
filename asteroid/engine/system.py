@@ -20,7 +20,9 @@ class System(pl.LightningModule):
         train_loader (torch.utils.data.DataLoader): Training dataloader.
         val_loader (torch.utils.data.DataLoader): Validation dataloader.
         scheduler (torch.optim.lr_scheduler._LRScheduler): Instance, or list
-            of learning rate schedulers.
+            of learning rate schedulers. Also supports dict or list of dict as
+            `{"interval": "batch", "scheduler": sched}` where `interval=="batch"`
+            for batch-wise schedulers and `interval=="epoch"` for classical ones.
         config: Anything to be saved with the checkpoints during training.
             The config dictionary to re-instantiate the run for example.
     .. note:: By default, `training_step` (used by `pytorch-lightning` in the
@@ -160,7 +162,7 @@ class System(pl.LightningModule):
         return {"val_loss": avg_loss, "log": tensorboard_logs, "progress_bar": tensorboard_logs}
 
     def configure_optimizers(self):
-        """ Required by pytorch-lightning. """
+        """Initialize optimizers, batch-wise and epoch-wise schedulers."""
 
         if self.scheduler is not None:
             if not isinstance(self.scheduler, (list, tuple)):
