@@ -1,9 +1,9 @@
 from ..filterbanks import make_enc_dec
 from ..masknn import TDConvNet
-from .base_models import BaseTasNet
+from .base_models import BaseEncoderMaskerDecoder
 
 
-class ConvTasNet(BaseTasNet):
+class ConvTasNet(BaseEncoderMaskerDecoder):
     """ConvTasNet separation model, as described in [1].
 
     Args:

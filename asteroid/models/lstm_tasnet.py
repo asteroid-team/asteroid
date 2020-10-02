@@ -4,10 +4,10 @@ from copy import deepcopy
 
 from ..filterbanks import make_enc_dec
 from ..masknn import LSTMMasker
-from .base_models import BaseTasNet
+from .base_models import BaseEncoderMaskerDecoder
 
 
-class LSTMTasNet(BaseTasNet):
+class LSTMTasNet(BaseEncoderMaskerDecoder):
     """TasNet separation model, as described in [1].
 
     Args:
