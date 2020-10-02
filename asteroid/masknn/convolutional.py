@@ -400,7 +400,13 @@ class SuDORMRF(nn.Module):
     """
 
     def __init__(
-        self, in_chan, n_src, bn_chan=128, num_blocks=16, upsampling_depth=4, mask_act="softmax",
+        self,
+        in_chan,
+        n_src,
+        bn_chan=128,
+        num_blocks=16,
+        upsampling_depth=4,
+        mask_act="softmax",
     ):
         super().__init__()
         self.in_chan = in_chan
@@ -417,7 +423,11 @@ class SuDORMRF(nn.Module):
         # Separation module
         self.sm = nn.Sequential(
             *[
-                UBlock(out_chan=bn_chan, in_chan=in_chan, upsampling_depth=upsampling_depth,)
+                UBlock(
+                    out_chan=bn_chan,
+                    in_chan=in_chan,
+                    upsampling_depth=upsampling_depth,
+                )
                 for _ in range(num_blocks)
             ]
         )
@@ -427,7 +437,10 @@ class SuDORMRF(nn.Module):
 
         # Masks layer
         self.m = nn.Conv2d(
-            1, n_src, kernel_size=(in_chan + 1, 1), padding=(in_chan - in_chan // 2, 0),
+            1,
+            n_src,
+            kernel_size=(in_chan + 1, 1),
+            padding=(in_chan - in_chan // 2, 0),
         )
 
         # Get activation function.
@@ -481,7 +494,13 @@ class SuDORMRFImproved(nn.Module):
     """
 
     def __init__(
-        self, in_chan, n_src, bn_chan=128, num_blocks=16, upsampling_depth=4, mask_act="relu",
+        self,
+        in_chan,
+        n_src,
+        bn_chan=128,
+        num_blocks=16,
+        upsampling_depth=4,
+        mask_act="relu",
     ):
         super().__init__()
         self.in_chan = in_chan
@@ -498,7 +517,11 @@ class SuDORMRFImproved(nn.Module):
         # Separation module
         self.sm = nn.Sequential(
             *[
-                UConvBlock(out_chan=bn_chan, in_chan=in_chan, upsampling_depth=upsampling_depth,)
+                UConvBlock(
+                    out_chan=bn_chan,
+                    in_chan=in_chan,
+                    upsampling_depth=upsampling_depth,
+                )
                 for _ in range(num_blocks)
             ]
         )
@@ -546,7 +569,13 @@ class _BaseUBlock(nn.Module):
         self.spp_dw = nn.ModuleList()
         self.spp_dw.append(
             _DilatedConvNorm(
-                in_chan, in_chan, kSize=5, stride=1, groups=in_chan, d=1, use_globln=use_globln,
+                in_chan,
+                in_chan,
+                kSize=5,
+                stride=1,
+                groups=in_chan,
+                d=1,
+                use_globln=use_globln,
             )
         )
 

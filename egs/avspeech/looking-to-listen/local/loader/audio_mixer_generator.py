@@ -148,7 +148,10 @@ def audio_mixer(
                 )
 
                 process = subprocess.Popen(
-                    audio_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    audio_command,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
                 )  # .communicate()
                 mixed_audio.append(mixed_audio_name)
                 # print(video_inputs, audio_inputs, mixed_audio, noises)
@@ -202,7 +205,11 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     parser.add_argument(
-        "--remove-random", "-r", default=0.9, type=float, help="ratio of combination to remove",
+        "--remove-random",
+        "-r",
+        default=0.9,
+        type=float,
+        help="ratio of combination to remove",
     )
     parser.add_argument("--use-audio-set", "-u", dest="use_audio_set", action="store_true")
     parser.add_argument(

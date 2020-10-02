@@ -125,51 +125,99 @@ class Audio_Model(nn.Module):
         # Audio model layers , name of layers as per table 1 given in paper.
 
         self.conv1 = nn.Conv2d(
-            2, 96, kernel_size=(1, 7), padding=self.get_padding((1, 7), (1, 1)), dilation=(1, 1),
+            2,
+            96,
+            kernel_size=(1, 7),
+            padding=self.get_padding((1, 7), (1, 1)),
+            dilation=(1, 1),
         )
 
         self.conv2 = nn.Conv2d(
-            96, 96, kernel_size=(7, 1), padding=self.get_padding((7, 1), (1, 1)), dilation=(1, 1),
+            96,
+            96,
+            kernel_size=(7, 1),
+            padding=self.get_padding((7, 1), (1, 1)),
+            dilation=(1, 1),
         )
 
         self.conv3 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (1, 1)), dilation=(1, 1),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (1, 1)),
+            dilation=(1, 1),
         )
 
         self.conv4 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (2, 1)), dilation=(2, 1),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (2, 1)),
+            dilation=(2, 1),
         )
 
         self.conv5 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (4, 1)), dilation=(4, 1),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (4, 1)),
+            dilation=(4, 1),
         )
 
         self.conv6 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (8, 1)), dilation=(8, 1),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (8, 1)),
+            dilation=(8, 1),
         )
 
         self.conv7 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (16, 1)), dilation=(16, 1),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (16, 1)),
+            dilation=(16, 1),
         )
 
         self.conv8 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (32, 1)), dilation=(32, 1),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (32, 1)),
+            dilation=(32, 1),
         )
 
         self.conv9 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (1, 1)), dilation=(1, 1),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (1, 1)),
+            dilation=(1, 1),
         )
 
         self.conv10 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (2, 2)), dilation=(2, 2),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (2, 2)),
+            dilation=(2, 2),
         )
 
         self.conv11 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (4, 4)), dilation=(4, 4),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (4, 4)),
+            dilation=(4, 4),
         )
 
         self.conv12 = nn.Conv2d(
-            96, 96, kernel_size=(5, 5), padding=self.get_padding((5, 5), (8, 8)), dilation=(8, 8),
+            96,
+            96,
+            kernel_size=(5, 5),
+            padding=self.get_padding((5, 5), (8, 8)),
+            dilation=(8, 8),
         )
 
         self.conv13 = nn.Conv2d(
@@ -255,23 +303,43 @@ class Video_Model(nn.Module):
         super(Video_Model, self).__init__()
 
         self.conv1 = nn.Conv2d(
-            512, 256, kernel_size=(7, 1), padding=self.get_padding((7, 1), (1, 1)), dilation=(1, 1),
+            512,
+            256,
+            kernel_size=(7, 1),
+            padding=self.get_padding((7, 1), (1, 1)),
+            dilation=(1, 1),
         )
 
         self.conv2 = nn.Conv2d(
-            256, 256, kernel_size=(5, 1), padding=self.get_padding((5, 1), (1, 1)), dilation=(1, 1),
+            256,
+            256,
+            kernel_size=(5, 1),
+            padding=self.get_padding((5, 1), (1, 1)),
+            dilation=(1, 1),
         )
 
         self.conv3 = nn.Conv2d(
-            256, 256, kernel_size=(5, 1), padding=self.get_padding((5, 1), (2, 1)), dilation=(2, 1),
+            256,
+            256,
+            kernel_size=(5, 1),
+            padding=self.get_padding((5, 1), (2, 1)),
+            dilation=(2, 1),
         )
 
         self.conv4 = nn.Conv2d(
-            256, 256, kernel_size=(5, 1), padding=self.get_padding((5, 1), (4, 1)), dilation=(4, 1),
+            256,
+            256,
+            kernel_size=(5, 1),
+            padding=self.get_padding((5, 1), (4, 1)),
+            dilation=(4, 1),
         )
 
         self.conv5 = nn.Conv2d(
-            256, 256, kernel_size=(5, 1), padding=self.get_padding((5, 1), (8, 1)), dilation=(8, 1),
+            256,
+            256,
+            kernel_size=(5, 1),
+            padding=self.get_padding((5, 1), (8, 1)),
+            dilation=(8, 1),
         )
 
         self.conv6 = nn.Conv2d(
@@ -364,7 +432,12 @@ class Audio_Visual_Fusion(nn.Module):
         self.video_output = Video_Model(last_shape=video_last_shape)
 
         self.lstm = nn.LSTM(
-            self.input_dim, 400, num_layers=1, bias=True, batch_first=True, bidirectional=True,
+            self.input_dim,
+            400,
+            num_layers=1,
+            bias=True,
+            batch_first=True,
+            bidirectional=True,
         )
 
         self.fc1 = nn.Linear(400, 600)

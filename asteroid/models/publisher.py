@@ -103,7 +103,10 @@ def upload_publishable(
     publish_model_path = os.path.join(publish_dir, "published_model.pth")
     model = torch.load(model_path)
     model = _populate_publishable(
-        model, uploader=uploader, affiliation=affiliation, git_username=git_username,
+        model,
+        uploader=uploader,
+        affiliation=affiliation,
+        git_username=git_username,
     )
     torch.save(model, publish_model_path)
 

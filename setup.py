@@ -28,7 +28,9 @@ setup(
         "pb_bss_eval",
         "torch_stoi",
     ],
-    extras_require={"tests": ["pytest"],},
+    extras_require={
+        "tests": ["pytest"],
+    },
     entry_points={
         "console_scripts": [
             "asteroid-upload=asteroid.scripts.asteroid_cli:upload",

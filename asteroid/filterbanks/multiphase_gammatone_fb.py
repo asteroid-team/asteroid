@@ -61,7 +61,10 @@ def generate_mpgtf(samplerate_hz, len_sec, n_filters):
             # First half of filtes: phase_shifts in [0,pi)
             current_phase_shift = np.float(phase_index) / phase_pair_count[i] * np.pi
             filterbank[index, :] = gammatone_impulse_response(
-                samplerate_hz, len_sec, current_center_freq_hz, current_phase_shift,
+                samplerate_hz,
+                len_sec,
+                current_center_freq_hz,
+                current_phase_shift,
             )
             index = index + 1
 

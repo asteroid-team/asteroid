@@ -189,7 +189,10 @@ class AVSpeechDataset(data.Dataset):
                 video_length_idx = int(re_match.group(0)[-1])
 
             signal = Signal(
-                video_path, audio_path, self.embed_dir, video_start_length=video_length_idx,
+                video_path,
+                audio_path,
+                self.embed_dir,
+                video_start_length=video_length_idx,
             )
             all_signals.append(signal)
 
