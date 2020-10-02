@@ -177,8 +177,23 @@ def apply_complex_mask(tf_rep, mask, dim=-2):
     return mul_c(tf_rep, mask, dim=dim)
 
 
+def is_asteroid_complex(tensor, dim=-2):
+    """Check if tensor is complex-like in a given dimension.
+
+    Args:
+        tensor (torch.Tensor): tensor to be checked.
+        dim(int): the frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
+
+    Returns:
+        True if dimension is even in the specified dimension, otherwise False
+
+    """
+    return tensor.shape[dim] % 2 == 0
+
+
 def check_complex(tensor, dim=-2):
-    """Assert tensor in complex-like in a given dimension.
+    """Assert that tensor is an Asteroid-style complex in a given dimension.
 
     Args:
         tensor (torch.Tensor): tensor to be checked.
@@ -189,10 +204,10 @@ def check_complex(tensor, dim=-2):
         AssertionError if dimension is not even in the specified dimension
 
     """
-    if tensor.shape[dim] % 2 != 0:
+    if not is_asteroid_complex(tensor, dim):
         raise AssertionError(
-            "Could not equally chunk the tensor (shape {}) "
-            "along the given dimension ({}). Dim axis is "
+            f"Could not equally chunk the tensor (shape {tensor.shape}) "
+            f"along the given dimension ({dim}). Dim axis is "
             "probably wrong"
         )
 
@@ -228,6 +243,34 @@ def from_numpy(array, dim=-2):
     import numpy as np  # Hub-importable
 
     return torch.cat([torch.from_numpy(np.real(array)), torch.from_numpy(np.imag(array))], dim=dim)
+
+
+def is_torchaudio_complex(x):
+    """Check if tensor is Torchaudio-style complex-like (last dimension is 2).
+
+    Args:
+        tensor (torch.Tensor): tensor to be checked.
+
+    Returns:
+        True if last dimension is 2, else False.
+    """
+    return x.shape[-1] == 2
+
+
+def check_torchaudio_complex(tensor):
+    """Assert that tensor is Torchaudo-style complex-like (last dimension is 2).
+
+    Args:
+        tensor (torch.Tensor): tensor to be checked.
+
+    Raises:
+        AssertionError if last dimension is != 2.
+    """
+    if not is_torchaudio_complex(tensor):
+        raise AssertionError(
+            f"Tensor of shape {tensor.shape} is not Torchaudio-style complex-like"
+            "(expected last dimension to be == 2)"
+        )
 
 
 def to_torchaudio(tensor, dim=-2):

@@ -1,6 +1,8 @@
+from functools import partial
 import torch
 from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm
+from .. import complex_nn
 
 EPS = 1e-8
 
@@ -153,3 +155,12 @@ def get(identifier):
         return cls
     else:
         raise ValueError("Could not interpret normalization identifier: " + str(identifier))
+
+
+def get_complex(identifier):
+    """Like `.get` but returns a complex norm created with `asteroid.complex_nn.OnReIm`."""
+    norm = get(identifier)
+    if norm is None:
+        return None
+    else:
+        return partial(complex_nn.OnReIm, norm)
