@@ -146,12 +146,3 @@ class DPTNetScheduler(_BaseScheduler):
                 * min(self.step_num ** (-0.5), self.step_num * self.warmup_steps ** (-1.5))
             )
         return lr
-
-    def as_tensor(self, start=0, stop=None):
-        stop = stop or self.warmup_steps * 2
-        lr_list = []
-        for _ in range(start, stop):
-            self.step_num += 1
-            lr_list.append(self._get_lr())
-        self.step_num = 0
-        return torch.tensor(lr_list)
