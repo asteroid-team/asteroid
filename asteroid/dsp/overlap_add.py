@@ -5,15 +5,24 @@ from torch import nn
 
 
 class LambdaOverlapAdd(torch.nn.Module):
-    """Segment signal, apply func, combine with OLA.
+    """Overlap-add with lambda transform on segments.
+
+    Segment input signal, apply lambda function (a neural network for example)
+    and combine with OLA.
 
     Args:
-        nnet (callable): function to apply to each segment.
+        nnet (callable): Function to apply to each segment.
         n_src (int): Number of sources in the output of nnet.
         window_size (int): Size of segmenting window.
-        hop_size (int): segmentation hop size.
-        window (str): Name of the window (see scipy.signal.get_window)
-        reorder_chunks (bool): whether to reorder each consecutive segment.
+        hop_size (int): Segmentation hop size.
+        window (str): Name of the window (see scipy.signal.get_window) used
+            for the synthesis.
+        reorder_chunks (bool): Whether to reorder each consecutive segment.
+            This might be useful when `nnet` is permutation invariant, as
+            source assignements might change output channel from one segment
+            to the next (in classic speech separation for example).
+            Reordering is performed based on the correlation between
+            the overlapped part of consecutive segment.
 
      Examples:
         >>> from asteroid import ConvTasNet
@@ -156,13 +165,19 @@ def _reorder_sources(
     previous = previous.reshape(-1, n_src, frames)
 
     overlap_f = window_size - hop_size
-    pw_losses = PITLossWrapper.get_pw_losses(
-        lambda x, y: torch.sum((x.unsqueeze(1) * y.unsqueeze(2))),
-        current[..., :overlap_f],
-        previous[..., -overlap_f:],
-    )
-    _, perms = PITLossWrapper.find_best_perm(pw_losses, n_src)
-    current = PITLossWrapper.reorder_source(current, n_src, perms)
+
+    def reorder_func(x, y):
+        x = x[..., :overlap_f]
+        y = y[..., -overlap_f:]
+        # Mean normalization
+        x = x - x.mean(-1, keepdim=True)
+        y = y - y.mean(-1, keepdim=True)
+        # Negative mean Correlation
+        return -torch.sum(x.unsqueeze(1) * y.unsqueeze(2), dim=-1)
+
+    # We maximize correlation-like between previous and current.
+    pit = PITLossWrapper(reorder_func)
+    current = pit(current, previous, return_est=True)[1]
     return current.reshape(batch, frames)
 
 
