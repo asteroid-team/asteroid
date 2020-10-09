@@ -226,7 +226,7 @@ class PITLossWrapper(nn.Module):
 
     @staticmethod
     def reorder_source(source, batch_indices):
-        """ Reorder sources according to the best permutation.
+        """Reorder sources according to the best permutation.
 
         Args:
             source (torch.Tensor): Tensor of shape [batch, n_src, time]
