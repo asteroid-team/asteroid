@@ -13,12 +13,14 @@ class Filterbank(nn.Module):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the conv or transposed conv. (Hop size).
             If None (default), set to ``kernel_size // 2``.
+        sample_rate (int): Sample rate of the expected audio.
+            Defaults to 8000.
 
     Attributes:
         n_feats_out (int): Number of output filters.
     """
 
-    def __init__(self, n_filters, kernel_size, stride=None):
+    def __init__(self, n_filters, kernel_size, stride=None, sample_rate=8000):
         super(Filterbank, self).__init__()
         self.n_filters = n_filters
         self.kernel_size = kernel_size
@@ -26,6 +28,7 @@ class Filterbank(nn.Module):
         # If not specified otherwise in the filterbank's init, output
         # number of features is equal to number of required filters.
         self.n_feats_out = n_filters
+        self.sample_rate = sample_rate
 
     @property
     def filters(self):
