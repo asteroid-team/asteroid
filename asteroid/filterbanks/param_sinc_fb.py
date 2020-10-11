@@ -40,8 +40,7 @@ class ParamSincFB(Filterbank):
                 + "kernel_size={} so filters are odd".format(kernel_size + 1)
             )
             kernel_size += 1
-        super(ParamSincFB, self).__init__(n_filters, kernel_size, stride=stride)
-        self.sample_rate = sample_rate
+        super().__init__(n_filters, kernel_size, stride=stride, sample_rate=sample_rate)
         self.min_low_hz, self.min_band_hz = min_low_hz, min_band_hz
 
         self.half_kernel = self.kernel_size // 2
