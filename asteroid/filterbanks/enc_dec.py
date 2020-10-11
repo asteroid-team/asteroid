@@ -42,6 +42,7 @@ class Filterbank(nn.Module):
             "n_filters": self.n_filters,
             "kernel_size": self.kernel_size,
             "stride": self.stride,
+            "sample_rate": self.sample_rate,
         }
         return config
 
