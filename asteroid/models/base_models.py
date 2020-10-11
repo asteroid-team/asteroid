@@ -224,7 +224,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         self.decoder = decoder
         self.encoder_activation = encoder_activation
         self.enc_activation = activations.get(encoder_activation or "linear")()
-        self.sample_rate = getattr(encoder, "sample_rate")
+        self.sample_rate = getattr(encoder, "sample_rate", None)
 
     def forward(self, wav):
         """Enc/Mask/Dec model forward

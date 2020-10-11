@@ -66,6 +66,7 @@ class _EncDec(nn.Module):
     def __init__(self, filterbank, is_pinv=False):
         super(_EncDec, self).__init__()
         self.filterbank = filterbank
+        self.sample_rate = getattr(filterbank, "sample_rate", None)
         self.stride = self.filterbank.stride
         self.is_pinv = is_pinv
 
