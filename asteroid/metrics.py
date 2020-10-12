@@ -31,9 +31,8 @@ def get_metrics(
             estimate sources for the output metrics (default False)
         ignore_metrics_errors (bool): Whether to ignore errors that occur in
             computing the metrics. A warning will be printed instead.
-        filename (str, optional): If `ignore_metrics_errors` is true and
-            computing a metric has failed, print this filename along with the
-            warning for debugging purposes.
+        filename (str, optional): If computing a metric fails, print this
+            filename along with the exception/warning message for debugging purposes.
 
     Returns:
         dict: Dictionary with all requested metrics, with `'input_'` prefix
