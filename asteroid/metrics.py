@@ -88,11 +88,16 @@ def get_metrics(
                 utt_metrics[key] = src[metric]
             except Exception as err:
                 if ignore_metrics_errors:
-                    warnings.warn(f"Error computing {key} for {filename or '<unknown file>'}, ignoring.", warnings.RuntimeWarning)
+                    warnings.warn(
+                        f"Error computing {key} for {filename or '<unknown file>'}, ignoring.",
+                        warnings.RuntimeWarning,
+                    )
                     traceback.print_stack(err)
                     utt_metrics[key] = None
                 else:
-                    raise RuntimeError(f"Error computing {key} for {filename or '<unknown file>'}") from err
+                    raise RuntimeError(
+                        f"Error computing {key} for {filename or '<unknown file>'}"
+                    ) from err
     if average is True:
         return average_arrays_in_dic(utt_metrics)
     else:
