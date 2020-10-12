@@ -1,3 +1,5 @@
+import warnings
+import traceback
 from .utils import average_arrays_in_dic
 from pb_bss_eval import InputMetrics, OutputMetrics
 
@@ -12,6 +14,8 @@ def get_metrics(
     metrics_list="all",
     average=True,
     compute_permutation=False,
+    ignore_metrics_errors=False,
+    filename=None,
 ):
     """Get speech separation/enhancement metrics from mix/clean/estimate.
 
@@ -25,6 +29,11 @@ def get_metrics(
         average (bool): Return dict([float]) if True, else dict([array]).
         compute_permutation (bool): Whether to compute the permutation on
             estimate sources for the output metrics (default False)
+        ignore_metrics_errors (bool): Whether to ignore errors that occur in
+            computing the metrics. A warning will be printed instead.
+        filename (str, optional): If `ignore_metrics_errors` is true and
+            computing a metric has failed, print this filename along with the
+            warning for debugging purposes.
 
     Returns:
         dict: Dictionary with all requested metrics, with `'input_'` prefix
@@ -63,8 +72,6 @@ def get_metrics(
     input_metrics = InputMetrics(
         observation=mix, speech_source=clean, enable_si_sdr=True, sample_rate=sample_rate
     )
-    utt_metrics = {"input_" + n: input_metrics[n] for n in metrics_list}
-
     output_metrics = OutputMetrics(
         speech_prediction=estimate,
         speech_source=clean,
@@ -72,7 +79,20 @@ def get_metrics(
         sample_rate=sample_rate,
         compute_permutation=compute_permutation,
     )
-    utt_metrics.update(output_metrics[metrics_list])
+    utt_metrics = {}
+    for src, prefix in [(input_metrics, "input_"), (output_metrics, "")]:
+        for metric in metrics_list:
+            # key: eg. "input_pesq" or "pesq"
+            key = prefix + metric
+            try:
+                utt_metrics[key] = src[metric]
+            except Exception as err:
+                if ignore_metrics_errors:
+                    warnings.warn(f"Error computing {key} for {filename or '<unknown file>'}, ignoring.", warnings.RuntimeWarning)
+                    traceback.print_stack(err)
+                    utt_metrics[key] = None
+                else:
+                    raise RuntimeError(f"Error computing {key} for {filename or '<unknown file>'}") from err
     if average is True:
         return average_arrays_in_dic(utt_metrics)
     else:
