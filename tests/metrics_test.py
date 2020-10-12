@@ -1,3 +1,4 @@
+from unittest import mock
 import numpy as np
 import pytest
 from asteroid.metrics import get_metrics
@@ -30,3 +31,41 @@ def test_get_metrics_multichannel():
     clean = np.random.randn(2, 16000)
     est = np.random.randn(2, 16000)
     get_metrics(mix, clean, est, sample_rate=8000, metrics_list="si_sdr", average=False)
+
+
+@pytest.mark.parametrize("filename", [None, "example.wav"])
+def test_error_msg(filename):
+    mix = np.random.randn(1, 4000)
+    clean = np.random.randn(1, 4000)
+    est = np.random.randn(1, 4000)
+    expected_msg = f".+si_sdr.+{filename or '<unknown file>'}"
+    with mock.patch(
+        "pb_bss_eval.evaluation.si_sdr", side_effect=RuntimeError("Fatal error")
+    ), pytest.raises(RuntimeError, match=expected_msg):
+        metrics_dict = get_metrics(
+            mix, clean, est, sample_rate=8000, metrics_list=["si_sdr", "pesq"], filename=filename
+        )
+
+
+@pytest.mark.parametrize("average", [True, False])
+@pytest.mark.parametrize("filename", [None, "example.wav"])
+def test_ignore_errors(filename, average):
+    mix = np.random.randn(1, 4000)
+    clean = np.random.randn(1, 4000)
+    est = np.random.randn(1, 4000)
+    expected_msg = f".+si_sdr.+{filename or '<unknown file>'}.+Fatal error"
+    with mock.patch(
+        "pb_bss_eval.evaluation.si_sdr", side_effect=RuntimeError("Fatal error")
+    ), pytest.warns(RuntimeWarning, match=expected_msg):
+        metrics_dict = get_metrics(
+            mix,
+            clean,
+            est,
+            sample_rate=8000,
+            metrics_list=["si_sdr", "pesq"],
+            ignore_metrics_errors=True,
+            average=average,
+            filename=filename,
+        )
+    assert metrics_dict["si_sdr"] is None
+    assert metrics_dict["pesq"] is not None
