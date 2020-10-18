@@ -26,6 +26,11 @@ class BaseModel(nn.Module):
     def forward(self, *args, **kwargs):
         raise NotImplementedError
 
+    @property
+    def sample_rate(self):
+        """Operating sample rate of the model (float)."""
+        raise NotImplementedError
+
     @torch.no_grad()
     def separate(self, wav, output_dir=None, force_overwrite=False, **kwargs):
         """Infer separated sources from input waveforms.
@@ -203,6 +208,7 @@ class BaseModel(nn.Module):
         return self.state_dict()
 
     def get_model_args(self):
+        """Should return args to re-instantiate the class."""
         raise NotImplementedError
 
 
@@ -224,7 +230,10 @@ class BaseEncoderMaskerDecoder(BaseModel):
         self.decoder = decoder
         self.encoder_activation = encoder_activation
         self.enc_activation = activations.get(encoder_activation or "linear")()
-        self.sample_rate = getattr(encoder, "sample_rate", None)
+
+    @property
+    def sample_rate(self):
+        return getattr(self.encoder, "sample_rate", None)
 
     def forward(self, wav):
         """Enc/Mask/Dec model forward
