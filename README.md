@@ -99,6 +99,10 @@ More information in [egs/README.md](./egs).
 * [x] [Chimera ++](./egs/wsj0-mix/DeepClustering) ([Luo et al.](https://arxiv.org/abs/1611.06265) and [Wang et al.](https://ieeexplore.ieee.org/document/8462507))
 * [x] [DualPathRNN](./egs/wham/DPRNN) ([Luo et al.](https://arxiv.org/abs/1910.06379))
 * [x] [Two step learning](./egs/wham/TwoStep)([Tzinis et al.](https://arxiv.org/abs/1910.09804))
+* [x] [SudoRMRFNet](./asteroid/models/sudormrf.py) ([Tzinis et al.](https://arxiv.org/abs/2007.06833))
+* [x] [DPTNet](./asteroid/models/dptnet.py) ([Chen et al.](https://arxiv.org/abs/2007.13975))
+* [x] [DCCRNet](./asteroid/models/dccrnet.py) ([Hu et al.](https://arxiv.org/abs/2008.00264))
+* [x] [DCUNet](./asteroid/models/dcunet.py) ([Choi et al.](https://arxiv.org/abs/1903.03107))
 * [ ] Open-Unmix (coming) ([Stöter et al.](https://sigsep.github.io/open-unmix/))
 * [ ] Wavesplit (coming) ([Zeghidour et al.](https://arxiv.org/abs/2002.08933))
 
@@ -110,10 +114,10 @@ More information in [egs/README.md](./egs).
 * [x] [LibriMix](./egs/librimix) ([Cosentino et al.](https://arxiv.org/abs/2005.11262))
 * [x] [Microsoft DNS Challenge](./egs/dns_challenge) ([Chandan et al.](https://arxiv.org/abs/2001.08662))
 * [x] [SMS_WSJ](./egs/sms_wsj) ([Drude et al.](https://arxiv.org/abs/1910.13934))
-* [x] MUSDB18 (egs coming) ([Raffi et al.](https://hal.inria.fr/hal-02190845))
-* [x] FUSS (egs coming) ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
-* [x] AVSpeech ([Ephrat et al.](https://arxiv.org/abs/1804.03619))
-* [x] Kinect-WSJ ([Sivasankaran et al.](https://github.com/sunits/Reverberated_WSJ_2MIX))
+* [x] [MUSDB18](./asteroid/data/musdb18_dataset.py) ([Raffi et al.](https://hal.inria.fr/hal-02190845))
+* [x] [FUSS](./asteroid/data/fuss_dataset.py) ([Wisdom et al.](https://zenodo.org/record/3694384#.XmUAM-lw3g4))
+* [x] [AVSpeech](./asteroid/data/avspeech_dataset.py) ([Ephrat et al.](https://arxiv.org/abs/1804.03619))
+* [x] [Kinect-WSJ](./asteroid/data/kinect_wsj.py) ([Sivasankaran et al.](https://github.com/sunits/Reverberated_WSJ_2MIX))
 
 ## Pretrained models
 ([↑up to contents](#contents))
