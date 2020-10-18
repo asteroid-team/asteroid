@@ -20,6 +20,17 @@ def _unsqueeze_to_3d(x):
 
 
 class BaseModel(nn.Module):
+    """Base class for serializable models.
+
+    Defines saving/loading procedures as well as separation methods from
+    file, torch tensors and numpy arrays.
+    Need to overwrite the `foward` method, the `sample_rate` property and
+    the `get_model_args` method.
+    For models whose `forward` doesn't return waveform tensors,
+    overwrite `_separate` to return waveform tensors.
+
+    """
+
     def __init__(self):
         super().__init__()
 
