@@ -40,6 +40,7 @@ class ImprovedTransformedLayer(nn.Module):
     ):
         super(ImprovedTransformedLayer, self).__init__()
 
+        print(f'embed_dim: {embed_dim}, n_heads: {n_heads}')
         self.mha = MultiheadAttention(embed_dim, n_heads, dropout=dropout)
         self.recurrent = nn.LSTM(embed_dim, dim_ff, bidirectional=bidirectional)
         self.dropout = nn.Dropout(dropout)
@@ -123,6 +124,7 @@ class DPTransformer(nn.Module):
         self.dropout = dropout
 
         self.in_norm = norms.get(norm_type)(in_chan)
+        self.ola = DualPathProcessing(self.chunk_size, self.hop_size)
 
         # Succession of DPRNNBlocks.
         self.layers = nn.ModuleList([])
@@ -176,18 +178,17 @@ class DPTransformer(nn.Module):
         """
         mixture_w = self.in_norm(mixture_w)  # [batch, bn_chan, n_frames]
 
-        ola = DualPathProcessing(self.chunk_size, self.hop_size)
-        mixture_w = ola.unfold(mixture_w)
+        mixture_w = self.ola.unfold(mixture_w)
         batch, n_filters, self.chunk_size, n_chunks = mixture_w.size()
 
         for layer_idx in range(len(self.layers)):
             intra, inter = self.layers[layer_idx]
-            mixture_w = ola.intra_process(mixture_w, intra)
-            mixture_w = ola.inter_process(mixture_w, inter)
+            mixture_w = self.ola.intra_process(mixture_w, intra)
+            mixture_w = self.ola.inter_process(mixture_w, inter)
 
         output = self.first_out(mixture_w)
         output = output.reshape(batch * self.n_src, self.in_chan, self.chunk_size, n_chunks)
-        output = ola.fold(output)
+        output = self.ola.fold(output)
 
         output = self.net_out(output) * self.net_gate(output)
         # Compute mask
