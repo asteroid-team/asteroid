@@ -98,7 +98,7 @@ def main(conf):
 
 if __name__ == "__main__":
     import yaml
-    from pprint import pprint as print
+    from pprint import pprint
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
 
     # We start with opening the config file conf.yml as a dictionary from
@@ -114,5 +114,5 @@ if __name__ == "__main__":
     # the attributes in an non-hierarchical structure. It can be useful to also
     # have it so we included it here but it is not used.
     arg_dic, plain_args = parse_args_as_dict(parser, return_plain_args=True)
-    print(arg_dic)
+    pprint(arg_dic)
     main(arg_dic)
