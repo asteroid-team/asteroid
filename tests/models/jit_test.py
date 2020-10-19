@@ -2,7 +2,6 @@ import torch
 import pytest
 from torch.testing import assert_allclose
 from asteroid.models import DeMask, ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet
-from torch.testing._internal.jit_utils import JitTestCase
 
 
 @pytest.fixture(scope="module")
