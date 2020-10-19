@@ -260,7 +260,7 @@ class DualPathProcessing(nn.Module):
         )
 
         # force float div for torch jit
-        x /= (float(self.chunk_size) / self.hop_size)
+        x /= float(self.chunk_size) / self.hop_size
 
         return x.reshape(batch, chan, self.n_orig_frames)
 

@@ -40,7 +40,7 @@ class Chimera(nn.Module):
         dropout=0.3,
         embedding_dim=20,
         take_log=False,
-        EPS=1e-8
+        EPS=1e-8,
     ):
         super().__init__()
         self.input_dim = in_chan
@@ -65,7 +65,6 @@ class Chimera(nn.Module):
         self.embedding_layer = nn.Linear(rnn_out_dim, in_chan * embedding_dim)
         self.embedding_act = nn.Tanh()  # sigmoid or tanh
         self.EPS = EPS
-
 
     def forward(self, input_data):
         batch, _, n_frames = input_data.shape

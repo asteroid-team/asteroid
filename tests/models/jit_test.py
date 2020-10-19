@@ -24,7 +24,12 @@ def small_model_params():
             "chunk_size": 20,
             "n_filters": 32,
         },
-        DPTNet.__name__: {"n_src": 2, "ff_hid": 10, "chunk_size": 4, "n_repeats": 2,},
+        DPTNet.__name__: {
+            "n_src": 2,
+            "ff_hid": 10,
+            "chunk_size": 4,
+            "n_repeats": 2,
+        },
         LSTMTasNet.__name__: {
             "n_src": 2,
             "hid_size": 4,
@@ -68,7 +73,13 @@ def test_enhancement_model(small_model_params):
 
 # TODO: Add back "stft" filter_bank once issue with DPTNet solved
 @pytest.mark.parametrize(
-    "model_def", (ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet,),
+    "model_def",
+    (
+        ConvTasNet,
+        DPRNNTasNet,
+        DPTNet,
+        LSTMTasNet,
+    ),
 )
 def test_trace_bss_model(small_model_params, model_def):
     filter_bank_types = ["free", "analytic_free", "param_sinc"]
