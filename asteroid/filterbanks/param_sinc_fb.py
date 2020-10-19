@@ -15,7 +15,7 @@ class ParamSincFB(Filterbank):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution. If None (default),
             set to ``kernel_size // 2``.
-        sample_rate (int, optional): The sample rate (used for initialization).
+        sample_rate (float, optional): The sample rate (used for initialization).
         min_low_hz (int, optional): Lowest low frequency allowed (Hz).
         min_band_hz (int, optional): Lowest band frequency allowed (Hz).
 
@@ -32,7 +32,13 @@ class ParamSincFB(Filterbank):
     """
 
     def __init__(
-        self, n_filters, kernel_size, stride=None, sample_rate=16000, min_low_hz=50, min_band_hz=50
+        self,
+        n_filters,
+        kernel_size,
+        stride=None,
+        sample_rate=16000.0,
+        min_low_hz=50,
+        min_band_hz=50,
     ):
         if kernel_size % 2 == 0:
             print(
@@ -40,8 +46,7 @@ class ParamSincFB(Filterbank):
                 + "kernel_size={} so filters are odd".format(kernel_size + 1)
             )
             kernel_size += 1
-        super(ParamSincFB, self).__init__(n_filters, kernel_size, stride=stride)
-        self.sample_rate = sample_rate
+        super().__init__(n_filters, kernel_size, stride=stride, sample_rate=sample_rate)
         self.min_low_hz, self.min_band_hz = min_low_hz, min_band_hz
 
         self.half_kernel = self.kernel_size // 2
@@ -113,7 +118,6 @@ class ParamSincFB(Filterbank):
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class."""
         config = {
-            "sample_rate": self.sample_rate,
             "min_low_hz": self.min_low_hz,
             "min_band_hz": self.min_band_hz,
         }

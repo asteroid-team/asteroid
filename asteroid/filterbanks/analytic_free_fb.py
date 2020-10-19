@@ -15,6 +15,8 @@ class AnalyticFreeFB(Filterbank):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution.
             If None (default), set to ``kernel_size // 2``.
+        sample_rate (float): Sample rate of the expected audio.
+            Defaults to 8000.
 
     Attributes:
         n_feats_out (int): Number of output filters.
@@ -25,8 +27,8 @@ class AnalyticFreeFB(Filterbank):
         Antoine Deleforge, Emmanuel Vincent.
     """
 
-    def __init__(self, n_filters, kernel_size, stride=None, **kwargs):
-        super(AnalyticFreeFB, self).__init__(n_filters, kernel_size, stride=stride)
+    def __init__(self, n_filters, kernel_size, stride=None, sample_rate=8000.0, **kwargs):
+        super().__init__(n_filters, kernel_size, stride=stride, sample_rate=sample_rate)
         self.cutoff = int(n_filters // 2)
         self.n_feats_out = 2 * self.cutoff
         if n_filters % 2 != 0:

@@ -20,10 +20,26 @@ def _unsqueeze_to_3d(x):
 
 
 class BaseModel(nn.Module):
+    """Base class for serializable models.
+
+    Defines saving/loading procedures as well as separation methods from
+    file, torch tensors and numpy arrays.
+    Need to overwrite the `foward` method, the `sample_rate` property and
+    the `get_model_args` method.
+    For models whose `forward` doesn't return waveform tensors,
+    overwrite `_separate` to return waveform tensors.
+
+    """
+
     def __init__(self):
         super().__init__()
 
     def forward(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @property
+    def sample_rate(self):
+        """Operating sample rate of the model (float)."""
         raise NotImplementedError
 
     @torch.no_grad()
@@ -203,6 +219,7 @@ class BaseModel(nn.Module):
         return self.state_dict()
 
     def get_model_args(self):
+        """Should return args to re-instantiate the class."""
         raise NotImplementedError
 
 
@@ -222,9 +239,12 @@ class BaseEncoderMaskerDecoder(BaseModel):
         self.encoder = encoder
         self.masker = masker
         self.decoder = decoder
-
         self.encoder_activation = encoder_activation
         self.enc_activation = activations.get(encoder_activation or "linear")()
+
+    @property
+    def sample_rate(self):
+        return getattr(self.encoder, "sample_rate", None)
 
     def forward(self, wav):
         """Enc/Mask/Dec model forward

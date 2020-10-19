@@ -11,7 +11,7 @@ class MultiphaseGammatoneFB(Filterbank):
     Args:
         n_filters (int): Number of filters.
         kernel_size (int): Length of the filters.
-        sample_rate (int, optional): The sample rate (used for initialization).
+        sample_rate (float, optional): The sample rate (used for initialization).
         stride (int, optional): Stride of the convolution. If None (default),
             set to ``kernel_size // 2``.
 
@@ -21,9 +21,8 @@ class MultiphaseGammatoneFB(Filterbank):
         Available: `<https://ieeexplore.ieee.org/document/9053602/>`
     """
 
-    def __init__(self, n_filters=128, kernel_size=16, sample_rate=8000, stride=None, **kwargs):
-        super().__init__(n_filters, kernel_size, stride=stride)
-        self.sample_rate = sample_rate
+    def __init__(self, n_filters=128, kernel_size=16, sample_rate=8000.0, stride=None, **kwargs):
+        super().__init__(n_filters, kernel_size, stride=stride, sample_rate=sample_rate)
         self.n_feats_out = n_filters
         length_in_seconds = kernel_size / sample_rate
         mpgtf = generate_mpgtf(sample_rate, length_in_seconds, n_filters)

@@ -14,13 +14,17 @@ class STFTFB(Filterbank):
             (default), set to ``kernel_size // 2``.
         window (:class:`numpy.ndarray`, optional): If None, defaults to
             ``np.sqrt(np.hanning())``.
+        sample_rate (float): Sample rate of the expected audio.
+            Defaults to 8000.
 
     Attributes:
         n_feats_out (int): Number of output filters.
     """
 
-    def __init__(self, n_filters, kernel_size, stride=None, window=None, **kwargs):
-        super(STFTFB, self).__init__(n_filters, kernel_size, stride=stride)
+    def __init__(
+        self, n_filters, kernel_size, stride=None, window=None, sample_rate=8000.0, **kwargs
+    ):
+        super().__init__(n_filters, kernel_size, stride=stride, sample_rate=sample_rate)
         assert n_filters >= kernel_size
         self.cutoff = int(n_filters / 2 + 1)
         self.n_feats_out = 2 * self.cutoff
