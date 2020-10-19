@@ -118,7 +118,10 @@ if __name__ == "__main__":
     print("Number of test samples: ", len(test_dataset))
 
     train_sampler = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=0,
+        train_dataset,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=0,
     )
 
     for x, y in tqdm.tqdm(train_sampler):

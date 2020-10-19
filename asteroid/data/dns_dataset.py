@@ -6,7 +6,7 @@ import soundfile as sf
 
 
 class DNSDataset(data.Dataset):
-    """ Deep Noise Suppression (DNS) Challenge's dataset.
+    """Deep Noise Suppression (DNS) Challenge's dataset.
 
     Args
         json_dir (str): path to the JSON directory (from the recipe).
@@ -31,7 +31,7 @@ class DNSDataset(data.Dataset):
         return len(self.wav_ids)
 
     def __getitem__(self, idx):
-        """ Gets a mixture/sources pair.
+        """Gets a mixture/sources pair.
         Returns:
             mixture, vstack([source_arrays])
         """
@@ -45,7 +45,7 @@ class DNSDataset(data.Dataset):
         return x, speech, noise
 
     def get_infos(self):
-        """ Get dataset infos (for publishing models).
+        """Get dataset infos (for publishing models).
 
         Returns:
             dict, dataset infos with keys `dataset`, `task` and `licences`.

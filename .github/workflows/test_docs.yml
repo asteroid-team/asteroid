@@ -30,6 +30,7 @@ jobs:
 
     - name: Install git
       run: |
+        sudo apt update
         sudo apt install git-all
         sudo apt install libsndfile1-dev libsndfile1  # Needed for sndfile import
 

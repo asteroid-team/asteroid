@@ -8,7 +8,7 @@ from ..utils import flatten_dict
 
 
 class System(pl.LightningModule):
-    """ Base class for deep learning systems.
+    """Base class for deep learning systems.
     Contains a model, an optimizer, a loss function, training and validation
     dataloaders and learning rate scheduler.
 
@@ -20,7 +20,9 @@ class System(pl.LightningModule):
         train_loader (torch.utils.data.DataLoader): Training dataloader.
         val_loader (torch.utils.data.DataLoader): Validation dataloader.
         scheduler (torch.optim.lr_scheduler._LRScheduler): Instance, or list
-            of learning rate schedulers.
+            of learning rate schedulers. Also supports dict or list of dict as
+            `{"interval": "batch", "scheduler": sched}` where `interval=="batch"`
+            for batch-wise schedulers and `interval=="epoch"` for classical ones.
         config: Anything to be saved with the checkpoints during training.
             The config dictionary to re-instantiate the run for example.
     .. note:: By default, `training_step` (used by `pytorch-lightning` in the
@@ -56,7 +58,7 @@ class System(pl.LightningModule):
         self.hparams = Namespace(**self.config_to_hparams(config))
 
     def forward(self, *args, **kwargs):
-        """ Applies forward pass of the model.
+        """Applies forward pass of the model.
 
         Returns:
             :class:`torch.Tensor`
@@ -64,7 +66,7 @@ class System(pl.LightningModule):
         return self.model(*args, **kwargs)
 
     def common_step(self, batch, batch_nb, train=True):
-        """ Common forward step between training and validation.
+        """Common forward step between training and validation.
 
         The function of this method is to unpack the data given by the loader,
         forward the batch through the model and compute the loss.
@@ -93,7 +95,7 @@ class System(pl.LightningModule):
         return loss
 
     def training_step(self, batch, batch_nb):
-        """ Pass data through the model and compute the loss.
+        """Pass data through the model and compute the loss.
 
         Backprop is **not** performed (meaning PL will do it for you).
 
@@ -121,10 +123,10 @@ class System(pl.LightningModule):
             for sched in self.scheduler:
                 if isinstance(sched, dict) and sched["interval"] == "batch":
                     sched["scheduler"].step()  # call step on each batch scheduler
-            super().optimizer_step(*args, **kwargs)
+        super().optimizer_step(*args, **kwargs)
 
     def validation_step(self, batch, batch_nb):
-        """ Need to overwrite PL validation_step to do validation.
+        """Need to overwrite PL validation_step to do validation.
 
         Args:
             batch: the object returned by the loader (a list of torch.Tensor
@@ -140,7 +142,7 @@ class System(pl.LightningModule):
         return {"val_loss": loss}
 
     def validation_epoch_end(self, outputs):
-        """ How to aggregate outputs of `validation_step` for logging.
+        """How to aggregate outputs of `validation_step` for logging.
 
         Args:
            outputs (list[dict]): List of validation losses, each with a
@@ -160,7 +162,7 @@ class System(pl.LightningModule):
         return {"val_loss": avg_loss, "log": tensorboard_logs, "progress_bar": tensorboard_logs}
 
     def configure_optimizers(self):
-        """ Required by pytorch-lightning. """
+        """Initialize optimizers, batch-wise and epoch-wise schedulers."""
 
         if self.scheduler is not None:
             if not isinstance(self.scheduler, (list, tuple)):
@@ -208,7 +210,7 @@ class System(pl.LightningModule):
 
     @staticmethod
     def config_to_hparams(dic):
-        """ Sanitizes the config dict to be handled correctly by torch
+        """Sanitizes the config dict to be handled correctly by torch
         SummaryWriter. It flatten the config dict, converts `None` to
          ``'None'`` and any list and tuple into torch.Tensors.
 

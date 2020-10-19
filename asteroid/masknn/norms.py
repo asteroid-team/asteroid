@@ -1,7 +1,11 @@
+from functools import partial
 import torch
 from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm
 from typing import List
+from .. import complex_nn
+
+EPS = 1e-8
 
 
 class _LayerNorm(nn.Module):
@@ -22,7 +26,7 @@ class GlobLN(_LayerNorm):
     """Global Layer Normalization (globLN)."""
 
     def forward(self, x, EPS: float = 1e-8):
-        """ Applies forward pass.
+        """Applies forward pass.
 
         Works for any input size > 2D.
 
@@ -43,7 +47,7 @@ class ChanLN(_LayerNorm):
     """Channel-wise Layer Normalization (chanLN)."""
 
     def forward(self, x, EPS: float = 1e-8):
-        """ Applies forward pass.
+        """Applies forward pass.
 
         Works for any input size > 2D.
 
@@ -85,7 +89,7 @@ class FeatsGlobLN(_LayerNorm):
     Applies normalization over frames for each channel."""
 
     def forward(self, x, EPS: float = 1e-8):
-        """ Applies forward pass.
+        """Applies forward pass.
 
         Works for any input size > 2D.
 
@@ -121,7 +125,7 @@ bN = BatchNorm
 
 
 def register_norm(custom_norm):
-    """ Register a custom norm, gettable with `norms.get`.
+    """Register a custom norm, gettable with `norms.get`.
 
     Args:
         custom_norm: Custom norm to register.
@@ -133,7 +137,7 @@ def register_norm(custom_norm):
 
 
 def get(identifier):
-    """ Returns a norm class from a string. Returns its input if it
+    """Returns a norm class from a string. Returns its input if it
     is callable (already a :class:`._LayerNorm` for example).
 
     Args:
@@ -153,3 +157,12 @@ def get(identifier):
         return cls
     else:
         raise ValueError("Could not interpret normalization identifier: " + str(identifier))
+
+
+def get_complex(identifier):
+    """Like `.get` but returns a complex norm created with `asteroid.complex_nn.OnReIm`."""
+    norm = get(identifier)
+    if norm is None:
+        return None
+    else:
+        return partial(complex_nn.OnReIm, norm)

@@ -1,5 +1,7 @@
 # Models
 from .conv_tasnet import ConvTasNet
+from .dccrnet import DCCRNet
+from .dcunet import DCUNet
 from .dprnn_tasnet import DPRNNTasNet
 from .sudormrf import SuDORMRFImprovedNet, SuDORMRFNet
 from .dptnet import DPTNet
@@ -17,13 +19,15 @@ __all__ = [
     "DPTNet",
     "LSTMTasNet",
     "DeMask",
+    "DCUNet",
+    "DCCRNet",
     "save_publishable",
     "upload_publishable",
 ]
 
 
 def register_model(custom_model):
-    """ Register a custom model, gettable with `models.get`.
+    """Register a custom model, gettable with `models.get`.
 
     Args:
         custom_model: Custom model to register.
@@ -38,7 +42,7 @@ def register_model(custom_model):
 
 
 def get(identifier):
-    """ Returns an model class from a string (case-insensitive).
+    """Returns an model class from a string (case-insensitive).
 
     Args:
         identifier (str): the model name.

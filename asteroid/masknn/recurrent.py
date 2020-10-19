@@ -1,14 +1,20 @@
+import functools
+
+import numpy as np
 import torch
 from torch import nn
 from torch.nn.functional import fold, unfold
 
-from . import norms, activations
-from .norms import GlobLN, CumLN
+from .. import complex_nn
 from ..utils import has_arg
+from . import activations, norms
+from ._dccrn_architectures import DCCRN_ARCHITECTURES
+from .base import BaseDCUMaskNet
+from .norms import CumLN, GlobLN
 
 
 class SingleRNN(nn.Module):
-    """ Module for a RNN block.
+    """Module for a RNN block.
 
     Inspired from https://github.com/yluo42/TAC/blob/master/utility/models.py
     Licensed under CC BY-NC-SA 3.0 US.
@@ -52,7 +58,7 @@ class SingleRNN(nn.Module):
 
 
 class StackedResidualRNN(nn.Module):
-    """ Stacked RNN with builtin residual connection.
+    """Stacked RNN with builtin residual connection.
     Only supports forward RNNs.
     See StackedResidualBiRNN for bidirectional ones.
 
@@ -86,8 +92,8 @@ class StackedResidualRNN(nn.Module):
         self.dropout_layer = nn.Dropout(self.dropout)
 
     def forward(self, x):
-        """ Builtin residual connections + dropout applied before residual.
-            Input shape : [batch, time_axis, feat_axis]
+        """Builtin residual connections + dropout applied before residual.
+        Input shape : [batch, time_axis, feat_axis]
         """
         for rnn in self.layers:
             rnn_out = rnn(x)
@@ -97,7 +103,7 @@ class StackedResidualRNN(nn.Module):
 
 
 class StackedResidualBiRNN(nn.Module):
-    """ Stacked Bidirectional RNN with builtin residual connection.
+    """Stacked Bidirectional RNN with builtin residual connection.
     Residual connections are applied on both RNN directions.
     Only supports bidiriectional RNNs.
     See StackedResidualRNN for unidirectional ones.
@@ -142,8 +148,8 @@ class StackedResidualBiRNN(nn.Module):
         self.dropout_layer = nn.Dropout(self.dropout)
 
     def forward(self, x):
-        """ Builtin residual connections + dropout applied before residual.
-            Input shape : [batch, time_axis, feat_axis]
+        """Builtin residual connections + dropout applied before residual.
+        Input shape : [batch, time_axis, feat_axis]
         """
         # First layer
         rnn_out = self.first_layer(x)
@@ -158,7 +164,7 @@ class StackedResidualBiRNN(nn.Module):
 
 
 class DPRNNBlock(nn.Module):
-    """ Dual-Path RNN Block as proposed in [1].
+    """Dual-Path RNN Block as proposed in [1].
 
     Args:
         in_chan (int): Number of input channels.
@@ -224,7 +230,7 @@ class DPRNNBlock(nn.Module):
 
 
 class DPRNN(nn.Module):
-    """ Dual-path RNN Network for Single-Channel Source Separation
+    """Dual-path RNN Network for Single-Channel Source Separation
         introduced in [1].
 
     Args:
@@ -393,7 +399,7 @@ class DPRNN(nn.Module):
 
 
 class LSTMMasker(nn.Module):
-    """ LSTM mask network introduced in [1], without skip connections.
+    """LSTM mask network introduced in [1], without skip connections.
 
     Args:
         in_chan (int): Number of input filters.
@@ -484,3 +490,81 @@ class LSTMMasker(nn.Module):
             "bidirectional": self.bidirectional,
         }
         return config
+
+
+class DCCRMaskNetRNN(nn.Module):
+    """RNN (LSTM) layer between encoders and decoders introduced in [1].
+
+    Args:
+        in_size (int): Number of inputs to the RNN. Must be the product of non-batch,
+            non-time dimensions of output shape of last encoder, i.e. if the last
+            encoder output shape is [batch, n_chans, n_freqs, time], `in_size` must be
+            `n_chans * n_freqs`.
+        hid_size (int, optional): Number of units in RNN.
+        rnn_type (str, optional): Type of RNN to use. See ``SingleRNN`` for valid values.
+        norm_type (Optional[str], optional): Norm to use after linear.
+            See ``asteroid.masknn.norms`` for valid values. (Not used in [1]).
+
+    References:
+        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        Yanxin Hu et al.
+        https://arxiv.org/abs/2008.00264
+    """
+
+    def __init__(self, in_size, hid_size=128, rnn_type="LSTM", norm_type=None):
+        super().__init__()
+
+        self.rnn = complex_nn.ComplexMultiplicationWrapper(SingleRNN, rnn_type, in_size, hid_size)
+        self.linear = complex_nn.ComplexMultiplicationWrapper(nn.Linear, hid_size, in_size)
+        self.norm = norms.get_complex(norm_type)
+
+    def forward(self, x: complex_nn.ComplexTensor):
+        """Input shape: [batch, ..., time]"""
+        # Remember x for skip connection
+        skip_conn = x
+        # Permute to [batch, time, ...]
+        x = x.permute(0, x.ndim - 1, *range(1, x.ndim - 1))
+        # RNN + Linear expect [batch, time, rest]
+        x = self.linear(self.rnn(x.reshape(*x.shape[:2], -1))).reshape(*x.shape)
+        # Permute back to [batch, ..., time]
+        x = x.permute(0, *range(2, x.ndim), 1)
+        if self.norm is not None:
+            x = self.norm(x)
+        return x + skip_conn
+
+
+class DCCRMaskNet(BaseDCUMaskNet):
+    """Masking part of DCCRNet, as proposed in [1].
+
+    Valid `architecture` values for the ``default_architecture`` classmethod are:
+    "DCCRN".
+
+    Args:
+        encoders (list of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding)):
+            Arguments of encoders of the u-net
+        decoders (list of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding))
+            Arguments of decoders of the u-net
+        n_freqs (int): Number of frequencies (dim 1) of input to ``.forward()`.
+            `n_freqs - 1` must be divisible by `f_0 * f_1 * ... * f_N` where `f_k` are
+            the frequency strides of the encoders.
+
+    References:
+        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        Yanxin Hu et al.
+        https://arxiv.org/abs/2008.00264
+    """
+
+    _architectures = DCCRN_ARCHITECTURES
+
+    def __init__(self, encoders, decoders, n_freqs, **kwargs):
+        encoders_stride_prod = np.prod([enc_stride for _, _, _, enc_stride, _ in encoders], axis=0)
+        freq_prod, _ = encoders_stride_prod
+        last_encoder_out_shape = (encoders[-1][1], int(np.ceil(n_freqs / freq_prod)))
+
+        super().__init__(
+            encoders,
+            decoders,
+            intermediate_layer=DCCRMaskNetRNN(np.prod(last_encoder_out_shape)),
+            **kwargs,
+        )
+        self.n_freqs = n_freqs

@@ -1,5 +1,7 @@
+from functools import partial
 import torch
 from torch import nn
+from .. import complex_nn
 
 
 class Swish(nn.Module):
@@ -47,7 +49,7 @@ def swish():
 
 
 def register_activation(custom_act):
-    """ Register a custom activation, gettable with `activation.get`.
+    """Register a custom activation, gettable with `activation.get`.
 
     Args:
         custom_act: Custom activation function to register.
@@ -59,7 +61,7 @@ def register_activation(custom_act):
 
 
 def get(identifier):
-    """ Returns an activation function from a string. Returns its input if it
+    """Returns an activation function from a string. Returns its input if it
     is callable (already an activation for example).
 
     Args:
@@ -79,3 +81,12 @@ def get(identifier):
         return cls
     else:
         raise ValueError("Could not interpret activation identifier: " + str(identifier))
+
+
+def get_complex(identifier):
+    """Like `.get` but returns a complex activation created with `asteroid.complex_nn.OnReIm`."""
+    activation = get(identifier)
+    if activation is None:
+        return None
+    else:
+        return partial(complex_nn.OnReIm, activation)

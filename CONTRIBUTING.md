@@ -61,7 +61,7 @@ docstrings in the codebase for examples.
 
 ### Coding style
 
-We use [pre-commit hooks][../.pre-commit-config.yaml] to format the code using
+We use [pre-commit hooks](../.pre-commit-config.yaml) to format the code using
 `black`.
 The code is checked for `black`- and `flake8`- compliance on every commit with
 GitHub actions. Remember, continuous integration is not here to be all green,

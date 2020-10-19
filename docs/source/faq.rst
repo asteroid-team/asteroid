@@ -27,3 +27,12 @@ Need a log here.
 Can I use the pretrained models for commercial purposes?
 --------------------------------------------------------
 Not always. See the note on pretrained models Licenses :ref:`Note about licenses`
+
+Separated audio is really bad, what is happening?
+-------------------------------------------------
+There are several possible cause to this, a common one is clipping.
+1. When training with scale invariant losses (e.g. SI-SNR) the audio output can be
+unbounded. However, waveform values should be normalized to [-1, 1] range before saving,
+otherwise they will be clipped.
+See `Clipping on Wikipedia <https://en.wikipedia.org/wiki/Clipping_(audio)>`_ and
+`issue #250 <https://github.com/mpariente/asteroid/issues/250>`_

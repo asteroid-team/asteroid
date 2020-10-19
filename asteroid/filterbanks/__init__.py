@@ -12,12 +12,13 @@ def make_enc_dec(
     n_filters,
     kernel_size,
     stride=None,
+    sample_rate=8000,
     who_is_pinv=None,
     padding=0,
     output_padding=0,
     **kwargs,
 ):
-    """ Creates congruent encoder and decoder from the same filterbank family.
+    """Creates congruent encoder and decoder from the same filterbank family.
 
     Args:
         fb_name (str, className): Filterbank family from which to make encoder
@@ -28,6 +29,8 @@ def make_enc_dec(
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution.
             If None (default), set to ``kernel_size // 2``.
+        sample_rate (int): Sample rate of the expected audio.
+            Defaults to 8000.
         who_is_pinv (str, optional): If `None`, no pseudo-inverse filters will
             be used. If string (among [``'encoder'``, ``'decoder'``]), decides
             which of ``Encoder`` or ``Decoder`` will be the pseudo inverse of
@@ -45,26 +48,26 @@ def make_enc_dec(
     fb_class = get(fb_name)
 
     if who_is_pinv in ["dec", "decoder"]:
-        fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
+        fb = fb_class(n_filters, kernel_size, stride=stride, sample_rate=sample_rate, **kwargs)
         enc = Encoder(fb, padding=padding)
         # Decoder filterbank is pseudo inverse of encoder filterbank.
         dec = Decoder.pinv_of(fb)
     elif who_is_pinv in ["enc", "encoder"]:
-        fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
+        fb = fb_class(n_filters, kernel_size, stride=stride, sample_rate=sample_rate, **kwargs)
         dec = Decoder(fb, padding=padding, output_padding=output_padding)
         # Encoder filterbank is pseudo inverse of decoder filterbank.
         enc = Encoder.pinv_of(fb)
     else:
-        fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
+        fb = fb_class(n_filters, kernel_size, stride=stride, sample_rate=sample_rate, **kwargs)
         enc = Encoder(fb, padding=padding)
         # Filters between encoder and decoder should not be shared.
-        fb = fb_class(n_filters, kernel_size, stride=stride, **kwargs)
+        fb = fb_class(n_filters, kernel_size, stride=stride, sample_rate=sample_rate, **kwargs)
         dec = Decoder(fb, padding=padding, output_padding=output_padding)
     return enc, dec
 
 
 def register_filterbank(custom_fb):
-    """ Register a custom filterbank, gettable with `filterbanks.get`.
+    """Register a custom filterbank, gettable with `filterbanks.get`.
 
     Args:
         custom_fb: Custom filterbank to register.
@@ -76,7 +79,7 @@ def register_filterbank(custom_fb):
 
 
 def get(identifier):
-    """ Returns a filterbank class from a string. Returns its input if it
+    """Returns a filterbank class from a string. Returns its input if it
     is callable (already a :class:`.Filterbank` for example).
 
     Args:

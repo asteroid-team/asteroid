@@ -1,10 +1,10 @@
 from ..filterbanks import make_enc_dec
 from ..masknn import DPRNN
-from .base_models import BaseTasNet
+from .base_models import BaseEncoderMaskerDecoder
 
 
-class DPRNNTasNet(BaseTasNet):
-    """ DPRNN separation model, as described in [1].
+class DPRNNTasNet(BaseEncoderMaskerDecoder):
+    """DPRNN separation model, as described in [1].
 
     Args:
         n_src (int): Number of masks to estimate.
@@ -68,7 +68,7 @@ class DPRNNTasNet(BaseTasNet):
         kernel_size=16,
         n_filters=64,
         stride=8,
-        encoder_activation="relu",
+        encoder_activation=None,
         **fb_kwargs,
     ):
         encoder, decoder = make_enc_dec(

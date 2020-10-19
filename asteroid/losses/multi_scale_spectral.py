@@ -6,7 +6,7 @@ from asteroid.filterbanks.transforms import take_mag
 
 
 class SingleSrcMultiScaleSpectral(_Loss):
-    """ Measure multi-scale spectral loss as described in [1]
+    """Measure multi-scale spectral loss as described in [1]
 
     Args:
         n_filters (list): list containing the number of filter desired for

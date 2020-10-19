@@ -1,10 +1,10 @@
 from ..filterbanks import make_enc_dec
 from ..masknn import TDConvNet
-from .base_models import BaseTasNet
+from .base_models import BaseEncoderMaskerDecoder
 
 
-class ConvTasNet(BaseTasNet):
-    """ ConvTasNet separation model, as described in [1].
+class ConvTasNet(BaseEncoderMaskerDecoder):
+    """ConvTasNet separation model, as described in [1].
 
     Args:
         n_src (int): Number of sources in the input mixtures.
@@ -59,7 +59,7 @@ class ConvTasNet(BaseTasNet):
         kernel_size=16,
         n_filters=512,
         stride=8,
-        encoder_activation="relu",
+        encoder_activation=None,
         **fb_kwargs,
     ):
         encoder, decoder = make_enc_dec(

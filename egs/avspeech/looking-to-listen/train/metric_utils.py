@@ -7,12 +7,12 @@ from asteroid.data.avspeech_dataset import AVSpeechDataset
 
 def snr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTensor:
     """
-        Calculate the Signal-to-Noise Ratio
-        from two signals
+    Calculate the Signal-to-Noise Ratio
+    from two signals
 
-        Args:
-            pred_signal (torch.Tensor): predicted signal spectrogram.
-            true_signal (torch.Tensor): original signal spectrogram.
+    Args:
+        pred_signal (torch.Tensor): predicted signal spectrogram.
+        true_signal (torch.Tensor): original signal spectrogram.
 
     """
     inter_signal = true_signal - pred_signal
@@ -27,12 +27,12 @@ def snr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTens
 
 def sdr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTensor:
     """
-        Calculate the Signal-to-Distortion Ratio
-        from two signals
+    Calculate the Signal-to-Distortion Ratio
+    from two signals
 
-        Args:
-            pred_signal (torch.Tensor): predicted signal spectrogram.
-            true_signal (torch.Tensor): original signal spectrogram.
+    Args:
+        pred_signal (torch.Tensor): predicted signal spectrogram.
+        true_signal (torch.Tensor): original signal spectrogram.
 
     """
     n_sources = pred_signal.shape[0]

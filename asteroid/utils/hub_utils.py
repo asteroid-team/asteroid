@@ -3,7 +3,10 @@ from torch import hub
 from hashlib import sha256
 
 
-CACHE_DIR = os.getenv("ASTEROID_CACHE", os.path.expanduser("~/.cache/torch/asteroid"),)
+CACHE_DIR = os.getenv(
+    "ASTEROID_CACHE",
+    os.path.expanduser("~/.cache/torch/asteroid"),
+)
 MODELS_URLS_HASHTABLE = {
     "mpariente/ConvTasNet_WHAM!_sepclean": "https://zenodo.org/record/3862942/files/model.pth?download=1",
     "mpariente/DPRNNTasNet_WHAM!_sepclean": "https://zenodo.org/record/3873670/files/model.pth?download=1",
@@ -14,11 +17,12 @@ MODELS_URLS_HASHTABLE = {
     "groadabike/ConvTasNet_DAMP-VSEP_enhboth": "https://zenodo.org/record/3994193/files/model.pth?download=1",
     "popcornell/DeMask_Surgical_mask_speech_enhancement_v1": "https://zenodo.org/record/3997047/files/model.pth?download=1",
     "popcornell/DPRNNTasNet_WHAM_enhancesingle": "https://zenodo.org/record/3998647/files/model.pth?download=1",
+    "tmirzaev-dotcom/ConvTasNet_Libri3Mix_sepnoisy": "https://zenodo.org/record/4020529/files/model.pth?download=1",
 }
 
 
 def cached_download(filename_or_url):
-    """ Download from URL with torch.hub and cache the result in ASTEROID_CACHE.
+    """Download from URL with torch.hub and cache the result in ASTEROID_CACHE.
 
     Args:
         filename_or_url (str): Name of a model as named on the Zenodo Community

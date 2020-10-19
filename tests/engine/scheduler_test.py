@@ -45,6 +45,8 @@ def test_noam_scheduler():
         scheduler=scheduler,
     )
     trainer.fit(system)
+    # Test `as_tensor` for `plot`
+    scheduler["scheduler"].as_tensor()
 
 
 def test_dptnet_scheduler():
@@ -64,3 +66,5 @@ def test_dptnet_scheduler():
         scheduler=scheduler,
     )
     trainer.fit(system)
+    # Test `as_tensor` for `plot`
+    scheduler["scheduler"].as_tensor()

@@ -11,7 +11,7 @@ import json
 
 
 class AugmentedWhamDataset(Dataset):
-    """ Dataset class for WHAM source separation and speech enhancement tasks.
+    """Dataset class for WHAM source separation and speech enhancement tasks.
 
     Args:
         wsj_train_dir (str): The path to the directory containing the wsj train/dev/test .wav files.
@@ -229,7 +229,7 @@ class AugmentedWhamDataset(Dataset):
         return out
 
     def __getitem__(self, idx):
-        """ Gets a mixture/sources pair.
+        """Gets a mixture/sources pair.
         Returns:
             mixture, vstack([source_arrays])
         """

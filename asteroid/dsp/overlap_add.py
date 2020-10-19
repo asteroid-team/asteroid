@@ -5,15 +5,24 @@ from torch import nn
 
 
 class LambdaOverlapAdd(torch.nn.Module):
-    """ Segment signal, apply func, combine with OLA.
+    """Overlap-add with lambda transform on segments.
+
+    Segment input signal, apply lambda function (a neural network for example)
+    and combine with OLA.
 
     Args:
-        nnet (callable): function to apply to each segment.
+        nnet (callable): Function to apply to each segment.
         n_src (int): Number of sources in the output of nnet.
         window_size (int): Size of segmenting window.
-        hop_size (int): segmentation hop size.
-        window (str): Name of the window (see scipy.signal.get_window)
-        reorder_chunks (bool): whether to reorder each consecutive segment.
+        hop_size (int): Segmentation hop size.
+        window (str): Name of the window (see scipy.signal.get_window) used
+            for the synthesis.
+        reorder_chunks (bool): Whether to reorder each consecutive segment.
+            This might be useful when `nnet` is permutation invariant, as
+            source assignements might change output channel from one segment
+            to the next (in classic speech separation for example).
+            Reordering is performed based on the correlation between
+            the overlapped part of consecutive segment.
 
      Examples:
         >>> from asteroid import ConvTasNet
@@ -68,7 +77,7 @@ class LambdaOverlapAdd(torch.nn.Module):
         batch, channels, n_frames = x.size()
         # Overlap and add:
         # [batch, chans, n_frames] -> [batch, chans, win_size, n_chunks]
-        folded = torch.nn.functional.unfold(
+        unfolded = torch.nn.functional.unfold(
             x.unsqueeze(-1),
             kernel_size=(self.window_size, 1),
             padding=(self.window_size, 0),
@@ -76,24 +85,26 @@ class LambdaOverlapAdd(torch.nn.Module):
         )
 
         out = []
-        n_chunks = folded.shape[-1]
+        n_chunks = unfolded.shape[-1]
         for frame_idx in range(n_chunks):  # for loop to spare memory
-            tmp = self.nnet(folded[..., frame_idx])
+            frame = self.nnet(unfolded[..., frame_idx])
             # user must handle multichannel by reshaping to batch
             if frame_idx == 0:
-                assert tmp.ndim == 3, "nnet should return (batch, n_src, time)"
-                assert tmp.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
-            tmp = tmp.reshape(batch * self.n_src, -1)
+                assert frame.ndim == 3, "nnet should return (batch, n_src, time)"
+                assert frame.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
+            frame = frame.reshape(batch * self.n_src, -1)
 
             if frame_idx != 0 and self.reorder_chunks:
                 # we determine best perm based on xcorr with previous sources
-                tmp = _reorder_sources(tmp, out[-1], self.n_src, self.window_size, self.hop_size)
+                frame = _reorder_sources(
+                    frame, out[-1], self.n_src, self.window_size, self.hop_size
+                )
 
             if self.use_window:
-                tmp = tmp * self.window
+                frame = frame * self.window
             else:
-                tmp = tmp / (self.window_size / self.hop_size)
-            out.append(tmp)
+                frame = frame / (self.window_size / self.hop_size)
+            out.append(frame)
 
         out = torch.stack(out).reshape(n_chunks, batch * self.n_src, self.window_size)
         out = out.permute(1, 2, 0)
@@ -108,7 +119,7 @@ class LambdaOverlapAdd(torch.nn.Module):
         return out.squeeze(-1).reshape(batch, self.n_src, -1)
 
     def forward(self, x):
-        """ Forward module: segment signal, apply func, combine with OLA.
+        """Forward module: segment signal, apply func, combine with OLA.
 
         Args:
             x (:class:`torch.Tensor`): waveform signal of shape (batch, 1, time).
@@ -154,18 +165,24 @@ def _reorder_sources(
     previous = previous.reshape(-1, n_src, frames)
 
     overlap_f = window_size - hop_size
-    pw_losses = PITLossWrapper.get_pw_losses(
-        lambda x, y: torch.sum((x.unsqueeze(1) * y.unsqueeze(2))),
-        current[..., :overlap_f],
-        previous[..., -overlap_f:],
-    )
-    _, perms = PITLossWrapper.find_best_perm(pw_losses, n_src)
-    current = PITLossWrapper.reorder_source(current, n_src, perms)
+
+    def reorder_func(x, y):
+        x = x[..., :overlap_f]
+        y = y[..., -overlap_f:]
+        # Mean normalization
+        x = x - x.mean(-1, keepdim=True)
+        y = y - y.mean(-1, keepdim=True)
+        # Negative mean Correlation
+        return -torch.sum(x.unsqueeze(1) * y.unsqueeze(2), dim=-1)
+
+    # We maximize correlation-like between previous and current.
+    pit = PITLossWrapper(reorder_func)
+    current = pit(current, previous, return_est=True)[1]
     return current.reshape(batch, frames)
 
 
 class DualPathProcessing(nn.Module):
-    """ Perform Dual-Path processing via overlap-add as in DPRNN [1].
+    """Perform Dual-Path processing via overlap-add as in DPRNN [1].
 
      Args:
         chunk_size (int): Size of segmenting window.
@@ -184,7 +201,7 @@ class DualPathProcessing(nn.Module):
         self.n_orig_frames = None
 
     def unfold(self, x):
-        """ Unfold the feature tensor from
+        """Unfold the feature tensor from
 
         (batch, channels, time) to (batch, channels, chunk_size, n_chunks).
 
@@ -212,7 +229,7 @@ class DualPathProcessing(nn.Module):
         )  # (batch, chan, chunk_size, n_chunks)
 
     def fold(self, x, output_size=None):
-        """ Folds back the spliced feature tensor.
+        """Folds back the spliced feature tensor.
 
         Input shape (batch, channels, chunk_size, n_chunks) to original shape
         (batch, channels, time) using overlap-add.
@@ -249,7 +266,7 @@ class DualPathProcessing(nn.Module):
 
     @staticmethod
     def intra_process(x, module):
-        """ Performs intra-chunk processing.
+        """Performs intra-chunk processing.
 
         Args:
             x (:class:`torch.Tensor`): spliced feature tensor of shape
@@ -276,7 +293,7 @@ class DualPathProcessing(nn.Module):
 
     @staticmethod
     def inter_process(x, module):
-        """ Performs inter-chunk processing.
+        """Performs inter-chunk processing.
 
         Args:
             x (:class:`torch.Tensor`): spliced feature tensor of shape

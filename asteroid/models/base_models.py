@@ -1,24 +1,50 @@
 import os
 import warnings
+
+import numpy as np
 import torch
 from torch import nn
-import numpy as np
 
-from .. import torch_utils
-from ..utils.hub_utils import cached_download
 from ..masknn import activations
+from ..utils.torch_utils import pad_x_to_y
+from ..utils.hub_utils import cached_download
+
+
+def _unsqueeze_to_3d(x):
+    if x.ndim == 1:
+        return x.reshape(1, 1, -1)
+    elif x.ndim == 2:
+        return x.unsqueeze(1)
+    else:
+        return x
 
 
 class BaseModel(nn.Module):
+    """Base class for serializable models.
+
+    Defines saving/loading procedures as well as separation methods from
+    file, torch tensors and numpy arrays.
+    Need to overwrite the `foward` method, the `sample_rate` property and
+    the `get_model_args` method.
+    For models whose `forward` doesn't return waveform tensors,
+    overwrite `_separate` to return waveform tensors.
+
+    """
+
     def __init__(self):
         super().__init__()
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError
 
+    @property
+    def sample_rate(self):
+        """Operating sample rate of the model (float)."""
+        raise NotImplementedError
+
     @torch.no_grad()
     def separate(self, wav, output_dir=None, force_overwrite=False, **kwargs):
-        """ Infer separated sources from input waveforms.
+        """Infer separated sources from input waveforms.
         Also supports filenames.
 
         Args:
@@ -77,7 +103,7 @@ class BaseModel(nn.Module):
     def file_separate(
         self, filename: str, output_dir=None, force_overwrite=False, **kwargs
     ) -> None:
-        """Filename interface to `separate`."""
+        """ Filename interface to `separate`."""
         import soundfile as sf
 
         wav, fs = sf.read(filename, dtype="float32", always_2d=True)
@@ -99,7 +125,7 @@ class BaseModel(nn.Module):
             sf.write(save_name, est_src, fs)
 
     def _separate(self, wav, *args, **kwargs):
-        """ Hidden separation method
+        """Hidden separation method
 
         Args:
             wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
@@ -112,7 +138,7 @@ class BaseModel(nn.Module):
 
     @classmethod
     def from_pretrained(cls, pretrained_model_conf_or_path, *args, **kwargs):
-        """ Instantiate separation model from a model config (file or dict).
+        """Instantiate separation model from a model config (file or dict).
 
         Args:
             pretrained_model_conf_or_path (Union[dict, str]): model conf as
@@ -164,13 +190,14 @@ class BaseModel(nn.Module):
         return model
 
     def serialize(self):
-        """ Serialize model and output dictionary.
+        """Serialize model and output dictionary.
 
         Returns:
             dict, serialized model with keys `model_args` and `state_dict`.
         """
-        from .. import __version__ as asteroid_version  # Avoid circular imports
         import pytorch_lightning as pl  # Not used in torch.hub
+
+        from .. import __version__ as asteroid_version  # Avoid circular imports
 
         model_conf = dict(
             model_name=self.__class__.__name__,
@@ -192,16 +219,19 @@ class BaseModel(nn.Module):
         return self.state_dict()
 
     def get_model_args(self):
+        """Should return args to re-instantiate the class."""
         raise NotImplementedError
 
 
-class BaseTasNet(BaseModel):
-    """ Base class for encoder-masker-decoder separation models.
+class BaseEncoderMaskerDecoder(BaseModel):
+    """Base class for encoder-masker-decoder separation models.
 
     Args:
         encoder (Encoder): Encoder instance.
         masker (nn.Module): masker network.
         decoder (Decoder): Decoder instance.
+        encoder_activation (Optional[str], optional): Activation to apply after encoder.
+            See ``asteroid.masknn.activations`` for valid values.
     """
 
     def __init__(self, encoder, masker, decoder, encoder_activation=None):
@@ -209,15 +239,15 @@ class BaseTasNet(BaseModel):
         self.encoder = encoder
         self.masker = masker
         self.decoder = decoder
-
         self.encoder_activation = encoder_activation
-        if encoder_activation:
-            self.enc_activation = activations.get(encoder_activation)()
-        else:
-            self.enc_activation = activations.get("linear")()
+        self.enc_activation = activations.get(encoder_activation or "linear")()
+
+    @property
+    def sample_rate(self):
+        return getattr(self.encoder, "sample_rate", None)
 
     def forward(self, wav):
-        """ Enc/Mask/Dec model forward
+        """Enc/Mask/Dec model forward
 
         Args:
             wav (torch.Tensor): waveform tensor. 1D, 2D or 3D tensor, time last.
@@ -226,20 +256,81 @@ class BaseTasNet(BaseModel):
             torch.Tensor, of shape (batch, n_src, time) or (n_src, time).
         """
         # Handle 1D, 2D or n-D inputs
-        was_one_d = False
-        if wav.ndim == 1:
-            was_one_d = True
-            wav = wav.unsqueeze(0).unsqueeze(1)
-        if wav.ndim == 2:
-            wav = wav.unsqueeze(1)
+        was_one_d = wav.ndim == 1
+        # Reshape to (batch, n_mix, time)
+        wav = _unsqueeze_to_3d(wav)
+
         # Real forward
-        tf_rep = self.enc_activation(self.encoder(wav))
+        tf_rep = self.encoder(wav)
+        tf_rep = self.postprocess_encoded(tf_rep)
+        tf_rep = self.enc_activation(tf_rep)
+
         est_masks = self.masker(tf_rep)
+        est_masks = self.postprocess_masks(est_masks)
+
         masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
-        out_wavs = torch_utils.pad_x_to_y(self.decoder(masked_tf_rep), wav)
+        masked_tf_rep = self.postprocess_masked(masked_tf_rep)
+
+        decoded = self.decoder(masked_tf_rep)
+        decoded = self.postprocess_decoded(decoded)
+
+        reconstructed = pad_x_to_y(decoded, wav)
         if was_one_d:
-            return out_wavs.squeeze(0)
-        return out_wavs
+            return reconstructed.squeeze(0)
+        else:
+            return reconstructed
+
+    def postprocess_encoded(self, tf_rep):
+        """Hook to perform transformations on the encoded, time-frequency domain
+        representation (output of the encoder) before encoder activation is applied.
+
+        Args:
+            tf_rep (Tensor of shape (batch, freq, time)):
+                Output of the encoder, before encoder activation is applied.
+
+        Return:
+            Transformed `tf_rep`
+        """
+        return tf_rep
+
+    def postprocess_masks(self, masks):
+        """Hook to perform transformations on the masks (output of the masker) before
+        masks are applied.
+
+        Args:
+            masks (Tensor of shape (batch, n_src, freq, time)):
+                Output of the masker
+
+        Return:
+            Transformed `masks`
+        """
+        return masks
+
+    def postprocess_masked(self, masked_tf_rep):
+        """Hook to perform transformations on the masked time-frequency domain
+        representation (result of masking in the time-frequency domain) before decoding.
+
+        Args:
+            masked_tf_rep (Tensor of shape (batch, n_src, freq, time)):
+                Masked time-frequency representation, before decoding.
+
+        Return:
+            Transformed `masked_tf_rep`
+        """
+        return masked_tf_rep
+
+    def postprocess_decoded(self, decoded):
+        """Hook to perform transformations on the decoded, time domain representation
+        (output of the decoder) before original shape reconstruction.
+
+        Args:
+            decoded (Tensor of shape (batch, n_src, time)):
+                Output of the decoder, before original shape reconstruction.
+
+        Return:
+            Transformed `decoded`
+        """
+        return decoded
 
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
@@ -257,3 +348,7 @@ class BaseTasNet(BaseModel):
             "encoder_activation": self.encoder_activation,
         }
         return model_args
+
+
+# Backwards compatibility
+BaseTasNet = BaseEncoderMaskerDecoder

@@ -1,9 +1,9 @@
 from torch import nn
 from .base_models import BaseModel
 from ..filterbanks import make_enc_dec
-from ..masknn import norms, activations
 from ..filterbanks.transforms import take_mag, take_cat
-from .. import torch_utils
+from ..masknn import norms, activations
+from ..utils.torch_utils import pad_x_to_y
 
 
 class DeMask(BaseModel):
@@ -142,7 +142,7 @@ class DeMask(BaseModel):
         else:
             raise NotImplementedError
 
-        out_wavs = torch_utils.pad_x_to_y(self.decoder(masked_tf_rep), wav)
+        out_wavs = pad_x_to_y(self.decoder(masked_tf_rep), wav)
         if was_one_d:
             return out_wavs.squeeze(0)
         return out_wavs

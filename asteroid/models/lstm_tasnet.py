@@ -4,11 +4,11 @@ from copy import deepcopy
 
 from ..filterbanks import make_enc_dec
 from ..masknn import LSTMMasker
-from .base_models import BaseTasNet
+from .base_models import BaseEncoderMaskerDecoder
 
 
-class LSTMTasNet(BaseTasNet):
-    """ TasNet separation model, as described in [1].
+class LSTMTasNet(BaseEncoderMaskerDecoder):
+    """TasNet separation model, as described in [1].
 
     Args:
         n_src (int): Number of masks to estimate.

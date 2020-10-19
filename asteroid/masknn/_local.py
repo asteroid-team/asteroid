@@ -3,7 +3,7 @@ from .norms import GlobLN
 
 
 class _ConvNormAct(nn.Module):
-    """ Convolution layer with normalization and a PReLU activation.
+    """Convolution layer with normalization and a PReLU activation.
 
     See license and copyright notices here
         https://github.com/etzinis/sudo_rm_rf#copyright-and-license
@@ -37,7 +37,7 @@ class _ConvNormAct(nn.Module):
 
 
 class _ConvNorm(nn.Module):
-    """ Convolution layer with normalization without activation.
+    """Convolution layer with normalization without activation.
 
     See license and copyright notices here
         https://github.com/etzinis/sudo_rm_rf#copyright-and-license
@@ -66,7 +66,7 @@ class _ConvNorm(nn.Module):
 
 
 class _NormAct(nn.Module):
-    """ Normalization and PReLU activation.
+    """Normalization and PReLU activation.
 
     See license and copyright notices here
         https://github.com/etzinis/sudo_rm_rf#copyright-and-license
@@ -90,7 +90,7 @@ class _NormAct(nn.Module):
 
 
 class _DilatedConvNorm(nn.Module):
-    """ Dilated convolution with normalized output.
+    """Dilated convolution with normalized output.
 
     See license and copyright notices here
         https://github.com/etzinis/sudo_rm_rf#copyright-and-license

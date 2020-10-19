@@ -2,7 +2,7 @@ import torch
 
 
 def mul_c(inp, other, dim: int = -2):
-    """ Entrywise product for complex valued tensors.
+    """Entrywise product for complex valued tensors.
 
     Operands are assumed to have the real parts of each entry followed by the
     imaginary parts of each entry along dimension `dim`, e.g. for,
@@ -47,7 +47,7 @@ def take_reim(x, dim: int = -2):
 
 
 def take_mag(x, dim: int = -2, EPS: float = 1e-8):
-    """ Takes the magnitude of a complex tensor.
+    """Takes the magnitude of a complex tensor.
 
     The operands is assumed to have the real parts of each entry followed by
     the imaginary parts of each entry along dimension `dim`, e.g. for,
@@ -86,7 +86,7 @@ def take_cat(x, dim: int = -2):
 
 
 def apply_real_mask(tf_rep, mask, dim: int = -2):
-    """ Applies a real-valued mask to a real-valued representation.
+    """Applies a real-valued mask to a real-valued representation.
 
     It corresponds to ReIm mask in [1].
 
@@ -102,7 +102,7 @@ def apply_real_mask(tf_rep, mask, dim: int = -2):
 
 
 def apply_mag_mask(tf_rep, mask, dim: int = -2):
-    """ Applies a real-valued mask to a complex-valued representation.
+    """Applies a real-valued mask to a complex-valued representation.
 
     If `tf_rep` has 2N elements along `dim`, `mask` has N elements, `mask` is
     duplicated along `dim` to apply the same mask to both the Re and Im.
@@ -140,7 +140,7 @@ def apply_mag_mask(tf_rep, mask, dim: int = -2):
 
 
 def apply_complex_mask(tf_rep, mask, dim: int = -2):
-    """ Applies a complex-valued mask to a complex-valued representation.
+    """Applies a complex-valued mask to a complex-valued representation.
 
     Operands are assumed to have the real parts of each entry followed by the
     imaginary parts of each entry along dimension `dim`, e.g. for,
@@ -175,8 +175,23 @@ def apply_complex_mask(tf_rep, mask, dim: int = -2):
     return mul_c(tf_rep, mask, dim=dim)
 
 
+def is_asteroid_complex(tensor, dim=-2):
+    """Check if tensor is complex-like in a given dimension.
+
+    Args:
+        tensor (torch.Tensor): tensor to be checked.
+        dim(int): the frequency (or equivalent) dimension along which
+            real and imaginary values are concatenated.
+
+    Returns:
+        True if dimension is even in the specified dimension, otherwise False
+
+    """
+    return tensor.shape[dim] % 2 == 0
+
+
 def check_complex(tensor, dim: int = -2):
-    """ Assert tensor in complex-like in a given dimension.
+    """Assert that tensor is an Asteroid-style complex in a given dimension.
 
     Args:
         tensor (torch.Tensor): tensor to be checked.
@@ -187,16 +202,16 @@ def check_complex(tensor, dim: int = -2):
         AssertionError if dimension is not even in the specified dimension
 
     """
-    if tensor.shape[dim] % 2 != 0:
+    if not is_asteroid_complex(tensor, dim):
         raise AssertionError(
-            "Could not equally chunk the tensor (shape {}) "
-            "along the given dimension ({}). Dim axis is "
+            f"Could not equally chunk the tensor (shape {tensor.shape}) "
+            f"along the given dimension ({dim}). Dim axis is "
             "probably wrong"
         )
 
 
 def to_numpy(tensor, dim: int = -2):
-    """ Convert complex-like torch tensor to numpy complex array
+    """Convert complex-like torch tensor to numpy complex array
 
     Args:
         tensor (torch.Tensor): Complex tensor to convert to numpy.
@@ -212,7 +227,7 @@ def to_numpy(tensor, dim: int = -2):
 
 
 def from_numpy(array, dim: int = -2):
-    """ Convert complex numpy array to complex-like torch tensor.
+    """Convert complex numpy array to complex-like torch tensor.
 
     Args:
         array (np.array): array to be converted.
@@ -228,8 +243,36 @@ def from_numpy(array, dim: int = -2):
     return torch.cat([torch.from_numpy(np.real(array)), torch.from_numpy(np.imag(array))], dim=dim)
 
 
+def is_torchaudio_complex(x):
+    """Check if tensor is Torchaudio-style complex-like (last dimension is 2).
+
+    Args:
+        tensor (torch.Tensor): tensor to be checked.
+
+    Returns:
+        True if last dimension is 2, else False.
+    """
+    return x.shape[-1] == 2
+
+
+def check_torchaudio_complex(tensor):
+    """Assert that tensor is Torchaudo-style complex-like (last dimension is 2).
+
+    Args:
+        tensor (torch.Tensor): tensor to be checked.
+
+    Raises:
+        AssertionError if last dimension is != 2.
+    """
+    if not is_torchaudio_complex(tensor):
+        raise AssertionError(
+            f"Tensor of shape {tensor.shape} is not Torchaudio-style complex-like"
+            "(expected last dimension to be == 2)"
+        )
+
+
 def to_torchaudio(tensor, dim: int = -2):
-    """ Converts complex-like torch tensor to torchaudio style complex tensor.
+    """Converts complex-like torch tensor to torchaudio style complex tensor.
 
     Args:
         tensor (torch.tensor): asteroid-style complex-like torch tensor.
@@ -244,7 +287,7 @@ def to_torchaudio(tensor, dim: int = -2):
 
 
 def from_torchaudio(tensor, dim: int = -2):
-    """ Converts torchaudio style complex tensor to complex-like torch tensor.
+    """Converts torchaudio style complex tensor to complex-like torch tensor.
 
     Args:
         tensor (torch.tensor): torchaudio-style complex-like torch tensor.
@@ -259,7 +302,7 @@ def from_torchaudio(tensor, dim: int = -2):
 
 
 def angle(tensor, dim: int = -2):
-    """ Return the angle of the complex-like torch tensor.
+    """Return the angle of the complex-like torch tensor.
 
     Args:
         tensor (torch.Tensor): the complex tensor from which to extract the
@@ -278,7 +321,7 @@ def angle(tensor, dim: int = -2):
 
 
 def from_mag_and_phase(mag, phase, dim: int = -2):
-    """ Return a complex-like torch tensor from magnitude and phase components.
+    """Return a complex-like torch tensor from magnitude and phase components.
 
     Args:
         mag (torch.tensor): magnitude of the tensor.
@@ -294,7 +337,7 @@ def from_mag_and_phase(mag, phase, dim: int = -2):
 
 
 def ebased_vad(mag_spec, th_db=40):
-    """ Compute energy-based VAD from a magnitude spectrogram (or equivalent).
+    """Compute energy-based VAD from a magnitude spectrogram (or equivalent).
 
     Args:
         mag_spec (torch.Tensor): the spectrogram to perform VAD on.

@@ -13,32 +13,32 @@ import torch.nn.functional as F
 
 class TwoStepTDCN(nn.Module):
     """
-        A time-dilated convolutional network (TDCN) similar to the initial
-        ConvTasNet architecture where the encoder and decoder have been
-        pre-trained separately. The TwoStepTDCN infers masks directly on the
-        latent space and works using an signal to distortion ratio (SDR) loss
-        directly on the ideal latent masks.
-        Adaptive basis encoder and decoder with inference of ideal masks.
-        Copied from: https://github.com/etzinis/two_step_mask_learning/
+    A time-dilated convolutional network (TDCN) similar to the initial
+    ConvTasNet architecture where the encoder and decoder have been
+    pre-trained separately. The TwoStepTDCN infers masks directly on the
+    latent space and works using an signal to distortion ratio (SDR) loss
+    directly on the ideal latent masks.
+    Adaptive basis encoder and decoder with inference of ideal masks.
+    Copied from: https://github.com/etzinis/two_step_mask_learning/
 
-        Args:
-            pretrained_filterbank: A pretrained encoder decoder like the one
-                implemented in asteroid.filterbanks.simple_adaptive
-            n_sources (int, optional): Number of masks to estimate.
-            n_blocks (int, optional): Number of convolutional blocks in each
-                repeat. Defaults to 8.
-            n_repeats (int, optional): Number of repeats. Defaults to 4.
-            bn_chan (int, optional): Number of channels after the bottleneck.
-            hid_chan (int, optional): Number of channels in the convolutional
-                blocks.
-            kernel_size (int, optional): Kernel size in convolutional blocks.
-                n_sources: The number of sources
-        References:
-            Tzinis, E., Venkataramani, S., Wang, Z., Subakan, Y. C., and
-            Smaragdis, P., "Two-Step Sound Source Separation:
-            Training on Learned Latent Targets." In Acoustics, Speech
-            and Signal Processing (ICASSP), 2020 IEEE International Conference.
-            https://arxiv.org/abs/1910.09804
+    Args:
+        pretrained_filterbank: A pretrained encoder decoder like the one
+            implemented in asteroid.filterbanks.simple_adaptive
+        n_sources (int, optional): Number of masks to estimate.
+        n_blocks (int, optional): Number of convolutional blocks in each
+            repeat. Defaults to 8.
+        n_repeats (int, optional): Number of repeats. Defaults to 4.
+        bn_chan (int, optional): Number of channels after the bottleneck.
+        hid_chan (int, optional): Number of channels in the convolutional
+            blocks.
+        kernel_size (int, optional): Kernel size in convolutional blocks.
+            n_sources: The number of sources
+    References:
+        Tzinis, E., Venkataramani, S., Wang, Z., Subakan, Y. C., and
+        Smaragdis, P., "Two-Step Sound Source Separation:
+        Training on Learned Latent Targets." In Acoustics, Speech
+        and Signal Processing (ICASSP), 2020 IEEE International Conference.
+        https://arxiv.org/abs/1910.09804
     """
 
     def __init__(
@@ -187,14 +187,14 @@ class SeparableDilatedConv1DBlock(nn.Module):
 
 class AdaptiveEncoder1D(nn.Module):
     """
-        A 1D convolutional block that transforms signal in wave form into higher
-        dimension.
+    A 1D convolutional block that transforms signal in wave form into higher
+    dimension.
 
-        Args:
-            input shape: [batch, 1, n_samples]
-            output shape: [batch, freq_res, n_samples//sample_res]
-            freq_res: number of output frequencies for the encoding convolution
-            sample_res: int, length of the encoding filter
+    Args:
+        input shape: [batch, 1, n_samples]
+        output shape: [batch, freq_res, n_samples//sample_res]
+        freq_res: number of output frequencies for the encoding convolution
+        sample_res: int, length of the encoding filter
     """
 
     def __init__(self, freq_res, sample_res):
@@ -208,7 +208,7 @@ class AdaptiveEncoder1D(nn.Module):
 
 
 class AdaptiveDecoder1D(nn.Module):
-    """ A 1D deconvolutional block that transforms encoded representation
+    """A 1D deconvolutional block that transforms encoded representation
     into wave form.
     input shape: [batch, freq_res, sample_res]
     output shape: [batch, 1, sample_res*n_samples]
@@ -234,19 +234,19 @@ class AdaptiveDecoder1D(nn.Module):
 
 class AdaptiveEncoderDecoder(nn.Module):
     """
-        Adaptive basis encoder and decoder with inference of ideal masks.
-        Copied from: https://github.com/etzinis/two_step_mask_learning/
+    Adaptive basis encoder and decoder with inference of ideal masks.
+    Copied from: https://github.com/etzinis/two_step_mask_learning/
 
-        Args:
-            freq_res: The number of frequency like representations
-            sample_res: The number of samples in kernel 1D convolutions
-            n_sources: The number of sources
-        References:
-            Tzinis, E., Venkataramani, S., Wang, Z., Subakan, Y. C., and
-            Smaragdis, P., "Two-Step Sound Source Separation:
-            Training on Learned Latent Targets." In Acoustics, Speech
-            and Signal Processing (ICASSP), 2020 IEEE International Conference.
-            https://arxiv.org/abs/1910.09804
+    Args:
+        freq_res: The number of frequency like representations
+        sample_res: The number of samples in kernel 1D convolutions
+        n_sources: The number of sources
+    References:
+        Tzinis, E., Venkataramani, S., Wang, Z., Subakan, Y. C., and
+        Smaragdis, P., "Two-Step Sound Source Separation:
+        Training on Learned Latent Targets." In Acoustics, Speech
+        and Signal Processing (ICASSP), 2020 IEEE International Conference.
+        https://arxiv.org/abs/1910.09804
     """
 
     def __init__(self, freq_res=256, sample_res=21, n_sources=2):
@@ -392,7 +392,7 @@ def load_best_filterbank_if_available(conf):
 
 
 def make_model_and_optimizer(conf, model_part="filterbank", pretrained_filterbank=None):
-    """ Function to define the model and optimizer for a config dictionary.
+    """Function to define the model and optimizer for a config dictionary.
     Args:
         conf: Dictionary containing the output of hierachical argparse.
         model_part: Either filterbank (in other words adaptive front-end and

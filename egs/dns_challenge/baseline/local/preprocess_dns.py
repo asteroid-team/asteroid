@@ -6,7 +6,7 @@ import soundfile as sf
 
 
 def preprocess_dns(in_dir, out_dir="./data"):
-    """ Create json file from dataset folder.
+    """Create json file from dataset folder.
 
     Args:
         in_dir (str): Location of the DNS data

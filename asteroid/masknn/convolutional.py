@@ -2,10 +2,13 @@ import torch
 from torch import nn
 import warnings
 
+from .. import complex_nn
 from . import norms, activations
+from .base import BaseDCUMaskNet
 from .norms import GlobLN
 from ..utils import has_arg
 from ..utils.deprecation_utils import VisibleDeprecationWarning
+from ._dcunet_architectures import DCUNET_ARCHITECTURES
 from ._local import _DilatedConvNorm, _NormAct, _ConvNormAct, _ConvNorm
 
 
@@ -68,7 +71,7 @@ class Conv1DBlock(nn.Module):
 
 
 class TDConvNet(nn.Module):
-    """ Temporal Convolutional network used in ConvTasnet.
+    """Temporal Convolutional network used in ConvTasnet.
 
     Args:
         in_chan (int): Number of input filters.
@@ -212,7 +215,7 @@ class TDConvNet(nn.Module):
 
 
 class TDConvNetpp(nn.Module):
-    """ Improved Temporal Convolutional network used in [1] (TDCN++)
+    """Improved Temporal Convolutional network used in [1] (TDCN++)
 
     Args:
         in_chan (int): Number of input filters.
@@ -383,8 +386,117 @@ class TDConvNetpp(nn.Module):
         return config
 
 
+class DCUNetComplexEncoderBlock(nn.Module):
+    """Encoder block as proposed in [1].
+
+    Args:
+        in_chan (int): Number of input channels.
+        out_chan (int): Number of output channels.
+        kernel_size (Tuple[int, int]): Convolution kernel size.
+        stride (Tuple[int, int]): Convolution stride.
+        padding (Tuple[int, int]): Convolution padding.
+        norm_type (str, optional): Type of normalization to use.
+            See ``asteroid.masknn.norms`` for valid values.
+        activation (str, optional): Type of activation to use.
+            See ``asteroid.masknn.activations`` for valid values.
+
+    References:
+        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        Hyeong-Seok Choi et al.
+        https://arxiv.org/abs/1903.03107
+    """
+
+    def __init__(
+        self,
+        in_chan,
+        out_chan,
+        kernel_size,
+        stride,
+        padding,
+        norm_type="bN",
+        activation="leaky_relu",
+    ):
+        super().__init__()
+
+        self.conv = complex_nn.ComplexConv2d(in_chan, out_chan, kernel_size, stride, padding)
+
+        self.norm = norms.get_complex(norm_type)(out_chan)
+
+        activation_class = activations.get_complex(activation)
+        self.activation = activation_class()
+
+    def forward(self, x: complex_nn.ComplexTensor):
+        return self.activation(self.norm(self.conv(x)))
+
+
+class DCUNetComplexDecoderBlock(nn.Module):
+    """Decoder block as proposed in [1].
+
+    Args:
+        in_chan (int): Number of input channels.
+        out_chan (int): Number of output channels.
+        kernel_size (Tuple[int, int]): Convolution kernel size.
+        stride (Tuple[int, int]): Convolution stride.
+        padding (Tuple[int, int]): Convolution padding.
+        norm_type (str, optional): Type of normalization to use.
+            See ``asteroid.masknn.norms`` for valid values.
+        activation (str, optional): Type of activation to use.
+            See ``asteroid.masknn.activations`` for valid values.
+
+    References:
+        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        Hyeong-Seok Choi et al.
+        https://arxiv.org/abs/1903.03107
+    """
+
+    def __init__(
+        self,
+        in_chan,
+        out_chan,
+        kernel_size,
+        stride,
+        padding,
+        norm_type="bN",
+        activation="leaky_relu",
+    ):
+        super().__init__()
+
+        self.in_chan = in_chan
+        self.out_chan = out_chan
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+
+        self.deconv = complex_nn.ComplexConvTranspose2d(
+            in_chan, out_chan, kernel_size, stride, padding
+        )
+
+        self.norm = norms.get_complex(norm_type)(out_chan)
+
+        activation_class = activations.get_complex(activation)
+        self.activation = activation_class()
+
+    def forward(self, x: complex_nn.ComplexTensor):
+        return self.activation(self.norm(self.deconv(x)))
+
+
+class DCUMaskNet(BaseDCUMaskNet):
+    """Masking part of DCUNet, as proposed in [1].
+
+    Valid `architecture` values for the ``default_architecture`` classmethod are:
+    "Large-DCUNet-20", "DCUNet-20", "DCUNet-16", "DCUNet-10".
+
+    References:
+        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        Hyeong-Seok Choi et al.
+        https://arxiv.org/abs/1903.03107
+    """
+
+    _architectures = DCUNET_ARCHITECTURES
+
+
 class SuDORMRF(nn.Module):
-    """ SuDORMRF mask network, as described in [1].
+    """SuDORMRF mask network, as described in [1].
 
     Args:
         in_chan (int): Number of input channels. Also number of output channels.
@@ -400,7 +512,13 @@ class SuDORMRF(nn.Module):
     """
 
     def __init__(
-        self, in_chan, n_src, bn_chan=128, num_blocks=16, upsampling_depth=4, mask_act="softmax",
+        self,
+        in_chan,
+        n_src,
+        bn_chan=128,
+        num_blocks=16,
+        upsampling_depth=4,
+        mask_act="softmax",
     ):
         super().__init__()
         self.in_chan = in_chan
@@ -417,7 +535,11 @@ class SuDORMRF(nn.Module):
         # Separation module
         self.sm = nn.Sequential(
             *[
-                UBlock(out_chan=bn_chan, in_chan=in_chan, upsampling_depth=upsampling_depth,)
+                UBlock(
+                    out_chan=bn_chan,
+                    in_chan=in_chan,
+                    upsampling_depth=upsampling_depth,
+                )
                 for _ in range(num_blocks)
             ]
         )
@@ -427,7 +549,10 @@ class SuDORMRF(nn.Module):
 
         # Masks layer
         self.m = nn.Conv2d(
-            1, n_src, kernel_size=(in_chan + 1, 1), padding=(in_chan - in_chan // 2, 0),
+            1,
+            n_src,
+            kernel_size=(in_chan + 1, 1),
+            padding=(in_chan - in_chan // 2, 0),
         )
 
         # Get activation function.
@@ -464,7 +589,7 @@ class SuDORMRF(nn.Module):
 
 
 class SuDORMRFImproved(nn.Module):
-    """ Improved SuDORMRF mask network, as described in [1].
+    """Improved SuDORMRF mask network, as described in [1].
 
     Args:
         in_chan (int): Number of input channels. Also number of output channels.
@@ -481,7 +606,13 @@ class SuDORMRFImproved(nn.Module):
     """
 
     def __init__(
-        self, in_chan, n_src, bn_chan=128, num_blocks=16, upsampling_depth=4, mask_act="relu",
+        self,
+        in_chan,
+        n_src,
+        bn_chan=128,
+        num_blocks=16,
+        upsampling_depth=4,
+        mask_act="relu",
     ):
         super().__init__()
         self.in_chan = in_chan
@@ -498,7 +629,11 @@ class SuDORMRFImproved(nn.Module):
         # Separation module
         self.sm = nn.Sequential(
             *[
-                UConvBlock(out_chan=bn_chan, in_chan=in_chan, upsampling_depth=upsampling_depth,)
+                UConvBlock(
+                    out_chan=bn_chan,
+                    in_chan=in_chan,
+                    upsampling_depth=upsampling_depth,
+                )
                 for _ in range(num_blocks)
             ]
         )
@@ -546,7 +681,13 @@ class _BaseUBlock(nn.Module):
         self.spp_dw = nn.ModuleList()
         self.spp_dw.append(
             _DilatedConvNorm(
-                in_chan, in_chan, kSize=5, stride=1, groups=in_chan, d=1, use_globln=use_globln,
+                in_chan,
+                in_chan,
+                kSize=5,
+                stride=1,
+                groups=in_chan,
+                d=1,
+                use_globln=use_globln,
             )
         )
 
@@ -575,7 +716,7 @@ class _BaseUBlock(nn.Module):
 
 
 class UBlock(_BaseUBlock):
-    """ Upsampling block.
+    """Upsampling block.
 
     Based on the following principle:
         ``REDUCE ---> SPLIT ---> TRANSFORM --> MERGE``
@@ -616,7 +757,7 @@ class UBlock(_BaseUBlock):
 
 
 class UConvBlock(_BaseUBlock):
-    """ Block which performs successive downsampling and upsampling
+    """Block which performs successive downsampling and upsampling
     in order to be able to analyze the input features in multiple resolutions.
     """
 

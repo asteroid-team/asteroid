@@ -1,3 +1,4 @@
+import itertools
 import argparse
 from collections.abc import MutableMapping
 import torch
@@ -90,7 +91,32 @@ def test_average_array_in_dic():
     assert av_d == d_should_be
 
 
-@pytest.mark.parametrize("desired", [50, 100])
-def test_get_start_stop(desired):
-    sig = np.random.randn(100)
+@pytest.mark.parametrize("sig_len,desired", itertools.product([50, 100, 150], [50, 100, 150]))
+def test_get_start_stop(sig_len, desired):
+    sig = np.random.randn(sig_len)
     start, stop = utils.get_wav_random_start_stop(len(sig), desired_len=desired)
+    # Start must be chosen so that len(sig[start:]) is at least `desired`
+    # (or if `desired < sig_len`, then exactly `sig_len`).
+    assert start < max(1, sig_len - desired)
+    # Stop must be chosen so that `start + stop == desired`
+    # (or if `desired < sig_len`, then exactly `sig_len`).
+    assert stop == start + min(sig_len, desired)
+
+
+def test_unet_decoder_args():
+    a, b, c, d = np.random.randint(1, 100, size=4)
+    encoders = [
+        (a, b, "ks1", "st1", "pad1"),
+        (b, c, "ks2", "st2", "pad2"),
+        (c, d, "ks3", "st3", "pad3"),
+    ]
+    assert utils.unet_decoder_args(encoders, skip_connections=False) == [
+        (1 * d, c, "ks3", "st3", "pad3"),
+        (1 * c, b, "ks2", "st2", "pad2"),
+        (1 * b, a, "ks1", "st1", "pad1"),
+    ]
+    assert utils.unet_decoder_args(encoders, skip_connections=True) == [
+        (1 * d, c, "ks3", "st3", "pad3"),
+        (2 * c, b, "ks2", "st2", "pad2"),
+        (2 * b, a, "ks1", "st1", "pad1"),
+    ]

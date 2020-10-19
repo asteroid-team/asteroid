@@ -4,7 +4,7 @@ import numpy as np
 
 
 def has_arg(fn, name):
-    """ Checks if a callable accepts a given keyword argument.
+    """Checks if a callable accepts a given keyword argument.
 
     Args:
         fn (callable): Callable to inspect.
@@ -25,7 +25,7 @@ def has_arg(fn, name):
 
 
 def flatten_dict(d, parent_key="", sep="_"):
-    """ Flattens a dictionary into a single-level dictionary while preserving
+    """Flattens a dictionary into a single-level dictionary while preserving
     parent keys. Taken from https://stackoverflow.com/questions/6027558/
     flatten-nested-dictionaries-compressing-keys?answertab=votes#tab-top
 
@@ -48,7 +48,7 @@ def flatten_dict(d, parent_key="", sep="_"):
 
 
 def average_arrays_in_dic(dic):
-    """ Take average of numpy arrays in a dictionary.
+    """Take average of numpy arrays in a dictionary.
 
     Args:
         dic (dict): Input dictionary to take average from
@@ -66,7 +66,7 @@ def average_arrays_in_dic(dic):
 
 
 def get_wav_random_start_stop(signal_len, desired_len=4 * 8000):
-    """ Get indexes for a chunk of signal of a given length.
+    """Get indexes for a chunk of signal of a given length.
 
     Args:
         signal_len (int): length of the signal to trim.
@@ -75,12 +75,34 @@ def get_wav_random_start_stop(signal_len, desired_len=4 * 8000):
     Returns:
         tuple: random start integer, stop integer.
     """
-    if signal_len == desired_len or desired_len is None:
-        rand_start = 0
-    else:
-        rand_start = np.random.randint(0, signal_len - desired_len)
     if desired_len is None:
-        stop = None
-    else:
-        stop = rand_start + desired_len
+        return 0, signal_len
+    rand_start = np.random.randint(0, max(1, signal_len - desired_len))
+    stop = min(signal_len, rand_start + desired_len)
     return rand_start, stop
+
+
+def unet_decoder_args(encoders, *, skip_connections):
+    """Get list of decoder arguments for upsampling (right) side of a symmetric u-net,
+    given the arguments used to construct the encoder.
+
+    Args:
+        encoders (list of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding)):
+            List of arguments used to construct the encoders
+        skip_connections (bool): Whether to include skip connections in the
+            calculation of decoder input channels.
+
+    Return:
+        list of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding):
+            Arguments to be used to construct decoders
+    """
+    decoder_args = []
+    for enc_in_chan, enc_out_chan, enc_kernel_size, enc_stride, enc_padding in reversed(encoders):
+        if skip_connections and decoder_args:
+            skip_in_chan = enc_out_chan
+        else:
+            skip_in_chan = 0
+        decoder_args.append(
+            (enc_out_chan + skip_in_chan, enc_in_chan, enc_kernel_size, enc_stride, enc_padding)
+        )
+    return decoder_args

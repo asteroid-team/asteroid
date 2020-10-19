@@ -2,7 +2,7 @@ import torch
 
 
 def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
-    """ Compute the deep clustering loss defined in [1].
+    """Compute the deep clustering loss defined in [1].
 
     Args:
         embedding (torch.Tensor): Estimated embeddings.
@@ -61,7 +61,7 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
 
 
 def batch_matrix_norm(matrix, norm_order=2):
-    """ Normalize a matrix according to `norm_order`
+    """Normalize a matrix according to `norm_order`
 
     Args:
         matrix (torch.Tensor): Expected shape [batch, *]

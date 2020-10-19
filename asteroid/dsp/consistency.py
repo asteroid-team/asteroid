@@ -2,7 +2,7 @@ import torch
 
 
 def mixture_consistency(mixture, est_sources, src_weights=None, dim=1):
-    """ Applies mixture consistency to a tensor of estimated sources.
+    """Applies mixture consistency to a tensor of estimated sources.
 
     Args
         mixture (torch.Tensor): Mixture waveform or TF representation.

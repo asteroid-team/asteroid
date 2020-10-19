@@ -1,8 +1,9 @@
+import torch
 from torch.optim.optimizer import Optimizer
 
 
 class _BaseScheduler(object):
-    """ Base class for the step-wise scheduler logic.
+    """Base class for the step-wise scheduler logic.
 
     Args:
         optimizer (Optimize): Optimizer instance to apply lr schedule on.
@@ -33,6 +34,23 @@ class _BaseScheduler(object):
 
     def state_dict(self):
         return {key: value for key, value in self.__dict__.items()}
+
+    def plot(self, start=0, stop=100_000):  # noqa
+        """Plot the scheduler values from start to stop."""
+        import matplotlib.pyplot as plt
+
+        all_lr = self.as_tensor(start=start, stop=stop)
+        plt.plot(all_lr.numpy())
+        plt.show()
+
+    def as_tensor(self, start=0, stop=100_000):
+        """Returns the scheduler values from start to stop."""
+        lr_list = []
+        for _ in range(start, stop):
+            self.step_num += 1
+            lr_list.append(self._get_lr())
+        self.step_num = 0
+        return torch.tensor(lr_list)
 
 
 class NoamScheduler(_BaseScheduler):
@@ -73,7 +91,7 @@ class NoamScheduler(_BaseScheduler):
 
 
 class DPTNetScheduler(_BaseScheduler):
-    """ Dual Path Transformer Scheduler used in [1]
+    """Dual Path Transformer Scheduler used in [1]
 
     Args:
         optimizer (Optimizer): Optimizer instance to apply lr schedule on.
@@ -111,7 +129,7 @@ class DPTNetScheduler(_BaseScheduler):
         self.exp_max = exp_max
         self.exp_base = exp_base
         self.steps_per_epoch = steps_per_epoch
-        self.epoch = None
+        self.epoch = 0
 
     def _get_lr(self):
         if self.step_num % self.steps_per_epoch == 0:

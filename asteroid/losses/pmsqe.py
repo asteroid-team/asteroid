@@ -8,7 +8,7 @@ import os
 
 
 class SingleSrcPMSQE(nn.Module):
-    """ Computes the Perceptual Metric for Speech Quality Evaluation (PMSQE)
+    """Computes the Perceptual Metric for Speech Quality Evaluation (PMSQE)
     as described in [1].
     This version is only designed for 16 kHz (512 length DFT).
     Adaptation to 8 kHz could be done by changing the parameters of the

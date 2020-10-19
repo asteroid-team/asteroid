@@ -1,5 +1,5 @@
 name: Linter
-on: [push]
+on: [push, pull_request]
 
 jobs:
   code-black:
@@ -14,9 +14,9 @@ jobs:
           python-version: 3.6
 
       - name: Install Black and flake8
-        run: pip install black==19.10b0 flake8
+        run: pip install black==20.8b1 flake8
       - name: Run Black
-        run: python -m black --config=pyproject.toml --check asteroid tests
+        run: python -m black --config=pyproject.toml --check asteroid tests egs
 
       - name: Link with flake8
         # Exit on important linting errors and warn about others.

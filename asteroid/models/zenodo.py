@@ -5,7 +5,7 @@ from io import BufferedReader, BytesIO
 
 
 class Zenodo(object):
-    """ Faciliate Zenodo's REST API.
+    """Faciliate Zenodo's REST API.
 
     Args:
         api_key (str): Access token generated to upload depositions.
@@ -48,7 +48,7 @@ class Zenodo(object):
         }
 
     def create_new_deposition(self, metadata=None):
-        """ Creates a new deposition.
+        """Creates a new deposition.
 
         Args:
             metadata (dict, optional): Metadata dict to upload on the new
@@ -69,7 +69,7 @@ class Zenodo(object):
         return r
 
     def change_metadata_in_deposition(self, dep_id, metadata):
-        """ Set or replace metadata in given deposition
+        """Set or replace metadata in given deposition
 
         Args:
             dep_id (int): deposition id. You cna get it with
@@ -94,7 +94,7 @@ class Zenodo(object):
         return r
 
     def upload_new_file_to_deposition(self, dep_id, file, name=None):
-        """ Upload one file to existing deposition.
+        """Upload one file to existing deposition.
         Args:
             dep_id (int): deposition id. You cna get it with
                 `r = create_new_deposition(); dep_id = r.json()['id']`
@@ -132,7 +132,7 @@ class Zenodo(object):
         return r
 
     def publish_deposition(self, dep_id):  # pragma: no cover (Cannot publish)
-        """ Publish given deposition (Cannot be deleted)!
+        """Publish given deposition (Cannot be deleted)!
 
         Args:
             dep_id (int): deposition id. You cna get it with

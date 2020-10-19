@@ -5,9 +5,19 @@ import numpy as np
 import soundfile as sf
 import asteroid
 from asteroid import models
+from asteroid.filterbanks import make_enc_dec
+from asteroid.models import (
+    ConvTasNet,
+    DCCRNet,
+    DCUNet,
+    DeMask,
+    DPRNNTasNet,
+    DPTNet,
+    LSTMTasNet,
+    SuDORMRFImprovedNet,
+    SuDORMRFNet,
+)
 from asteroid.models.base_models import BaseModel
-from asteroid.models import ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet, DeMask
-from asteroid.models import SuDORMRFNet, SuDORMRFImprovedNet
 
 
 def test_convtasnet_sep():
@@ -29,21 +39,18 @@ def test_convtasnet_sep():
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
 def test_save_and_load_convtasnet(fb):
-    model1 = ConvTasNet(
-        n_src=2,
-        n_repeats=2,
-        n_blocks=2,
-        bn_chan=16,
-        hid_chan=4,
-        skip_chan=8,
-        n_filters=32,
-        fb_name=fb,
+    _default_test_model(
+        ConvTasNet(
+            n_src=2,
+            n_repeats=2,
+            n_blocks=2,
+            bn_chan=16,
+            hid_chan=4,
+            skip_chan=8,
+            n_filters=32,
+            fb_name=fb,
+        )
     )
-    test_input = torch.randn(1, 800)
-    model_conf = model1.serialize()
-
-    reconstructed_model = ConvTasNet.from_pretrained(model_conf)
-    assert_allclose(model1(test_input), reconstructed_model(test_input))
 
 
 def test_dprnntasnet_sep():
@@ -60,54 +67,71 @@ def test_dprnntasnet_sep():
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
 def test_save_and_load_dprnn(fb):
-    model1 = DPRNNTasNet(
-        n_src=2, n_repeats=2, bn_chan=16, hid_size=4, chunk_size=20, n_filters=32, fb_name=fb
+    _default_test_model(
+        DPRNNTasNet(
+            n_src=2, n_repeats=2, bn_chan=16, hid_size=4, chunk_size=20, n_filters=32, fb_name=fb
+        )
     )
-    test_input = torch.randn(1, 800)
-    model_conf = model1.serialize()
-
-    reconstructed_model = DPRNNTasNet.from_pretrained(model_conf)
-    assert_allclose(model1(test_input), reconstructed_model(test_input))
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
 def test_save_and_load_tasnet(fb):
-    model1 = LSTMTasNet(n_src=2, hid_size=4, n_layers=1, n_filters=32, dropout=0.0, fb_name=fb,)
-    test_input = torch.randn(1, 800)
-    model_conf = model1.serialize()
-
-    reconstructed_model = LSTMTasNet.from_pretrained(model_conf)
-    assert_allclose(model1(test_input), reconstructed_model(test_input))
+    _default_test_model(
+        LSTMTasNet(
+            n_src=2,
+            hid_size=4,
+            n_layers=1,
+            n_filters=32,
+            dropout=0.0,
+            fb_name=fb,
+        )
+    )
 
 
 def test_sudormrf():
-    model = SuDORMRFNet(
-        2, bn_chan=10, num_blocks=4, upsampling_depth=2, kernel_size=21, n_filters=12,
+    _default_test_model(
+        SuDORMRFNet(
+            2,
+            bn_chan=10,
+            num_blocks=4,
+            upsampling_depth=2,
+            kernel_size=21,
+            n_filters=12,
+        )
     )
-    test_input = torch.randn(1, 801)
-    model_conf = model.serialize()
-
-    reconstructed_model = SuDORMRFNet.from_pretrained(model_conf)
-    assert_allclose(model(test_input), reconstructed_model(test_input))
 
 
 def test_sudormrf_imp():
-    model = SuDORMRFImprovedNet(
-        2, bn_chan=10, num_blocks=4, upsampling_depth=2, kernel_size=21, n_filters=12,
+    _default_test_model(
+        SuDORMRFImprovedNet(
+            2,
+            bn_chan=10,
+            num_blocks=4,
+            upsampling_depth=2,
+            kernel_size=21,
+            n_filters=12,
+        )
     )
-    test_input = torch.randn(1, 801)
-    model_conf = model.serialize()
-
-    reconstructed_model = SuDORMRFImprovedNet.from_pretrained(model_conf)
-    assert_allclose(model(test_input), reconstructed_model(test_input))
 
 
 def test_dptnet():
-    model = DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2)
-    test_input = torch.randn(1, 801)
+    _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2))
+
+
+def test_dcunet():
+    _, istft = make_enc_dec("stft", 512, 512)
+    _default_test_model(DCUNet("DCUNet-10"), input_samples=istft(torch.zeros((514, 17))).shape[0])
+
+
+def test_dccrnet():
+    _default_test_model(DCCRNet("DCCRN-CL"), input_samples=1300)
+
+
+def _default_test_model(model, input_samples=801):
+    test_input = torch.randn(1, input_samples)
 
     model_conf = model.serialize()
-    reconstructed_model = DPTNet.from_pretrained(model_conf)
+    reconstructed_model = model.__class__.from_pretrained(model_conf)
     assert_allclose(model(test_input), reconstructed_model(test_input))
 
 

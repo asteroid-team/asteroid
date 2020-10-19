@@ -5,20 +5,22 @@ from torch.nn import functional as F
 
 
 class Filterbank(nn.Module):
-    """ Base Filterbank class.
-    Each subclass has to implement a `filters` method.
+    """Base Filterbank class.
+    Each subclass has to implement a `filters` property.
 
     Args:
         n_filters (int): Number of filters.
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the conv or transposed conv. (Hop size).
             If None (default), set to ``kernel_size // 2``.
+        sample_rate (float): Sample rate of the expected audio.
+            Defaults to 8000.
 
     Attributes:
         n_feats_out (int): Number of output filters.
     """
 
-    def __init__(self, n_filters, kernel_size, stride=None):
+    def __init__(self, n_filters, kernel_size, stride=None, sample_rate=8000.0):
         super(Filterbank, self).__init__()
         self.n_filters = n_filters
         self.kernel_size = kernel_size
@@ -26,6 +28,7 @@ class Filterbank(nn.Module):
         # If not specified otherwise in the filterbank's init, output
         # number of features is equal to number of required filters.
         self.n_feats_out = n_filters
+        self.sample_rate = sample_rate
 
     def filters(self):
         """ Abstract method for filters. """
@@ -38,12 +41,13 @@ class Filterbank(nn.Module):
             "n_filters": self.n_filters,
             "kernel_size": self.kernel_size,
             "stride": self.stride,
+            "sample_rate": self.sample_rate,
         }
         return config
 
 
 class _EncDec(nn.Module):
-    """ Base private class for Encoder and Decoder.
+    """Base private class for Encoder and Decoder.
 
     Common parameters and methods.
 
@@ -61,6 +65,7 @@ class _EncDec(nn.Module):
     def __init__(self, filterbank, is_pinv=False):
         super(_EncDec, self).__init__()
         self.filterbank = filterbank
+        self.sample_rate = getattr(filterbank, "sample_rate", None)
         self.stride = self.filterbank.stride
         self.is_pinv = is_pinv
 
@@ -90,7 +95,7 @@ class _EncDec(nn.Module):
 
 
 class Encoder(_EncDec):
-    """ Encoder class.
+    """Encoder class.
 
     Add encoding methods to Filterbank classes.
     Not intended to be subclassed.
@@ -115,7 +120,7 @@ class Encoder(_EncDec):
 
     @classmethod
     def pinv_of(cls, filterbank, **kwargs):
-        """ Returns an :class:`~.Encoder`, pseudo inverse of a
+        """Returns an :class:`~.Encoder`, pseudo inverse of a
         :class:`~.Filterbank` or :class:`~.Decoder`."""
         if isinstance(filterbank, Filterbank):
             return cls(filterbank, is_pinv=True, **kwargs)
@@ -123,7 +128,7 @@ class Encoder(_EncDec):
             return cls(filterbank.filterbank, is_pinv=True, **kwargs)
 
     def forward(self, waveform):
-        """ Convolve input waveform with the filters from a filterbank.
+        """Convolve input waveform with the filters from a filterbank.
         Args:
             waveform (:class:`torch.Tensor`): any tensor with samples along the
                 last dimension. The waveform representation with and
@@ -191,7 +196,7 @@ class Encoder(_EncDec):
 
 
 class Decoder(_EncDec):
-    """ Decoder class.
+    """Decoder class.
 
     Add decoding methods to Filterbank classes.
     Not intended to be subclassed.
@@ -222,7 +227,7 @@ class Decoder(_EncDec):
             return cls(filterbank.filterbank, is_pinv=True)
 
     def forward(self, spec) -> torch.Tensor:
-        """ Applies transposed convolution to a TF representation.
+        """Applies transposed convolution to a TF representation.
 
         This is equivalent to overlap-add.
 

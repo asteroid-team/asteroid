@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+
+## [0.3.4] - 2020-10-07
+#### Added
+[hub] Add tmirzaev's model in the string-retrievable ones.
+[src] BaseTasNet -> BaseEncoderMaskerDecoder + add model hooks (#266)
+[src & tests] New complex ops + Add DCUNet and DCCRNet (#224)
+[src&tests] Improve scheduler's docs + add plot method (#268)
+
+#### Changed
+[hub] Add software version section in published models (#261)
+[docs] Add issue #250 to FAQ (#260)
+[black] Update black to 20.8b1 (#265)
+[black] Fix black 20.8b1 update (#267)
+[black] Update to 20.8b1 + always lint
+
+#### Fixed
+[egs] Fix declared unused variables in DeMask (#248)
+[docs] Update article citation.
+[src] Restore linear activation as default in ConvTasNet and DPRNN (#258)
+[src] Fix uncalled optimizer in System without LR schedule (#259)
+[src] Fix bug for DPTNetScheduler (#262)
+[src] Fix LambdaOverlapAdd and improve docs (#271)
+
 ## [0.3.3] - 2020-08-25
 
 #### Added

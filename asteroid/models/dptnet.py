@@ -1,10 +1,10 @@
 from ..filterbanks import make_enc_dec
 from ..masknn import DPTransformer
-from .base_models import BaseTasNet
+from .base_models import BaseEncoderMaskerDecoder
 
 
-class DPTNet(BaseTasNet):
-    """ DPTNet separation model, as described in [1].
+class DPTNet(BaseEncoderMaskerDecoder):
+    """DPTNet separation model, as described in [1].
 
     Args:
         n_src (int): Number of masks to estimate.
