@@ -39,6 +39,7 @@ class ParamSincFB(Filterbank):
         sample_rate=16000.0,
         min_low_hz=50,
         min_band_hz=50,
+        **kwargs,
     ):
         if kernel_size % 2 == 0:
             print(
