@@ -67,9 +67,12 @@ def main(conf):
         # Forward the network on the mixture.
         mix, sources = tensors_to_device(test_set[idx], device=model_device)
         est_sources = model(mix)
-        loss, reordered_sources = loss_func(est_sources, sources[None], return_est=True)
-        mix_np = mix.squeeze(0).cpu().data.numpy()
-        sources_np = sources.cpu().data.numpy()
+        #print(test_set[idx])
+        #print(est_sources.shape, sources.shape, mix.shape, len(test_set))
+        loss, reordered_sources = loss_func(est_sources, sources, return_est=True)
+        #mix_np = mix.squeeze(0).cpu().data.numpy()
+        mix_np = mix.cpu().data.numpy()
+        sources_np = sources.squeeze(0).cpu().data.numpy()
         est_sources_np = reordered_sources.squeeze(0).cpu().data.numpy()
         utt_metrics = get_metrics(
             mix_np,
@@ -78,14 +81,15 @@ def main(conf):
             sample_rate=conf["sample_rate"],
             metrics_list=compute_metrics,
         )
-        utt_metrics["mix_path"] = test_set.mix_infos[idx][0]
+        utt_metrics["mix_path"] = test_set.mix[idx][0]
         series_list.append(pd.Series(utt_metrics))
-
+        
         # Save some examples in a folder. Wav files and metrics as text.
         if idx in save_idx:
             local_save_dir = os.path.join(ex_save_dir, "ex_{}/".format(idx))
             os.makedirs(local_save_dir, exist_ok=True)
-            sf.write(local_save_dir + "mixture.wav", mix_np, conf["sample_rate"])
+            #print(mix_np.shape)
+            sf.write(local_save_dir + "mixture.wav", np.swapaxes(mix_np,0,1), conf["sample_rate"])
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):
                 sf.write(local_save_dir + "s{}.wav".format(src_idx + 1), src, conf["sample_rate"])

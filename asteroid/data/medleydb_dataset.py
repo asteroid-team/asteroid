@@ -153,6 +153,7 @@ class SourceFolderDataset(data.Dataset):
         self.n_src = n_src
         self.like_test = True
         self.batch_size = batch_size
+        sources_infos = []
         # Make and load json files
         speaker_list = ["mix"] + [f"s{n+1}" for n in range(n_src)]
         for speaker in speaker_list:
@@ -171,12 +172,13 @@ class SourceFolderDataset(data.Dataset):
         for src_json in sources_json:
             with open(src_json, "r") as f:
                 sources_infos.append(json.load(f))
-            
+        sources_infos = np.array(sources_infos)
+        #sources_infos = np.swapaxes(sources_infos, 0,1)    
         self.mix = mix_infos
         self.sources = sources_infos
 
     def __len__(self):
-        return len(self.sources)
+        return len(self.sources[0])
 
     def __getitem__(self, idx):
         """ Gets a mixture/sources pair.
@@ -184,7 +186,7 @@ class SourceFolderDataset(data.Dataset):
             mixture, vstack([source_arrays])
         """
         # Load mixture
-        x, _ = sf.read(self.mix[idx][0], dtype="float32")
+        x, sr = sf.read(self.mix[idx][0], dtype="float32")
         seg_len = torch.as_tensor([len(x)])
         # Load sources
         source_arrays = []
@@ -195,14 +197,15 @@ class SourceFolderDataset(data.Dataset):
             else:
                 s, _ = sf.read(src[idx][0], dtype="float32")
             source_arrays.append(s)
-        sources = torch.from_numpy(np.vstack(source_arrays))
+        source = torch.from_numpy(np.vstack(source_arrays))
         
         mix = torch.from_numpy(x)
         mix = mix.unsqueeze(0)
         if sr is not self.sample_rate:
-            sources = torchaudio.transforms.Resample(sr, self.sample_rate)(sources)
+            source = torchaudio.transforms.Resample(sr, self.sample_rate)(source)
             mix = torchaudio.transforms.Resample(sr, self.sample_rate)(mix)
-        return mix, sources
+        source = source.unsqueeze(0)
+        return mix, source
 
     def get_infos(self):
         """ Get dataset infos (for publishing models).
