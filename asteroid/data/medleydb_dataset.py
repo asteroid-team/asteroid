@@ -108,7 +108,8 @@ class MedleydbDataset(data.Dataset):
 
         for i in range(self.n_poly):
             if i:
-                idx = random.choice(range(len(self.sources)))
+                #idx = random.choice(range(len(self.sources)))
+                idx = (idx + len(self.sources)) % len(self.sources)
 
             start = self.sources[idx][1] * self.sources[idx][2]
             if self.like_test:
