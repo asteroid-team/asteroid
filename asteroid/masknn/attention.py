@@ -127,10 +127,10 @@ class DPTransformer(nn.Module):
         self.mha_in_dim = ceil(self.in_chan, self.n_heads) * self.n_heads
         if self.in_chan % self.n_heads != 0:
             warnings.warn(
-                f'DPTransformer input dim ({self.in_chan}) is not a multiple of the number of '
-                f'heads ({self.n_heads}). Adding extra linear layers to accomodate '
-                f'(input [{self.in_chan} x {self.mha_in_dim}], '
-                f'output [{self.mha_in_dim} x {self.in_chan}])'
+                f"DPTransformer input dim ({self.in_chan}) is not a multiple of the number of "
+                f"heads ({self.n_heads}). Adding extra linear layers to accomodate "
+                f"(input [{self.in_chan} x {self.mha_in_dim}], "
+                f"output [{self.mha_in_dim} x {self.in_chan}])"
             )
             self.input_layer = nn.Linear(self.in_chan, self.mha_in_dim)
             self.output_layer = nn.Linear(self.mha_in_dim, self.in_chan)

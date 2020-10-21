@@ -122,7 +122,8 @@ def test_unet_decoder_args():
     ]
 
 
-@pytest.mark.parametrize("num, den, expected",
+@pytest.mark.parametrize(
+    "num, den, expected",
     (
         (1, 10, 1),
         (8, 4, 2),
@@ -132,7 +133,7 @@ def test_unet_decoder_args():
         (16, 5, 4),
         (15, 5, 3),
         (0, 2, 0),
-    )
+    ),
 )
 def test_ceil(num, den, expected):
     assert utils.ceil(num, den) == expected
