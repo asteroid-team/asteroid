@@ -1,5 +1,6 @@
 from .generic_utils import (
     average_arrays_in_dic,
+    ceil,
     flatten_dict,
     get_wav_random_start_stop,
     has_arg,
@@ -34,4 +35,5 @@ __all__ = [
     "average_arrays_in_dic",
     "get_wav_random_start_stop",
     "unet_decoder_args",
+    "ceil",
 ]

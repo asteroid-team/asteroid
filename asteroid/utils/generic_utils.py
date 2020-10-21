@@ -106,3 +106,16 @@ def unet_decoder_args(encoders, *, skip_connections):
             (enc_out_chan + skip_in_chan, enc_in_chan, enc_kernel_size, enc_stride, enc_padding)
         )
     return decoder_args
+
+
+def ceil(num, den):
+    """Computes ceil(num/den).
+
+    Args:
+        num (int): Numerator
+        den (int): Denominator
+
+    Return:
+        int: Ceil of num / den
+    """
+    return num // den + (num % den != 0)
