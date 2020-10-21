@@ -24,7 +24,7 @@ Steps to reproduce the behavior (code sample and stack trace):
 ### Environment
 
  - Asteroid Version or commit tag
- - PyTorch Version (e.g., 1.0)
+ - PyTorch Version (e.g., 1.6.0)
  - PyTorchLightning Version
  - Additional info
 
