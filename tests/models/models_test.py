@@ -114,8 +114,9 @@ def test_sudormrf_imp():
     )
 
 
-def test_dptnet():
-    _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2))
+@pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
+def test_dptnet(fb):
+    _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, fb_name=fb))
 
 
 def test_dcunet():
