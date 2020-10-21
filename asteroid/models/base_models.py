@@ -208,7 +208,9 @@ class BaseModel(nn.Module):
             # Try retrieving from pretrained models
             from ..utils.hub_utils import SR_HASHTABLE
 
-            sr = SR_HASHTABLE.get(pretrained_model_conf_or_path, None)
+            sr = None
+            if isinstance(pretrained_model_conf_or_path, str):
+                sr = SR_HASHTABLE.get(pretrained_model_conf_or_path, None)
             if sr is None:
                 raise RuntimeError(
                     "Couldn't load pretrained model without sampling rate. You can either pass "
