@@ -211,9 +211,9 @@ class BaseModel(nn.Module):
             sr = SR_HASHTABLE.get(pretrained_model_conf_or_path, None)
             if sr is None:
                 raise RuntimeError(
-                    "Couldn't load pretrained model without sampling rate. "
-                    "You can either pass `sample_rate` to the `from_pretrained` method or edit your model to "
-                    "include the `sample_rate` key, or use `asteroid-register-sr model sample_rate` CLI."
+                    "Couldn't load pretrained model without sampling rate. You can either pass "
+                    "`sample_rate` to the `from_pretrained` method or edit your model to include "
+                    "the `sample_rate` key, or use `asteroid-register-sr model sample_rate` CLI."
                 )
             conf["model_args"]["sample_rate"] = sr
         # Attempt to find the model and instantiate it.
