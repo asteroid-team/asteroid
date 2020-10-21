@@ -136,6 +136,26 @@ def infer():
         model.separate(f, force_overwrite=args.force_overwrite, output_dir=args.output_dir)
 
 
+def register_sample_rate():
+    """ CLI to register sample rate to an Asteroid model saved without `sample_rate`,  before 0.4.0."""
+
+    def _register_sample_rate(filename, sample_rate):
+        import torch
+
+        conf = torch.load(filename, map_location="cpu")
+        conf["model_args"]["sample_rate"] = sample_rate
+        torch.save(conf, filename)
+
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename", type=str, help="Model file to edit.")
+    parser.add_argument("sample_rate", type=float, help="Sampling rate to add to the model.")
+    args = parser.parse_args()
+
+    _register_sample_rate(filename=args.filename, sample_rate=args.sample_rate)
+
+
 def _process_files_as_list(files_str: List) -> List:
     """ Support filename, folder name, and globs. Returns list of filenames."""
     all_files = []
