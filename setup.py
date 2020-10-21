@@ -35,6 +35,7 @@ setup(
         "console_scripts": [
             "asteroid-upload=asteroid.scripts.asteroid_cli:upload",
             "asteroid-infer=asteroid.scripts.asteroid_cli:infer",
+            "asteroid-register-sr=asteroid.scripts.asteroid_cli:register_sample_rate",
         ],
     },
     packages=find_packages(),
