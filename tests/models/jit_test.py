@@ -71,7 +71,6 @@ def test_enhancement_model(small_model_params):
             assert torch.allclose(ref, out)
 
 
-# TODO: Add back "stft" filter_bank once issue with DPTNet solved
 @pytest.mark.parametrize(
     "model_def",
     (
@@ -82,7 +81,7 @@ def test_enhancement_model(small_model_params):
     ),
 )
 def test_trace_bss_model(small_model_params, model_def):
-    filter_bank_types = ["free", "analytic_free", "param_sinc"]
+    filter_bank_types = ["free", "stft", "analytic_free", "param_sinc"]
     device = get_default_device()
     # Random input uniformly distributed in [-1, 1]
     inputs = ((torch.rand(1, 1000, device=device) - 0.5) * 2,)
