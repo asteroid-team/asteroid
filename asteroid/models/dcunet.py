@@ -24,7 +24,7 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
         architecture,
         stft_kernel_size=512,
         stft_stride=None,
-        sample_rate=8000,
+        sample_rate=16000.0,
         masknet_kwargs=None,
     ):
         self.architecture = architecture
