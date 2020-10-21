@@ -1,8 +1,10 @@
+import warnings
+
 import torch.nn as nn
 from torch.nn.modules.activation import MultiheadAttention
 from asteroid.masknn import activations, norms
 import torch
-from asteroid.utils import has_arg
+from asteroid.utils import has_arg, ceil
 from asteroid.dsp.overlap_add import DualPathProcessing
 
 
@@ -122,7 +124,21 @@ class DPTransformer(nn.Module):
         self.bidirectional = bidirectional
         self.dropout = dropout
 
-        self.in_norm = norms.get(norm_type)(in_chan)
+        self.mha_in_dim = ceil(self.in_chan, self.n_heads) * self.n_heads
+        if self.in_chan % self.n_heads != 0:
+            warnings.warn(
+                f'DPTransformer input dim ({self.in_chan}) is not a multiple of the number of '
+                f'heads ({self.n_heads}). Adding extra linear layers to accomodate '
+                f'(input [{self.in_chan} x {self.mha_in_dim}], '
+                f'output [{self.mha_in_dim} x {self.in_chan}])'
+            )
+            self.input_layer = nn.Linear(self.in_chan, self.mha_in_dim)
+            self.output_layer = nn.Linear(self.mha_in_dim, self.in_chan)
+        else:
+            self.input_layer = None
+            self.output_layer = None
+
+        self.in_norm = norms.get(norm_type)(self.mha_in_dim)
         self.ola = DualPathProcessing(self.chunk_size, self.hop_size)
 
         # Succession of DPRNNBlocks.
@@ -132,7 +148,7 @@ class DPTransformer(nn.Module):
                 nn.ModuleList(
                     [
                         ImprovedTransformedLayer(
-                            self.in_chan,
+                            self.mha_in_dim,
                             self.n_heads,
                             self.ff_hid,
                             self.dropout,
@@ -141,7 +157,7 @@ class DPTransformer(nn.Module):
                             self.norm_type,
                         ),
                         ImprovedTransformedLayer(
-                            self.in_chan,
+                            self.mha_in_dim,
                             self.n_heads,
                             self.ff_hid,
                             self.dropout,
@@ -152,11 +168,11 @@ class DPTransformer(nn.Module):
                     ]
                 )
             )
-        net_out_conv = nn.Conv2d(self.in_chan, n_src * self.in_chan, 1)
+        net_out_conv = nn.Conv2d(self.mha_in_dim, n_src * self.mha_in_dim, 1)
         self.first_out = nn.Sequential(nn.PReLU(), net_out_conv)
         # Gating and masking in 2D space (after fold)
-        self.net_out = nn.Sequential(nn.Conv1d(self.in_chan, self.in_chan, 1), nn.Tanh())
-        self.net_gate = nn.Sequential(nn.Conv1d(self.in_chan, self.in_chan, 1), nn.Sigmoid())
+        self.net_out = nn.Sequential(nn.Conv1d(self.mha_in_dim, self.mha_in_dim, 1), nn.Tanh())
+        self.net_gate = nn.Sequential(nn.Conv1d(self.mha_in_dim, self.mha_in_dim, 1), nn.Sigmoid())
 
         # Get activation function.
         mask_nl_class = activations.get(mask_act)
@@ -175,6 +191,8 @@ class DPTransformer(nn.Module):
             :class:`torch.Tensor`
                 estimated mask of shape [batch, n_src, n_filters, n_frames]
         """
+        if self.input_layer is not None:
+            mixture_w = self.input_layer(mixture_w.transpose(1, 2)).transpose(1, 2)
         mixture_w = self.in_norm(mixture_w)  # [batch, bn_chan, n_frames]
 
         mixture_w = self.ola.unfold(mixture_w)
@@ -186,12 +204,14 @@ class DPTransformer(nn.Module):
             mixture_w = self.ola.inter_process(mixture_w, inter)
 
         output = self.first_out(mixture_w)
-        output = output.reshape(batch * self.n_src, self.in_chan, self.chunk_size, n_chunks)
+        output = output.reshape(batch * self.n_src, self.mha_in_dim, self.chunk_size, n_chunks)
         output = self.ola.fold(output)
 
         output = self.net_out(output) * self.net_gate(output)
         # Compute mask
-        output = output.reshape(batch, self.n_src, self.in_chan, -1)
+        output = output.reshape(batch, self.n_src, self.mha_in_dim, -1)
+        if self.output_layer is not None:
+            output = self.output_layer(output.transpose(2, -1)).transpose(2, -1)
         est_mask = self.output_act(output)
         return est_mask
 
