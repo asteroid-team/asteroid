@@ -29,6 +29,7 @@ class DeMask(BaseModel):
         stride (int): filterbank filters stride.
         kernel_size (int): length of filters in the filterbank.
         encoder_activation (str)
+        sample_rate (float): Sampling rate of the model.
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
     """
@@ -46,6 +47,7 @@ class DeMask(BaseModel):
         n_filters=512,
         stride=256,
         kernel_size=512,
+        sample_rate=16000,
         **fb_kwargs,
     ):
 
@@ -64,7 +66,12 @@ class DeMask(BaseModel):
         self.fb_kwargs = fb_kwargs
 
         self.encoder, self.decoder = make_enc_dec(
-            fb_type, kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
+            fb_type,
+            kernel_size=kernel_size,
+            n_filters=n_filters,
+            stride=stride,
+            sample_rate=sample_rate,
+            **fb_kwargs,
         )
 
         if self.input_type == "mag":
