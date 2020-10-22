@@ -6,11 +6,11 @@ import torch
 from torch import nn
 
 from ..masknn import activations
-from ..utils.torch_utils import pad_x_to_y
+from ..utils.torch_utils import pad_x_to_y, script_if_tracing
 from ..utils.hub_utils import cached_download
 
 
-@torch.jit.script
+@script_if_tracing
 def _unsqueeze_to_3d(x):
     if x.ndim == 1:
         return x.reshape(1, 1, -1)
