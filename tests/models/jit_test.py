@@ -12,25 +12,26 @@ def small_model_params():
         ConvTasNet.__name__: {
             "n_src": 2,
             "n_repeats": 2,
-            "n_blocks": 3,
-            "bn_chan": 16,
+            "n_blocks": 2,
+            "bn_chan": 8,
             "hid_chan": 4,
-            "skip_chan": 8,
+            "skip_chan": 4,
             "n_filters": 32,
         },
         DPRNNTasNet.__name__: {
             "n_src": 2,
             "n_repeats": 2,
-            "bn_chan": 16,
+            "bn_chan": 8,
             "hid_size": 4,
             "chunk_size": 20,
             "n_filters": 32,
         },
         DPTNet.__name__: {
             "n_src": 2,
-            "ff_hid": 10,
+            "ff_hid": 4,
             "chunk_size": 4,
-            "n_repeats": 2,
+            "n_repeats": 1,
+            "n_filters": 8,
         },
         LSTMTasNet.__name__: {
             "n_src": 2,
@@ -58,10 +59,10 @@ def small_model_params():
 
 def test_enhancement_model(small_model_params):
     params = small_model_params["DeMask"]
-    filter_banks = ["free", "stft", "analytic_free", "param_sinc"]
+    filter_banks = ["free"]  # , "stft", "analytic_free", "param_sinc"]
     device = get_default_device()
-    inputs = ((torch.rand(1, 1000, device=device) - 0.5) * 2,)
-    test_data = torch.rand(1, 32, device=device)
+    inputs = ((torch.rand(1, 400, device=device) - 0.5) * 2,)
+    test_data = torch.rand(1, 200, device=device)
     for filter_bank in filter_banks:
         model = DeMask(**params, fb_type=filter_bank).eval().to(device)
         traced = torch.jit.trace(model, inputs)
@@ -83,11 +84,11 @@ def test_enhancement_model(small_model_params):
     ),
 )
 def test_trace_bss_model(small_model_params, model_def):
-    filter_bank_types = ["free", "stft", "analytic_free", "param_sinc"]
+    filter_bank_types = ["free"]  # , "stft", "analytic_free", "param_sinc"]
     device = get_default_device()
     # Random input uniformly distributed in [-1, 1]
-    inputs = ((torch.rand(1, 1000, device=device) - 0.5) * 2,)
-    test_data = torch.rand(1, 32, device=device)
+    inputs = ((torch.rand(1, 400, device=device) - 0.5) * 2,)
+    test_data = torch.rand(1, 200, device=device)
     for filter_bank in filter_bank_types:
         params = small_model_params[model_def.__name__]
         model = model_def(**params, fb_name=filter_bank)
@@ -101,19 +102,21 @@ def test_trace_bss_model(small_model_params, model_def):
             assert_allclose(ref, out)
 
 
-@pytest.mark.parametrize('filter_bank_name',
+@pytest.mark.parametrize(
+    "filter_bank_name",
     ("free", "stft", "analytic_free", "param_sinc"),
 )
-@pytest.mark.parametrize('inference_data',
+@pytest.mark.parametrize(
+    "inference_data",
     (
         (torch.rand(640) - 0.5) * 2,
         (torch.rand(1, 320) - 0.5) * 2,
         (torch.rand(4, 256) - 0.5) * 2,
         (torch.rand(1, 3, 512) - 0.5) * 2,
-        (torch.rand(4, 5, 128) - 0.5) * 2,
+        (torch.rand(3, 2, 128) - 0.5) * 2,
         (torch.rand(1, 1, 3, 512) - 0.5) * 2,
-        (torch.rand(3, 4, 5, 128) - 0.5) * 2,
-    )
+        (torch.rand(2, 4, 3, 128) - 0.5) * 2,
+    ),
 )
 def test_jit_filterbanks(filter_bank_name, inference_data):
     device = get_default_device()
