@@ -22,7 +22,13 @@ from asteroid.models.base_models import BaseModel
 
 def test_convtasnet_sep():
     nnet = ConvTasNet(
-        n_src=2, n_repeats=2, n_blocks=3, bn_chan=16, hid_chan=4, skip_chan=8, n_filters=32
+        n_src=2,
+        n_repeats=2,
+        n_blocks=3,
+        bn_chan=16,
+        hid_chan=4,
+        skip_chan=8,
+        n_filters=32,
     )
     # Test torch input
     wav = torch.rand(1, 800)
@@ -35,6 +41,17 @@ def test_convtasnet_sep():
     # Test str input
     sf.write("tmp.wav", wav[0], 8000)
     nnet.separate("tmp.wav")
+    # Warning when overwriting
+    with pytest.warns(UserWarning):
+        nnet.separate("tmp.wav")
+
+    # Test with bad samplerate
+    sf.write("tmp.wav", wav[0], 16000)
+    # Raises
+    with pytest.raises(RuntimeError):
+        nnet.separate("tmp.wav", force_overwrite=True)
+    # Resamples
+    nnet.separate("tmp.wav", force_overwrite=True, resample=True)
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])

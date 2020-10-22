@@ -43,7 +43,7 @@ class BaseModel(nn.Module):
         raise NotImplementedError
 
     @torch.no_grad()
-    def separate(self, wav, output_dir=None, force_overwrite=False, **kwargs):
+    def separate(self, wav, output_dir=None, force_overwrite=False, resample=False, **kwargs):
         """Infer separated sources from input waveforms.
         Also supports filenames.
 
@@ -52,7 +52,8 @@ class BaseModel(nn.Module):
                 Shape: 1D, 2D or 3D tensor, time last.
             output_dir (str): path to save all the wav files. If None,
                 estimated sources will be saved next to the original ones.
-            force_overwrite (bool): whether to overwrite existing files.
+            force_overwrite (bool): whether to overwrite existing files (when separating from file)..
+            resample (bool): Whether to resample input files with wrong sample rate (when separating from file).
             **kwargs: keyword arguments to be passed to `_separate`.
 
         Returns:
@@ -66,7 +67,11 @@ class BaseModel(nn.Module):
         """
         if isinstance(wav, str):
             self.file_separate(
-                wav, output_dir=output_dir, force_overwrite=force_overwrite, **kwargs
+                wav,
+                output_dir=output_dir,
+                force_overwrite=force_overwrite,
+                resample=resample,
+                **kwargs,
             )
         elif isinstance(wav, np.ndarray):
             return self.numpy_separate(wav, **kwargs)
@@ -101,14 +106,30 @@ class BaseModel(nn.Module):
         return out_wav
 
     def file_separate(
-        self, filename: str, output_dir=None, force_overwrite=False, **kwargs
+        self, filename: str, output_dir=None, force_overwrite=False, resample=False, **kwargs
     ) -> None:
         """ Filename interface to `separate`."""
         import soundfile as sf
 
         wav, fs = sf.read(filename, dtype="float32", always_2d=True)
+        if wav.shape[-1] > 1:
+            warnings.warn(
+                f"Received multichannel signal with {wav.shape[-1]} signals, "
+                f"using the first channel only."
+            )
         # FIXME: support only single-channel files for now.
-        to_save = self.numpy_separate(wav[:, 0], **kwargs)
+        wav = wav[:, 0]
+        if fs != self.sample_rate:
+            if resample:
+                from librosa import resample
+
+                wav = resample(wav, orig_sr=fs, target_sr=self.sample_rate)
+            else:
+                raise RuntimeError(
+                    f"Received a signal with a sampling rate of {fs}Hz for a model "
+                    f"of {self.sample_rate}Hz. You can pass `resample=True` to resample automatically."
+                )
+        to_save = self.numpy_separate(wav, **kwargs)
 
         # Save wav files to filename_est1.wav etc...
         for src_idx, est_src in enumerate(to_save):
@@ -122,6 +143,10 @@ class BaseModel(nn.Module):
                 return
             if output_dir is not None:
                 save_name = os.path.join(output_dir, save_name.split("/")[-1])
+            if fs != self.sample_rate:
+                from librosa import resample
+
+                est_src = resample(est_src, orig_sr=self.sample_rate, target_sr=fs)
             sf.write(save_name, est_src, fs)
 
     def _separate(self, wav, *args, **kwargs):

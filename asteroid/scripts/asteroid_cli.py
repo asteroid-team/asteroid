@@ -97,6 +97,7 @@ def infer():
         files (List(str)): Path to the wav files to separate. Also support list
             of filenames, directory names and globs.
         force_overwrite (bool): Whether to overwrite output wav files.
+        resample (bool): Whether to resample wrong sample rate input files.
         output_dir (str): Output directory to save files.
     """
     import argparse
@@ -116,6 +117,12 @@ def infer():
         "--force-overwrite",
         action="store_true",
         help="Whether to overwrite output wav files.",
+    )
+    parser.add_argument(
+        "-r",
+        "--resample",
+        action="store_true",
+        help="Whether to resample wrong sample rate input files.",
     )
     parser.add_argument(
         "-o", "--output-dir", default=None, type=str, help="Output directory to save files."
