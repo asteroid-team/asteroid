@@ -164,11 +164,6 @@ class DeMask(BaseModel):
             "activation": self.activation,
             "mask_act": self.mask_act,
             "norm_type": self.norm_type,
-            "fb_type": self.fb_type,
-            "n_filters": self.n_filters,
-            "stride": self.stride,
-            "kernel_size": self.kernel_size,
-            "fb_kwargs": self.fb_kwargs,
+            **self.encoder.filterbank.get_config(),
         }
-        model_args.update(self.fb_kwargs)
         return model_args
