@@ -1,10 +1,11 @@
+from math import ceil
 import warnings
 
 import torch.nn as nn
 from torch.nn.modules.activation import MultiheadAttention
 from asteroid.masknn import activations, norms
 import torch
-from asteroid.utils import has_arg, ceil
+from asteroid.utils import has_arg
 from asteroid.dsp.overlap_add import DualPathProcessing
 
 
@@ -124,7 +125,7 @@ class DPTransformer(nn.Module):
         self.bidirectional = bidirectional
         self.dropout = dropout
 
-        self.mha_in_dim = ceil(self.in_chan, self.n_heads) * self.n_heads
+        self.mha_in_dim = ceil(self.in_chan / self.n_heads) * self.n_heads
         if self.in_chan % self.n_heads != 0:
             warnings.warn(
                 f"DPTransformer input dim ({self.in_chan}) is not a multiple of the number of "
