@@ -118,7 +118,7 @@ class BaseModel(nn.Module):
 
                 wav = resample(wav, orig_sr=fs, target_sr=self.sample_rate)
             else:
-                raise ValueError(
+                raise RuntimeError(
                     f"Received a signal with a sampling rate of {fs}Hz for a model "
                     f"of {self.sample_rate}Hz. You can pass `resample=True` to resample automatically."
                 )
