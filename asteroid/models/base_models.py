@@ -10,6 +10,7 @@ from ..utils.torch_utils import pad_x_to_y
 from ..utils.hub_utils import cached_download
 
 
+@torch.jit.script
 def _unsqueeze_to_3d(x):
     if x.ndim == 1:
         return x.reshape(1, 1, -1)
@@ -242,6 +243,27 @@ class BaseEncoderMaskerDecoder(BaseModel):
         self.encoder_activation = encoder_activation
         self.enc_activation = activations.get(encoder_activation or "linear")()
 
+    def trace(self, input_example):
+        """Traces model using `input_example` as input data.
+
+        The encoder and decoder are both exported as torchscripts as they both
+        require fairly complex control-flow in their `forward` methods.
+
+        Args:
+            input_example (torch.Tensor): Input example given to torch.jit.trace
+
+        Return:
+            torch.jit.ScriptModule: Traced model
+        """
+        tmp_encoder = self.encoder
+        tmp_decoder = self.decoder
+        self.encoder = torch.jit.script(self.encoder)
+        self.decoder = torch.jit.script(self.decoder)
+        traced = torch.jit.trace(self, input_example)
+        self.encoder = tmp_encoder
+        self.decoder = tmp_decoder
+        return traced
+
     @property
     def sample_rate(self):
         return getattr(self.encoder, "sample_rate", None)
@@ -275,10 +297,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         decoded = self.postprocess_decoded(decoded)
 
         reconstructed = pad_x_to_y(decoded, wav)
-        if was_one_d:
-            return reconstructed.squeeze(0)
-        else:
-            return reconstructed
+        return reconstructed.squeeze(0) * was_one_d + reconstructed * (1 - was_one_d)
 
     def postprocess_encoded(self, tf_rep):
         """Hook to perform transformations on the encoded, time-frequency domain
