@@ -68,7 +68,7 @@ def test_enhancement_model(small_model_params):
         with torch.no_grad():
             ref = model(test_data)
             out = traced(test_data)
-            assert torch.allclose(ref, out)
+            assert_allclose(ref, out)
 
 
 @pytest.mark.parametrize(
@@ -96,7 +96,7 @@ def test_trace_bss_model(small_model_params, model_def):
         with torch.no_grad():
             ref = model(test_data)
             out = traced(test_data)
-            assert torch.allclose(ref, out)
+            assert_allclose(ref, out)
 
 
 def get_default_device():
