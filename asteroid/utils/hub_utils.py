@@ -20,6 +20,8 @@ MODELS_URLS_HASHTABLE = {
     "tmirzaev-dotcom/ConvTasNet_Libri3Mix_sepnoisy": "https://zenodo.org/record/4020529/files/model.pth?download=1",
 }
 
+SR_HASHTABLE = {k: 8000.0 if not "DeMask" in k else 16000.0 for k in MODELS_URLS_HASHTABLE}
+
 
 def cached_download(filename_or_url):
     """Download from URL with torch.hub and cache the result in ASTEROID_CACHE.

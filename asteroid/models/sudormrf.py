@@ -25,6 +25,7 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution.
             If None (default), set to ``kernel_size // 2``.
+        sample_rate (float): Sampling rate of the model.
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
@@ -45,6 +46,7 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
         kernel_size=21,
         n_filters=512,
         stride=None,
+        sample_rate=8000,
         **fb_kwargs,
     ):
         # Need the encoder to determine the number of input channels
@@ -54,6 +56,7 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
             kernel_size=kernel_size,
             n_filters=n_filters,
             stride=kernel_size // 2,
+            sample_rate=sample_rate,
             padding=kernel_size // 2,
             output_padding=(kernel_size // 2) - 1,
             **fb_kwargs,
@@ -117,6 +120,7 @@ class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):
         kernel_size=21,
         n_filters=512,
         stride=None,
+        sample_rate=8000,
         **fb_kwargs,
     ):
         stride = kernel_size // 2 if not stride else stride
@@ -126,6 +130,7 @@ class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):
             kernel_size=kernel_size,
             n_filters=n_filters,
             stride=stride,
+            sample_rate=sample_rate,
             padding=kernel_size // 2,
             output_padding=(kernel_size // 2) - 1,
             **fb_kwargs,

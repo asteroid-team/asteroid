@@ -39,6 +39,7 @@ class DPTNet(BaseEncoderMaskerDecoder):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution.
             If None (default), set to ``kernel_size // 2``.
+        sample_rate (float): Sampling rate of the model.
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
@@ -66,10 +67,16 @@ class DPTNet(BaseEncoderMaskerDecoder):
         kernel_size=16,
         n_filters=64,
         stride=8,
+        sample_rate=8000,
         **fb_kwargs,
     ):
         encoder, decoder = make_enc_dec(
-            fb_name, kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
+            fb_name,
+            kernel_size=kernel_size,
+            n_filters=n_filters,
+            stride=stride,
+            sample_rate=sample_rate,
+            **fb_kwargs,
         )
         n_feats = encoder.n_feats_out
         if in_chan is not None:
