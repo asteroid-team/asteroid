@@ -3,6 +3,8 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
+from ..utils.torch_utils import script_if_tracing
+
 
 class Filterbank(nn.Module):
     """Base Filterbank class.
@@ -147,52 +149,64 @@ class Encoder(_EncDec):
             >>> (batch, any, dim, time) --> (batch, any, dim, freq, conv_time)
         """
         filters = self.get_filters()
-        if waveform.ndim == 1:
-            # Assumes 1D input with shape (time,)
-            # Output will be (freq, conv_time)
-            return F.conv1d(
-                waveform[None, None], filters, stride=self.stride, padding=self.padding
-            ).squeeze()
-        elif waveform.ndim == 2:
-            # Assume 2D input with shape (batch or channels, time)
-            # Output will be (batch or channels, freq, conv_time)
-            warnings.warn(
-                "Input tensor was 2D. Applying the corresponding "
-                "Decoder to the current output will result in a 3D "
-                "tensor. This behaviours was introduced to match "
-                "Conv1D and ConvTranspose1D, please use 3D inputs "
-                "to avoid it. For example, this can be done with "
-                "input_tensor.unsqueeze(1)."
-            )
-            return F.conv1d(
-                waveform.unsqueeze(1), filters, stride=self.stride, padding=self.padding
-            )
-        elif waveform.ndim == 3:
-            batch, channels, time_len = waveform.shape
-            if channels == 1 and self.as_conv1d:
-                # That's the common single channel case (batch, 1, time)
-                # Output will be (batch, freq, stft_time), behaves as Conv1D
-                return F.conv1d(waveform, filters, stride=self.stride, padding=self.padding)
-            else:
-                # Return batched convolution, input is (batch, 3, time),
-                # output will be (batch, 3, freq, conv_time).
-                # Useful for multichannel transforms
-                # If as_conv1d is false, (batch, 1, time) will output
-                # (batch, 1, freq, conv_time), useful for consistency.
-                return self.batch_1d_conv(waveform, filters)
-        else:  # waveform.ndim > 3
-            # This is to compute "multi"multichannel convolution.
-            # Input can be (*, time), output will be (*, freq, conv_time)
-            return self.batch_1d_conv(waveform, filters)
-
-    def batch_1d_conv(self, inp, filters):
-        # Here we perform multichannel / multi-source convolution. Ou
-        # Output should be (batch, channels, freq, conv_time)
-        batched_conv = F.conv1d(
-            inp.view(-1, 1, inp.shape[-1]), filters, stride=self.stride, padding=self.padding
+        return multishape_1d_conv(
+            waveform,
+            filters=filters,
+            stride=self.stride,
+            padding=self.padding,
+            as_conv1d=self.as_conv1d,
         )
-        output_shape = inp.shape[:-1] + batched_conv.shape[-2:]
-        return batched_conv.view(output_shape)
+
+
+@script_if_tracing
+def multishape_1d_conv(
+    waveform: torch.Tensor,
+    filters: torch.Tensor,
+    *,
+    stride: int,
+    padding: int = 0,
+    as_conv1d: bool = True,
+) -> torch.Tensor:
+    if waveform.ndim == 1:
+        # Assumes 1D input with shape (time,)
+        # Output will be (freq, conv_time)
+        return F.conv1d(waveform[None, None], filters, stride=stride, padding=padding).squeeze()
+    elif waveform.ndim == 2:
+        # Assume 2D input with shape (batch or channels, time)
+        # Output will be (batch or channels, freq, conv_time)
+        warnings.warn(
+            "Input tensor was 2D. Applying the corresponding "
+            "Decoder to the current output will result in a 3D "
+            "tensor. This behaviours was introduced to match "
+            "Conv1D and ConvTranspose1D, please use 3D inputs "
+            "to avoid it. For example, this can be done with "
+            "input_tensor.unsqueeze(1)."
+        )
+        return F.conv1d(waveform.unsqueeze(1), filters, stride=stride, padding=padding)
+    elif waveform.ndim == 3:
+        batch, channels, time_len = waveform.shape
+        if channels == 1 and as_conv1d:
+            # That's the common single channel case (batch, 1, time)
+            # Output will be (batch, freq, stft_time), behaves as Conv1D
+            return F.conv1d(waveform, filters, stride=stride, padding=padding)
+        else:
+            # Return batched convolution, input is (batch, 3, time), output will be
+            # (b, 3, f, conv_t). Useful for multichannel transforms. If as_conv1d is
+            # false, (batch, 1, time) will output (batch, 1, freq, conv_time), useful for
+            # consistency.
+            return batch_packed_1d_conv(waveform, filters, stride=stride, padding=padding)
+    else:  # waveform.ndim > 3
+        # This is to compute "multi"multichannel convolution.
+        # Input can be (*, time), output will be (*, freq, conv_time)
+        return batch_packed_1d_conv(waveform, filters, stride=stride, padding=padding)
+
+
+def batch_packed_1d_conv(inp, filters, *, stride=1, padding=0):
+    # Here we perform multichannel / multi-source convolution.
+    # Output should be (batch, channels, freq, conv_time)
+    batched_conv = F.conv1d(inp.view(-1, 1, inp.shape[-1]), filters, stride=stride, padding=padding)
+    output_shape = inp.shape[:-1] + batched_conv.shape[-2:]
+    return batched_conv.view(output_shape)
 
 
 class Decoder(_EncDec):
