@@ -124,7 +124,8 @@ def test_jit_filterbanks(filter_bank_name, inference_data):
     model = model.eval()
 
     inputs = ((torch.rand(1, 1000) - 0.5) * 2,)
-    traced = model.trace(inputs)
+    # traced = model.trace(inputs)
+    traced = torch.jit.trace(model, inputs)
     with torch.no_grad():
         res = model(inference_data)
         out = traced(inference_data)
