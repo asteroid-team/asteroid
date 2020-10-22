@@ -154,6 +154,10 @@ class DeMask(BaseModel):
             return out_wavs.squeeze(0)
         return out_wavs
 
+    @property
+    def sample_rate(self):
+        return self.sample_rate
+
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
         model_args = {
