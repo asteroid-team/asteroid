@@ -64,6 +64,7 @@ class DeMask(BaseModel):
         self.stride = stride
         self.kernel_size = kernel_size
         self.fb_kwargs = fb_kwargs
+        self._sample_rate = sample_rate
 
         self.encoder, self.decoder = make_enc_dec(
             fb_type,
@@ -154,6 +155,10 @@ class DeMask(BaseModel):
             return out_wavs.squeeze(0)
         return out_wavs
 
+    @property
+    def sample_rate(self):
+        return self._sample_rate
+
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
         model_args = {
@@ -169,6 +174,7 @@ class DeMask(BaseModel):
             "stride": self.stride,
             "kernel_size": self.kernel_size,
             "fb_kwargs": self.fb_kwargs,
+            "sample_rate": self._sample_rate,
         }
         model_args.update(self.fb_kwargs)
         return model_args

@@ -12,7 +12,7 @@ def make_enc_dec(
     n_filters,
     kernel_size,
     stride=None,
-    sample_rate=8000,
+    sample_rate=8000.0,
     who_is_pinv=None,
     padding=0,
     output_padding=0,
@@ -29,8 +29,8 @@ def make_enc_dec(
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution.
             If None (default), set to ``kernel_size // 2``.
-        sample_rate (int): Sample rate of the expected audio.
-            Defaults to 8000.
+        sample_rate (float): Sample rate of the expected audio.
+            Defaults to 8000.0.
         who_is_pinv (str, optional): If `None`, no pseudo-inverse filters will
             be used. If string (among [``'encoder'``, ``'decoder'``]), decides
             which of ``Encoder`` or ``Decoder`` will be the pseudo inverse of

@@ -54,6 +54,7 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
             "architecture": self.architecture,
             "stft_kernel_size": self.stft_kernel_size,
             "stft_stride": self.stft_stride,
+            "sample_rate": self.sample_rate,
             "masknet_kwargs": self.masknet_kwargs,
         }
         return model_args

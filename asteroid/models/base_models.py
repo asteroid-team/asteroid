@@ -204,6 +204,20 @@ class BaseModel(nn.Module):
                 "model_args`. Found only: {}".format(conf.keys())
             )
         conf["model_args"].update(kwargs)  # kwargs overwrite config.
+        if "sample_rate" not in conf["model_args"]:
+            # Try retrieving from pretrained models
+            from ..utils.hub_utils import SR_HASHTABLE
+
+            sr = None
+            if isinstance(pretrained_model_conf_or_path, str):
+                sr = SR_HASHTABLE.get(pretrained_model_conf_or_path, None)
+            if sr is None:
+                raise RuntimeError(
+                    "Couldn't load pretrained model without sampling rate. You can either pass "
+                    "`sample_rate` to the `from_pretrained` method or edit your model to include "
+                    "the `sample_rate` key, or use `asteroid-register-sr model sample_rate` CLI."
+                )
+            conf["model_args"]["sample_rate"] = sr
         # Attempt to find the model and instantiate it.
         try:
             model_class = get(conf["model_name"])
@@ -364,7 +378,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         # Assert both dict are disjoint
         if not all(k not in fb_config for k in masknet_config):
             raise AssertionError(
-                "Filterbank and Mask network config share" "common keys. Merging them is not safe."
+                "Filterbank and Mask network config share common keys. Merging them is not safe."
             )
         # Merge all args under model_args.
         model_args = {

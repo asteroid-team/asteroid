@@ -151,6 +151,12 @@ def _default_test_model(model, input_samples=801):
     reconstructed_model = model.__class__.from_pretrained(model_conf)
     assert_allclose(model(test_input), reconstructed_model(test_input))
 
+    # Make
+    sr = model_conf["model_args"].pop("sample_rate")
+    with pytest.raises(RuntimeError):
+        reconstructed_model = model.__class__.from_pretrained(model_conf)
+    reconstructed_model = model.__class__.from_pretrained(model_conf, sample_rate=sr)
+
 
 @pytest.mark.parametrize(
     "model", [LSTMTasNet, ConvTasNet, DPRNNTasNet, DPTNet, SuDORMRFImprovedNet, SuDORMRFNet]
