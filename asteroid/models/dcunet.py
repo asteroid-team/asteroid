@@ -13,18 +13,31 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
     Args:
         stft_kernel_size (int): STFT frame length to use
         stft_stride (int, optional): STFT hop length to use.
+        sample_rate (float): Sampling rate of the model.
+
     """
 
     masknet_class = DCUMaskNet
 
-    def __init__(self, architecture, stft_kernel_size=512, stft_stride=None, masknet_kwargs=None):
+    def __init__(
+        self,
+        architecture,
+        stft_kernel_size=512,
+        stft_stride=None,
+        sample_rate=16000.0,
+        masknet_kwargs=None,
+    ):
         self.architecture = architecture
         self.stft_kernel_size = stft_kernel_size
         self.stft_stride = stft_stride
         self.masknet_kwargs = masknet_kwargs
 
         encoder, decoder = make_enc_dec(
-            "stft", kernel_size=stft_kernel_size, n_filters=stft_kernel_size, stride=stft_stride
+            "stft",
+            kernel_size=stft_kernel_size,
+            n_filters=stft_kernel_size,
+            stride=stft_stride,
+            sample_rate=sample_rate,
         )
         masker = self.masknet_class.default_architecture(architecture, **(masknet_kwargs or {}))
         super().__init__(encoder, masker, decoder)
