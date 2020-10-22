@@ -102,7 +102,7 @@ class PITLossWrapper(nn.Module):
         elif self.pit_from == "perm_avg":
             # Cannot get pairwise losses from this type of loss.
             # Find best permutation directly.
-            min_loss, min_loss_idx = self.best_perm_from_perm_avg_loss(
+            min_loss, batch_indices = self.best_perm_from_perm_avg_loss(
                 self.loss_func, est_targets, targets, **kwargs
             )
             # Take the mean over the batch
@@ -250,7 +250,6 @@ class PITLossWrapper(nn.Module):
         Args:
             pair_wise_losses (:class:`torch.Tensor`):
                 Tensor of shape [batch, n_src, n_src]. Pairwise losses.
-            n_src (int): Number of sources.
             perm_reduce (Callable): torch function to reduce permutation losses.
                 Defaults to None (equivalent to mean). Signature of the func
                 (pwl_set, **kwargs) : (B, n_src!, n_src) --> (B, n_src!)
