@@ -1,7 +1,9 @@
 import torch
 import pytest
 from torch.testing import assert_allclose
+from asteroid.filterbanks import make_enc_dec
 from asteroid.models import DeMask, ConvTasNet, DPRNNTasNet, DPTNet, LSTMTasNet
+from asteroid.models.base_models import BaseEncoderMaskerDecoder
 
 
 @pytest.fixture(scope="module")
@@ -97,6 +99,60 @@ def test_trace_bss_model(small_model_params, model_def):
             ref = model(test_data)
             out = traced(test_data)
             assert_allclose(ref, out)
+
+
+@pytest.mark.parametrize('filter_bank_name',
+    ("free", "stft", "analytic_free", "param_sinc"),
+)
+@pytest.mark.parametrize('inference_data',
+    (
+        (torch.rand(640) - 0.5) * 2,
+        (torch.rand(1, 320) - 0.5) * 2,
+        (torch.rand(4, 256) - 0.5) * 2,
+        (torch.rand(1, 3, 512) - 0.5) * 2,
+        (torch.rand(4, 5, 128) - 0.5) * 2,
+        (torch.rand(1, 1, 3, 512) - 0.5) * 2,
+        (torch.rand(3, 4, 5, 128) - 0.5) * 2,
+    )
+)
+def test_jit_filterbanks(filter_bank_name, inference_data):
+    device = get_default_device()
+    model = DummyModel(fb_name=filter_bank_name)
+    model = model.eval()
+
+    inputs = ((torch.rand(1, 1000) - 0.5) * 2,)
+    traced = model.trace(inputs)
+    with torch.no_grad():
+        res = model(inference_data)
+        out = traced(inference_data)
+        assert_allclose(res, out)
+
+
+class DummyModel(BaseEncoderMaskerDecoder):
+    def __init__(
+        self,
+        in_chan=None,
+        fb_name="free",
+        kernel_size=16,
+        n_filters=32,
+        stride=8,
+        encoder_activation=None,
+        **fb_kwargs,
+    ):
+        encoder, decoder = make_enc_dec(
+            fb_name, kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
+        )
+        n_feats = encoder.n_feats_out
+        if in_chan is not None:
+            assert in_chan == n_feats, (
+                "Number of filterbank output channels"
+                " and number of input channels should "
+                "be the same. Received "
+                f"{n_feats} and {in_chan}"
+            )
+        # Update in_chan
+        masker = torch.nn.Identity()
+        super().__init__(encoder, masker, decoder, encoder_activation=encoder_activation)
 
 
 def get_default_device():
