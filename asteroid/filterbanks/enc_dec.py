@@ -162,7 +162,6 @@ class Encoder(_EncDec):
 def multishape_1d_conv(
     waveform: torch.Tensor,
     filters: torch.Tensor,
-    *,
     stride: int,
     padding: int = 0,
     as_conv1d: bool = True,
@@ -201,7 +200,9 @@ def multishape_1d_conv(
         return batch_packed_1d_conv(waveform, filters, stride=stride, padding=padding)
 
 
-def batch_packed_1d_conv(inp, filters, *, stride=1, padding=0):
+def batch_packed_1d_conv(
+    inp: torch.Tensor, filters: torch.Tensor, stride: int = 1, padding: int = 0
+):
     # Here we perform multichannel / multi-source convolution.
     # Output should be (batch, channels, freq, conv_time)
     batched_conv = F.conv1d(inp.view(-1, 1, inp.shape[-1]), filters, stride=stride, padding=padding)
