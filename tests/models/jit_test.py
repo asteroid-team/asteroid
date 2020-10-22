@@ -17,28 +17,36 @@ def small_model_params():
             "hid_chan": 4,
             "skip_chan": 4,
             "n_filters": 32,
+            "kernel_size": 32,
+            "stride": 16,
         },
         DPRNNTasNet.__name__: {
             "n_src": 2,
             "n_repeats": 2,
             "bn_chan": 8,
             "hid_size": 4,
-            "chunk_size": 20,
+            "chunk_size": 3,
             "n_filters": 32,
+            "kernel_size": 32,
+            "stride": 16,
         },
         DPTNet.__name__: {
             "n_src": 2,
             "ff_hid": 4,
-            "chunk_size": 4,
+            "chunk_size": 3,
             "n_repeats": 1,
-            "n_filters": 8,
+            "n_filters": 32,
+            "kernel_size": 32,
+            "stride": 16,
         },
         LSTMTasNet.__name__: {
             "n_src": 2,
             "hid_size": 4,
             "n_layers": 1,
-            "n_filters": 32,
             "dropout": 0.0,
+            "n_filters": 32,
+            "kernel_size": 32,
+            "stride": 16,
         },
         DeMask.__name__: {
             "input_type": "mag",
@@ -48,9 +56,9 @@ def small_model_params():
             "activation": "relu",
             "mask_act": "relu",
             "norm_type": "gLN",
-            "n_filters": 8,
-            "stride": 4,
-            "kernel_size": 8,
+            "stride": 16,
+            "n_filters": 32,
+            "kernel_size": 32,
         },
     }
 
@@ -61,8 +69,8 @@ def test_enhancement_model(small_model_params):
     params = small_model_params["DeMask"]
     filter_banks = ["free"]  # , "stft", "analytic_free", "param_sinc"]
     device = get_default_device()
-    inputs = ((torch.rand(1, 400, device=device) - 0.5) * 2,)
-    test_data = torch.rand(1, 200, device=device)
+    inputs = ((torch.rand(1, 200, device=device) - 0.5) * 2,)
+    test_data = torch.rand(1, 220, device=device)
     for filter_bank in filter_banks:
         model = DeMask(**params, fb_type=filter_bank).eval().to(device)
         traced = torch.jit.trace(model, inputs)
@@ -87,8 +95,8 @@ def test_trace_bss_model(small_model_params, model_def):
     filter_bank_types = ["free"]  # , "stft", "analytic_free", "param_sinc"]
     device = get_default_device()
     # Random input uniformly distributed in [-1, 1]
-    inputs = ((torch.rand(1, 400, device=device) - 0.5) * 2,)
-    test_data = torch.rand(1, 200, device=device)
+    inputs = ((torch.rand(1, 200, device=device) - 0.5) * 2,)
+    test_data = torch.rand(1, 220, device=device)
     for filter_bank in filter_bank_types:
         params = small_model_params[model_def.__name__]
         model = model_def(**params, fb_name=filter_bank)
@@ -109,12 +117,12 @@ def test_trace_bss_model(small_model_params, model_def):
 @pytest.mark.parametrize(
     "inference_data",
     (
-        (torch.rand(640) - 0.5) * 2,
-        (torch.rand(1, 320) - 0.5) * 2,
+        (torch.rand(240) - 0.5) * 2,
+        (torch.rand(1, 220) - 0.5) * 2,
         (torch.rand(4, 256) - 0.5) * 2,
-        (torch.rand(1, 3, 512) - 0.5) * 2,
+        (torch.rand(1, 3, 312) - 0.5) * 2,
         (torch.rand(3, 2, 128) - 0.5) * 2,
-        (torch.rand(1, 1, 3, 512) - 0.5) * 2,
+        (torch.rand(1, 1, 3, 212) - 0.5) * 2,
         (torch.rand(2, 4, 3, 128) - 0.5) * 2,
     ),
 )
