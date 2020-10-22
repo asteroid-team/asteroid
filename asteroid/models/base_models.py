@@ -112,6 +112,13 @@ class BaseModel(nn.Module):
         import soundfile as sf
 
         wav, fs = sf.read(filename, dtype="float32", always_2d=True)
+        if wav.shape[-1] > 1:
+            warnings.warn(
+                f"Received multichannel signal with {wav.shape[-1]} signals, "
+                f"using the first channel only."
+            )
+        # FIXME: support only single-channel files for now.
+        wav = wav[:, 0]
         if fs != self.sample_rate:
             if resample:
                 from librosa import resample
@@ -122,13 +129,7 @@ class BaseModel(nn.Module):
                     f"Received a signal with a sampling rate of {fs}Hz for a model "
                     f"of {self.sample_rate}Hz. You can pass `resample=True` to resample automatically."
                 )
-        if wav.shape[-1] > 1:
-            warnings.warn(
-                f"Received multichannel signal with {wav.shape[-1]} signals, "
-                f"using the first channel only."
-            )
-        # FIXME: support only single-channel files for now.
-        to_save = self.numpy_separate(wav[:, 0], **kwargs)
+        to_save = self.numpy_separate(wav, **kwargs)
 
         # Save wav files to filename_est1.wav etc...
         for src_idx, est_src in enumerate(to_save):
