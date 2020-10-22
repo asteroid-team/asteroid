@@ -378,7 +378,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         # Assert both dict are disjoint
         if not all(k not in fb_config for k in masknet_config):
             raise AssertionError(
-                "Filterbank and Mask network config share" "common keys. Merging them is not safe."
+                "Filterbank and Mask network config share common keys. Merging them is not safe."
             )
         # Merge all args under model_args.
         model_args = {
