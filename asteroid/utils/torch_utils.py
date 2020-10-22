@@ -124,3 +124,11 @@ def are_models_equal(model1, model2):
         if p1.data.ne(p2.data).sum() > 0:
             return False
     return True
+
+
+# Import `scipt_if_tracing` if available
+script_if_tracing = getattr(
+    torch.jit,
+    "script_if_tracing",
+    getattr(torch.jit, "_script_if_tracing", torch.jit.script),
+)
