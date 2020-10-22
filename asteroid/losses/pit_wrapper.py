@@ -317,3 +317,18 @@ class PITLossWrapper(nn.Module):
         batch_indices = torch.tensor([linear_sum_assignment(pwl)[1] for pwl in pwl_copy])
         min_loss = torch.gather(pwl, 2, batch_indices[..., None]).mean([-1, -2])
         return min_loss, batch_indices
+
+
+class PITReorder(PITLossWrapper):
+    """Permutation invariant reorderer. Only returns the reordered estimates.
+    See `:py:class:asteroid.losses.PITLossWrapper`."""
+
+    def forward(self, est_targets, targets, reduce_kwargs=None, **kwargs):
+        _, reordered = super().forward(
+            est_targets=est_targets,
+            targets=targets,
+            return_est=True,
+            reduce_kwargs=reduce_kwargs,
+            **kwargs,
+        )
+        return reordered
