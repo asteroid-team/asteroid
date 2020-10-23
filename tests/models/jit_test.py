@@ -65,12 +65,24 @@ def small_model_params():
     return params
 
 
-def test_enhancement_model(small_model_params):
+@pytest.mark.parametrize(
+    "test_data",
+    (
+        (torch.rand(240) - 0.5) * 2,
+        (torch.rand(1, 220) - 0.5) * 2,
+        (torch.rand(4, 256) - 0.5) * 2,
+        (torch.rand(1, 3, 312) - 0.5) * 2,
+        (torch.rand(3, 2, 128) - 0.5) * 2,
+        (torch.rand(1, 1, 3, 212) - 0.5) * 2,
+        (torch.rand(2, 4, 3, 128) - 0.5) * 2,
+    ),
+)
+def test_enhancement_model(small_model_params, test_data):
     params = small_model_params["DeMask"]
     filter_bank = "free"
     device = get_default_device()
     inputs = ((torch.rand(1, 200, device=device) - 0.5) * 2,)
-    test_data = torch.rand(1, 220, device=device)
+    test_data = test_data.to(device)
     model = DeMask(**params, fb_type=filter_bank).eval().to(device)
     traced = torch.jit.trace(model, inputs)
 
@@ -90,12 +102,24 @@ def test_enhancement_model(small_model_params):
         LSTMTasNet,
     ),
 )
-def test_trace_bss_model(small_model_params, model_def):
+@pytest.mark.parametrize(
+    "test_data",
+    (
+        (torch.rand(240) - 0.5) * 2,
+        (torch.rand(1, 220) - 0.5) * 2,
+        (torch.rand(4, 256) - 0.5) * 2,
+        (torch.rand(1, 3, 312) - 0.5) * 2,
+        (torch.rand(3, 2, 128) - 0.5) * 2,
+        (torch.rand(1, 1, 3, 212) - 0.5) * 2,
+        (torch.rand(2, 4, 3, 128) - 0.5) * 2,
+    ),
+)
+def test_trace_bss_model(small_model_params, model_def, test_data):
     filter_bank_type = "free"
     device = get_default_device()
     # Random input uniformly distributed in [-1, 1]
     inputs = ((torch.rand(1, 200, device=device) - 0.5) * 2,)
-    test_data = torch.rand(1, 220, device=device)
+    test_data = test_data.to(device)
     params = small_model_params[model_def.__name__]
     model = model_def(**params, fb_name=filter_bank_type)
     model = model.eval().to(device)
