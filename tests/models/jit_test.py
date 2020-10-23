@@ -67,19 +67,18 @@ def small_model_params():
 
 def test_enhancement_model(small_model_params):
     params = small_model_params["DeMask"]
-    filter_banks = ["free"]  # , "stft", "analytic_free", "param_sinc"]
+    filter_bank = "free"
     device = get_default_device()
     inputs = ((torch.rand(1, 200, device=device) - 0.5) * 2,)
     test_data = torch.rand(1, 220, device=device)
-    for filter_bank in filter_banks:
-        model = DeMask(**params, fb_type=filter_bank).eval().to(device)
-        traced = torch.jit.trace(model, inputs)
+    model = DeMask(**params, fb_type=filter_bank).eval().to(device)
+    traced = torch.jit.trace(model, inputs)
 
-        # check forward
-        with torch.no_grad():
-            ref = model(test_data)
-            out = traced(test_data)
-            assert_allclose(ref, out)
+    # check forward
+    with torch.no_grad():
+        ref = model(test_data)
+        out = traced(test_data)
+        assert_allclose(ref, out)
 
 
 @pytest.mark.parametrize(
@@ -92,22 +91,21 @@ def test_enhancement_model(small_model_params):
     ),
 )
 def test_trace_bss_model(small_model_params, model_def):
-    filter_bank_types = ["free"]  # , "stft", "analytic_free", "param_sinc"]
+    filter_bank_type = "free"
     device = get_default_device()
     # Random input uniformly distributed in [-1, 1]
     inputs = ((torch.rand(1, 200, device=device) - 0.5) * 2,)
     test_data = torch.rand(1, 220, device=device)
-    for filter_bank in filter_bank_types:
-        params = small_model_params[model_def.__name__]
-        model = model_def(**params, fb_name=filter_bank)
-        model = model.eval().to(device)
-        traced = torch.jit.trace(model, inputs)
+    params = small_model_params[model_def.__name__]
+    model = model_def(**params, fb_name=filter_bank_type)
+    model = model.eval().to(device)
+    traced = torch.jit.trace(model, inputs)
 
-        # check forward
-        with torch.no_grad():
-            ref = model(test_data)
-            out = traced(test_data)
-            assert_allclose(ref, out)
+    # check forward
+    with torch.no_grad():
+        ref = model(test_data)
+        out = traced(test_data)
+        assert_allclose(ref, out)
 
 
 @pytest.mark.parametrize(
