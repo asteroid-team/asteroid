@@ -293,7 +293,7 @@ def multishape_conv_transpose1d(
         # batch. Make the convolution and restore.
         view_as = (-1,) + spec.shape[-2:]
         out = F.conv_transpose1d(
-            spec.view(view_as),
+            spec.reshape(view_as),
             filters,
             stride=stride,
             padding=padding,
