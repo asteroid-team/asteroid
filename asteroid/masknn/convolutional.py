@@ -65,7 +65,7 @@ class Conv1DBlock(nn.Module):
         shared_out = self.shared_block(x)
         res_out = self.res_conv(shared_out)
         if not self.skip_out_chan:
-            return res_out, res_out
+            return res_out
         skip_out = self.skip_conv(shared_out)
         return res_out, skip_out
 
@@ -188,7 +188,7 @@ class TDConvNet(nn.Module):
                 residual, skip = tcn_out
                 skip_connection = skip_connection + skip
             else:
-                residual, _ = tcn_out
+                residual = tcn_out
             output = output + residual
         # Use residual output when no skip connection
         mask_inp = skip_connection if self.skip_chan else output
