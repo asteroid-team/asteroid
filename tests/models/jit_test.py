@@ -102,6 +102,7 @@ def test_enhancement_model(small_model_params, test_data):
     (
         (torch.rand(240) - 0.5) * 2,
         (torch.rand(1, 220) - 0.5) * 2,
+        (torch.rand(3, 250) - 0.5) * 2,
     ),
 )
 def test_trace_bss_model(small_model_params, model_def, test_data):
