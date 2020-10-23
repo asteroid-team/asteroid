@@ -68,13 +68,8 @@ def small_model_params():
 @pytest.mark.parametrize(
     "test_data",
     (
-        (torch.rand(240) - 0.5) * 2,
         (torch.rand(1, 220) - 0.5) * 2,
         (torch.rand(4, 256) - 0.5) * 2,
-        (torch.rand(1, 3, 312) - 0.5) * 2,
-        (torch.rand(3, 2, 128) - 0.5) * 2,
-        (torch.rand(1, 1, 3, 212) - 0.5) * 2,
-        (torch.rand(2, 4, 3, 128) - 0.5) * 2,
     ),
 )
 def test_enhancement_model(small_model_params, test_data):
@@ -107,11 +102,6 @@ def test_enhancement_model(small_model_params, test_data):
     (
         (torch.rand(240) - 0.5) * 2,
         (torch.rand(1, 220) - 0.5) * 2,
-        (torch.rand(4, 256) - 0.5) * 2,
-        (torch.rand(1, 3, 312) - 0.5) * 2,
-        (torch.rand(3, 2, 128) - 0.5) * 2,
-        (torch.rand(1, 1, 3, 212) - 0.5) * 2,
-        (torch.rand(2, 4, 3, 128) - 0.5) * 2,
     ),
 )
 def test_trace_bss_model(small_model_params, model_def, test_data):
