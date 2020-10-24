@@ -6,7 +6,7 @@ from ..masknn import norms, activations
 from ..utils.torch_utils import pad_x_to_y
 
 
-class DeMask(BaseModel):
+class DeMask(BaseModel):  # CHECK-JIT
     """
     Simple MLP model for surgical mask speech enhancement A transformed-domain masking approach is used.
     Args:

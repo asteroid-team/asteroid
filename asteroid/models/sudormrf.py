@@ -7,7 +7,7 @@ from ..masknn import SuDORMRF, SuDORMRFImproved
 from .base_models import BaseEncoderMaskerDecoder
 
 
-class SuDORMRFNet(BaseEncoderMaskerDecoder):
+class SuDORMRFNet(BaseEncoderMaskerDecoder):  # CHECK-JIT
     """SuDORMRF separation model, as described in [1].
 
     Args:
@@ -82,7 +82,7 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
         super().__init__(enc, masker, dec, encoder_activation="relu")
 
 
-class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):
+class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):  # CHECK-JIT
     """Improved SuDORMRF separation model, as described in [1].
 
     Args:
@@ -157,7 +157,7 @@ class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):
         super().__init__(enc, masker, dec, encoder_activation=None)
 
 
-class _Padder(nn.Module):
+class _Padder(nn.Module):  # CHECK-JIT
     def __init__(self, encoder, upsampling_depth=4, kernel_size=21):
         super().__init__()
         self.encoder = encoder

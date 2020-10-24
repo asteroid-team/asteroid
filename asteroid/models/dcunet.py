@@ -7,7 +7,7 @@ from ..masknn.convolutional import DCUMaskNet
 from .base_models import BaseEncoderMaskerDecoder
 
 
-class BaseDCUNet(BaseEncoderMaskerDecoder):
+class BaseDCUNet(BaseEncoderMaskerDecoder):  # CHECK-JIT
     """Base class for ``DCUNet`` and ``DCCRNet`` classes.
 
     Args:
