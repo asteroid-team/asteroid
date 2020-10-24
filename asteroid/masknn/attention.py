@@ -192,6 +192,7 @@ class DPTransformer(nn.Module):
         if self.input_layer is not None:
             mixture_w = self.input_layer(mixture_w.transpose(1, 2)).transpose(1, 2)
         mixture_w = self.in_norm(mixture_w)  # [batch, bn_chan, n_frames]
+        n_orig_frames = mixture_w.shape[-1]
 
         mixture_w = self.ola.unfold(mixture_w)
         batch, n_filters, self.chunk_size, n_chunks = mixture_w.size()
@@ -203,7 +204,7 @@ class DPTransformer(nn.Module):
 
         output = self.first_out(mixture_w)
         output = output.reshape(batch * self.n_src, self.in_chan, self.chunk_size, n_chunks)
-        output = self.ola.fold(output)
+        output = self.ola.fold(output, output_size=n_orig_frames)
 
         output = self.net_out(output) * self.net_gate(output)
         # Compute mask
