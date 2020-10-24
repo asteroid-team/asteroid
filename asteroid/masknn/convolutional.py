@@ -386,7 +386,7 @@ class TDConvNetpp(nn.Module):
         return config
 
 
-class DCUNetComplexEncoderBlock(nn.Module):
+class DCUNetComplexEncoderBlock(nn.Module):  # CHECK-JIT
     """Encoder block as proposed in [1].
 
     Args:
@@ -429,7 +429,7 @@ class DCUNetComplexEncoderBlock(nn.Module):
         return self.activation(self.norm(self.conv(x)))
 
 
-class DCUNetComplexDecoderBlock(nn.Module):
+class DCUNetComplexDecoderBlock(nn.Module):  # CHECK-JIT
     """Decoder block as proposed in [1].
 
     Args:
@@ -480,7 +480,7 @@ class DCUNetComplexDecoderBlock(nn.Module):
         return self.activation(self.norm(self.deconv(x)))
 
 
-class DCUMaskNet(BaseDCUMaskNet):
+class DCUMaskNet(BaseDCUMaskNet):  # CHECK-JIT
     """Masking part of DCUNet, as proposed in [1].
 
     Valid `architecture` values for the ``default_architecture`` classmethod are:
