@@ -52,6 +52,7 @@ class DPTNet(BaseEncoderMaskerDecoder):
     def __init__(
         self,
         n_src,
+        n_heads=4,
         ff_hid=256,
         chunk_size=100,
         hop_size=None,
@@ -90,6 +91,7 @@ class DPTNet(BaseEncoderMaskerDecoder):
         masker = DPTransformer(
             n_feats,
             n_src,
+            n_heads=n_heads,
             ff_hid=ff_hid,
             ff_activation=ff_activation,
             chunk_size=chunk_size,

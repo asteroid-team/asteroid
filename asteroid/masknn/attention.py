@@ -23,7 +23,7 @@ class ImprovedTransformedLayer(nn.Module):
         activation (str, optional): activation function applied at the output of RNN.
         bidirectional (bool, optional): True for bidirectional Inter-Chunk RNN
             (Intra-Chunk is always bidirectional).
-        norm_type (str, optional): Type of normalization to use.
+        norm (str, optional): Type of normalization to use.
 
     References:
         [1] Chen, Jingjing, Qirong Mao, and Dong Liu.
@@ -74,7 +74,7 @@ class DPTransformer(nn.Module):
         in_chan (int): Number of input filters.
         n_src (int): Number of masks to estimate.
         n_heads (int): Number of attention heads.
-        hid_ff (int): Number of neurons in the RNNs cell state.
+        ff_hid (int): Number of neurons in the RNNs cell state.
             Defaults to 256.
         chunk_size (int): window size of overlap and add processing.
             Defaults to 100.

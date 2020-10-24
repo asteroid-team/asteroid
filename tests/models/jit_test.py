@@ -32,6 +32,7 @@ def small_model_params():
         },
         DPTNet.__name__: {
             "n_src": 2,
+            "n_heads": 2,
             "ff_hid": 4,
             "chunk_size": 3,
             "n_repeats": 1,
