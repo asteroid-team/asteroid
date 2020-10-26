@@ -290,6 +290,7 @@ def to_torchaudio(tensor, dim: int = -2):
     return torch.stack(torch.chunk(tensor, 2, dim=dim), dim=-1)
 
 
+@script_if_tracing
 def from_torchaudio(tensor, dim: int = -2):
     """Converts torchaudio style complex tensor to complex-like torch tensor.
 
@@ -302,6 +303,7 @@ def from_torchaudio(tensor, dim: int = -2):
         :class:`torch.Tensor`:
             asteroid-style complex-like torch tensor.
     """
+    dim = dim - 1 if dim < 0 else dim
     return torch.cat(torch.chunk(tensor, 2, dim=-1), dim=dim).squeeze(-1)
 
 
