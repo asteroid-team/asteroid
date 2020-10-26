@@ -177,7 +177,6 @@ def apply_complex_mask(tf_rep, mask, dim: int = -2):
     return mul_c(tf_rep, mask, dim=dim)
 
 
-@script_if_tracing
 def is_asteroid_complex(tensor, dim: int = -2):
     """Check if tensor is complex-like in a given dimension.
 
@@ -193,7 +192,6 @@ def is_asteroid_complex(tensor, dim: int = -2):
     return tensor.shape[dim] % 2 == 0
 
 
-@script_if_tracing
 def check_complex(tensor, dim: int = -2):
     """Assert that tensor is an Asteroid-style complex in a given dimension.
 
