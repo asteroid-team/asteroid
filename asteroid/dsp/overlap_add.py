@@ -5,7 +5,7 @@ from torch import nn
 
 
 class LambdaOverlapAdd(torch.nn.Module):
-    """Overlap-add with lambda transform on segments.
+    """Overlap-add with lambda transform on segments (not scriptable).
 
     Segment input signal, apply lambda function (a neural network for example)
     and combine with OLA.
