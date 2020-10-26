@@ -176,7 +176,7 @@ def test_check_complex_error(dim):
         transforms.check_complex(not_complex, dim=dim)
 
 
-@pytest.mark.parametrize("dim", [0, 1, 2, 3])
+@pytest.mark.parametrize("dim", [0, 1, 2, 3, -1, -2, -3])
 @pytest.mark.parametrize("max_tested_ndim", [4, 5])
 def test_torchaudio_format(dim, max_tested_ndim):
     # Random tensor shape
