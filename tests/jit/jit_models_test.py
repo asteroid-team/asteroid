@@ -32,7 +32,7 @@ def small_model_params():
             "n_src": 2,
             "n_heads": 2,
             "ff_hid": 4,
-            "chunk_size": 3,
+            "chunk_size": 4,
             "n_repeats": 1,
             "n_filters": 32,
             "kernel_size": 32,
@@ -102,6 +102,7 @@ def test_enhancement_model(small_model_params, test_data):
         (torch.rand(240) - 0.5) * 2,
         (torch.rand(1, 220) - 0.5) * 2,
         (torch.rand(3, 250) - 0.5) * 2,
+        (torch.rand(1, 1, 300) - 0.5) * 2,
     ),
 )
 def test_trace_bss_model(small_model_params, model_def, test_data):
