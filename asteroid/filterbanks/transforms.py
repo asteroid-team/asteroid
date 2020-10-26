@@ -302,7 +302,7 @@ def from_torchaudio(tensor, dim: int = -2):
         :class:`torch.Tensor`:
             asteroid-style complex-like torch tensor.
     """
-    return torch.cat(torch.chunk(tensor, 2, dim=-1), dim=dim - 1).squeeze(-1)
+    return torch.cat(torch.chunk(tensor, 2, dim=-1), dim=dim).squeeze(-1)
 
 
 def angle(tensor, dim: int = -2):
