@@ -1,5 +1,7 @@
 import torch
 
+from ..utils.torch_utils import script_if_tracing
+
 
 def mul_c(inp, other, dim: int = -2):
     """Entrywise product for complex valued tensors.
@@ -175,7 +177,8 @@ def apply_complex_mask(tf_rep, mask, dim: int = -2):
     return mul_c(tf_rep, mask, dim=dim)
 
 
-def is_asteroid_complex(tensor, dim=-2):
+@script_if_tracing
+def is_asteroid_complex(tensor, dim: int = -2):
     """Check if tensor is complex-like in a given dimension.
 
     Args:
@@ -190,6 +193,7 @@ def is_asteroid_complex(tensor, dim=-2):
     return tensor.shape[dim] % 2 == 0
 
 
+@script_if_tracing
 def check_complex(tensor, dim: int = -2):
     """Assert that tensor is an Asteroid-style complex in a given dimension.
 
@@ -243,6 +247,7 @@ def from_numpy(array, dim: int = -2):
     return torch.cat([torch.from_numpy(np.real(array)), torch.from_numpy(np.imag(array))], dim=dim)
 
 
+@script_if_tracing
 def is_torchaudio_complex(x):
     """Check if tensor is Torchaudio-style complex-like (last dimension is 2).
 
@@ -255,6 +260,7 @@ def is_torchaudio_complex(x):
     return x.shape[-1] == 2
 
 
+@script_if_tracing
 def check_torchaudio_complex(tensor):
     """Assert that tensor is Torchaudo-style complex-like (last dimension is 2).
 
@@ -336,7 +342,8 @@ def from_mag_and_phase(mag, phase, dim: int = -2):
     return torch.cat([mag * torch.cos(phase), mag * torch.sin(phase)], dim=dim)
 
 
-def ebased_vad(mag_spec, th_db=40):
+@script_if_tracing
+def ebased_vad(mag_spec, th_db: int = 40):
     """Compute energy-based VAD from a magnitude spectrogram (or equivalent).
 
     Args:
