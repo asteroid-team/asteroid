@@ -47,9 +47,9 @@ def mixture_consistency(
     # If the source weights are not specified, the weights are the relative
     # power of each source to the sum. w_i = P_i / (P_all), P for power.
     if src_weights is None:
-        # all_dims = list(range(est_sources.ndim))
-        all_dims: List[int] = torch.arange(1, est_sources.ndim).tolist()
+        all_dims: List[int] = torch.arange(est_sources.ndim).tolist()
         all_dims.pop(dim)  # Remove source axis
+        all_dims.pop(0)  # Remove batch axis
         src_weights = torch.mean(est_sources ** 2, dim=all_dims, keepdim=True)
     # Make sure that the weights sum up to 1
     norm_weights = torch.sum(src_weights, dim=dim, keepdim=True) + 1e-8
