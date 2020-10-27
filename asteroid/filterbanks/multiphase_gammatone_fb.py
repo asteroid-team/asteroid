@@ -29,7 +29,6 @@ class MultiphaseGammatoneFB(Filterbank):
         filters = torch.from_numpy(mpgtf).unsqueeze(1).float()
         self.register_buffer("_filters", filters)
 
-    @property
     def filters(self):
         return self._filters
 

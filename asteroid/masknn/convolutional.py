@@ -178,12 +178,12 @@ class TDConvNet(nn.Module):
             :class:`torch.Tensor`:
                 estimated mask of shape [batch, n_src, n_filters, n_frames]
         """
-        batch, n_filters, n_frames = mixture_w.size()
+        batch, _, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)
-        skip_connection = 0.0
-        for i in range(len(self.TCN)):
+        skip_connection = torch.tensor([0.0])
+        for layer in self.TCN:
             # Common to w. skip and w.o skip architectures
-            tcn_out = self.TCN[i](output)
+            tcn_out = layer(output)
             if self.skip_chan:
                 residual, skip = tcn_out
                 skip_connection = skip_connection + skip
@@ -353,7 +353,7 @@ class TDConvNetpp(nn.Module):
                     residual, skip = tcn_out
                     skip_connection = skip_connection + skip
                 else:
-                    residual = tcn_out
+                    residual, _ = tcn_out
                 # Initialized exp decay scale factor TDCNpp for residual connections
                 scale = self.scaling_param[r, x - 1] if x > 0 else 1.0
                 residual = residual * scale
@@ -386,7 +386,7 @@ class TDConvNetpp(nn.Module):
         return config
 
 
-class DCUNetComplexEncoderBlock(nn.Module):
+class DCUNetComplexEncoderBlock(nn.Module):  # CHECK-JIT
     """Encoder block as proposed in [1].
 
     Args:
@@ -429,7 +429,7 @@ class DCUNetComplexEncoderBlock(nn.Module):
         return self.activation(self.norm(self.conv(x)))
 
 
-class DCUNetComplexDecoderBlock(nn.Module):
+class DCUNetComplexDecoderBlock(nn.Module):  # CHECK-JIT
     """Decoder block as proposed in [1].
 
     Args:
@@ -480,7 +480,7 @@ class DCUNetComplexDecoderBlock(nn.Module):
         return self.activation(self.norm(self.deconv(x)))
 
 
-class DCUMaskNet(BaseDCUMaskNet):
+class DCUMaskNet(BaseDCUMaskNet):  # CHECK-JIT
     """Masking part of DCUNet, as proposed in [1].
 
     Valid `architecture` values for the ``default_architecture`` classmethod are:

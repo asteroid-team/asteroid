@@ -11,8 +11,6 @@ from asteroid.filterbanks.transforms import take_mag, apply_mag_mask, ebased_vad
 from asteroid.masknn.blocks import SingleRNN
 from asteroid.utils.torch_utils import pad_x_to_y
 
-EPS = 1e-8
-
 
 def make_model_and_optimizer(conf):
     """Function to define the model and optimizer for a config dictionary.
@@ -42,6 +40,7 @@ class Chimera(nn.Module):
         dropout=0.3,
         embedding_dim=20,
         take_log=False,
+        EPS=1e-8,
     ):
         super().__init__()
         self.input_dim = in_chan
@@ -65,11 +64,12 @@ class Chimera(nn.Module):
         # DC head
         self.embedding_layer = nn.Linear(rnn_out_dim, in_chan * embedding_dim)
         self.embedding_act = nn.Tanh()  # sigmoid or tanh
+        self.EPS = EPS
 
     def forward(self, input_data):
         batch, _, n_frames = input_data.shape
         if self.take_log:
-            input_data = torch.log(input_data + EPS)
+            input_data = torch.log(input_data + self.EPS)
         # Common net
         out = self.rnn(input_data.permute(0, 2, 1))
         out = self.dropout(out)
@@ -81,7 +81,7 @@ class Chimera(nn.Module):
         # (batch, freq * frames, emb)
         proj = proj.reshape(batch, -1, self.embedding_dim)
         proj_norm = torch.norm(proj, p=2, dim=-1, keepdim=True)
-        projection_final = proj / (proj_norm + EPS)
+        projection_final = proj / (proj_norm + self.EPS)
 
         # Mask head
         mask_out = self.mask_layer(out).view(batch, n_frames, self.n_src, self.input_dim)

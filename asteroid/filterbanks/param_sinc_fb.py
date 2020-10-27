@@ -39,6 +39,7 @@ class ParamSincFB(Filterbank):
         sample_rate=16000.0,
         min_low_hz=50,
         min_band_hz=50,
+        **kwargs,
     ):
         if kernel_size % 2 == 0:
             print(
@@ -78,7 +79,6 @@ class ParamSincFB(Filterbank):
         self.low_hz_ = nn.Parameter(torch.from_numpy(hz[:-1]).view(-1, 1))
         self.band_hz_ = nn.Parameter(torch.from_numpy(np.diff(hz)).view(-1, 1))
 
-    @property
     def filters(self):
         """ Compute filters from parameters """
         low = self.min_low_hz + torch.abs(self.low_hz_)
@@ -89,7 +89,7 @@ class ParamSincFB(Filterbank):
         sin_filters = self.make_filters(low, high, filt_type="sin")
         return torch.cat([cos_filters, sin_filters], dim=0)
 
-    def make_filters(self, low, high, filt_type="cos"):
+    def make_filters(self, low, high, filt_type: str = "cos"):
         band = (high - low)[:, 0]
         ft_low = torch.matmul(low, self.n_)
         ft_high = torch.matmul(high, self.n_)

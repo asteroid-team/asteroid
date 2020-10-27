@@ -5,7 +5,7 @@ from torch import nn
 
 
 class LambdaOverlapAdd(torch.nn.Module):
-    """Overlap-add with lambda transform on segments.
+    """Overlap-add with lambda transform on segments (not scriptable).
 
     Segment input signal, apply lambda function (a neural network for example)
     and combine with OLA.
@@ -259,7 +259,8 @@ class DualPathProcessing(nn.Module):
             stride=(self.hop_size, 1),
         )
 
-        x /= self.chunk_size / self.hop_size
+        # force float div for torch jit
+        x /= float(self.chunk_size) / self.hop_size
 
         return x.reshape(batch, chan, self.n_orig_frames)
 

@@ -2,7 +2,7 @@ from ..masknn.recurrent import DCCRMaskNet
 from .dcunet import BaseDCUNet
 
 
-class DCCRNet(BaseDCUNet):
+class DCCRNet(BaseDCUNet):  # CHECK-JIT
     """DCCRNet as proposed in [1].
 
     Args:

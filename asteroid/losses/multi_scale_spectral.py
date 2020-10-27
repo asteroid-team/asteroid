@@ -4,8 +4,6 @@ from torch.nn.modules.loss import _Loss
 from asteroid.filterbanks import STFTFB, Encoder
 from asteroid.filterbanks.transforms import take_mag
 
-EPS = 1e-8
-
 
 class SingleSrcMultiScaleSpectral(_Loss):
     """Measure multi-scale spectral loss as described in [1]
@@ -81,7 +79,7 @@ class SingleSrcMultiScaleSpectral(_Loss):
             loss += self.compute_spectral_loss(encoder, est_target, target)
         return loss
 
-    def compute_spectral_loss(self, encoder, est_target, target):
+    def compute_spectral_loss(self, encoder, est_target, target, EPS=1e-8):
         batch_size = est_target.shape[0]
         spect_est_target = take_mag(encoder(est_target)).view(batch_size, -1)
         spect_target = take_mag(encoder(target)).view(batch_size, -1)

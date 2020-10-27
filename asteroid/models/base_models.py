@@ -6,10 +6,11 @@ import torch
 from torch import nn
 
 from ..masknn import activations
-from ..utils.torch_utils import pad_x_to_y
+from ..utils.torch_utils import pad_x_to_y, script_if_tracing
 from ..utils.hub_utils import cached_download
 
 
+@script_if_tracing
 def _unsqueeze_to_3d(x):
     if x.ndim == 1:
         return x.reshape(1, 1, -1)
@@ -314,10 +315,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         decoded = self.postprocess_decoded(decoded)
 
         reconstructed = pad_x_to_y(decoded, wav)
-        if was_one_d:
-            return reconstructed.squeeze(0)
-        else:
-            return reconstructed
+        return reconstructed.squeeze(0) * was_one_d + reconstructed * (1 - was_one_d)
 
     def postprocess_encoded(self, tf_rep):
         """Hook to perform transformations on the encoded, time-frequency domain

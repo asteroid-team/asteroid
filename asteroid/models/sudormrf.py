@@ -5,6 +5,7 @@ import math
 from ..filterbanks import make_enc_dec
 from ..masknn import SuDORMRF, SuDORMRFImproved
 from .base_models import BaseEncoderMaskerDecoder
+from ..utils.torch_utils import script_if_tracing
 
 
 class SuDORMRFNet(BaseEncoderMaskerDecoder):
@@ -173,17 +174,19 @@ class _Padder(nn.Module):
         self.filterbank = self.encoder.filterbank
 
     def forward(self, x):
-        x = self.pad(x)
+        x = pad(x, self.lcm)
         return self.encoder(x)
 
-    def pad(self, x):
-        values_to_pad = int(x.shape[-1]) % self.lcm
-        if values_to_pad:
-            appropriate_shape = x.shape
-            padded_x = torch.zeros(
-                list(appropriate_shape[:-1]) + [appropriate_shape[-1] + self.lcm - values_to_pad],
-                dtype=torch.float32,
-            )
-            padded_x[..., : x.shape[-1]] = x
-            return padded_x
-        return x
+
+@script_if_tracing
+def pad(x, lcm: int):
+    values_to_pad = int(x.shape[-1]) % lcm
+    if values_to_pad:
+        appropriate_shape = x.shape
+        padding = torch.zeros(
+            list(appropriate_shape[:-1]) + [lcm - values_to_pad],
+            dtype=x.dtype,
+        )
+        padded_x = torch.cat([x, padding], dim=-1)
+        return padded_x
+    return x
