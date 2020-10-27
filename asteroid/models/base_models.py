@@ -295,13 +295,11 @@ class BaseEncoderMaskerDecoder(BaseModel):
         Returns:
             torch.Tensor, of shape (batch, n_src, time) or (n_src, time).
         """
-        # Handle 1D, 2D or n-D inputs
-        was_one_d = wav.ndim == 1
-        # Reshape to (batch, n_mix, time)
-        wav = _unsqueeze_to_3d(wav)
+        # Reshape to (batch, n_mix, time), keep `wav` to shape reconstructed
+        squeezed_wav = _unsqueeze_to_3d(wav)
 
         # Real forward
-        tf_rep = self.encoder(wav)
+        tf_rep = self.encoder(squeezed_wav)
         tf_rep = self.postprocess_encoded(tf_rep)
         tf_rep = self.enc_activation(tf_rep)
 
@@ -314,8 +312,8 @@ class BaseEncoderMaskerDecoder(BaseModel):
         decoded = self.decoder(masked_tf_rep)
         decoded = self.postprocess_decoded(decoded)
 
-        reconstructed = pad_x_to_y(decoded, wav)
-        return reconstructed.squeeze(0) * was_one_d + reconstructed * (1 - was_one_d)
+        reconstructed = pad_x_to_y(decoded, squeezed_wav)
+        return _shape_reconstructed(reconstructed, wav)
 
     def postprocess_encoded(self, tf_rep):
         """Hook to perform transformations on the encoded, time-frequency domain
@@ -385,6 +383,23 @@ class BaseEncoderMaskerDecoder(BaseModel):
             "encoder_activation": self.encoder_activation,
         }
         return model_args
+
+
+@script_if_tracing
+def _shape_reconstructed(reconstructed, wav):
+    """Reshape `reconstructed` to have same size as `wav`
+
+    Args:
+        reconstructed (torch.Tensor): Reconstructed waveform
+        wav (torch.Tensor): Waveform with size to match
+
+    Returns:
+        torch.Tensor: Reshaped waveform
+
+    """
+    if wav.ndim == 1:
+        return reconstructed.squeeze(0)
+    return reconstructed
 
 
 # Backwards compatibility
