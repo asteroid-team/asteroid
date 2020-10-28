@@ -296,7 +296,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
             torch.Tensor, of shape (batch, n_src, time) or (n_src, time).
         """
         # Remember shape to shape reconstruction, cast to Tensor for torchscript
-        shape = torch.tensor(wav.size())
+        shape = get_shape(wav)
         # Reshape to (batch, n_mix, time)
         wav = _unsqueeze_to_3d(wav)
 
@@ -385,6 +385,23 @@ class BaseEncoderMaskerDecoder(BaseModel):
             "encoder_activation": self.encoder_activation,
         }
         return model_args
+
+
+@script_if_tracing
+def get_shape(tensor):
+    """Gets shape of `tensor` as `torch.Tensor` type for jit compiler
+
+    Note:
+        Returning `tensor.shape` of `tensor.size()` directly is not torchscript
+        compatible as return type would not be supported.
+
+    Args:
+        tensor (torch.Tensor): Tensor
+
+    Returns:
+        torch.Tensor: Shape of `tensor`
+    """
+    return torch.tensor(tensor.shape)
 
 
 @script_if_tracing
