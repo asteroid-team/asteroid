@@ -6,7 +6,7 @@ import torch
 from torch import nn
 
 from ..masknn import activations
-from ..utils.torch_utils import pad_x_to_y, script_if_tracing, get_shape
+from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download
 
 
@@ -296,7 +296,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
             torch.Tensor, of shape (batch, n_src, time) or (n_src, time).
         """
         # Remember shape to shape reconstruction, cast to Tensor for torchscript
-        shape = get_shape(wav)
+        shape = jitable_shape(wav)
         # Reshape to (batch, n_mix, time)
         wav = _unsqueeze_to_3d(wav)
 

@@ -173,7 +173,7 @@ def are_models_equal(model1, model2):
 
 
 @script_if_tracing
-def get_shape(tensor):
+def jitable_shape(tensor):
     """Gets shape of `tensor` as `torch.Tensor` type for jit compiler
 
     Note:

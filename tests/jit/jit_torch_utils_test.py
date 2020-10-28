@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-import asteroid.utils.torch_utils as torch_utils
+from asteroid.utils import torch_utils
 
 
 @pytest.mark.parametrize(
@@ -13,8 +13,8 @@ import asteroid.utils.torch_utils as torch_utils
         torch.tensor([[2, 5], [3, 8]]),
     ),
 )
-def test_get_shape(data):
-    expected = torch_utils.get_shape(data)
-    scripted = torch.jit.trace(torch_utils.get_shape, torch.tensor([1]))
+def test_jitable_shape(data):
+    expected = torch_utils.jitable_shape(data)
+    scripted = torch.jit.trace(torch_utils.jitable_shape, torch.tensor([1]))
     output = scripted(data)
     assert torch.equal(output, expected)

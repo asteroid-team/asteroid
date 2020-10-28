@@ -66,6 +66,6 @@ def test_loader_submodule():
         (torch.tensor([[2, 5, 5], [3, 8, -2]]), torch.tensor([2, 3])),
     ),
 )
-def test_get_shape(data, expected):
-    output = torch_utils.get_shape(data)
+def test_jitable_shape(data, expected):
+    output = torch_utils.jitable_shape(data)
     assert torch.equal(output, expected)
