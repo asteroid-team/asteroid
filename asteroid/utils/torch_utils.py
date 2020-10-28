@@ -170,3 +170,20 @@ def are_models_equal(model1, model2):
         if p1.data.ne(p2.data).sum() > 0:
             return False
     return True
+
+
+@script_if_tracing
+def jitable_shape(tensor):
+    """Gets shape of `tensor` as `torch.Tensor` type for jit compiler
+
+    Note:
+        Returning `tensor.shape` of `tensor.size()` directly is not torchscript
+        compatible as return type would not be supported.
+
+    Args:
+        tensor (torch.Tensor): Tensor
+
+    Returns:
+        torch.Tensor: Shape of `tensor`
+    """
+    return torch.tensor(tensor.shape)
