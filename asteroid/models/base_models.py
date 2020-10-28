@@ -6,7 +6,7 @@ import torch
 from torch import nn
 
 from ..masknn import activations
-from ..utils.torch_utils import pad_x_to_y, script_if_tracing
+from ..utils.torch_utils import pad_x_to_y, script_if_tracing, get_shape
 from ..utils.hub_utils import cached_download
 
 
@@ -385,23 +385,6 @@ class BaseEncoderMaskerDecoder(BaseModel):
             "encoder_activation": self.encoder_activation,
         }
         return model_args
-
-
-@script_if_tracing
-def get_shape(tensor):
-    """Gets shape of `tensor` as `torch.Tensor` type for jit compiler
-
-    Note:
-        Returning `tensor.shape` of `tensor.size()` directly is not torchscript
-        compatible as return type would not be supported.
-
-    Args:
-        tensor (torch.Tensor): Tensor
-
-    Returns:
-        torch.Tensor: Shape of `tensor`
-    """
-    return torch.tensor(tensor.shape)
 
 
 @script_if_tracing
