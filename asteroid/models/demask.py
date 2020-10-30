@@ -77,7 +77,7 @@ class DeMask(BaseModel):  # CHECK-JIT
 
         n_feats_input = self._get_n_feats_input(fb_type)
         n_feats_output = self._get_n_feats_output(fb_type)
-        net = self._build_nn(n_feats_input, n_feats_output)
+        net = self._build_masker_nn(n_feats_input, n_feats_output)
         self.masker = nn.Sequential(*net)
 
     def _get_n_feats_input(self, fb_type):
@@ -115,7 +115,7 @@ class DeMask(BaseModel):  # CHECK-JIT
             raise NotImplementedError
         return n_feats_output
 
-    def _build_nn(self, n_feats_input, n_feats_output):
+    def _build_masker_nn(self, n_feats_input, n_feats_output):
         make_layer_norm = norms.get(self.norm_type)
         net = [make_layer_norm(n_feats_input)]
         layer_activation = activations.get(self.activation)()
