@@ -20,64 +20,59 @@ from asteroid.losses import SingleSrcNegSTOI
 # In the hierarchical dictionary created when parsing, the key `key` can be
 # found at dic['main_args'][key]
 # By default train.py will use all available GPUs. The `id` option in run.sh
-# will limit the number of available GPUs for train.py . 
+# will limit the number of available GPUs for train.py .
 parser = argparse.ArgumentParser()
-parser.add_argument('--exp_dir', default='exp/tmp',
-                    help='Full path to save best validation model')
+parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best validation model")
 
 
 def main(conf):
     # Define dataloader using ORIGINAL mixture.
     dataset_kwargs = {
-        'root_path': Path(conf['data']['root_path']),
-        'task': conf['data']['task'],
-        'sample_rate': conf['data']['sample_rate'],
-        'num_workers': conf['training']['num_workers'],
-        'mixture': conf['data']['mixture']
+        "root_path": Path(conf["data"]["root_path"]),
+        "task": conf["data"]["task"],
+        "sample_rate": conf["data"]["sample_rate"],
+        "num_workers": conf["training"]["num_workers"],
+        "mixture": conf["data"]["mixture"],
     }
 
     train_set = DAMPVSEPDataset(
         split=f"train_{conf['data']['train_set']}",
         random_segments=True,
-        segment=conf['data']['segment'],
-        samples_per_track=conf['data']['samples_per_track'],
-        **dataset_kwargs
+        segment=conf["data"]["segment"],
+        samples_per_track=conf["data"]["samples_per_track"],
+        **dataset_kwargs,
     )
 
-    val_set = DAMPVSEPDataset(
-        split='valid',
-        **dataset_kwargs
+    val_set = DAMPVSEPDataset(split="valid", **dataset_kwargs)
+
+    train_loader = DataLoader(
+        train_set,
+        shuffle=True,
+        batch_size=conf["training"]["batch_size"],
+        num_workers=conf["training"]["num_workers"],
+        drop_last=True,
     )
 
-    train_loader = DataLoader(train_set, 
-                              shuffle=True,
-                              batch_size=conf['training']['batch_size'],
-                              num_workers=conf['training']['num_workers'],
-                              drop_last=True)
-
-    val_loader = DataLoader(val_set, 
-                            shuffle=False,
-                            batch_size=1,
-                            num_workers=conf['training']['num_workers'])
+    val_loader = DataLoader(
+        val_set, shuffle=False, batch_size=1, num_workers=conf["training"]["num_workers"]
+    )
 
     conf["masknet"].update({"n_src": conf["data"]["n_src"]})
 
     model = ConvTasNet(**conf["filterbank"], **conf["masknet"])
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
-  
+
     # Define scheduler
     scheduler = None
-    if conf['training']['half_lr']:
-        scheduler = ReduceLROnPlateau(optimizer=optimizer, 
-                                      factor=0.5,
-                                      patience=5)
+    if conf["training"]["half_lr"]:
+        scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5, patience=5)
     # Just after instantiating, save the args. Easy loading in the future.
     exp_dir = conf["main_args"]["exp_dir"]
     os.makedirs(exp_dir, exist_ok=True)
     conf_path = os.path.join(exp_dir, "conf.yml")
     with open(conf_path, "w") as outfile:
         yaml.safe_dump(conf, outfile)
-    
+
     # Define Loss function.
     # Combine_Loss is not complete. Needs improvement
     # loss_func = Combine_Loss(alpha=conf['training']['loss_alpha'],
@@ -96,21 +91,22 @@ def main(conf):
     # Define callbacks
     checkpoint_dir = os.path.join(exp_dir, "checkpoints/")
     checkpoint = ModelCheckpoint(
-        checkpoint_dir, monitor="val_loss", mode="min", save_top_k=10, verbose=True)
-    
+        checkpoint_dir, monitor="val_loss", mode="min", save_top_k=10, verbose=True
+    )
+
     early_stopping = False
     if conf["training"]["early_stop"]:
         early_stopping = EarlyStopping(monitor="val_loss", patience=20, verbose=True)
-                                  
+
     # Don't ask GPU if they are not available.
-    gpus = -1 if torch.cuda.is_available() else None  
+    gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(
-        max_epochs=conf['training']['epochs'],
+        max_epochs=conf["training"]["epochs"],
         checkpoint_callback=checkpoint,
         early_stop_callback=early_stopping,
         default_root_dir=exp_dir,
         gpus=gpus,
-        distributed_backend='ddp',
+        distributed_backend="ddp",
         train_percent_check=1.0,  # Useful for fast experiment
         gradient_clip_val=5.0,
     )
@@ -150,7 +146,7 @@ class Combine_Loss(torch.nn.Module):
         return loss
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import yaml
     from pprint import pprint as print
     from asteroid.utils import prepare_parser_from_dict, parse_args_as_dict
@@ -158,7 +154,7 @@ if __name__ == '__main__':
     # We start with opening the config file conf.yml as a dictionary from
     # which we can create parsers. Each top level key in the dictionary defined
     # by the YAML file creates a group in the parser.
-    with open('local/conf.yml') as f:
+    with open("local/conf.yml") as f:
         def_conf = yaml.safe_load(f)
     parser = prepare_parser_from_dict(def_conf, parser=parser)
     # Arguments are then parsed into a hierarchical dictionary (instead of

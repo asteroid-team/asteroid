@@ -11,7 +11,7 @@ import librosa
 # Soundfile can read OGG (vocal) but not M4A (background and mixture)
 import warnings
 
-warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class DAMPVSEPDataset(torch.utils.data.Dataset):
@@ -57,23 +57,23 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
                                 or remix sources. Default to original.
             * ``'remix'`` for use addition to remix the sources.
             * ``'original'`` for use the original mixture.
-        """
+    """
 
-    dataset_name = 'DAMP-VSEP'
+    dataset_name = "DAMP-VSEP"
 
     def __init__(
-            self,
-            root_path,
-            task,
-            split='train_singles',
-            samples_per_track=1,
-            random_segments=False,
-            sample_rate=16000,
-            segment=None,
-            num_workers=None,
-            norm=None,
-            source_augmentations=None,
-            mixture='original'
+        self,
+        root_path,
+        task,
+        split="train_singles",
+        samples_per_track=1,
+        random_segments=False,
+        sample_rate=16000,
+        segment=None,
+        num_workers=None,
+        norm=None,
+        source_augmentations=None,
+        mixture="original",
     ):
 
         self.sample_rate = sample_rate
@@ -81,14 +81,14 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
 
         self.root_path = Path(root_path).expanduser()
         # Task detail parameters
-        assert task in ['enh_vocal', 'enh_both'], "Task should be one of 'enh_vocal','enh_both'"
-        assert mixture in ['remix', 'original'], "Mixture should be one of 'remix', 'original'"
+        assert task in ["enh_vocal", "enh_both"], "Task should be one of 'enh_vocal','enh_both'"
+        assert mixture in ["remix", "original"], "Mixture should be one of 'remix', 'original'"
 
         self.task = task
-        if task == 'enh_vocal':
-            self.target = ['vocal']
-        elif task == 'enh_both':
-            self.target = ['vocal', 'background']
+        if task == "enh_vocal":
+            self.target = ["vocal"]
+        elif task == "enh_both":
+            self.target = ["vocal", "background"]
 
         self.split = split
         self.tracks = self.get_tracks()
@@ -101,29 +101,21 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         self.norm = norm
         self.source_augmentations = source_augmentations
         self.mixture = mixture
-        if self.mixture == 'original' and self.split == 'train_english':
+        if self.mixture == "original" and self.split == "train_english":
             raise Exception("The 'train_english' train can only accept 'remix' mixture.")
 
     def __len__(self):
         return len(self.tracks) * self.samples_per_track
 
-    def _load_audio(
-            self,
-            path,
-            start=0.0,
-            duration=None,
-            scaler=None,
-            mean=0.0,
-            std=1.0
-    ):
+    def _load_audio(self, path, start=0.0, duration=None, scaler=None, mean=0.0, std=1.0):
         x, _ = librosa.load(
             path,
             sr=self.sample_rate,
             mono=True,
             offset=start,
             duration=duration,
-            dtype='float32',
-            res_type='polyphase'
+            dtype="float32",
+            res_type="polyphase",
         )
         if scaler:
             x *= scaler
@@ -145,50 +137,50 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
 
         # Set start time of segment
         start = 0.0
-        duration = float(self.tracks[perf]['duration'])
+        duration = float(self.tracks[perf]["duration"])
         if self.random_segments:
-            start = random.uniform(0.0, float(self.tracks[perf]['duration']) - self.segment)
+            start = random.uniform(0.0, float(self.tracks[perf]["duration"]) - self.segment)
             duration = float(self.segment)
 
         mix_mean = 0.0
         mix_std = 1.0
-        if self.norm == 'song_level':
-            if self.mixture == 'original':
-                mix_mean = float(self.tracks[perf]['original_mix_mean'])
-                mix_std = float(self.tracks[perf]['original_mix_std'])
-            elif self.mixture == 'remix':
-                mix_mean = float(self.tracks[perf]['mean'])
-                mix_std = float(self.tracks[perf]['std'])
+        if self.norm == "song_level":
+            if self.mixture == "original":
+                mix_mean = float(self.tracks[perf]["original_mix_mean"])
+                mix_std = float(self.tracks[perf]["original_mix_std"])
+            elif self.mixture == "remix":
+                mix_mean = float(self.tracks[perf]["mean"])
+                mix_std = float(self.tracks[perf]["std"])
 
-        for source in ['vocal', 'background']:
+        for source in ["vocal", "background"]:
             scaler = None
-            if source == 'vocal':
-                scaler = float(self.tracks[perf]['scaler'])
+            if source == "vocal":
+                scaler = float(self.tracks[perf]["scaler"])
 
             x = self._load_audio(
                 self.root_path / self.tracks[perf][source],
-                start=start + float(self.tracks[perf][f'{source}_start']),
+                start=start + float(self.tracks[perf][f"{source}_start"]),
                 duration=duration,
                 scaler=scaler,
                 mean=mix_mean,
-                std=mix_std
+                std=mix_std,
             )
             audio_sources[source] = x
 
         # Prepare targets and mixture
         audio_sources = torch.stack(
-            [wav for src, wav in audio_sources.items() if src in self.target],
-            dim=0)
+            [wav for src, wav in audio_sources.items() if src in self.target], dim=0
+        )
 
-        if self.mixture == 'remix':
+        if self.mixture == "remix":
             audio_mix = audio_sources.sum(0)
         else:
             audio_mix = self._load_audio(
-                self.root_path / self.tracks[perf]['original_mix'],
-                start=start + float(self.tracks[perf]['background_start']),
+                self.root_path / self.tracks[perf]["original_mix"],
+                start=start + float(self.tracks[perf]["background_start"]),
                 duration=duration,
                 mean=mix_mean,
-                std=mix_std
+                std=mix_std,
             )
 
         return audio_mix, audio_sources
@@ -202,32 +194,32 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         Loads metadata with tracks info.
         Creates metadata if doesn't exist.
         """
-        metadata_path = Path(f'metadata/{self.split}_sr{self.sample_rate}.json')
+        metadata_path = Path(f"metadata/{self.split}_sr{self.sample_rate}.json")
         if metadata_path.exists():
-            tracks = json.load(open(metadata_path, 'r'))
+            tracks = json.load(open(metadata_path, "r"))
         else:
             raise Exception(f"Metadata file for {self.split} not found")
         return tracks
 
     def get_infos(self):
-        """ Get dataset infos (for publishing models).
+        """Get dataset infos (for publishing models).
 
         Returns:
             dict, dataset infos with keys `dataset`, `task` and `licences`.
         """
         infos = dict()
-        infos['dataset'] = self.dataset_name
-        infos['task'] = self.task
-        infos['licenses'] = [dampvsep_license]
+        infos["dataset"] = self.dataset_name
+        infos["task"] = self.task
+        infos["licenses"] = [dampvsep_license]
         return infos
 
 
 dampvsep_license = dict(
-    title='DAMP-VSEP: Smule Digital Archive of Mobile Performances - Vocal Separation (Version 1.0.1) ',
-    title_link='https://zenodo.org/record/3553059',
-    author='Smule, Inc',
-    author_link='https://zenodo.org/record/3553059',
+    title="DAMP-VSEP: Smule Digital Archive of Mobile Performances - Vocal Separation (Version 1.0.1) ",
+    title_link="https://zenodo.org/record/3553059",
+    author="Smule, Inc",
+    author_link="https://zenodo.org/record/3553059",
     license="Smule's Research Data License Agreement",
-    license_link='https://zenodo.org/record/3553059',
-    non_commercial=True
+    license_link="https://zenodo.org/record/3553059",
+    non_commercial=True,
 )
