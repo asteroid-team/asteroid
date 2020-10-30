@@ -75,6 +75,12 @@ class DeMask(BaseModel):  # CHECK-JIT
             **fb_kwargs,
         )
 
+        n_feats_input = self._get_n_feats_input(fb_type)
+        n_feats_output = self._get_n_feats_output(fb_type)
+        net = self._build_nn(n_feats_input, n_feats_output)
+        self.masker = nn.Sequential(*net)
+
+    def _get_n_feats_input(self, fb_type):
         if self.input_type == "mag":
             if fb_type == "stft":
                 n_feats_input = (self.encoder.filterbank.n_filters) // 2 + 1
@@ -94,7 +100,9 @@ class DeMask(BaseModel):  # CHECK-JIT
         else:
             print("Input type should be either mag, reim or cat")
             raise NotImplementedError
+        return n_feats_input
 
+    def _get_n_feats_output(self, fb_type):
         if self.output_type == "mag":
             if fb_type == "stft":
                 n_feats_output = self.encoder.filterbank.n_filters // 2 + 1
@@ -105,23 +113,24 @@ class DeMask(BaseModel):  # CHECK-JIT
         else:
             print("Input type should be either mag or reim")
             raise NotImplementedError
+        return n_feats_output
 
-        net = [norms.get(norm_type)(n_feats_input)]
+    def _build_nn(self, n_feats_input, n_feats_output):
+        net = [norms.get(self.norm_type)(n_feats_input)]
         in_chan = n_feats_input
-        for layer in range(len(hidden_dims)):
+        for layer in range(len(self.hidden_dims)):
             net.extend(
                 [
-                    nn.Conv1d(in_chan, hidden_dims[layer], 1),
-                    norms.get(norm_type)(hidden_dims[layer]),
-                    activations.get(activation)(),
-                    nn.Dropout(dropout),
+                    nn.Conv1d(in_chan, self.hidden_dims[layer], 1),
+                    norms.get(self.norm_type)(self.hidden_dims[layer]),
+                    activations.get(self.activation)(),
+                    nn.Dropout(self.dropout),
                 ]
             )
-            in_chan = hidden_dims[layer]
+            in_chan = self.hidden_dims[layer]
 
-        net.extend([nn.Conv1d(in_chan, n_feats_output, 1), activations.get(mask_act)()])
-
-        self.masker = nn.Sequential(*net)
+        net.extend([nn.Conv1d(in_chan, n_feats_output, 1), activations.get(self.mask_act)()])
+        return net
 
     def forward(self, wav):
 
