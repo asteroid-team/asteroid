@@ -128,7 +128,7 @@ class LibriMix(Dataset):
             train_loader, val_loader: training and validation DataLoader out of
                 `LibriMix` Dataset.
 
-        Examples:
+        Examples
             >>> from asteroid.data import LibriMix
             >>> train_loader, val_loader = LibriMix.loaders_from_mini(
             >>>     task='sep_clean', batch_size=4
@@ -154,7 +154,7 @@ class LibriMix(Dataset):
             train_set, val_set: training and validation instances of
                 `LibriMix` (data.Dataset).
 
-        Examples:
+        Examples
             >>> from asteroid.data import LibriMix
             >>> train_set, val_set = LibriMix.mini_from_download(task='sep_clean')
         """

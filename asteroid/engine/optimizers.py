@@ -59,7 +59,7 @@ def make_optimizer(params, optimizer="adam", **kwargs):
 
     Returns:
         torch.optim.Optimizer
-    Examples:
+    Examples
         >>> from torch import nn
         >>> model = nn.Sequential(nn.Linear(10, 10))
         >>> optimizer = make_optimizer(model.parameters(), optimizer='sgd',

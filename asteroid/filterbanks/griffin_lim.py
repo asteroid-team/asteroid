@@ -29,7 +29,7 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, m
     Returns:
         torch.Tensor: estimated waveforms of shape (any, dim, ension, time).
 
-    Examples:
+    Examples
         >>> stft = Encoder(STFTFB(n_filters=256, kernel_size=256, stride=128))
         >>> wav = torch.randn(2, 1, 8000)
         >>> spec = stft(wav)
@@ -111,7 +111,7 @@ def misi(
     Returns:
         torch.Tensor: estimated waveforms of shape (batch, n_src, time).
 
-    Examples:
+    Examples
         >>> stft = Encoder(STFTFB(n_filters=256, kernel_size=256, stride=128))
         >>> wav = torch.randn(2, 3, 8000)
         >>> specs = stft(wav)

@@ -14,8 +14,7 @@ class PairwiseMSE(_Loss):
     Returns:
         :class:`torch.Tensor`: with shape [batch, nsrc, nsrc]
 
-    Examples:
-
+    Examples
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
         >>> targets = torch.randn(10, 2, 32000)
@@ -46,8 +45,7 @@ class SingleSrcMSE(_Loss):
     Returns:
         :class:`torch.Tensor`: with shape [batch]
 
-    Examples:
-
+    Examples
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
         >>> targets = torch.randn(10, 2, 32000)

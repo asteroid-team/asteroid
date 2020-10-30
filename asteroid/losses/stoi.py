@@ -35,7 +35,7 @@ class NegSTOILoss(_NegSTOILoss):
         short-term envelope vectors is masked using this mask (unfolded) and
         the mean is computed taking the mask values into account.
 
-    Examples:
+    Examples
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
         >>> targets = torch.randn(10, 2, 32000)

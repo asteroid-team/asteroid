@@ -26,7 +26,7 @@ class SingleSrcMultiScaleSpectral(_Loss):
     Returns:
         :class:`torch.Tensor`: with shape [batch]
 
-    Examples:
+    Examples
         >>> import torch
         >>> targets = torch.randn(10, 32000)
         >>> est_targets = torch.randn(10, 32000)

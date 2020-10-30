@@ -38,7 +38,7 @@ class SingleSrcPMSQE(nn.Module):
         algorithm, this function consists of two regularization factors :
         the symmetrical and asymmetrical distortion in the loudness domain.
 
-    Examples:
+    Examples
         >>> import torch
         >>> from asteroid.filterbanks import STFTFB, Encoder, transforms
         >>> from asteroid.losses import PITLossWrapper, SingleSrcPMSQE

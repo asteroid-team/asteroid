@@ -23,7 +23,7 @@ class PairwiseNegSDR(_Loss):
         :class:`torch.Tensor`: with shape [batch, n_src, n_src].
         Pairwise losses.
 
-    Examples:
+    Examples
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
@@ -107,7 +107,7 @@ class SingleSrcNegSDR(_Loss):
         :class:`torch.Tensor`: with shape [batch] if reduction='none' else
             [] scalar if reduction='mean'.
 
-    Examples:
+    Examples
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
@@ -185,7 +185,7 @@ class MultiSrcNegSDR(_Loss):
         :class:`torch.Tensor`: with shape [batch] if reduction='none' else
             [] scalar if reduction='mean'.
 
-    Examples:
+    Examples
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper

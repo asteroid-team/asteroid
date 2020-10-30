@@ -24,7 +24,7 @@ class LambdaOverlapAdd(torch.nn.Module):
             Reordering is performed based on the correlation between
             the overlapped part of consecutive segment.
 
-     Examples:
+     Examples
         >>> from asteroid import ConvTasNet
         >>> nnet = ConvTasNet(n_src=2)
         >>> continuous_nnet = LambdaOverlapAdd(
