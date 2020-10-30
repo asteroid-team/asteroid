@@ -118,11 +118,8 @@ class SingleSrcPMSQE(nn.Module):
         Returns
             torch.tensor of shape (B, ), wD + 0.309 * wDA
 
-        Notes
-            Dimensions (B, F, T) are also supported by SingleSrcPMSQE but are
+        ..note:: Dimensions (B, F, T) are also supported by SingleSrcPMSQE but are
             less efficient because input tensors are transposed (not inplace).
-
-        Examples
 
         """
         assert est_targets.shape == targets.shape

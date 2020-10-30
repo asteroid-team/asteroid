@@ -130,7 +130,7 @@ def load_state_dict_in(state_dict, model):
     Returns:
         torch.nn.Module: model with loaded weights.
 
-    # .. note:: Keys in a state_dict look like object1.object2.layer_name.weight.etc
+    .. note:: Keys in a state_dict look like object1.object2.layer_name.weight.etc
         We first try to load the model in the classic way.
         If this fail we removes the first left part of the key to obtain
         object2.layer_name.weight.etc.
@@ -176,8 +176,7 @@ def are_models_equal(model1, model2):
 def jitable_shape(tensor):
     """Gets shape of `tensor` as `torch.Tensor` type for jit compiler
 
-    Note:
-        Returning `tensor.shape` of `tensor.size()` directly is not torchscript
+    ..note:: Returning `tensor.shape` of `tensor.size()` directly is not torchscript
         compatible as return type would not be supported.
 
     Args:
