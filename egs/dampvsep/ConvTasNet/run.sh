@@ -40,6 +40,8 @@ task=enh_both  #'enh_vocal', 'enh_both'
 root_path=
 mixture=remix     # 'original' includes non-*linear effects,
                   # 'remix' add both sources together
+train_set=english   # 'english' uses the english subset ~77 hrs
+                    # 'singles' uses all singles performances subset ~174 hrs
 segment=3.0
 samples_per_track=5
 sample_rate=16000
@@ -83,6 +85,7 @@ if [[ $stage -le 1 ]]; then
         --root_path $root_path \
         --mixture $mixture \
         --sample_rate $sample_rate \
+        --train_set $train_set \
         --segment $segment \
         --n_src $n_src \
         --samples_per_track $samples_per_track | tee logs/train_${tag}.log

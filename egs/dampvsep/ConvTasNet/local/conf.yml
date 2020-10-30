@@ -29,6 +29,7 @@ optim:
 # Data config
 data:
   task: enh_both
+  train_set: english
   root_path:
   mixture: remix
   sample_rate: 16000

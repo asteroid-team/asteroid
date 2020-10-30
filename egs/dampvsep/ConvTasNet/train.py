@@ -47,7 +47,7 @@ def main(conf):
     }
 
     train_set = DAMPVSEPDataset(
-        split='train',
+        split=f"train_{conf['data']['train_set']}",
         random_segments=True,
         segment=conf['data']['segment'],
         samples_per_track=conf['data']['samples_per_track'],
