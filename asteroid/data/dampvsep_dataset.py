@@ -10,6 +10,7 @@ import librosa
 # https://github.com/librosa/librosa/issues/1015
 # Soundfile can read OGG (vocal) but not M4A (background and mixture)
 import warnings
+
 warnings.filterwarnings('ignore', category=UserWarning)
 
 
@@ -60,18 +61,20 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
 
     dataset_name = 'DAMP-VSEP'
 
-    def __init__(self,
-                 root_path,
-                 task,
-                 split='train_singles',
-                 samples_per_track=1,
-                 random_segments=False,
-                 sample_rate=16000,
-                 segment=None,
-                 num_workers=None,
-                 norm=None,
-                 source_augmentations=None,
-                 mixture='original'):
+    def __init__(
+            self,
+            root_path,
+            task,
+            split='train_singles',
+            samples_per_track=1,
+            random_segments=False,
+            sample_rate=16000,
+            segment=None,
+            num_workers=None,
+            norm=None,
+            source_augmentations=None,
+            mixture='original'
+    ):
 
         self.sample_rate = sample_rate
         self.num_workers = cpu_count() if num_workers is None else num_workers
@@ -98,14 +101,21 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         self.norm = norm
         self.source_augmentations = source_augmentations
         self.mixture = mixture
-        if self.mixture == 'original' and self. split == 'train_english':
+        if self.mixture == 'original' and self.split == 'train_english':
             raise Exception("The 'train_english' train can only accept 'remix' mixture.")
 
     def __len__(self):
         return len(self.tracks) * self.samples_per_track
 
-    def _load_audio(self, path, start=0.0, duration=None,
-                    scaler=None, mean=0.0, std=1.0):
+    def _load_audio(
+            self,
+            path,
+            start=0.0,
+            duration=None,
+            scaler=None,
+            mean=0.0,
+            std=1.0
+    ):
         x, _ = librosa.load(
             path,
             sr=self.sample_rate,
@@ -156,12 +166,12 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
                 scaler = float(self.tracks[perf]['scaler'])
 
             x = self._load_audio(
-                    self.root_path / self.tracks[perf][source],
-                    start=start + float(self.tracks[perf][f'{source}_start']),
-                    duration=duration,
-                    scaler=scaler,
-                    mean=mix_mean,
-                    std=mix_std
+                self.root_path / self.tracks[perf][source],
+                start=start + float(self.tracks[perf][f'{source}_start']),
+                duration=duration,
+                scaler=scaler,
+                mean=mix_mean,
+                std=mix_std
             )
             audio_sources[source] = x
 
@@ -174,11 +184,11 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
             audio_mix = audio_sources.sum(0)
         else:
             audio_mix = self._load_audio(
-                    self.root_path / self.tracks[perf]['original_mix'],
-                    start=start + float(self.tracks[perf]['background_start']),
-                    duration=duration,
-                    mean=mix_mean,
-                    std=mix_std
+                self.root_path / self.tracks[perf]['original_mix'],
+                start=start + float(self.tracks[perf]['background_start']),
+                duration=duration,
+                mean=mix_mean,
+                std=mix_std
             )
 
         return audio_mix, audio_sources
