@@ -108,10 +108,10 @@ class DeMask(BaseModel):  # CHECK-JIT
                 n_feats_output = self.encoder.filterbank.n_filters // 2 + 1
             else:
                 n_feats_output = self.encoder.filterbank.n_filters // 2
-        elif self.input_type == "reim":
+        elif self.output_type == "reim":
             n_feats_output = self.encoder.filterbank.n_filters
         else:
-            print("Input type should be either mag or reim")
+            print("Output type should be either mag or reim")
             raise NotImplementedError
         return n_feats_output
 
