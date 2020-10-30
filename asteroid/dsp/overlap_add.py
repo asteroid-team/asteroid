@@ -1,11 +1,11 @@
 import torch
 from scipy.signal import get_window
-from asteroid.losses import PITLossWrapper
+from asteroid.losses.pit_wrapper import PITReorder
 from torch import nn
 
 
 class LambdaOverlapAdd(torch.nn.Module):
-    """Overlap-add with lambda transform on segments.
+    """Overlap-add with lambda transform on segments (not scriptable).
 
     Segment input signal, apply lambda function (a neural network for example)
     and combine with OLA.
@@ -176,8 +176,8 @@ def _reorder_sources(
         return -torch.sum(x.unsqueeze(1) * y.unsqueeze(2), dim=-1)
 
     # We maximize correlation-like between previous and current.
-    pit = PITLossWrapper(reorder_func)
-    current = pit(current, previous, return_est=True)[1]
+    pit = PITReorder(reorder_func)
+    current = pit(current, previous)
     return current.reshape(batch, frames)
 
 
@@ -259,7 +259,8 @@ class DualPathProcessing(nn.Module):
             stride=(self.hop_size, 1),
         )
 
-        x /= self.chunk_size / self.hop_size
+        # force float div for torch jit
+        x /= float(self.chunk_size) / self.hop_size
 
         return x.reshape(batch, chan, self.n_orig_frames)
 

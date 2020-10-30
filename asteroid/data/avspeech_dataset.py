@@ -9,8 +9,6 @@ import pandas as pd
 from typing import Union
 from asteroid.filterbanks import Encoder, Decoder, STFTFB
 
-EPS = 1e-8
-
 
 def get_frames(video):
     import cv2  # Fix sphinx import
@@ -141,7 +139,7 @@ class AVSpeechDataset(data.Dataset):
         self.stft_encoder = Encoder(STFTFB(n_filters=512, kernel_size=400, stride=160))
 
     @staticmethod
-    def encode(x: np.ndarray, p=0.3, stft_encoder=None):
+    def encode(x: np.ndarray, p=0.3, stft_encoder=None, EPS=1e-8):
         if stft_encoder is None:
             stft_encoder = Encoder(STFTFB(n_filters=512, kernel_size=400, stride=160))
 

@@ -97,6 +97,7 @@ def infer():
         files (List(str)): Path to the wav files to separate. Also support list
             of filenames, directory names and globs.
         force_overwrite (bool): Whether to overwrite output wav files.
+        resample (bool): Whether to resample wrong sample rate input files.
         output_dir (str): Output directory to save files.
     """
     import argparse
@@ -118,6 +119,12 @@ def infer():
         help="Whether to overwrite output wav files.",
     )
     parser.add_argument(
+        "-r",
+        "--resample",
+        action="store_true",
+        help="Whether to resample wrong sample rate input files.",
+    )
+    parser.add_argument(
         "-o", "--output-dir", default=None, type=str, help="Output directory to save files."
     )
     args = parser.parse_args()
@@ -127,6 +134,26 @@ def infer():
 
     for f in file_list:
         model.separate(f, force_overwrite=args.force_overwrite, output_dir=args.output_dir)
+
+
+def register_sample_rate():
+    """ CLI to register sample rate to an Asteroid model saved without `sample_rate`,  before 0.4.0."""
+
+    def _register_sample_rate(filename, sample_rate):
+        import torch
+
+        conf = torch.load(filename, map_location="cpu")
+        conf["model_args"]["sample_rate"] = sample_rate
+        torch.save(conf, filename)
+
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename", type=str, help="Model file to edit.")
+    parser.add_argument("sample_rate", type=float, help="Sampling rate to add to the model.")
+    args = parser.parse_args()
+
+    _register_sample_rate(filename=args.filename, sample_rate=args.sample_rate)
 
 
 def _process_files_as_list(files_str: List) -> List:

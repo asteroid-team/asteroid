@@ -6,7 +6,6 @@ import numpy as np
 import soundfile as sf
 from .wsj0_mix import wsj0_license
 
-EPS = 1e-8
 
 DATASET = "WHAM"
 # WHAM tasks
@@ -84,6 +83,7 @@ class WhamDataset(data.Dataset):
         self.sample_rate = sample_rate
         self.normalize_audio = normalize_audio
         self.seg_len = None if segment is None else int(segment * sample_rate)
+        self.EPS = 1e-8
         if not nondefault_nsrc:
             self.n_src = self.task_dict["default_nsrc"]
         else:
@@ -174,8 +174,8 @@ class WhamDataset(data.Dataset):
 
         if self.normalize_audio:
             m_std = mixture.std(-1, keepdim=True)
-            mixture = normalize_tensor_wav(mixture, eps=EPS, std=m_std)
-            sources = normalize_tensor_wav(sources, eps=EPS, std=m_std)
+            mixture = normalize_tensor_wav(mixture, eps=self.EPS, std=m_std)
+            sources = normalize_tensor_wav(sources, eps=self.EPS, std=m_std)
         return mixture, sources
 
     def get_infos(self):

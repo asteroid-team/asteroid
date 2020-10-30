@@ -6,7 +6,7 @@ from ..masknn import norms, activations
 from ..utils.torch_utils import pad_x_to_y
 
 
-class DeMask(BaseModel):
+class DeMask(BaseModel):  # CHECK-JIT
     """
     Simple MLP model for surgical mask speech enhancement A transformed-domain masking approach is used.
     Args:
@@ -29,6 +29,7 @@ class DeMask(BaseModel):
         stride (int): filterbank filters stride.
         kernel_size (int): length of filters in the filterbank.
         encoder_activation (str)
+        sample_rate (float): Sampling rate of the model.
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
     """
@@ -38,7 +39,7 @@ class DeMask(BaseModel):
         input_type="mag",
         output_type="mag",
         hidden_dims=[1024],
-        dropout=0,
+        dropout=0.0,
         activation="relu",
         mask_act="relu",
         norm_type="gLN",
@@ -46,6 +47,7 @@ class DeMask(BaseModel):
         n_filters=512,
         stride=256,
         kernel_size=512,
+        sample_rate=16000,
         **fb_kwargs,
     ):
 
@@ -62,9 +64,15 @@ class DeMask(BaseModel):
         self.stride = stride
         self.kernel_size = kernel_size
         self.fb_kwargs = fb_kwargs
+        self._sample_rate = sample_rate
 
         self.encoder, self.decoder = make_enc_dec(
-            fb_type, kernel_size=kernel_size, n_filters=n_filters, stride=stride, **fb_kwargs
+            fb_type,
+            kernel_size=kernel_size,
+            n_filters=n_filters,
+            stride=stride,
+            sample_rate=sample_rate,
+            **fb_kwargs,
         )
 
         if self.input_type == "mag":
@@ -147,6 +155,10 @@ class DeMask(BaseModel):
             return out_wavs.squeeze(0)
         return out_wavs
 
+    @property
+    def sample_rate(self):
+        return self._sample_rate
+
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
         model_args = {
@@ -162,6 +174,7 @@ class DeMask(BaseModel):
             "stride": self.stride,
             "kernel_size": self.kernel_size,
             "fb_kwargs": self.fb_kwargs,
+            "sample_rate": self._sample_rate,
         }
         model_args.update(self.fb_kwargs)
         return model_args

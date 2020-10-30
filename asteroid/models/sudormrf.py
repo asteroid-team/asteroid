@@ -5,6 +5,7 @@ import math
 from ..filterbanks import make_enc_dec
 from ..masknn import SuDORMRF, SuDORMRFImproved
 from .base_models import BaseEncoderMaskerDecoder
+from ..utils.torch_utils import script_if_tracing
 
 
 class SuDORMRFNet(BaseEncoderMaskerDecoder):
@@ -25,6 +26,7 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution.
             If None (default), set to ``kernel_size // 2``.
+        sample_rate (float): Sampling rate of the model.
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
@@ -45,6 +47,7 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
         kernel_size=21,
         n_filters=512,
         stride=None,
+        sample_rate=8000,
         **fb_kwargs,
     ):
         # Need the encoder to determine the number of input channels
@@ -54,6 +57,7 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
             kernel_size=kernel_size,
             n_filters=n_filters,
             stride=kernel_size // 2,
+            sample_rate=sample_rate,
             padding=kernel_size // 2,
             output_padding=(kernel_size // 2) - 1,
             **fb_kwargs,
@@ -117,6 +121,7 @@ class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):
         kernel_size=21,
         n_filters=512,
         stride=None,
+        sample_rate=8000,
         **fb_kwargs,
     ):
         stride = kernel_size // 2 if not stride else stride
@@ -126,6 +131,7 @@ class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):
             kernel_size=kernel_size,
             n_filters=n_filters,
             stride=stride,
+            sample_rate=sample_rate,
             padding=kernel_size // 2,
             output_padding=(kernel_size // 2) - 1,
             **fb_kwargs,
@@ -168,17 +174,19 @@ class _Padder(nn.Module):
         self.filterbank = self.encoder.filterbank
 
     def forward(self, x):
-        x = self.pad(x)
+        x = pad(x, self.lcm)
         return self.encoder(x)
 
-    def pad(self, x):
-        values_to_pad = int(x.shape[-1]) % self.lcm
-        if values_to_pad:
-            appropriate_shape = x.shape
-            padded_x = torch.zeros(
-                list(appropriate_shape[:-1]) + [appropriate_shape[-1] + self.lcm - values_to_pad],
-                dtype=torch.float32,
-            )
-            padded_x[..., : x.shape[-1]] = x
-            return padded_x
-        return x
+
+@script_if_tracing
+def pad(x, lcm: int):
+    values_to_pad = int(x.shape[-1]) % lcm
+    if values_to_pad:
+        appropriate_shape = x.shape
+        padding = torch.zeros(
+            list(appropriate_shape[:-1]) + [lcm - values_to_pad],
+            dtype=x.dtype,
+        )
+        padded_x = torch.cat([x, padding], dim=-1)
+        return padded_x
+    return x

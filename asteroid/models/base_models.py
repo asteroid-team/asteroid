@@ -6,10 +6,11 @@ import torch
 from torch import nn
 
 from ..masknn import activations
-from ..utils.torch_utils import pad_x_to_y
+from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download
 
 
+@script_if_tracing
 def _unsqueeze_to_3d(x):
     if x.ndim == 1:
         return x.reshape(1, 1, -1)
@@ -43,7 +44,7 @@ class BaseModel(nn.Module):
         raise NotImplementedError
 
     @torch.no_grad()
-    def separate(self, wav, output_dir=None, force_overwrite=False, **kwargs):
+    def separate(self, wav, output_dir=None, force_overwrite=False, resample=False, **kwargs):
         """Infer separated sources from input waveforms.
         Also supports filenames.
 
@@ -52,7 +53,8 @@ class BaseModel(nn.Module):
                 Shape: 1D, 2D or 3D tensor, time last.
             output_dir (str): path to save all the wav files. If None,
                 estimated sources will be saved next to the original ones.
-            force_overwrite (bool): whether to overwrite existing files.
+            force_overwrite (bool): whether to overwrite existing files (when separating from file)..
+            resample (bool): Whether to resample input files with wrong sample rate (when separating from file).
             **kwargs: keyword arguments to be passed to `_separate`.
 
         Returns:
@@ -66,7 +68,11 @@ class BaseModel(nn.Module):
         """
         if isinstance(wav, str):
             self.file_separate(
-                wav, output_dir=output_dir, force_overwrite=force_overwrite, **kwargs
+                wav,
+                output_dir=output_dir,
+                force_overwrite=force_overwrite,
+                resample=resample,
+                **kwargs,
             )
         elif isinstance(wav, np.ndarray):
             return self.numpy_separate(wav, **kwargs)
@@ -101,14 +107,30 @@ class BaseModel(nn.Module):
         return out_wav
 
     def file_separate(
-        self, filename: str, output_dir=None, force_overwrite=False, **kwargs
+        self, filename: str, output_dir=None, force_overwrite=False, resample=False, **kwargs
     ) -> None:
         """ Filename interface to `separate`."""
         import soundfile as sf
 
         wav, fs = sf.read(filename, dtype="float32", always_2d=True)
+        if wav.shape[-1] > 1:
+            warnings.warn(
+                f"Received multichannel signal with {wav.shape[-1]} signals, "
+                f"using the first channel only."
+            )
         # FIXME: support only single-channel files for now.
-        to_save = self.numpy_separate(wav[:, 0], **kwargs)
+        wav = wav[:, 0]
+        if fs != self.sample_rate:
+            if resample:
+                from librosa import resample
+
+                wav = resample(wav, orig_sr=fs, target_sr=self.sample_rate)
+            else:
+                raise RuntimeError(
+                    f"Received a signal with a sampling rate of {fs}Hz for a model "
+                    f"of {self.sample_rate}Hz. You can pass `resample=True` to resample automatically."
+                )
+        to_save = self.numpy_separate(wav, **kwargs)
 
         # Save wav files to filename_est1.wav etc...
         for src_idx, est_src in enumerate(to_save):
@@ -122,6 +144,10 @@ class BaseModel(nn.Module):
                 return
             if output_dir is not None:
                 save_name = os.path.join(output_dir, save_name.split("/")[-1])
+            if fs != self.sample_rate:
+                from librosa import resample
+
+                est_src = resample(est_src, orig_sr=self.sample_rate, target_sr=fs)
             sf.write(save_name, est_src, fs)
 
     def _separate(self, wav, *args, **kwargs):
@@ -179,6 +205,20 @@ class BaseModel(nn.Module):
                 "model_args`. Found only: {}".format(conf.keys())
             )
         conf["model_args"].update(kwargs)  # kwargs overwrite config.
+        if "sample_rate" not in conf["model_args"]:
+            # Try retrieving from pretrained models
+            from ..utils.hub_utils import SR_HASHTABLE
+
+            sr = None
+            if isinstance(pretrained_model_conf_or_path, str):
+                sr = SR_HASHTABLE.get(pretrained_model_conf_or_path, None)
+            if sr is None:
+                raise RuntimeError(
+                    "Couldn't load pretrained model without sampling rate. You can either pass "
+                    "`sample_rate` to the `from_pretrained` method or edit your model to include "
+                    "the `sample_rate` key, or use `asteroid-register-sr model sample_rate` CLI."
+                )
+            conf["model_args"]["sample_rate"] = sr
         # Attempt to find the model and instantiate it.
         try:
             model_class = get(conf["model_name"])
@@ -255,8 +295,8 @@ class BaseEncoderMaskerDecoder(BaseModel):
         Returns:
             torch.Tensor, of shape (batch, n_src, time) or (n_src, time).
         """
-        # Handle 1D, 2D or n-D inputs
-        was_one_d = wav.ndim == 1
+        # Remember shape to shape reconstruction, cast to Tensor for torchscript
+        shape = jitable_shape(wav)
         # Reshape to (batch, n_mix, time)
         wav = _unsqueeze_to_3d(wav)
 
@@ -275,10 +315,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         decoded = self.postprocess_decoded(decoded)
 
         reconstructed = pad_x_to_y(decoded, wav)
-        if was_one_d:
-            return reconstructed.squeeze(0)
-        else:
-            return reconstructed
+        return _shape_reconstructed(reconstructed, shape)
 
     def postprocess_encoded(self, tf_rep):
         """Hook to perform transformations on the encoded, time-frequency domain
@@ -339,7 +376,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         # Assert both dict are disjoint
         if not all(k not in fb_config for k in masknet_config):
             raise AssertionError(
-                "Filterbank and Mask network config share" "common keys. Merging them is not safe."
+                "Filterbank and Mask network config share common keys. Merging them is not safe."
             )
         # Merge all args under model_args.
         model_args = {
@@ -348,6 +385,23 @@ class BaseEncoderMaskerDecoder(BaseModel):
             "encoder_activation": self.encoder_activation,
         }
         return model_args
+
+
+@script_if_tracing
+def _shape_reconstructed(reconstructed, size):
+    """Reshape `reconstructed` to have same size as `size`
+
+    Args:
+        reconstructed (torch.Tensor): Reconstructed waveform
+        size (torch.Tensor): Size of desired waveform
+
+    Returns:
+        torch.Tensor: Reshaped waveform
+
+    """
+    if size.ndim == 1:
+        return reconstructed.squeeze(0)
+    return reconstructed
 
 
 # Backwards compatibility

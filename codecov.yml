@@ -7,5 +7,5 @@ coverage:
     project:
       default:
         target: auto  # target is the base commit coverage
-        threshold: 10%  # allow this little decrease on project
+        threshold: 5%  # allow this little decrease on project
         base: auto
