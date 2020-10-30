@@ -44,10 +44,15 @@ Results using the original mixture are pending.
 
 |               | Mixture   |SI-SNRi(dB) (v)| STOI (v)|SDRi(dB) (b)| 
 |:-------------:|:---------:|:-------------:|:-------:|:----------:|
-| train_english | remix     |        15.0   | 0.6808  |       14.8 |
+| train_english | remix     |        14.3   | 0.6872  |       14.5 |
 | train_english | original  |        ---    |   ---   |       ---  |
 | train_singles | remix     |        15.0   | 0.6808  |       14.8 |
 | train_singles | original  |        ---    |   ---   |       ---  |
 
 (v): vocal
 (b): background accompaniment 
+
+## Python requirements
+
+pip install librosa
+conda install -c conda-forge ffmpeg

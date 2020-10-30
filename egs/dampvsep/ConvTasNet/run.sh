@@ -51,7 +51,7 @@ n_src=2
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating preprocessed DAMPVSEP dataset"
-  . local/prepare_data.sh
+  . local/prepare_data.sh  --dampvsep_root $root_path
 fi
 
 # Generate a random ID for the run if no tag is specified

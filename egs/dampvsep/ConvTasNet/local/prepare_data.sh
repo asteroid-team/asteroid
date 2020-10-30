@@ -3,9 +3,10 @@ dampvsep_root=
 python_path=python
 
 . ./utils/parse_options.sh
-current_dir=$(pwd)
-# Clone preprocessed DAMP-VSEP-Singles repo
-git clone https://github.com/groadabike/DAMP-VSEP-Singles.git
+if [ ! -d DAMP-VSEP-Singles ]; then
+    # Clone preprocessed DAMP-VSEP-Singles repo
+    git clone https://github.com/groadabike/DAMP-VSEP-Singles.git
+fi
 
 # Generate the splits
 . DAMP-VSEP-Singles/generate_dampvsep_singles.sh $dampvsep_root metadata $python_path
