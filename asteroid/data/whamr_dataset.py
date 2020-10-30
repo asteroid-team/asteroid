@@ -73,7 +73,7 @@ class WhamRDataset(data.Dataset):
             separation tasks.
 
     References
-        "WHAMR!: Noisy and Reverberant Single-Channel Speech Separation",
+        - "WHAMR!: Noisy and Reverberant Single-Channel Speech Separation",
         Maciejewski et al. 2020
     """
 

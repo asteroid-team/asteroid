@@ -22,9 +22,8 @@ class AnalyticFreeFB(Filterbank):
         n_feats_out (int): Number of output filters.
 
     References
-        [1] : "Filterbank design for end-to-end speech separation".
-        Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
-        Antoine Deleforge, Emmanuel Vincent.
+        - [1] : "Filterbank design for end-to-end speech separation". ICASSP 2020.
+        Manuel Pariente, Samuele Cornell, Antoine Deleforge, Emmanuel Vincent.
     """
 
     def __init__(self, n_filters, kernel_size, stride=None, sample_rate=8000.0, **kwargs):

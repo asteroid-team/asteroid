@@ -26,9 +26,9 @@ class ImprovedTransformedLayer(nn.Module):
         norm (str, optional): Type of normalization to use.
 
     References
-        [1] Chen, Jingjing, Qirong Mao, and Dong Liu.
-        "Dual-Path Transformer Network: Direct Context-Aware Modeling for End-to-End Monaural Speech Separation."
-         arXiv preprint arXiv:2007.13975 (2020).
+        - [1] Chen, Jingjing, Qirong Mao, and Dong Liu. "Dual-Path Transformer
+        Network: Direct Context-Aware Modeling for End-to-End Monaural Speech Separation."
+         arXiv (2020).
     """
 
     def __init__(
@@ -89,9 +89,9 @@ class DPTransformer(nn.Module):
         dropout (float, optional): Dropout ratio, must be in [0,1].
 
     References
-        [1] Chen, Jingjing, Qirong Mao, and Dong Liu.
-        "Dual-Path Transformer Network: Direct Context-Aware Modeling for End-to-End Monaural Speech Separation."
-         arXiv preprint arXiv:2007.13975 (2020).
+        - [1] Chen, Jingjing, Qirong Mao, and Dong Liu. "Dual-Path Transformer
+        Network: Direct Context-Aware Modeling for End-to-End Monaural Speech Separation."
+         arXiv (2020).
     """
 
     def __init__(

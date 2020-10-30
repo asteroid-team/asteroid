@@ -37,8 +37,8 @@ class LSTMTasNet(BaseEncoderMaskerDecoder):
             creation.
 
     References
-        [1]: Yi Luo et al. "Real-time Single-channel Dereverberation and Separation
-            with Time-domain Audio Separation Network", Interspeech 2018
+        - [1]: Yi Luo et al. "Real-time Single-channel Dereverberation and Separation
+        with Time-domain Audio Separation Network", Interspeech 2018
     """
 
     def __init__(

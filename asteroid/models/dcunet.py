@@ -70,9 +70,8 @@ class DCUNet(BaseDCUNet):
         stft_stride (int, optional): STFT hop length to use.
 
     References
-        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
-        Hyeong-Seok Choi et al.
-        https://arxiv.org/abs/1903.03107
+        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
     masknet_class = DCUMaskNet

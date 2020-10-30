@@ -33,7 +33,7 @@ class Conv1DBlock(nn.Module):
             -  ``'cgLN'``: cumulative global Layernorm
 
     References
-        [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
+        - [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
         for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
         https://arxiv.org/abs/1809.07454
     """
@@ -94,7 +94,7 @@ class TDConvNet(nn.Module):
         mask_act (str, optional): Which non-linear function to generate mask.
 
     References
-        [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
+        - [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
         for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
         https://arxiv.org/abs/1809.07454
     """
@@ -238,7 +238,7 @@ class TDConvNetpp(nn.Module):
         mask_act (str, optional): Which non-linear function to generate mask.
 
     References
-        [1] : Kavalerov, Ilya et al. “Universal Sound Separation.” in WASPAA 2019
+        - [1] : Kavalerov, Ilya et al. “Universal Sound Separation.” in WASPAA 2019
 
     Notes:
         The differences wrt to ConvTasnet's TCN are
@@ -401,9 +401,8 @@ class DCUNetComplexEncoderBlock(nn.Module):  # CHECK-JIT
             See ``asteroid.masknn.activations`` for valid values.
 
     References
-        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
-        Hyeong-Seok Choi et al.
-        https://arxiv.org/abs/1903.03107
+        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
     def __init__(
@@ -444,9 +443,8 @@ class DCUNetComplexDecoderBlock(nn.Module):  # CHECK-JIT
             See ``asteroid.masknn.activations`` for valid values.
 
     References
-        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
-        Hyeong-Seok Choi et al.
-        https://arxiv.org/abs/1903.03107
+        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
     def __init__(
@@ -487,9 +485,8 @@ class DCUMaskNet(BaseDCUMaskNet):  # CHECK-JIT
     "Large-DCUNet-20", "DCUNet-20", "DCUNet-16", "DCUNet-10".
 
     References
-        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
-        Hyeong-Seok Choi et al.
-        https://arxiv.org/abs/1903.03107
+        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
     _architectures = DCUNET_ARCHITECTURES
@@ -507,8 +504,8 @@ class SuDORMRF(nn.Module):
         mask_act (str): Name of output activation.
 
     References
-        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
-            Tzinis et al. MLSP 2020.
+        - [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+        Tzinis et al. MLSP 2020.
     """
 
     def __init__(
@@ -601,8 +598,8 @@ class SuDORMRFImproved(nn.Module):
 
 
     References
-        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
-            Tzinis et al. MLSP 2020.
+        - [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+        Tzinis et al. MLSP 2020.
     """
 
     def __init__(

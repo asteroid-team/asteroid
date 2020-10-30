@@ -12,9 +12,8 @@ class DCCRNet(BaseDCUNet):  # CHECK-JIT
         sample_rate (float): Sampling rate of the model.
 
     References
-        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
-        Yanxin Hu et al.
-        https://arxiv.org/abs/2008.00264
+        - [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        Yanxin Hu et al. https://arxiv.org/abs/2008.00264
     """
 
     masknet_class = DCCRMaskNet

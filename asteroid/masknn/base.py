@@ -63,9 +63,8 @@ class BaseDCUMaskNet(BaseUNet):
     by `f_0 * f_1 * ... * f_N` where `f_k` are the frequency strides of the encoders.
 
     References
-        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
-        Hyeong-Seok Choi et al.
-        https://arxiv.org/abs/1903.03107
+        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
     _architectures = NotImplemented

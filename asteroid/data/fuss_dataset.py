@@ -15,8 +15,8 @@ class FUSSDataset(Dataset):
             and sources (useful for SIR, SAR computation). Default: False.
 
     References
-        [1] Scott Wisdom et al. "What's All the FUSS About Free Universal
-            Sound Separation Data?", 2020, in preparation.
+        - [1] Scott Wisdom et al. "What's All the FUSS About Free Universal
+        Sound Separation Data?", 2020, in preparation.
     """
 
     dataset_name = "FUSS"

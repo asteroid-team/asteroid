@@ -34,7 +34,7 @@ class PairwiseNegSDR(_Loss):
         >>> loss = loss_func(est_targets, targets)
 
     References
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+        - [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
         International Conference on Acoustics, Speech and Signal
         Processing (ICASSP) 2019.
     """
@@ -118,7 +118,7 @@ class SingleSrcNegSDR(_Loss):
         >>> loss = loss_func(est_targets, targets)
 
     References
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+        - [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
         International Conference on Acoustics, Speech and Signal
         Processing (ICASSP) 2019.
     """
@@ -196,7 +196,7 @@ class MultiSrcNegSDR(_Loss):
         >>> loss = loss_func(est_targets, targets)
 
     References
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+        - [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
         International Conference on Acoustics, Speech and Signal
         Processing (ICASSP) 2019.
 

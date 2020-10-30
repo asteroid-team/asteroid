@@ -38,8 +38,8 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, m
         >>> est_wav = griffin_lim(mag, stft, n_iter=32)
 
     References
-        [1] Perraudin et al. "A fast Griffin-Lim algorithm," WASPAA 2013.
-        [2] D. W. Griffin and J. S. Lim:  "Signal estimation from modified
+        - [1] Perraudin et al. "A fast Griffin-Lim algorithm," WASPAA 2013.
+        - [2] D. W. Griffin and J. S. Lim:  "Signal estimation from modified
         short-time Fourier transform," ASSP 1984.
 
     """

@@ -16,7 +16,7 @@ class MultiphaseGammatoneFB(Filterbank):
             set to ``kernel_size // 2``.
 
     References
-    [1] David Ditter, Timo Gerkmann, "A Multi-Phase Gammatone Filterbank for
+    - [1] David Ditter, Timo Gerkmann, "A Multi-Phase Gammatone Filterbank for
         Speech Separation via TasNet", ICASSP 2020
         Available: `<https://ieeexplore.ieee.org/document/9053602/>`
     """
