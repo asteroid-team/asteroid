@@ -268,7 +268,6 @@ def hwr(x):
     return (x + np.abs(x)) / 2
 
 
-
 if __name__ == "__main__":
     """
     To test metadata parsing and confidence array generation
@@ -277,7 +276,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--metadata_path", type=str, default=None, help="Directory path of MedleyDB git repo"
     )
-    
+
     parser.add_argument(
         "--inst_list",
         nargs="+",
@@ -317,4 +316,3 @@ if __name__ == "__main__":
     make_processed_filelist(
         tracklist, args.json_dir, "inst1",
     )
-    

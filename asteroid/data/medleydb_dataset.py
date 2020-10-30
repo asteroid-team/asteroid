@@ -47,7 +47,7 @@ class MedleydbDataset(data.Dataset):
 
     def __init__(self, json_dir, n_src=1, n_poly=2, sample_rate=44100, segment=5.0, threshold=0.1):
         super(MedleydbDataset, self).__init__()
-        
+
         self.json_dir = json_dir
         self.sample_rate = sample_rate
         self.n_poly = n_poly
@@ -79,7 +79,7 @@ class MedleydbDataset(data.Dataset):
                 index_array[i][j] = index_array[i][j] + confidence
             orig_len = orig_len + duration
             seg_dur = duration / len(index_array[i])
-            #save list of segments with sufficient activity
+            # save list of segments with sufficient activity
             for k in range(len(index_array[i])):
                 conf_thresh = threshold * float(len(sources_conf[i][0]))
                 if index_array[i][k] < conf_thresh:
@@ -109,8 +109,8 @@ class MedleydbDataset(data.Dataset):
 
         for i in range(self.n_poly):
             if i:
-                #idx = random.choice(range(len(self.sources)))
-                idx = int((idx + ((len(self.sources)*i/self.n_poly))) % len(self.sources))
+                # idx = random.choice(range(len(self.sources)))
+                idx = int((idx + ((len(self.sources) * i / self.n_poly))) % len(self.sources))
 
             start = self.sources[idx][1] * self.sources[idx][2]
             if self.like_test:
@@ -166,16 +166,16 @@ class SourceFolderDataset(data.Dataset):
         sources_json = [
             os.path.join(json_dir, source + ".json") for source in [f"s{n+1}" for n in range(n_src)]
         ]
-        
+
         mix_json = os.path.join(json_dir, "mix.json")
         with open(mix_json, "r") as f:
             mix_infos = json.load(f)
-        
+
         for src_json in sources_json:
             with open(src_json, "r") as f:
                 sources_infos.append(json.load(f))
         sources_infos = np.array(sources_infos)
-        #sources_infos = np.swapaxes(sources_infos, 0,1)    
+        # sources_infos = np.swapaxes(sources_infos, 0,1)
         self.mix = mix_infos
         self.sources = sources_infos
 
@@ -188,8 +188,8 @@ class SourceFolderDataset(data.Dataset):
             mixture, vstack([source_arrays])
         """
         # Load mixture
-        #x, sr = sf.read(self.mix[idx][0], dtype="float32")
-        #seg_len = torch.as_tensor([len(x)])
+        # x, sr = sf.read(self.mix[idx][0], dtype="float32")
+        # seg_len = torch.as_tensor([len(x)])
         seg_len = 220500
         # Load sources
         source_arrays = []
@@ -201,16 +201,16 @@ class SourceFolderDataset(data.Dataset):
                 s, sr = sf.read(src[idx][0], dtype="float32")
             source_arrays.append(s)
         source = torch.from_numpy(np.vstack(source_arrays))
-        
-        #mix = torch.from_numpy(x)
-        #mix = mix.unsqueeze(0)
+
+        # mix = torch.from_numpy(x)
+        # mix = mix.unsqueeze(0)
         if sr is not self.sample_rate:
             source = torchaudio.transforms.Resample(sr, self.sample_rate)(source)
-            #mix = torchaudio.transforms.Resample(sr, self.sample_rate)(mix)
+            # mix = torchaudio.transforms.Resample(sr, self.sample_rate)(mix)
         mix = torch.stack(list(source)).sum(0)
         mix = mix.unsqueeze(0)
         source = source.unsqueeze(0)
-        
+
         return mix, source
 
     def get_infos(self):
