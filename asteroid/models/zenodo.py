@@ -78,12 +78,12 @@ class Zenodo(object):
 
         Examples
             >>> metadata = {
-            >>>     'title': 'My first upload',
-            >>>     'upload_type': 'poster',
-            >>>     'description': 'This is my first upload',
-            >>>     'creators': [{'name': 'Doe, John',
-            >>>                   'affiliation': 'Zenodo'}]
-            >>> }
+            ...     'title': 'My first upload',
+            ...     'upload_type': 'poster',
+            ...     'description': 'This is my first upload',
+            ...     'creators': [{'name': 'Doe, John',
+            ...                   'affiliation': 'Zenodo'}]
+            ... }
         """
         data = {"metadata": metadata}
         r = requests.put(
