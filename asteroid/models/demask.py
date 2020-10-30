@@ -116,18 +116,20 @@ class DeMask(BaseModel):  # CHECK-JIT
         return n_feats_output
 
     def _build_nn(self, n_feats_input, n_feats_output):
-        net = [norms.get(self.norm_type)(n_feats_input)]
+        make_layer_norm = norms.get(self.norm_type)
+        net = [make_layer_norm(n_feats_input)]
+        layer_activation = activations.get(self.activation)()
         in_chan = n_feats_input
-        for layer in range(len(self.hidden_dims)):
+        for hidden_dim in self.hidden_dims:
             net.extend(
                 [
-                    nn.Conv1d(in_chan, self.hidden_dims[layer], 1),
-                    norms.get(self.norm_type)(self.hidden_dims[layer]),
-                    activations.get(self.activation)(),
+                    nn.Conv1d(in_chan, hidden_dim, 1),
+                    make_layer_norm(hidden_dim),
+                    layer_activation,
                     nn.Dropout(self.dropout),
                 ]
             )
-            in_chan = self.hidden_dims[layer]
+            in_chan = hidden_dim
 
         net.extend([nn.Conv1d(in_chan, n_feats_output, 1), activations.get(self.mask_act)()])
         return net
