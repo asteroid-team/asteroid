@@ -194,11 +194,9 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         """
         metadata_path = Path(f'metadata/{self.split}_sr{self.sample_rate}.json')
         if metadata_path.exists():
-            print(f"Metadata for {self.split} set exist!! Using it.")
             tracks = json.load(open(metadata_path, 'r'))
         else:
-            print(f"Constructing metadata for {self.split} set")
-            raise
+            raise Exception(f"Metadata file for {self.split} not found")
         return tracks
 
     def get_infos(self):
