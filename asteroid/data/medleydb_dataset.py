@@ -52,8 +52,9 @@ class MedleydbDataset(data.Dataset):
         self.sample_rate = sample_rate
         self.n_poly = n_poly
         self.threshold = threshold
-        self.seg_len = segment
+        self.seg_len = int(segment)
         self.n_src = n_src
+        self.like_test = self.seg_len is None
         # Load json files
         sources_json = [
             os.path.join(json_dir, source + ".json")
@@ -109,7 +110,7 @@ class MedleydbDataset(data.Dataset):
         for i in range(self.n_poly):
             if i:
                 #idx = random.choice(range(len(self.sources)))
-                idx = (idx + len(self.sources)) % len(self.sources)
+                idx = int((idx + ((len(self.sources)*i/self.n_poly))) % len(self.sources))
 
             start = self.sources[idx][1] * self.sources[idx][2]
             if self.like_test:
@@ -187,8 +188,9 @@ class SourceFolderDataset(data.Dataset):
             mixture, vstack([source_arrays])
         """
         # Load mixture
-        x, sr = sf.read(self.mix[idx][0], dtype="float32")
-        seg_len = torch.as_tensor([len(x)])
+        #x, sr = sf.read(self.mix[idx][0], dtype="float32")
+        #seg_len = torch.as_tensor([len(x)])
+        seg_len = 220500
         # Load sources
         source_arrays = []
         for src in self.sources:
@@ -196,16 +198,19 @@ class SourceFolderDataset(data.Dataset):
                 # Target is filled with zeros if n_src > default_nsrc
                 s = np.zeros((seg_len,))
             else:
-                s, _ = sf.read(src[idx][0], dtype="float32")
+                s, sr = sf.read(src[idx][0], dtype="float32")
             source_arrays.append(s)
         source = torch.from_numpy(np.vstack(source_arrays))
         
-        mix = torch.from_numpy(x)
-        mix = mix.unsqueeze(0)
+        #mix = torch.from_numpy(x)
+        #mix = mix.unsqueeze(0)
         if sr is not self.sample_rate:
             source = torchaudio.transforms.Resample(sr, self.sample_rate)(source)
-            mix = torchaudio.transforms.Resample(sr, self.sample_rate)(mix)
+            #mix = torchaudio.transforms.Resample(sr, self.sample_rate)(mix)
+        mix = torch.stack(list(source)).sum(0)
+        mix = mix.unsqueeze(0)
         source = source.unsqueeze(0)
+        
         return mix, source
 
     def get_infos(self):

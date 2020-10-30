@@ -23,7 +23,7 @@ extra_dir= # Directory containing additional MedleyDB format audio files
 metadata_dir=/homes/ss404/projects/temp/mdb/ # Directory containing MedleyDB github repository with metadata for all files
 
 # Location for evaluation multitrack sourceFolders
-wav_dir=/homes/ss404/projects/Conv-TasNet/data/full/tt # Directory containing MedleyDB github repository with metadata for all files
+wav_dir=/homes/ss404/data/all/ # Directory containing MedleyDB github repository with metadata for all files
 
 
 
@@ -37,19 +37,19 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --loss_alpha 0.1 --id 0,1
 
 # General
-stage=3  # Controls from which stage to start
+stage=4  # Controls from which stage to start
 tag="test_8k"  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=$CUDA_VISIBLE_DEVICES
 
 # Data
 #data_dir=data  # Local data directory (No disk space needed)
-sample_rate=8000
+sample_rate=44100
 n_inst=1  # 2 or 3
 n_poly=2
 segment=5.0
 # Training
-batch_size=10
+batch_size=1
 num_workers=10
 optimizer=rmsprop
 lr=0.0003
@@ -92,7 +92,6 @@ uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
 	tag=${n_src}sep_${sr_string}k${mode}_${uuid}
 fi
-expdir=/homes/ss404/projects/asteroid/egs/MedleyDB/ConvTasNet/exp/train_convtasnet_demucs_orig_44_lr3_15stop
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   expdir=exp/train_convtasnet_${tag}
@@ -116,6 +115,7 @@ fi
 
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4 : Evaluation"
+	#expdir= #Update path of existing experiment if you want to run only eval
 	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
 	  --n_src $n_poly \
 		--wav_dir $wav_dir \

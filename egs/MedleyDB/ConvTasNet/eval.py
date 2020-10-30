@@ -10,8 +10,6 @@ import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
 
-from asteroid.engine.system import System
-
 from asteroid.metrics import get_metrics
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.data.medleydb_dataset import SourceFolderDataset
