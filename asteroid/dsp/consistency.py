@@ -40,7 +40,7 @@ def mixture_consistency(
         >>> new_est_sources = mixture_consistency(mix, est_sources, dim=1)
 
     References
-        Scott Wisdom, John R Hershey, Kevin Wilson, Jeremy Thorpe, Michael
+        - Scott Wisdom, John R Hershey, Kevin Wilson, Jeremy Thorpe, Michael
         Chinen, Brian Patton, and Rif A Saurous. "Differentiable consistency
         constraints for improved deep speech enhancement", ICASSP 2019.
     """

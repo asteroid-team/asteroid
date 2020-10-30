@@ -24,7 +24,7 @@ class LambdaOverlapAdd(torch.nn.Module):
             Reordering is performed based on the correlation between
             the overlapped part of consecutive segment.
 
-     Examples:
+     Examples
         >>> from asteroid import ConvTasNet
         >>> nnet = ConvTasNet(n_src=2)
         >>> continuous_nnet = LambdaOverlapAdd(
@@ -188,10 +188,10 @@ class DualPathProcessing(nn.Module):
         chunk_size (int): Size of segmenting window.
         hop_size (int): segmentation hop size.
 
-    References:
-        [1] "Dual-path RNN: efficient long sequence modeling for
-            time-domain single-channel speech separation", Yi Luo, Zhuo Chen
-            and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
+    References
+        - [1] "Dual-path RNN: efficient long sequence modeling for time-domain
+        single-channel speech separation", Yi Luo, Zhuo Chen and Takuya Yoshioka.
+        https://arxiv.org/abs/1910.06379
     """
 
     def __init__(self, chunk_size, hop_size):

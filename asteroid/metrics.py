@@ -39,7 +39,7 @@ def get_metrics(
             for metrics at the input (mixture against clean), no prefix at the
             output (estimate against clean). Output format depends on average.
 
-    Examples:
+    Examples
         >>> import numpy as np
         >>> import pprint
         >>> from asteroid.metrics import get_metrics

@@ -22,13 +22,13 @@ class ParamSincFB(Filterbank):
     Attributes:
         n_feats_out (int): Number of output filters.
 
-    References:
-        [1] : "Speaker Recognition from raw waveform with SincNet". SLT 2018.
+    References
+        - [1] : "Speaker Recognition from raw waveform with SincNet". SLT 2018.
         Mirco Ravanelli, Yoshua Bengio.  https://arxiv.org/abs/1808.00158
 
-        [2] : "Filterbank design for end-to-end speech separation".
-        Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
-        Antoine Deleforge, Emmanuel Vincent. https://arxiv.org/abs/1910.10400
+        - [2] : "Filterbank design for end-to-end speech separation". ICASSP 2020.
+        anuel Pariente, Samuele Cornell, Antoine Deleforge, Emmanuel Vincent.
+        https://arxiv.org/abs/1910.10400
     """
 
     def __init__(

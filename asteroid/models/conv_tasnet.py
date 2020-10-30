@@ -37,8 +37,8 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
-    References:
-        [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
+    References
+        - [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
         for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
         https://arxiv.org/abs/1809.07454
     """

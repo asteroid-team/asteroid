@@ -30,9 +30,9 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
-    References:
-        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
-            Tzinis et al. MLSP 2020.
+    References
+        - [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+        Tzinis et al. MLSP 2020.
     """
 
     def __init__(
@@ -104,9 +104,9 @@ class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
-    References:
-        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
-            Tzinis et al. MLSP 2020.
+    References
+        - [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+        Tzinis et al. MLSP 2020.
     """
 
     def __init__(

@@ -24,8 +24,8 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
         >>> loss = deep_clustering_loss(embedding, targets)
 
     Reference
-        [1] Zhong-Qiu Wang, Jonathan Le Roux, John R. Hershey
-            "ALTERNATIVE OBJECTIVE FUNCTIONS FOR DEEP CLUSTERING"
+        - [1] Zhong-Qiu Wang, Jonathan Le Roux, John R. Hershey
+        "ALTERNATIVE OBJECTIVE FUNCTIONS FOR DEEP CLUSTERING"
 
     .. note:: Be careful in viewing the embedding tensors. The target indices
         `tgt_index` are of shape (batch, freq, frames). Even if the embedding

@@ -29,7 +29,7 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, m
     Returns:
         torch.Tensor: estimated waveforms of shape (any, dim, ension, time).
 
-    Examples:
+    Examples
         >>> stft = Encoder(STFTFB(n_filters=256, kernel_size=256, stride=128))
         >>> wav = torch.randn(2, 1, 8000)
         >>> spec = stft(wav)
@@ -37,9 +37,9 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, m
         >>> mag = transforms.take_mag(masked_spec, -2)
         >>> est_wav = griffin_lim(mag, stft, n_iter=32)
 
-    References:
-        [1] Perraudin et al. "A fast Griffin-Lim algorithm," WASPAA 2013.
-        [2] D. W. Griffin and J. S. Lim:  "Signal estimation from modified
+    References
+        - [1] Perraudin et al. "A fast Griffin-Lim algorithm," WASPAA 2013.
+        - [2] D. W. Griffin and J. S. Lim:  "Signal estimation from modified
         short-time Fourier transform," ASSP 1984.
 
     """
@@ -111,7 +111,7 @@ def misi(
     Returns:
         torch.Tensor: estimated waveforms of shape (batch, n_src, time).
 
-    Examples:
+    Examples
         >>> stft = Encoder(STFTFB(n_filters=256, kernel_size=256, stride=128))
         >>> wav = torch.randn(2, 3, 8000)
         >>> specs = stft(wav)
@@ -119,7 +119,7 @@ def misi(
         >>> mag = transforms.take_mag(masked_specs, -2)
         >>> est_wav = misi(wav.sum(1), mag, stft, n_iter=32)
 
-    References:
+    References
         [1] Gunawan and Sen, "Iterative Phase Estimation for the Synthesis of
         Separated Sources From Single-Channel Mixtures," in IEEE Signal
         Processing Letters, 2010.
