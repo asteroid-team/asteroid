@@ -22,7 +22,13 @@ from asteroid.models.base_models import BaseModel
 
 def test_convtasnet_sep():
     nnet = ConvTasNet(
-        n_src=2, n_repeats=2, n_blocks=3, bn_chan=16, hid_chan=4, skip_chan=8, n_filters=32
+        n_src=2,
+        n_repeats=2,
+        n_blocks=3,
+        bn_chan=16,
+        hid_chan=4,
+        skip_chan=8,
+        n_filters=32,
     )
     # Test torch input
     wav = torch.rand(1, 800)
@@ -35,6 +41,17 @@ def test_convtasnet_sep():
     # Test str input
     sf.write("tmp.wav", wav[0], 8000)
     nnet.separate("tmp.wav")
+    # Warning when overwriting
+    with pytest.warns(UserWarning):
+        nnet.separate("tmp.wav")
+
+    # Test with bad samplerate
+    sf.write("tmp.wav", wav[0], 16000)
+    # Raises
+    with pytest.raises(RuntimeError):
+        nnet.separate("tmp.wav", force_overwrite=True)
+    # Resamples
+    nnet.separate("tmp.wav", force_overwrite=True, resample=True)
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
@@ -114,8 +131,9 @@ def test_sudormrf_imp():
     )
 
 
-def test_dptnet():
-    _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2))
+@pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
+def test_dptnet(fb):
+    _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, fb_name=fb))
 
 
 def test_dcunet():
@@ -133,6 +151,12 @@ def _default_test_model(model, input_samples=801):
     model_conf = model.serialize()
     reconstructed_model = model.__class__.from_pretrained(model_conf)
     assert_allclose(model(test_input), reconstructed_model(test_input))
+
+    # Make
+    sr = model_conf["model_args"].pop("sample_rate")
+    with pytest.raises(RuntimeError):
+        reconstructed_model = model.__class__.from_pretrained(model_conf)
+    reconstructed_model = model.__class__.from_pretrained(model_conf, sample_rate=sr)
 
 
 @pytest.mark.parametrize(
@@ -167,8 +191,9 @@ def test_show():
     asteroid.show_available_models()
 
 
-def test_demask():
-    model = DeMask()
+@pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
+def test_demask(fb):
+    model = DeMask(fb_type=fb)
     test_input = torch.randn(1, 801)
 
     model_conf = model.serialize()

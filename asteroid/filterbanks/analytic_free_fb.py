@@ -41,7 +41,6 @@ class AnalyticFreeFB(Filterbank):
         for p in self.parameters():
             nn.init.xavier_normal_(p, gain=1.0 / np.sqrt(2.0))
 
-    @property
     def filters(self):
         ft_f = torch.rfft(self._filters, 1, normalized=True)
         hft_f = torch.stack([ft_f[:, :, :, 1], -ft_f[:, :, :, 0]], dim=-1)

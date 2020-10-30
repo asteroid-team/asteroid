@@ -30,6 +30,5 @@ class FreeFB(Filterbank):
         for p in self.parameters():
             nn.init.xavier_normal_(p)
 
-    @property
     def filters(self):
         return self._filters

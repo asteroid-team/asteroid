@@ -19,7 +19,8 @@ def test_norms(norm_str, channel_size):
 
     # Test forward
     inp = torch.randn(4, channel_size, 12)
-    _ = norm_layer(inp)
+    out = norm_layer(inp)
+    assert not torch.isnan(out).any()
 
 
 @pytest.mark.parametrize("wrong", ["wrong_string", 12, object()])
