@@ -27,16 +27,6 @@ parser.add_argument('--exp_dir', default='exp/tmp',
 
 
 def main(conf):
-    # Example of augmentation using Audiomentations
-    # https://github.com/iver56/audiomentations
-    # source_augmentations = Compose([
-    #         Gain(min_gain_in_db=-6, max_gain_in_db=6, p=1.0),
-    #         FrequencyMask(min_frequency_band=0.3, max_frequency_band=0.5, p=0.5),
-    #         TimeMask(min_band_part=0.2, max_band_part=0.5, fade=False, p=0.5),
-    #         Normalize(p=1.0),
-    #     ])
-    source_augmentations = None
-
     # Define dataloader using ORIGINAL mixture.
     dataset_kwargs = {
         'root_path': Path(conf['data']['root_path']),
@@ -51,7 +41,6 @@ def main(conf):
         random_segments=True,
         segment=conf['data']['segment'],
         samples_per_track=conf['data']['samples_per_track'],
-        source_augmentations=source_augmentations,
         **dataset_kwargs
     )
 
