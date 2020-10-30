@@ -59,7 +59,7 @@ class SmsWsjDataset(data.Dataset):
         normalize_audio (bool): If True then both sources and the mixture are
             normalized with the standard deviation of the mixture.
 
-    References:
+    References
         "SMS-WSJ: Database, performance measures, and baseline recipe for
          multi-channel source separation and recognition", Drude et al. 2019
     """

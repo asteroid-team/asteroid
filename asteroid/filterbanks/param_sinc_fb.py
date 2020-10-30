@@ -22,7 +22,7 @@ class ParamSincFB(Filterbank):
     Attributes:
         n_feats_out (int): Number of output filters.
 
-    References:
+    References
         [1] : "Speaker Recognition from raw waveform with SincNet". SLT 2018.
         Mirco Ravanelli, Yoshua Bengio.  https://arxiv.org/abs/1808.00158
 

@@ -43,7 +43,7 @@ class DPRNNTasNet(BaseEncoderMaskerDecoder):
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
-    References:
+    References
         [1] "Dual-path RNN: efficient long sequence modeling for
             time-domain single-channel speech separation", Yi Luo, Zhuo Chen
             and Takuya Yoshioka. https://arxiv.org/abs/1910.06379

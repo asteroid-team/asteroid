@@ -18,7 +18,7 @@ class FreeFB(Filterbank):
     Attributes:
         n_feats_out (int): Number of output filters.
 
-    References:
+    References
         [1] : "Filterbank design for end-to-end speech separation".
         Submitted to ICASSP 2020. Manuel Pariente, Samuele Cornell,
         Antoine Deleforge, Emmanuel Vincent.

@@ -43,7 +43,7 @@ class SingleSrcMultiScaleSpectral(_Loss):
         >>>                            pit_from='pw_pt')
         >>> loss = loss_func(est_targets, targets)
 
-    References:
+    References
         [1] Jesse Engel and Lamtharn (Hanoi) Hantrakul and Chenjie Gu and
         Adam Roberts DDSP: Differentiable Digital Signal Processing
         International Conference on Learning Representations ICLR 2020 $

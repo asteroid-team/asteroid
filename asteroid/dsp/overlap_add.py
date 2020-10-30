@@ -188,7 +188,7 @@ class DualPathProcessing(nn.Module):
         chunk_size (int): Size of segmenting window.
         hop_size (int): segmentation hop size.
 
-    References:
+    References
         [1] "Dual-path RNN: efficient long sequence modeling for
             time-domain single-channel speech separation", Yi Luo, Zhuo Chen
             and Takuya Yoshioka. https://arxiv.org/abs/1910.06379

@@ -69,7 +69,7 @@ class DCUNet(BaseDCUNet):
         stft_kernel_size (int): STFT frame length to use
         stft_stride (int, optional): STFT hop length to use.
 
-    References:
+    References
         [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
         Hyeong-Seok Choi et al.
         https://arxiv.org/abs/1903.03107
