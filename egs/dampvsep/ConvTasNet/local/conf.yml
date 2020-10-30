@@ -30,7 +30,7 @@ optim:
 data:
   task: enh_both
   root_path:
-  mixture: original
+  mixture: remix
   sample_rate: 16000
   segment: 8.
   samples_per_track: 16

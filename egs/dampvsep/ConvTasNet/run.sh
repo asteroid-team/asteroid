@@ -38,7 +38,7 @@ weight_decay=0.
 # Data config
 task=enh_both  #'enh_vocal', 'enh_both' 
 root_path=
-mixture=original  # 'original' includes non-*linear effects,
+mixture=remix     # 'original' includes non-*linear effects,
                   # 'remix' add both sources together
 segment=3.0
 samples_per_track=5
@@ -81,6 +81,7 @@ if [[ $stage -le 1 ]]; then
         --weight_decay $weight_decay \
         --task $task \
         --root_path $root_path \
+        --mixture $mixture \
         --sample_rate $sample_rate \
         --segment $segment \
         --n_src $n_src \

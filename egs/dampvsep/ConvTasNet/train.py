@@ -16,7 +16,6 @@ from asteroid.engine.system import System
 from asteroid.losses import SingleSrcNegSTOI
 
 
-
 # Keys which are not in the conf.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be
 # found at dic['main_args'][key]
@@ -36,8 +35,8 @@ def main(conf):
     #         TimeMask(min_band_part=0.2, max_band_part=0.5, fade=False, p=0.5),
     #         Normalize(p=1.0),
     #     ])
-
     source_augmentations = None
+
     # Define dataloader using ORIGINAL mixture.
     dataset_kwargs = {
         'root_path': Path(conf['data']['root_path']),
@@ -91,8 +90,10 @@ def main(conf):
         yaml.safe_dump(conf, outfile)
     
     # Define Loss function.
-    loss_func = CombineSTOIL1_Loss(alpha=conf['training']['loss_alpha'],
-                                   sample_rate=conf['data']['sample_rate'])
+    # Combine_Loss is not complete. Needs improvement
+    # loss_func = Combine_Loss(alpha=conf['training']['loss_alpha'],
+    #                          sample_rate=conf['data']['sample_rate'])
+    loss_func = torch.nn.L1Loss()
     system = System(
         model=model,
         loss_func=loss_func,
@@ -139,7 +140,7 @@ def main(conf):
     torch.save(to_save, os.path.join(exp_dir, "best_model.pth"))
 
 
-class CombineSTOIL1_Loss(torch.nn.Module):
+class Combine_Loss(torch.nn.Module):
     """
     Loss function combines L1 loss and STOI loss to focus the
     separation on the vocal segment. This has relevance specially
@@ -147,7 +148,7 @@ class CombineSTOIL1_Loss(torch.nn.Module):
     """
 
     def __init__(self, alpha=0.5, sample_rate=16000):
-        super(CombineSTOIL1_Loss, self).__init__()
+        super(Combine_Loss, self).__init__()
         self.alpha = alpha
         self.loss_vocal = SingleSrcNegSTOI(sample_rate=sample_rate, extended=False, use_vad=False)
         self.loss_background = torch.nn.L1Loss()
