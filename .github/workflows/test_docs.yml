@@ -31,8 +31,8 @@ jobs:
     - name: Install git
       run: |
         sudo apt update
-        sudo apt install git-all git-el
-        sudo apt install libsndfile1-dev libsndfile1  # Needed for sndfile import
+        sudo apt-get install git-all
+        sudo apt-get install libsndfile1-dev libsndfile1  # Needed for sndfile import
 
     - name: Install python dependencies
       run: |
