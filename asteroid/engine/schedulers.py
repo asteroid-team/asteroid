@@ -70,8 +70,8 @@ class NoamScheduler(_BaseScheduler):
             lr = scale_factor * ( (model_dim ** (-0.5)) * adj_step )
             adj_step = min(step_num ** (-0.5), step_num * warmup_steps ** (-1.5))
 
-    References:
-        [1] Vaswani et al. (2017) "Attention is all you need". *31st
+    References
+        - [1] Vaswani et al. (2017) "Attention is all you need". *31st
            Conference on Neural Information Processing Systems*,
     """
 
@@ -102,10 +102,9 @@ class DPTNetScheduler(_BaseScheduler):
         exp_max (float): Max learning rate in second phase.
         exp_base (float): Exp learning rate base in second phase.
 
-    References:
-        [1]: Jingjing Chen et al. "Dual-Path Transformer Network: Direct
-            Context-Aware Modeling for End-to-End Monaural Speech Separation"
-            Interspeech 2020.
+    References
+        - [1]: Jingjing Chen et al. "Dual-Path Transformer Network: Direct Context-
+        Aware Modeling for End-to-End Monaural Speech Separation" Interspeech 2020.
 
     .. note::
         This scheduler increases the learning rate linearly for the first

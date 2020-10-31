@@ -39,7 +39,7 @@ class Wsj0mixDataset(data.Dataset):
         n_src (int, optional): Number of sources in the training targets.
 
     References
-        "Deep clustering: Discriminative embeddings for segmentation and
+        - "Deep clustering: Discriminative embeddings for segmentation and
         separation", Hershey et al. 2015.
     """
 

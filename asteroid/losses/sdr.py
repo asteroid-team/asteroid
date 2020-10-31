@@ -23,7 +23,7 @@ class PairwiseNegSDR(_Loss):
         :class:`torch.Tensor`: with shape [batch, n_src, n_src].
         Pairwise losses.
 
-    Examples:
+    Examples
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
@@ -33,8 +33,8 @@ class PairwiseNegSDR(_Loss):
         >>>                            pit_from='pairwise')
         >>> loss = loss_func(est_targets, targets)
 
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+    References
+        - [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
         International Conference on Acoustics, Speech and Signal
         Processing (ICASSP) 2019.
     """
@@ -107,7 +107,7 @@ class SingleSrcNegSDR(_Loss):
         :class:`torch.Tensor`: with shape [batch] if reduction='none' else
             [] scalar if reduction='mean'.
 
-    Examples:
+    Examples
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
@@ -117,8 +117,8 @@ class SingleSrcNegSDR(_Loss):
         >>>                            pit_from='pw_pt')
         >>> loss = loss_func(est_targets, targets)
 
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+    References
+        - [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
         International Conference on Acoustics, Speech and Signal
         Processing (ICASSP) 2019.
     """
@@ -185,7 +185,7 @@ class MultiSrcNegSDR(_Loss):
         :class:`torch.Tensor`: with shape [batch] if reduction='none' else
             [] scalar if reduction='mean'.
 
-    Examples:
+    Examples
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
@@ -195,8 +195,8 @@ class MultiSrcNegSDR(_Loss):
         >>>                            pit_from='perm_avg')
         >>> loss = loss_func(est_targets, targets)
 
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+    References
+        - [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
         International Conference on Acoustics, Speech and Signal
         Processing (ICASSP) 2019.
 

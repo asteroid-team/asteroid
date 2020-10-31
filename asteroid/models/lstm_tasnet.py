@@ -36,9 +36,9 @@ class LSTMTasNet(BaseEncoderMaskerDecoder):
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
-    References:
-        [1]: Yi Luo et al. "Real-time Single-channel Dereverberation and Separation
-            with Time-domain Audio Separation Network", Interspeech 2018
+    References
+        - [1]: Yi Luo et al. "Real-time Single-channel Dereverberation and Separation
+        with Time-domain Audio Separation Network", Interspeech 2018
     """
 
     def __init__(

@@ -15,7 +15,7 @@ MINI_URL = "https://zenodo.org/record/3871592/files/MiniLibriMix.zip?download=1"
 
 
 class LibriMix(Dataset):
-    """ " Dataset class for Librimix source separation tasks.
+    """Dataset class for Librimix source separation tasks.
 
     Args:
         csv_dir (str): The path to the metatdata file
@@ -32,7 +32,7 @@ class LibriMix(Dataset):
         segment (int) : The desired sources and mixtures length in s
 
     References
-        "LibriMix: An Open-Source Dataset for Generalizable Speech Separation",
+        - [1] "LibriMix: An Open-Source Dataset for Generalizable Speech Separation",
         Cosentino et al. 2020.
     """
 
@@ -128,7 +128,7 @@ class LibriMix(Dataset):
             train_loader, val_loader: training and validation DataLoader out of
                 `LibriMix` Dataset.
 
-        Examples:
+        Examples
             >>> from asteroid.data import LibriMix
             >>> train_loader, val_loader = LibriMix.loaders_from_mini(
             >>>     task='sep_clean', batch_size=4
@@ -154,7 +154,7 @@ class LibriMix(Dataset):
             train_set, val_set: training and validation instances of
                 `LibriMix` (data.Dataset).
 
-        Examples:
+        Examples
             >>> from asteroid.data import LibriMix
             >>> train_set, val_set = LibriMix.mini_from_download(task='sep_clean')
         """

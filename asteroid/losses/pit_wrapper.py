@@ -38,7 +38,7 @@ class PITLossWrapper(nn.Module):
     For each of these modes, the best permutation and reordering will be
     automatically computed.
 
-    Examples:
+    Examples
         >>> import torch
         >>> from asteroid.losses import pairwise_neg_sisdr
         >>> sources = torch.randn(10, 3, 16000)

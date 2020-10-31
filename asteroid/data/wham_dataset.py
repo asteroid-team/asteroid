@@ -55,8 +55,8 @@ class WhamDataset(data.Dataset):
         normalize_audio (bool): If True then both sources and the mixture are
             normalized with the standard deviation of the mixture.
 
-    References:
-        "WHAM!: Extending Speech Separation to Noisy Environments",
+    References
+        - "WHAM!: Extending Speech Separation to Noisy Environments",
         Wichern et al. 2019
     """
 

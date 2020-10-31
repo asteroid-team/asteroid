@@ -72,8 +72,8 @@ class WhamRDataset(data.Dataset):
             If None, defaults to one for enhancement tasks and two for
             separation tasks.
 
-    References:
-        "WHAMR!: Noisy and Reverberant Single-Channel Speech Separation",
+    References
+        - "WHAMR!: Noisy and Reverberant Single-Channel Speech Separation",
         Maciejewski et al. 2020
     """
 

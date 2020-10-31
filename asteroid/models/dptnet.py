@@ -43,10 +43,10 @@ class DPTNet(BaseEncoderMaskerDecoder):
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
-    References:
-        [1]: Jingjing Chen et al. "Dual-Path Transformer Network: Direct
-            Context-Aware Modeling for End-to-End Monaural Speech Separation"
-            Interspeech 2020.
+    References
+        - [1]: Jingjing Chen et al. "Dual-Path Transformer Network: Direct
+        Context-Aware Modeling for End-to-End Monaural Speech Separation"
+        Interspeech 2020.
     """
 
     def __init__(

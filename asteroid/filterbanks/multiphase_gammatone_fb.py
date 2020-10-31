@@ -15,8 +15,8 @@ class MultiphaseGammatoneFB(Filterbank):
         stride (int, optional): Stride of the convolution. If None (default),
             set to ``kernel_size // 2``.
 
-    References:
-    [1] David Ditter, Timo Gerkmann, "A Multi-Phase Gammatone Filterbank for
+    References
+    - [1] David Ditter, Timo Gerkmann, "A Multi-Phase Gammatone Filterbank for
         Speech Separation via TasNet", ICASSP 2020
         Available: `<https://ieeexplore.ieee.org/document/9053602/>`
     """

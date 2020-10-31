@@ -26,8 +26,8 @@ class SingleSrcPMSQE(nn.Module):
         gain_eq (bool, optional): Whether to apply gain equalization.
         sample_rate (int): Sample rate of the input audio.
 
-    References:
-        [1] J.M.Martin, A.M.Gomez, J.A.Gonzalez, A.M.Peinado 'A Deep Learning
+    References
+        - [1] J.M.Martin, A.M.Gomez, J.A.Gonzalez, A.M.Peinado 'A Deep Learning
         Loss Function based on the Perceptual Evaluation of the
         Speech Quality', IEEE Signal Processing Letters, 2018.
         Implemented by Juan M. Martin. Contact: mdjuamart@ugr.es
@@ -38,7 +38,7 @@ class SingleSrcPMSQE(nn.Module):
         algorithm, this function consists of two regularization factors :
         the symmetrical and asymmetrical distortion in the loudness domain.
 
-    Examples:
+    Examples
         >>> import torch
         >>> from asteroid.filterbanks import STFTFB, Encoder, transforms
         >>> from asteroid.losses import PITLossWrapper, SingleSrcPMSQE
@@ -118,11 +118,8 @@ class SingleSrcPMSQE(nn.Module):
         Returns
             torch.tensor of shape (B, ), wD + 0.309 * wDA
 
-        Notes
-            Dimensions (B, F, T) are also supported by SingleSrcPMSQE but are
+        ..note:: Dimensions (B, F, T) are also supported by SingleSrcPMSQE but are
             less efficient because input tensors are transposed (not inplace).
-
-        Examples
 
         """
         assert est_targets.shape == targets.shape

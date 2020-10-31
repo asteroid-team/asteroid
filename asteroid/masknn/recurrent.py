@@ -178,8 +178,8 @@ class DPRNNBlock(nn.Module):
         num_layers (int, optional): Number of layers used in each RNN.
         dropout (float, optional): Dropout ratio. Must be in [0, 1].
 
-    References:
-        [1] "Dual-path RNN: efficient long sequence modeling for
+    References
+        - [1] "Dual-path RNN: efficient long sequence modeling for
         time-domain single-channel speech separation", Yi Luo, Zhuo Chen
         and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
@@ -259,10 +259,10 @@ class DPRNN(nn.Module):
         num_layers (int, optional): Number of layers in each RNN.
         dropout (float, optional): Dropout ratio, must be in [0,1].
 
-    References:
-        [1] "Dual-path RNN: efficient long sequence modeling for
-            time-domain single-channel speech separation", Yi Luo, Zhuo Chen
-            and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
+    References
+        - [1] "Dual-path RNN: efficient long sequence modeling for
+        time-domain single-channel speech separation", Yi Luo, Zhuo Chen
+        and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
 
     def __init__(
@@ -414,9 +414,9 @@ class LSTMMasker(nn.Module):
         bidirectional (bool, optional): Whether to use BiLSTM
         dropout (float, optional): Dropout ratio, must be in [0,1].
 
-    References:
-        [1]: Yi Luo et al. "Real-time Single-channel Dereverberation and Separation
-            with Time-domain Audio Separation Network", Interspeech 2018
+    References
+        - [1]: Yi Luo et al. "Real-time Single-channel Dereverberation and Separation
+        with Time-domain Audio Separation Network", Interspeech 2018
     """
 
     def __init__(
@@ -505,10 +505,9 @@ class DCCRMaskNetRNN(nn.Module):  # CHECK-JIT
         norm_type (Optional[str], optional): Norm to use after linear.
             See ``asteroid.masknn.norms`` for valid values. (Not used in [1]).
 
-    References:
-        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
-        Yanxin Hu et al.
-        https://arxiv.org/abs/2008.00264
+    References
+        - [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        Yanxin Hu et al. https://arxiv.org/abs/2008.00264
     """
 
     def __init__(self, in_size, hid_size=128, rnn_type="LSTM", norm_type=None):
@@ -548,10 +547,9 @@ class DCCRMaskNet(BaseDCUMaskNet):  # CHECK-JIT
             `n_freqs - 1` must be divisible by `f_0 * f_1 * ... * f_N` where `f_k` are
             the frequency strides of the encoders.
 
-    References:
-        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
-        Yanxin Hu et al.
-        https://arxiv.org/abs/2008.00264
+    References
+        -[1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        Yanxin Hu et al. https://arxiv.org/abs/2008.00264
     """
 
     _architectures = DCCRN_ARCHITECTURES

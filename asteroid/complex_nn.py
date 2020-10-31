@@ -41,7 +41,7 @@ def as_torch_complex(x, asteroid_dim=-2):
     Args:
         asteroid_dim (int, optional): Dimension to check for Asteroid-style complex.
 
-    :Raises:
+    Raises:
         ValueError: If type of `x` is not understood.
     """
     if isinstance(x, (list, tuple)) and len(x) == 2:
@@ -70,7 +70,7 @@ def on_reim(f):
     """Make a complex-valued function callable from a real-valued one by applying it to
     the real and imaginary components independently.
 
-    :Return:
+    Return:
         cf(x), complex version of `f`: A function that applies `f` to the real and
         imaginary components of `x` and returns the result as PyTorch complex tensor.
     """
@@ -160,10 +160,9 @@ def bound_complex_mask(mask: ComplexTensor, bound_type="tanh"):
         bound_type (str or None): The type of bound to use, either of
             "tanh"/"bdt" (default), "sigmoid"/"bdss" or None/"bdt".
 
-    References:
-        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
-        Hyeong-Seok Choi et al.
-        https://arxiv.org/abs/1903.03107
+    References
+        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
     if bound_type in {"BDSS", "sigmoid"}:
         return on_reim(torch.sigmoid)(mask)
