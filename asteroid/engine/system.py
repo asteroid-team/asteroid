@@ -6,6 +6,8 @@ from torch.optim.optimizer import Optimizer
 
 from ..utils import flatten_dict
 
+from asteroid.losses import PITLossWrapper
+
 
 class System(pl.LightningModule):
     """Base class for deep learning systems.
@@ -91,7 +93,10 @@ class System(pl.LightningModule):
         """
         inputs, targets = batch
         est_targets = self(inputs)
-        loss = self.loss_func(est_targets, targets)
+        if isinstance(self.loss_func, PITLossWrapper):
+            loss = self.loss_func(est_targets, targets, epoch=self.current_epoch)
+        else:
+            loss = self.loss_func(est_targets, targets)
         return loss
 
     def training_step(self, batch, batch_nb):

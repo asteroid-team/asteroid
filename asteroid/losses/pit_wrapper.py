@@ -24,6 +24,16 @@ class PITLossWrapper(nn.Module):
               average loss for a given permutations of the sources and
               estimates. Output shape : :math:`(batch)`.
               See :meth:`~PITLossWrapper.best_perm_from_perm_avg_loss`.
+            * ``'pw_sinkpit'`` (pairwise matrix + Sinkhorn PIT):
+              `loss_func` computes pairwise
+              losses and returns a torch.Tensor of shape
+              :math:`(batch, n\_src, n\_src)`. Each element
+              :math:`[batch, i, j]` corresponds to the loss between
+              :math:`targets[:, i]` and :math:`est\_targets[:, j]`
+              It evaluates an approximate value of the PIT loss
+              using Sinkhorn's iterative algorithm.
+              See :meth:`~PITLossWrapper.best_softperm_sinkhorn`
+              and http://arxiv.org/abs/2010.11871
 
             In terms of efficiency, ``'perm_avg'`` is the least efficicient.
 
@@ -64,13 +74,22 @@ class PITLossWrapper(nn.Module):
         self.loss_func = loss_func
         self.pit_from = pit_from
         self.perm_reduce = perm_reduce
-        if self.pit_from not in ["pw_mtx", "pw_pt", "perm_avg"]:
+        if self.pit_from not in ["pw_mtx", "pw_pt", "perm_avg", "pw_sinkpit"]:
             raise ValueError(
                 "Unsupported loss function type for now. Expected"
-                "one of [`pw_mtx`, `pw_pt`, `perm_avg`]"
+                "one of [`pw_mtx`, `pw_pt`, `perm_avg`, `pw_sinkpit`]"
             )
 
-    def forward(self, est_targets, targets, return_est=False, reduce_kwargs=None, **kwargs):
+    def forward(
+        self,
+        est_targets,
+        targets,
+        epoch=None,
+        return_est=False,
+        reduce_kwargs=None,
+        pit_kwargs=None,
+        **kwargs,
+    ):
         """Find the best permutation and return the loss.
 
         Args:
@@ -82,6 +101,8 @@ class PITLossWrapper(nn.Module):
                 estimates (To compute metrics or to save example).
             reduce_kwargs (dict or None): kwargs that will be passed to the
                 pairwise losses reduce function (`perm_reduce`).
+            pit_kwargs (dict or None): kwargs that will be passed to the
+                PIT algorithm.
             **kwargs: additional keyword argument that will be passed to the
                 loss function.
 
@@ -92,7 +113,8 @@ class PITLossWrapper(nn.Module):
                 torch.Tensor of shape [batch, nsrc, *].
         """
         n_src = targets.shape[1]
-        assert n_src < 10, f"Expected source axis along dim 1, found {n_src}"
+        assert_sinkpit = self.pit_from == "pw_sinkpit" and n_src < 100
+        assert n_src < 10 or assert_sinkpit, f"Expected source axis along dim 1, found {n_src}"
         if self.pit_from == "pw_mtx":
             # Loss function already returns pairwise losses
             pw_losses = self.loss_func(est_targets, targets, **kwargs)
@@ -110,6 +132,36 @@ class PITLossWrapper(nn.Module):
             if not return_est:
                 return mean_loss
             reordered = self.reorder_source(est_targets, batch_indices)
+            return mean_loss, reordered
+        elif self.pit_from == "pw_sinkpit":
+            # Evaluate the loss using Sinkhorn's iterative algorithm
+            pw_losses = self.loss_func(est_targets, targets, **kwargs)
+            pit_kwargs = pit_kwargs if pit_kwargs is not None else dict()
+            assert pw_losses.ndim == 3, (
+                "Something went wrong with the loss " "function, please read the docs."
+            )
+            assert pw_losses.shape[0] == targets.shape[0], "PIT loss needs same batch dim as input"
+
+            if epoch is not None:
+                beta = min([1.02 ** epoch, 10.0])
+                pit_kwargs["beta"] = beta
+            # train
+            if not return_est:
+                min_loss, soft_perm = self.best_softperm_sinkhorn(pw_losses, **pit_kwargs)
+                mean_loss = torch.mean(min_loss)
+                return mean_loss
+            # valid/test
+            # Quantization of soft permutation
+            # Sufficiently large `beta` and `n_iter` are required.
+            min_loss, soft_perm = self.best_softperm_sinkhorn(pw_losses, beta=100, n_iter=2000)
+            mean_loss = torch.mean(min_loss)
+            perm = soft_perm * 1
+            perm[perm >= 0.1] = 1
+            perm[perm <= 0.1] = 0
+            # TODO
+            # Need to verify that `perm` is actually a permutation matrix here
+            pass
+            reordered = torch.einsum("bij,bjt->bit", perm, est_targets)
             return mean_loss, reordered
         else:
             return
@@ -317,6 +369,36 @@ class PITLossWrapper(nn.Module):
         batch_indices = torch.tensor([linear_sum_assignment(pwl)[1] for pwl in pwl_copy])
         min_loss = torch.gather(pwl, 2, batch_indices[..., None]).mean([-1, -2])
         return min_loss, batch_indices
+
+    @staticmethod
+    def best_softperm_sinkhorn(pair_wise_losses, **kwargs):
+        """Compute an approximate PIT loss using Sinkhorn's algorithm.
+        See http://arxiv.org/abs/2010.11871
+        Args:
+            pair_wise_losses (:class:`torch.Tensor`):
+                Tensor of shape [batch, n_src, n_src]. Pairwise losses.
+            **kwargs:
+                beta (float) : Inverse temperature parameter. (default = 10)
+                n_iter (int) : Number of iteration. (default = 200)
+        Returns:
+            tuple:
+                :class:`torch.Tensor`: The loss corresponding to the best
+                permutation of size (batch,).
+                :class:`torch.Tensor`: A soft permutation matrix.
+        """
+        C = pair_wise_losses.transpose(-1, -2)
+        n_src = C.shape[-1]
+        # argument parse
+        beta = kwargs["beta"] if "beta" in kwargs.keys() else 10
+        n_iter = kwargs["n_iter"] if "n_iter" in kwargs.keys() else 200
+        # initial values
+        Z = -beta * C
+        for it in range(n_iter // 2):
+            Z = Z - torch.logsumexp(Z, axis=1, keepdim=True)
+            Z = Z - torch.logsumexp(Z, axis=2, keepdim=True)
+        min_loss = torch.einsum("bij,bij->b", C + Z / beta, torch.exp(Z))
+        min_loss = min_loss / n_src
+        return min_loss, torch.exp(Z)
 
 
 class PITReorder(PITLossWrapper):

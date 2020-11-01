@@ -48,6 +48,49 @@ def test_sisdr(n_src, function_triplet):
     )
 
 
+@pytest.mark.parametrize("batch_size", [1, 2])
+@pytest.mark.parametrize("n_src", [2, 3, 4])
+@pytest.mark.parametrize("time", [16000])
+@pytest.mark.parametrize("beta,n_iter", [(100.0, 2000)])
+@pytest.mark.parametrize("noise_level", [0.1])
+@pytest.mark.parametrize(
+    "function_triplet",
+    [
+        [sdr.pairwise_neg_sisdr, sdr.singlesrc_neg_sisdr, sdr.multisrc_neg_sisdr],
+        [sdr.pairwise_neg_sdsdr, sdr.singlesrc_neg_sdsdr, sdr.multisrc_neg_sdsdr],
+        [sdr.pairwise_neg_snr, sdr.singlesrc_neg_snr, sdr.multisrc_neg_snr],
+        [pairwise_mse, singlesrc_mse, multisrc_mse],
+    ],
+)
+def test_proximity_sinkhorn_hungrian(
+    batch_size, n_src, time, beta, n_iter, noise_level, function_triplet
+):
+    pairwise, nosrc, nonpit = function_triplet
+
+    # random data
+    targets = torch.randn(batch_size, n_src, time) * 10  # ground truth
+    noise = torch.randn(batch_size, n_src, time) * noise_level
+    est_targets = (
+        targets[:, torch.randperm(n_src), :] + noise
+    )  # reorder channels, and add small noise
+
+    # initialize wrappers
+    loss_sinkhorn = PITLossWrapper(pairwise, pit_from="pw_sinkpit")
+    loss_hungarian = PITLossWrapper(pairwise, pit_from="pw_mtx")
+
+    # compute loss by sinkhorn
+    pit_kwargs = {"beta": beta, "n_iter": n_iter}
+    pw_losses = loss_sinkhorn.loss_func(est_targets, targets)
+    min_loss, soft_perm = loss_sinkhorn.best_softperm_sinkhorn(pw_losses, **pit_kwargs)
+    mean_loss_sinkhorn = torch.mean(min_loss)
+
+    # compute loss by hungarian
+    mean_loss_hungarian = loss_hungarian(est_targets, targets, return_est=False)
+
+    # compare
+    assert_allclose(mean_loss_sinkhorn, mean_loss_hungarian)
+
+
 @pytest.mark.parametrize("spk_cnt", [2, 3, 4])
 def test_dc(spk_cnt):
     embedding = torch.randn(10, 5 * 400, 20)
