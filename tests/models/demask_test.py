@@ -17,8 +17,8 @@ from asteroid.models import DeMask
 #             input_files.append(file)
 #     input_files.sort()
 #     return input_files
-# 
-# 
+#
+#
 # def get_output_files(input_files, prefix='', prefix_sub=''):
 #     pattern = re.compile(f'^{prefix}')
 #     output_files = []
@@ -29,8 +29,8 @@ from asteroid.models import DeMask
 #         output_file = osp.join(dirname, output_basename)
 #         output_files.append(output_file)
 #     return output_files
-# 
-# 
+#
+#
 # def compatibility_data():
 #     model_dir = 'demask_rsc'
 #     io_data_dir = osp.join('demask_rsc', 'io_data')
@@ -41,14 +41,14 @@ from asteroid.models import DeMask
 #         prefix_sub="output",
 #     )
 #     return list(zip(input_files, output_files))
-# 
-# 
+#
+#
 # @pytest.fixture(scope='module')
 # def model():
 #     model_path = osp.join('demask_rsc', 'model.pth')
 #     return DeMask.from_pretrained(model_path, sample_rate=16000).eval()
-# 
-# 
+#
+#
 # @pytest.mark.parametrize('in_file, ref_file', (*compatibility_data(),))
 # def test_demask_compat(model, in_file, ref_file):
 #     in_data = torch.load(in_file)
@@ -56,8 +56,8 @@ from asteroid.models import DeMask
 #     with torch.no_grad():
 #         output = model(in_data)
 #         assert_allclose(output, expected_data)
-# 
-# 
+#
+#
 # def test_get_model_args(model):
 #     expected = {
 #         'activation': 'relu',
@@ -106,31 +106,25 @@ def test_forward(input_type, output_type, fb_type, data):
 
 
 def test_sample_rate():
-    demask = DeMask(
-        hidden_dims=(16,),
-        kernel_size=8,
-        n_filters=8,
-        stride=4,
-        sample_rate=9704
-    )
+    demask = DeMask(hidden_dims=(16,), kernel_size=8, n_filters=8, stride=4, sample_rate=9704)
     assert demask.sample_rate == 9704
 
 
 def test_get_model_args():
     demask = DeMask()
     expected = {
-        'activation': 'relu',
-        'dropout': 0,
-        'fb_kwargs': {},
-        'fb_type': 'stft',
-        'hidden_dims': (1024,),
-        'input_type': 'mag',
-        'kernel_size': 512,
-        'mask_act': 'relu',
-        'n_filters': 512,
-        'norm_type': 'gLN',
-        'output_type': 'mag',
-        'sample_rate': 16000,
-        'stride': 256,
+        "activation": "relu",
+        "dropout": 0,
+        "fb_kwargs": {},
+        "fb_type": "stft",
+        "hidden_dims": (1024,),
+        "input_type": "mag",
+        "kernel_size": 512,
+        "mask_act": "relu",
+        "n_filters": 512,
+        "norm_type": "gLN",
+        "output_type": "mag",
+        "sample_rate": 16000,
+        "stride": 256,
     }
     assert demask.get_model_args() == expected
