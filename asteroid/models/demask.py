@@ -1,12 +1,12 @@
 from torch import nn
-from .base_models import BaseModel
+from .base_models import BaseEncoderMaskerDecoder
 from ..filterbanks import make_enc_dec
 from ..filterbanks.transforms import take_mag, take_cat
 from ..masknn import norms, activations
 from ..utils.torch_utils import pad_x_to_y
 
 
-class DeMask(BaseModel):  # CHECK-JIT
+class DeMask(BaseEncoderMaskerDecoder):  # CHECK-JIT
     """
     Simple MLP model for surgical mask speech enhancement A transformed-domain masking approach is used.
     Args:
@@ -50,8 +50,29 @@ class DeMask(BaseModel):  # CHECK-JIT
         sample_rate=16000,
         **fb_kwargs,
     ):
+        encoder, decoder = make_enc_dec(
+            fb_type,
+            kernel_size=kernel_size,
+            n_filters=n_filters,
+            stride=stride,
+            sample_rate=sample_rate,
+            **fb_kwargs,
+        )
 
-        super().__init__()
+        n_masker_in = self._get_n_feats_input(input_type, encoder)
+        n_masker_out = self._get_n_feats_output(output_type, encoder)
+        net = _build_masker_nn(
+            n_masker_in,
+            n_masker_out,
+            norm_type=norm_type,
+            activation=activation,
+            hidden_dims=hidden_dims,
+            dropout=dropout,
+            mask_act=mask_act,
+        )
+        masker = nn.Sequential(*net)
+        super().__init__(encoder, masker, decoder)
+
         self.input_type = input_type
         self.output_type = output_type
         self.hidden_dims = hidden_dims
@@ -66,80 +87,24 @@ class DeMask(BaseModel):  # CHECK-JIT
         self.fb_kwargs = fb_kwargs
         self._sample_rate = sample_rate
 
-        self.encoder, self.decoder = make_enc_dec(
-            fb_type,
-            kernel_size=kernel_size,
-            n_filters=n_filters,
-            stride=stride,
-            sample_rate=sample_rate,
-            **fb_kwargs,
-        )
+    def _get_n_feats_input(self, input_type, encoder):
+        if input_type == "reim":
+            return encoder.n_feats_out
 
-        net = self._build_masker_nn()
-        self.masker = nn.Sequential(*net)
-
-    def _build_masker_nn(self):
-        n_feats_input = self._get_n_feats_input()
-        make_layer_norm = norms.get(self.norm_type)
-        net = [make_layer_norm(n_feats_input)]
-        layer_activation = activations.get(self.activation)()
-        in_chan = n_feats_input
-        for hidden_dim in self.hidden_dims:
-            net.extend(
-                [
-                    nn.Conv1d(in_chan, hidden_dim, 1),
-                    make_layer_norm(hidden_dim),
-                    layer_activation,
-                    nn.Dropout(self.dropout),
-                ]
-            )
-            in_chan = hidden_dim
-
-        n_feats_output = self._get_n_feats_output()
-        net.extend([nn.Conv1d(in_chan, n_feats_output, 1), activations.get(self.mask_act)()])
-        return net
-
-    def _get_n_feats_input(self):
-        if self.input_type == "reim":
-            return self.encoder.n_feats_out
-
-        if self.input_type not in {"mag", "cat"}:
+        if input_type not in {"mag", "cat"}:
             raise NotImplementedError("Input type should be either mag, reim or cat")
 
-        n_feats_input = self.encoder.n_feats_out // 2
-        if self.input_type == "cat":
-            n_feats_input += self.encoder.n_feats_out
+        n_feats_input = encoder.n_feats_out // 2
+        if input_type == "cat":
+            n_feats_input += encoder.n_feats_out
         return n_feats_input
 
-    def _get_n_feats_output(self):
-        if self.output_type == "mag":
-            return self.encoder.n_feats_out // 2
-        if self.output_type == "reim":
-            return self.encoder.n_feats_out
+    def _get_n_feats_output(self, output_type, encoder):
+        if output_type == "mag":
+            return encoder.n_feats_out // 2
+        if output_type == "reim":
+            return encoder.n_feats_out
         raise NotImplementedError("Output type should be either mag or reim")
-
-    def forward(self, wav):
-
-        # Handle 1D, 2D or n-D inputs
-        was_one_d = False
-        if wav.ndim == 1:
-            was_one_d = True
-            wav = wav.unsqueeze(0).unsqueeze(1)
-        if wav.ndim == 2:
-            wav = wav.unsqueeze(1)
-        # Real forward
-        tf_rep = self.encoder(wav)
-
-        mask_in = self.preprocess_masker_input(tf_rep)
-        est_masks = self.masker(mask_in)
-        est_masks = self.postprocess_masks(est_masks)
-        tf_rep = self.preprocess_product_input(tf_rep)
-        masked_tf_rep = est_masks * tf_rep
-
-        out_wavs = pad_x_to_y(self.decoder(masked_tf_rep), wav)
-        if was_one_d:
-            return out_wavs.squeeze(0)
-        return out_wavs
 
     def preprocess_masker_input(self, tf_rep):
         if self.input_type == "mag":
@@ -183,3 +148,31 @@ class DeMask(BaseModel):  # CHECK-JIT
         }
         model_args.update(self.fb_kwargs)
         return model_args
+
+
+def _build_masker_nn(
+    n_in,
+    n_out,
+    activation="relu",
+    dropout=0.0,
+    hidden_dims=(1024,),
+    mask_act="relu",
+    norm_type="gLN",
+):
+    make_layer_norm = norms.get(norm_type)
+    net = [make_layer_norm(n_in)]
+    layer_activation = activations.get(activation)()
+    in_chan = n_in
+    for hidden_dim in hidden_dims:
+        net.extend(
+            [
+                nn.Conv1d(in_chan, hidden_dim, 1),
+                make_layer_norm(hidden_dim),
+                layer_activation,
+                nn.Dropout(dropout),
+            ]
+        )
+        in_chan = hidden_dim
+
+    net.extend([nn.Conv1d(in_chan, n_out, 1), activations.get(mask_act)()])
+    return net
