@@ -75,9 +75,7 @@ class DeMask(BaseModel):  # CHECK-JIT
             **fb_kwargs,
         )
 
-        n_feats_input = self._get_n_feats_input()
-        n_feats_output = self._get_n_feats_output()
-        net = self._build_masker_nn(n_feats_input, n_feats_output)
+        net = self._build_masker_nn()
         self.masker = nn.Sequential(*net)
 
     def _get_n_feats_input(self):
@@ -99,7 +97,8 @@ class DeMask(BaseModel):  # CHECK-JIT
             return self.encoder.filterbank.n_filters  # Does not seem right
         raise NotImplementedError("Output type should be either mag or reim")
 
-    def _build_masker_nn(self, n_feats_input, n_feats_output):
+    def _build_masker_nn(self):
+        n_feats_input = self._get_n_feats_input()
         make_layer_norm = norms.get(self.norm_type)
         net = [make_layer_norm(n_feats_input)]
         layer_activation = activations.get(self.activation)()
@@ -115,6 +114,7 @@ class DeMask(BaseModel):  # CHECK-JIT
             )
             in_chan = hidden_dim
 
+        n_feats_output = self._get_n_feats_output()
         net.extend([nn.Conv1d(in_chan, n_feats_output, 1), activations.get(self.mask_act)()])
         return net
 
