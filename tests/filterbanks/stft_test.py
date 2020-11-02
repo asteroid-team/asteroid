@@ -31,6 +31,13 @@ def test_stft_def(fb_config):
     testing.assert_allclose(dec.filterbank.filters(), dec2.filterbank.filters())
 
 
+@pytest.mark.parametrize("n_filters", (13, 257))
+def test_stft_def_error(n_filters):
+    with pytest.raises(ValueError) as err:
+        STFTFB(n_filters, n_filters)
+    assert str(err.value) == f"n_filters must be even, got {n_filters}"
+
+
 @pytest.mark.parametrize("fb_config", fb_config_list())
 def test_stft_windows(fb_config):
     kernel_size = fb_config["kernel_size"]
