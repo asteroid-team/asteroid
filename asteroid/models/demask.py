@@ -94,16 +94,10 @@ class DeMask(BaseModel):  # CHECK-JIT
 
     def _get_n_feats_output(self):
         if self.output_type == "mag":
-            if self.fb_type == "stft":
-                n_feats_output = self.encoder.filterbank.n_filters // 2 + 1
-            else:
-                n_feats_output = self.encoder.filterbank.n_filters // 2
-        elif self.output_type == "reim":
-            n_feats_output = self.encoder.filterbank.n_filters
-        else:
-            print("Output type should be either mag or reim")
-            raise NotImplementedError
-        return n_feats_output
+            return self.encoder.n_feats_out // 2
+        if self.output_type == "reim":
+            return self.encoder.filterbank.n_filters  # Does not seem right
+        raise NotImplementedError("Output type should be either mag or reim")
 
     def _build_masker_nn(self, n_feats_input, n_feats_output):
         make_layer_norm = norms.get(self.norm_type)
