@@ -81,25 +81,15 @@ class DeMask(BaseModel):  # CHECK-JIT
         self.masker = nn.Sequential(*net)
 
     def _get_n_feats_input(self):
-        if self.input_type == "mag":
-            if self.fb_type == "stft":
-                n_feats_input = (self.encoder.filterbank.n_filters) // 2 + 1
-            else:
-                n_feats_input = (self.encoder.filterbank.n_filters) // 2
-        elif self.input_type == "cat":
-            if self.fb_type == "stft":
-                n_feats_input = (
-                    (self.encoder.filterbank.n_filters // 2) + 1 + self.encoder.filterbank.n_filters
-                )
-            else:
-                n_feats_input = (
-                    self.encoder.filterbank.n_filters // 2
-                ) + self.encoder.filterbank.n_filters
-        elif self.input_type == "reim":
-            n_feats_input = self.encoder.filterbank.n_filters
-        else:
-            print("Input type should be either mag, reim or cat")
-            raise NotImplementedError
+        if self.input_type == "reim":
+            return self.encoder.filterbank.n_filters
+
+        if self.input_type not in {"mag", "cat"}:
+            raise NotImplementedError("Input type should be either mag, reim or cat")
+
+        n_feats_input = self.encoder.n_feats_out // 2
+        if self.input_type == "cat":
+            n_feats_input += self.encoder.filterbank.n_filters
         return n_feats_input
 
     def _get_n_feats_output(self):
