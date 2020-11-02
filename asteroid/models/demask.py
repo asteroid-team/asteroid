@@ -129,26 +129,36 @@ class DeMask(BaseModel):  # CHECK-JIT
             wav = wav.unsqueeze(1)
         # Real forward
         tf_rep = self.encoder(wav)
-        if self.input_type == "mag":
-            est_masks = self.masker(take_mag(tf_rep))
-        elif self.input_type == "reim":
-            est_masks = self.masker(tf_rep)
-        elif self.input_type == "cat":
-            est_masks = self.masker(take_cat(tf_rep))
-        else:
-            raise NotImplementedError
 
-        if self.output_type == "mag":
-            masked_tf_rep = est_masks.repeat(1, 2, 1) * tf_rep
-        elif self.output_type == "reim":
-            masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
-        else:
-            raise NotImplementedError
+        mask_in = self.preprocess_masker_input(tf_rep)
+        est_masks = self.masker(mask_in)
+        est_masks = self.postprocess_masks(est_masks)
+        tf_rep = self.preprocess_product_input(tf_rep)
+        masked_tf_rep = est_masks * tf_rep
 
         out_wavs = pad_x_to_y(self.decoder(masked_tf_rep), wav)
         if was_one_d:
             return out_wavs.squeeze(0)
         return out_wavs
+
+    def preprocess_masker_input(self, tf_rep):
+        if self.input_type == "mag":
+            return take_mag(tf_rep)
+        if self.input_type == "cat":
+            return take_cat(tf_rep)
+        # No need for NotImplementedError as input_type checked at init
+        return tf_rep
+
+    def preprocess_product_input(self, tf_rep):
+        if self.output_type == "mag":
+            return tf_rep
+        return tf_rep.unsqueeze(1)
+
+    def postprocess_masks(self, est_masks):
+        if self.output_type == "mag":
+            return est_masks.repeat(1, 2, 1)
+        # No need for invalid output_types as checked at init
+        return est_masks
 
     @property
     def sample_rate(self):
