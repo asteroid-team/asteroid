@@ -115,7 +115,7 @@ class DeMask(BaseModel):  # CHECK-JIT
         if self.output_type == "mag":
             return self.encoder.n_feats_out // 2
         if self.output_type == "reim":
-            return self.encoder.filterbank.n_filters  # Does not seem right
+            return self.encoder.n_feats_out
         raise NotImplementedError("Output type should be either mag or reim")
 
     def forward(self, wav):
