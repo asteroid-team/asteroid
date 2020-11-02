@@ -180,7 +180,7 @@ class TDConvNet(nn.Module):
         """
         batch, _, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)
-        skip_connection = torch.tensor([0.0])
+        skip_connection = torch.tensor([0.0], device=output.device)
         for layer in self.TCN:
             # Common to w. skip and w.o skip architectures
             tcn_out = layer(output)
