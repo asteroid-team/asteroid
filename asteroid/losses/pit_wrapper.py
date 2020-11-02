@@ -1,6 +1,8 @@
 from itertools import permutations
 import torch
 from torch import nn
+from torch.testing import assert_allclose
+
 from scipy.optimize import linear_sum_assignment
 
 
@@ -156,11 +158,15 @@ class PITLossWrapper(nn.Module):
             min_loss, soft_perm = self.best_softperm_sinkhorn(pw_losses, beta=100, n_iter=2000)
             mean_loss = torch.mean(min_loss)
             perm = soft_perm * 1
-            perm[perm >= 0.1] = 1
-            perm[perm <= 0.1] = 0
-            # TODO
+            perm[perm >= 0.5] = 1
+            perm[perm <= 0.5] = 0
             # Need to verify that `perm` is actually a permutation matrix here
-            pass
+            perm_colsum = torch.sum(perm, axis=1)
+            perm_rowsum = torch.sum(perm, axis=2)
+            perm_ref = torch.ones(perm_colsum.shape)
+            assert_allclose(perm_colsum, perm_ref)
+            assert_allclose(perm_rowsum, perm_ref)
+            # reorder
             reordered = torch.einsum("bij,bjt->bit", perm, est_targets)
             return mean_loss, reordered
         else:
