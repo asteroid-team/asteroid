@@ -6,7 +6,7 @@ from ..masknn import norms, activations
 from ..utils.torch_utils import pad_x_to_y
 
 
-class DeMask(BaseEncoderMaskerDecoder):  # CHECK-JIT
+class DeMask(BaseEncoderMaskerDecoder):
     """
     Simple MLP model for surgical mask speech enhancement A transformed-domain masking approach is used.
     Args:
@@ -107,6 +107,20 @@ class DeMask(BaseEncoderMaskerDecoder):  # CHECK-JIT
         raise NotImplementedError("Output type should be either mag or reim")
 
     def preprocess_masker_input(self, tf_rep):
+        """Preprocesses time-frequency representation for mask estimation.
+
+        The time-frenquency representation at the output of the encoder is
+        processed before being passed to the masker. The type of processing
+        depends on the value of :attr:`input_type`.
+
+        Args:
+            tf_rep (torch.Tensor): Time-frequency representation given by the
+                encoder
+
+        Returns:
+            torch.Tensor: Data to be given as input for mask estimation
+
+        """
         if self.input_type == "mag":
             return take_mag(tf_rep)
         if self.input_type == "cat":
@@ -115,11 +129,29 @@ class DeMask(BaseEncoderMaskerDecoder):  # CHECK-JIT
         return tf_rep
 
     def preprocess_product_input(self, tf_rep):
+        """Preprocesses time-frequency representation before applying mask.
+
+        Args:
+            tf_rep (torch.Tensor): Time-frequency representation given by the
+                encoder
+
+        Returns:
+            torch.Tensor (torch.Tensor): Data onto which estimated masks are
+                applied
+        """
         if self.output_type == "mag":
             return tf_rep
         return tf_rep.unsqueeze(1)
 
     def postprocess_masks(self, est_masks):
+        """Postprocesses estimated masks, before applying them.
+
+        Args:
+            est_masks (torch.Tensor): Estimated masks
+
+        Returns:
+            torch.Tensor: Postprocessed masks.
+        """
         if self.output_type == "mag":
             return est_masks.repeat(1, 2, 1)
         # No need for invalid output_types as checked at init
