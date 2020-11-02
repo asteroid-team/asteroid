@@ -93,8 +93,11 @@ def small_model_params():
 @pytest.mark.parametrize(
     "test_data",
     (
+        (torch.rand(240) - 0.5) * 2,
         (torch.rand(1, 220) - 0.5) * 2,
         (torch.rand(4, 256) - 0.5) * 2,
+        (torch.rand(1, 1, 301) - 0.5) * 2,
+        (torch.rand(3, 1, 290) - 0.5) * 2,
     ),
 )
 def test_enhancement_model(small_model_params, test_data):
