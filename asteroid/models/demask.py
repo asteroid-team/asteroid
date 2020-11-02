@@ -75,19 +75,19 @@ class DeMask(BaseModel):  # CHECK-JIT
             **fb_kwargs,
         )
 
-        n_feats_input = self._get_n_feats_input(fb_type)
-        n_feats_output = self._get_n_feats_output(fb_type)
+        n_feats_input = self._get_n_feats_input()
+        n_feats_output = self._get_n_feats_output()
         net = self._build_masker_nn(n_feats_input, n_feats_output)
         self.masker = nn.Sequential(*net)
 
-    def _get_n_feats_input(self, fb_type):
+    def _get_n_feats_input(self):
         if self.input_type == "mag":
-            if fb_type == "stft":
+            if self.fb_type == "stft":
                 n_feats_input = (self.encoder.filterbank.n_filters) // 2 + 1
             else:
                 n_feats_input = (self.encoder.filterbank.n_filters) // 2
         elif self.input_type == "cat":
-            if fb_type == "stft":
+            if self.fb_type == "stft":
                 n_feats_input = (
                     (self.encoder.filterbank.n_filters // 2) + 1 + self.encoder.filterbank.n_filters
                 )
@@ -102,9 +102,9 @@ class DeMask(BaseModel):  # CHECK-JIT
             raise NotImplementedError
         return n_feats_input
 
-    def _get_n_feats_output(self, fb_type):
+    def _get_n_feats_output(self):
         if self.output_type == "mag":
-            if fb_type == "stft":
+            if self.fb_type == "stft":
                 n_feats_output = self.encoder.filterbank.n_filters // 2 + 1
             else:
                 n_feats_output = self.encoder.filterbank.n_filters // 2
