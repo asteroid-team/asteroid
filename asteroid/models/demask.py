@@ -78,25 +78,6 @@ class DeMask(BaseModel):  # CHECK-JIT
         net = self._build_masker_nn()
         self.masker = nn.Sequential(*net)
 
-    def _get_n_feats_input(self):
-        if self.input_type == "reim":
-            return self.encoder.n_feats_out
-
-        if self.input_type not in {"mag", "cat"}:
-            raise NotImplementedError("Input type should be either mag, reim or cat")
-
-        n_feats_input = self.encoder.n_feats_out // 2
-        if self.input_type == "cat":
-            n_feats_input += self.encoder.n_feats_out
-        return n_feats_input
-
-    def _get_n_feats_output(self):
-        if self.output_type == "mag":
-            return self.encoder.n_feats_out // 2
-        if self.output_type == "reim":
-            return self.encoder.filterbank.n_filters  # Does not seem right
-        raise NotImplementedError("Output type should be either mag or reim")
-
     def _build_masker_nn(self):
         n_feats_input = self._get_n_feats_input()
         make_layer_norm = norms.get(self.norm_type)
@@ -117,6 +98,25 @@ class DeMask(BaseModel):  # CHECK-JIT
         n_feats_output = self._get_n_feats_output()
         net.extend([nn.Conv1d(in_chan, n_feats_output, 1), activations.get(self.mask_act)()])
         return net
+
+    def _get_n_feats_input(self):
+        if self.input_type == "reim":
+            return self.encoder.n_feats_out
+
+        if self.input_type not in {"mag", "cat"}:
+            raise NotImplementedError("Input type should be either mag, reim or cat")
+
+        n_feats_input = self.encoder.n_feats_out // 2
+        if self.input_type == "cat":
+            n_feats_input += self.encoder.n_feats_out
+        return n_feats_input
+
+    def _get_n_feats_output(self):
+        if self.output_type == "mag":
+            return self.encoder.n_feats_out // 2
+        if self.output_type == "reim":
+            return self.encoder.filterbank.n_filters  # Does not seem right
+        raise NotImplementedError("Output type should be either mag or reim")
 
     def forward(self, wav):
 
