@@ -26,6 +26,8 @@ class STFTFB(Filterbank):
     ):
         super().__init__(n_filters, kernel_size, stride=stride, sample_rate=sample_rate)
         assert n_filters >= kernel_size
+        if n_filters % 2 != 0:
+            raise ValueError(f"n_filters must be even, got {n_filters}")
         self.cutoff = int(n_filters / 2 + 1)
         self.n_feats_out = 2 * self.cutoff
 
