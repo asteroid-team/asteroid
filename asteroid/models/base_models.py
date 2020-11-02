@@ -305,10 +305,12 @@ class BaseEncoderMaskerDecoder(BaseModel):
         tf_rep = self.postprocess_encoded(tf_rep)
         tf_rep = self.enc_activation(tf_rep)
 
-        est_masks = self.masker(tf_rep)
+        masker_input = self.preprocess_masker_input(tf_rep)
+        est_masks = self.masker(masker_input)
         est_masks = self.postprocess_masks(est_masks)
 
-        masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
+        tf_rep = self.preprocess_product_input(tf_rep)
+        masked_tf_rep = est_masks * tf_rep
         masked_tf_rep = self.postprocess_masked(masked_tf_rep)
 
         decoded = self.decoder(masked_tf_rep)
@@ -330,6 +332,21 @@ class BaseEncoderMaskerDecoder(BaseModel):
         """
         return tf_rep
 
+    def preprocess_masker_input(self, tf_rep):
+        """Transforms time-frequency representation for mask estimation.
+
+        Hook to perform transformations on the encoded, time-frequency domain
+        representation (output of the encoder) after encoder activation. The
+        transformed data are passed as input to the masker
+
+        Args:
+            tf_rep (torch.Tensor): Output of encoder activation
+
+        Return:
+            torch.Tensor: Data to be given to masker
+        """
+        return tf_rep
+
     def postprocess_masks(self, masks):
         """Hook to perform transformations on the masks (output of the masker) before
         masks are applied.
@@ -342,6 +359,21 @@ class BaseEncoderMaskerDecoder(BaseModel):
             Transformed `masks`
         """
         return masks
+
+    def preprocess_product_input(self, tf_rep):
+        """Transforms time-frequency representation for mask application.
+
+        Hook to perform transformation on the encoded, time-frequency domain
+        representation (output of the encoder) after encoder activation. The
+        estimated masks are applied to the transformed data.
+
+        Args:
+            tf_rep (torch.Tensor):  Output of encoder activation
+
+        Return:
+            torch.Tensor: Data that will be masked
+        """
+        return tf_rep.unsqueeze(1)
 
     def postprocess_masked(self, masked_tf_rep):
         """Hook to perform transformations on the masked time-frequency domain
