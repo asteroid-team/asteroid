@@ -125,10 +125,6 @@ class DeMask(BaseEncoderMaskerDecoder):  # CHECK-JIT
         # No need for invalid output_types as checked at init
         return est_masks
 
-    @property
-    def sample_rate(self):
-        return self._sample_rate
-
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
         model_args = {
