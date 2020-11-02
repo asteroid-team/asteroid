@@ -82,14 +82,14 @@ class DeMask(BaseModel):  # CHECK-JIT
 
     def _get_n_feats_input(self):
         if self.input_type == "reim":
-            return self.encoder.filterbank.n_filters
+            return self.encoder.n_feats_out
 
         if self.input_type not in {"mag", "cat"}:
             raise NotImplementedError("Input type should be either mag, reim or cat")
 
         n_feats_input = self.encoder.n_feats_out // 2
         if self.input_type == "cat":
-            n_feats_input += self.encoder.filterbank.n_filters
+            n_feats_input += self.encoder.n_feats_out
         return n_feats_input
 
     def _get_n_feats_output(self):
