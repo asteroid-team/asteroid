@@ -38,7 +38,7 @@ class DeMask(BaseEncoderMaskerDecoder):
         self,
         input_type="mag",
         output_type="mag",
-        hidden_dims=[1024],
+        hidden_dims=(1024,),
         dropout=0.0,
         activation="relu",
         mask_act="relu",
