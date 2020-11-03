@@ -18,7 +18,7 @@ def assert_loss_checks_shape(loss_func, shape, arbitrary_last_dim=False, no_batc
         loss_func (callable): The loss to check, signature: `loss_func(x, y) -> Any`
         shape (tuple): Shape that the loss is expected to accept (without batch dimension).
         arbitrary_last_dim (bool, optional): Whether the last dimension may be replaced by any number of dimensions.
-        no_batch_ok (bool, optional): Whether no batch dimension is acceptable.
+        no_batch_ok (bool, optional): Whether having no batch dimension is acceptable.
     """
 
     def _test(shape):
