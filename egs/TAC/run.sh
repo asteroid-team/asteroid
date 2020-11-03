@@ -99,7 +99,6 @@ echo "Results from the following experiment will be stored in $expdir"
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-    --conf $CONF_FILE \
 		--exp_dir ${expdir} | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
 fi

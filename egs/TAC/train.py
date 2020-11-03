@@ -60,7 +60,9 @@ def main(conf):
     # Define scheduler
 
     if conf["training"]["half_lr"]:
-        scheduler = ReduceLROnPlateau(optimizer=optimizer, factor=0.5, patience=5)
+        scheduler = ReduceLROnPlateau(
+            optimizer=optimizer, factor=0.5, patience=conf["training"]["patience"]
+        )
     else:
         scheduler = None
     # Just after instantiating, save the args. Easy loading in the future.
