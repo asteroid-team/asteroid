@@ -14,7 +14,7 @@ from .parser_utils import (
     isfloat,
     isint,
 )
-from .torch_utils import tensors_to_device, to_cuda
+from .torch_utils import tensors_to_device, to_cuda, get_device
 
 # The functions above were all in asteroid/utils.py before refactoring into
 # asteroid/utils/*_utils.py files. They are imported for backward compatibility.
@@ -29,6 +29,7 @@ __all__ = [
     "isint",
     "tensors_to_device",
     "to_cuda",
+    "get_device",
     "has_arg",
     "flatten_dict",
     "average_arrays_in_dic",
