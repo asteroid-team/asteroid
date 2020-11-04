@@ -286,7 +286,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
     def sample_rate(self):
         return getattr(self.encoder, "sample_rate", None)
 
-    def forward(self, wav):
+    def forward(self, wav: torch.Tensor) -> torch.Tensor:
         """Enc/Mask/Dec model forward
 
         Args:
@@ -309,7 +309,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         reconstructed = pad_x_to_y(decoded, wav)
         return _shape_reconstructed(reconstructed, shape)
 
-    def forward_encoder(self, wav):
+    def forward_encoder(self, wav: torch.Tensor) -> torch.Tensor:
         """Computes time-frequency representation of `wav`.
 
         Args:
@@ -321,7 +321,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         tf_rep = self.encoder(wav)
         return self.enc_activation(tf_rep)
 
-    def forward_masker(self, tf_rep):
+    def forward_masker(self, tf_rep: torch.Tensor) -> torch.Tensor:
         """Estimates masks from time-frequency representation.
 
         Args:
@@ -333,7 +333,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         """
         return self.masker(tf_rep)
 
-    def apply_masks(self, tf_rep, est_masks):
+    def apply_masks(self, tf_rep: torch.Tensor, est_masks: torch.Tensor) -> torch.Tensor:
         """Applies masks to time-frequency representation.
 
         Args:
@@ -346,7 +346,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         """
         return est_masks * tf_rep.unsqueeze(1)
 
-    def forward_decoder(self, masked_tf_rep):
+    def forward_decoder(self, masked_tf_rep: torch.Tensor) -> torch.Tensor:
         """Reconstructs time-domain waveforms from masked representations.
 
         Args:
