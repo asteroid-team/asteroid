@@ -5,33 +5,67 @@ import warnings
 
 from asteroid.filterbanks import STFTFB, Encoder, transforms
 from asteroid.losses import PITLossWrapper
-from asteroid.losses import sdr
-from asteroid.losses import singlesrc_mse, pairwise_mse, multisrc_mse
+from asteroid.losses import sdr, mse
 from asteroid.losses import deep_clustering_loss, SingleSrcPMSQE
 from asteroid.losses import SingleSrcNegSTOI
 from asteroid.losses.multi_scale_spectral import SingleSrcMultiScaleSpectral
 
 
+def assert_loss_checks_shape(loss_func, shape, arbitrary_last_dim=False, no_batch_ok=False):
+    """Test that `loss_func` raises a TypeError if you are passing anything that isn't of the expected shape.
+
+    Args:
+        loss_func (callable): The loss to check, signature: `loss_func(x, y) -> Any`
+        shape (tuple): Shape that the loss is expected to accept (without batch dimension).
+        arbitrary_last_dim (bool, optional): Whether the last dimension may be replaced by any number of dimensions.
+        no_batch_ok (bool, optional): Whether having no batch dimension is acceptable.
+    """
+
+    def _test(shape):
+        loss_func(torch.randn(shape), torch.randn(shape))
+
+    batch_size = 5
+
+    # Check that given shape works.
+    _test((batch_size, *shape))
+
+    if not no_batch_ok:
+        # Should fail without batch dim.
+        with pytest.raises(TypeError):
+            _test(shape)
+
+    if arbitrary_last_dim:
+        # Last dim can be arbitrary
+        _test((batch_size, *shape, 4))
+        _test((batch_size, *shape, 4, 5))
+    else:
+        # Random unsqueezes should fail.
+        for dim in range(len(shape)):
+            with pytest.raises(TypeError):
+                _test((batch_size, *shape[:dim], 1, *shape[dim:]))
+
+
+loss_properties = [
+    # Pairwise loss, singlesrc loss, multisrc loss, arbitrary_last_dim?
+    (sdr.pairwise_neg_sisdr, sdr.singlesrc_neg_sisdr, sdr.multisrc_neg_sisdr, False),
+    (sdr.pairwise_neg_sdsdr, sdr.singlesrc_neg_sdsdr, sdr.multisrc_neg_sdsdr, False),
+    (sdr.pairwise_neg_snr, sdr.singlesrc_neg_snr, sdr.multisrc_neg_snr, False),
+    (mse.pairwise_mse, mse.singlesrc_mse, mse.multisrc_mse, True),
+]
+
+
 @pytest.mark.parametrize("n_src", [2, 3, 4])
-@pytest.mark.parametrize(
-    "function_triplet",
-    [
-        [sdr.pairwise_neg_sisdr, sdr.singlesrc_neg_sisdr, sdr.multisrc_neg_sisdr],
-        [sdr.pairwise_neg_sdsdr, sdr.singlesrc_neg_sdsdr, sdr.multisrc_neg_sdsdr],
-        [sdr.pairwise_neg_snr, sdr.singlesrc_neg_snr, sdr.multisrc_neg_snr],
-        [pairwise_mse, singlesrc_mse, multisrc_mse],
-    ],
-)
-def test_sisdr(n_src, function_triplet):
+@pytest.mark.parametrize("loss", loss_properties)
+def test_sisdr_and_mse(n_src, loss):
     # Unpack the triplet
-    pairwise, nosrc, nonpit = function_triplet
+    pairwise, singlesrc, multisrc, _ = loss
     # Fake targets and estimates
     targets = torch.randn(2, n_src, 10000)
     est_targets = torch.randn(2, n_src, 10000)
     # Create the 3 PIT wrappers
     pw_wrapper = PITLossWrapper(pairwise, pit_from="pw_mtx")
-    wo_src_wrapper = PITLossWrapper(nosrc, pit_from="pw_pt")
-    w_src_wrapper = PITLossWrapper(nonpit, pit_from="perm_avg")
+    wo_src_wrapper = PITLossWrapper(singlesrc, pit_from="pw_pt")
+    w_src_wrapper = PITLossWrapper(multisrc, pit_from="perm_avg")
 
     # Circular tests on value
     assert_allclose(pw_wrapper(est_targets, targets), wo_src_wrapper(est_targets, targets))
@@ -46,6 +80,17 @@ def test_sisdr(n_src, function_triplet):
         wo_src_wrapper(est_targets, targets, return_est=True)[1],
         w_src_wrapper(est_targets, targets, return_est=True)[1],
     )
+
+
+@pytest.mark.parametrize("loss", loss_properties)
+def test_sisdr_and_mse_shape_checks(loss):
+    pairwise, singlesrc, multisrc, arbitrary_last_dim = loss
+    assert_loss_checks_shape(pairwise, (3, 1000), arbitrary_last_dim)
+    assert_loss_checks_shape(singlesrc, (1000,), arbitrary_last_dim)
+    # Special case for multisrc_mse that shares the same code with
+    # singlesrc_mse and thus accepts 1-dim tensors.
+    no_batch_ok = multisrc == mse.multisrc_mse
+    assert_loss_checks_shape(multisrc, (3, 1000), arbitrary_last_dim, no_batch_ok)
 
 
 @pytest.mark.parametrize("spk_cnt", [2, 3, 4])

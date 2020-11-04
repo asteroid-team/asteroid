@@ -24,6 +24,10 @@ class PairwiseMSE(_Loss):
     """
 
     def forward(self, est_targets, targets):
+        if targets.size() != est_targets.size() or targets.ndim < 3:
+            raise TypeError(
+                f"Inputs must be of shape [batch, n_src, *], got {targets.size()} and {est_targets.size()} instead"
+            )
         targets = targets.unsqueeze(1)
         est_targets = est_targets.unsqueeze(2)
         pw_loss = (targets - est_targets) ** 2
@@ -56,6 +60,10 @@ class SingleSrcMSE(_Loss):
     """
 
     def forward(self, est_targets, targets):
+        if targets.size() != est_targets.size() or targets.ndim < 2:
+            raise TypeError(
+                f"Inputs must be of shape [batch, *], got {targets.size()} and {est_targets.size()} instead"
+            )
         loss = (targets - est_targets) ** 2
         mean_over = list(range(1, loss.ndim))
         return loss.mean(dim=mean_over)
