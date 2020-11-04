@@ -304,9 +304,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         tf_rep = self.forward_encoder(wav)
         est_masks = self.forward_masker(tf_rep)
         masked_tf_rep = self.apply_masks(tf_rep, est_masks)
-
-        decoded = self.decoder(masked_tf_rep)
-        decoded = self.postprocess_decoded(decoded)
+        decoded = self.forward_decoder(masked_tf_rep)
 
         reconstructed = pad_x_to_y(decoded, wav)
         return _shape_reconstructed(reconstructed, shape)
@@ -389,6 +387,18 @@ class BaseEncoderMaskerDecoder(BaseModel):
             Transformed `masked_tf_rep`
         """
         return masked_tf_rep
+
+    def forward_decoder(self, masked_tf_rep):
+        """Reconstructs time-domain waveforms from masked representations.
+
+        Args:
+            masked_tf_rep (torch.Tensor): Masked time-frequency representation.
+
+        Returns:
+            torch.Tensor: Time-domain waveforms.
+        """
+        decoded = self.decoder(masked_tf_rep)
+        return self.postprocess_decoded(decoded)
 
     def postprocess_decoded(self, decoded):
         """Hook to perform transformations on the decoded, time domain representation
