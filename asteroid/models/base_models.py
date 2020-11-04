@@ -301,9 +301,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         wav = _unsqueeze_to_3d(wav)
 
         # Real forward
-        tf_rep = self.encoder(wav)
-        tf_rep = self.postprocess_encoded(tf_rep)
-        tf_rep = self.enc_activation(tf_rep)
+        tf_rep = self.forward_encoder(wav)
 
         est_masks = self.masker(tf_rep)
         est_masks = self.postprocess_masks(est_masks)
@@ -316,6 +314,19 @@ class BaseEncoderMaskerDecoder(BaseModel):
 
         reconstructed = pad_x_to_y(decoded, wav)
         return _shape_reconstructed(reconstructed, shape)
+
+    def forward_encoder(self, wav):
+        """Computes time-frequency representation of `wav`.
+
+        Args:
+            wav (torch.Tensor): waveform tensor in 3D shape, time last.
+
+        Returns:
+            torch.Tensor, of shape (batch, feat, seq).
+        """
+        tf_rep = self.encoder(wav)
+        tf_rep = self.postprocess_encoded(tf_rep)
+        return self.enc_activation(tf_rep)
 
     def postprocess_encoded(self, tf_rep):
         """Hook to perform transformations on the encoded, time-frequency domain
