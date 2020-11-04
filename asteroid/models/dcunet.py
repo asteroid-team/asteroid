@@ -42,10 +42,12 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):  # CHECK-JIT
         masker = self.masknet_class.default_architecture(architecture, **(masknet_kwargs or {}))
         super().__init__(encoder, masker, decoder)
 
-    def postprocess_encoded(self, tf_rep):
+    def forward_encoder(self, wav):
+        tf_rep = self.encoder(wav)
         return complex_nn.as_torch_complex(tf_rep)
 
-    def postprocess_masked(self, masked_tf_rep):
+    def apply_masks(self, tf_rep, est_masks):
+        masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
         return from_torchaudio(torch.view_as_real(masked_tf_rep))
 
     def get_model_args(self):
