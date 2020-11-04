@@ -302,9 +302,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
 
         # Real forward
         tf_rep = self.forward_encoder(wav)
-
-        est_masks = self.masker(tf_rep)
-        est_masks = self.postprocess_masks(est_masks)
+        est_masks = self.forward_masker(tf_rep)
 
         masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
         masked_tf_rep = self.postprocess_masked(masked_tf_rep)
@@ -340,6 +338,19 @@ class BaseEncoderMaskerDecoder(BaseModel):
             Transformed `tf_rep`
         """
         return tf_rep
+
+    def forward_masker(self, tf_rep):
+        """Estimates masks from time-frequency representation.
+
+        Args:
+            tf_rep (torch.Tensor): Time-frequency representation in (batch,
+                feat, seq).
+
+        Returns:
+            torch.Tensor: Estimated masks
+        """
+        est_masks = self.masker(tf_rep)
+        return self.postprocess_masks(est_masks)
 
     def postprocess_masks(self, masks):
         """Hook to perform transformations on the masks (output of the masker) before
