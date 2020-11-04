@@ -23,7 +23,7 @@ parser.add_argument(
     "--out_dir",
     type=str,
     required=True,
-    help="Directory in exp_dir where the eval results" " will be stored",
+    help="Directory in exp_dir where the eval results will be stored",
 )
 parser.add_argument(
     "--use_gpu", type=int, default=0, help="Whether to use the GPU for model execution"
@@ -82,7 +82,7 @@ def main(conf):
         mix_np = mix.squeeze(0).cpu().data.numpy()
         sources_np = sources.cpu().data.numpy()
         est_sources_np = est_sources.squeeze(0).cpu().data.numpy()
-        # est_sources_np = est_sources_np[[1, 0]]
+
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics
         utt_metrics = get_metrics(

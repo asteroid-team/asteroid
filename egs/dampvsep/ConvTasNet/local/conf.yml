@@ -34,7 +34,7 @@ data:
   mixture: remix
   sample_rate: 16000
   segment: 8.
-  samples_per_track: 16
+  ex_per_track: 16
   channels: 1
-  n_src: 1
+  n_src: 2
 

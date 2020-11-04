@@ -8,5 +8,7 @@ if [ ! -d DAMP-VSEP-Singles ]; then
     git clone https://github.com/groadabike/DAMP-VSEP-Singles.git
 fi
 
-# Generate the splits
-. DAMP-VSEP-Singles/generate_dampvsep_singles.sh $dampvsep_root metadata $python_path
+if [ ! -d metadata ]; then
+  # Generate the splits
+  . DAMP-VSEP-Singles/generate_dampvsep_singles.sh $dampvsep_root ../metadata $python_path
+fi

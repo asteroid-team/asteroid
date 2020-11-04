@@ -10,7 +10,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid.models import ConvTasNet
-from asteroid.data import DAMPVSEPDataset
+from asteroid.data import DAMPVSEPSinglesDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import SingleSrcNegSTOI
@@ -29,21 +29,21 @@ def main(conf):
     # Define dataloader using ORIGINAL mixture.
     dataset_kwargs = {
         "root_path": Path(conf["data"]["root_path"]),
-        "task": conf["data"]["task"],
         "sample_rate": conf["data"]["sample_rate"],
         "num_workers": conf["training"]["num_workers"],
         "mixture": conf["data"]["mixture"],
+        "task": conf["data"]["task"]
     }
 
-    train_set = DAMPVSEPDataset(
+    train_set = DAMPVSEPSinglesDataset(
         split=f"train_{conf['data']['train_set']}",
         random_segments=True,
         segment=conf["data"]["segment"],
-        samples_per_track=conf["data"]["samples_per_track"],
+        ex_per_track=conf["data"]["ex_per_track"],
         **dataset_kwargs,
     )
 
-    val_set = DAMPVSEPDataset(split="valid", **dataset_kwargs)
+    val_set = DAMPVSEPSinglesDataset(split="valid", **dataset_kwargs)
 
     train_loader = DataLoader(
         train_set,

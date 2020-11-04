@@ -36,16 +36,15 @@ lr=0.0005
 weight_decay=0.
 
 # Data config
-task=enh_both  #'enh_vocal', 'enh_both' 
+task=separation  #'enh_vocal', 'separation'
 root_path=
 mixture=remix     # 'original' includes non-*linear effects,
                   # 'remix' add both sources together
 train_set=english   # 'english' uses the english subset ~77 hrs
                     # 'singles' uses all singles performances subset ~174 hrs
 segment=3.0
-samples_per_track=5
+ex_per_track=5   # Number of examples obtained per track
 sample_rate=16000
-n_src=2
 
 . utils/parse_options.sh
 
@@ -87,8 +86,7 @@ if [[ $stage -le 1 ]]; then
         --sample_rate $sample_rate \
         --train_set $train_set \
         --segment $segment \
-        --n_src $n_src \
-        --samples_per_track $samples_per_track | tee logs/train_${tag}.log
+        --ex_per_track $ex_per_track | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
 
 

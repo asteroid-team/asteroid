@@ -1,45 +1,29 @@
 from pathlib import Path
-from multiprocessing import cpu_count
 
 import torch.utils.data
 import random
 import json
-import librosa
-
-# ignore warning related with
-# https://github.com/librosa/librosa/issues/1015
-# Soundfile can read OGG (vocal) but not M4A (background and mixture)
-import warnings
-
-warnings.filterwarnings("ignore", category=UserWarning)
 
 
-class DAMPVSEPDataset(torch.utils.data.Dataset):
-    """
-    DAMP-VSEP vocal separation dataset
+class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
+    """DAMP-VSEP vocal separation dataset
 
     This dataset utilises one of the two preprocessed versions of DAMP-VSEP
     from https://github.com/groadabike/DAMP-VSEP-Singles aimed for
     SINGLE SINGER separation.
 
-    Note: DAMP-VSEP dataset is hosted on Zenodo.
-          https://zenodo.org/record/3553059
+    The DAMP-VSEP dataset is hosted on Zenodo.
+    https://zenodo.org/record/3553059
 
-    Note 2: There are 2 train set available:
-        1- train_english: Uses all English spoken song.
-            Duets are converted into 2 singles.
-            Totalling 9243 performances and 77Hrs.
-        2- train_singles: Uses all singles performances, discarding all duets.
-            Totalling 20660 performances and 149 hrs.
     Args:
         root_path (str): Root path to DAMP-VSEP dataset.
-        task (str): one of ``'enh_vocal'``,``'enh_both'``.
+        task (str): one of ``'enh_vocal'``,``'separation'``.
             * ``'enh_vocal'`` for vocal enhanced.
-            * ``'enh_both'`` for vocal and background separation.
+            * ``'separation'`` for vocal and background separation.
         split (str):  one of ``'train_english'``, ``'train_singles'``,
-                    ``'valid'`` and ``'test'``.
-                    Default to ``'train_singles'``.
-        samples_per_track (int, optional):
+            ``'valid'`` and ``'test'``.
+            Default to ``'train_singles'``.
+        ex_per_track (int, optional):
             Number of samples yielded from each track, can be used to increase
             dataset size, defaults to ``1``.
         random_segments (boolean, optional): Enables random offset for track segments.
@@ -47,16 +31,21 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
             Default 16000 Hz
         segment (float, optional): Duration of segments in seconds,
             Defaults to ``None`` which loads the full-length audio tracks.
-        num_workers (int, optional): Number of workers.
-            Default to ``None`` which utilise all available workers
         norm (Str, optional): Type of normalisation to use. Default to ``None``
             * ``'song_level'`` use mixture mean and std.
             * ```None``` no normalisation
         source_augmentations (Composite, optional): Default to ``None``
         mixture (str, optional): Whether to use the original mixture with non-linear effects
-                                or remix sources. Default to original.
+            or remix sources. Default to original.
             * ``'remix'`` for use addition to remix the sources.
             * ``'original'`` for use the original mixture.
+
+    .. note:: There are 2 train set available:
+        1- train_english: Uses all English spoken song.
+            Duets are converted into 2 singles.
+            Totalling 9243 performances and 77Hrs.
+        2- train_singles: Uses all singles performances, discarding all duets.
+            Totalling 20660 performances and 149 hrs.
     """
 
     dataset_name = "DAMP-VSEP"
@@ -66,35 +55,33 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         root_path,
         task,
         split="train_singles",
-        samples_per_track=1,
+        ex_per_track=1,
         random_segments=False,
         sample_rate=16000,
         segment=None,
-        num_workers=None,
         norm=None,
         source_augmentations=None,
         mixture="original",
     ):
 
         self.sample_rate = sample_rate
-        self.num_workers = cpu_count() if num_workers is None else num_workers
 
         self.root_path = Path(root_path).expanduser()
         # Task detail parameters
-        assert task in ["enh_vocal", "enh_both"], "Task should be one of 'enh_vocal','enh_both'"
+        assert task in ["enh_vocal", "separation"], "Task should be one of 'enh_vocal','separation'"
         assert mixture in ["remix", "original"], "Mixture should be one of 'remix', 'original'"
 
         self.task = task
         if task == "enh_vocal":
             self.target = ["vocal"]
-        elif task == "enh_both":
+        elif task == "separation":
             self.target = ["vocal", "background"]
 
         self.split = split
         self.tracks = self.get_tracks()
         self.perf_key = [*self.tracks]  # list of performances keys
 
-        self.samples_per_track = samples_per_track
+        self.ex_per_track = ex_per_track
         self.random_segments = random_segments
         self.sample_rate = sample_rate
         self.segment = segment
@@ -105,9 +92,16 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
             raise Exception("The 'train_english' train can only accept 'remix' mixture.")
 
     def __len__(self):
-        return len(self.tracks) * self.samples_per_track
+        return len(self.tracks) * self.ex_per_track
 
     def _load_audio(self, path, start=0.0, duration=None, scaler=None, mean=0.0, std=1.0):
+        import librosa
+        # ignore warning related with
+        # https://github.com/librosa/librosa/issues/1015
+        # Soundfile can read OGG (vocal) but not M4A (background and mixture)
+        import warnings
+        warnings.filterwarnings("ignore", category=UserWarning)
+
         x, _ = librosa.load(
             path,
             sr=self.sample_rate,
@@ -122,15 +116,11 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         x -= mean
         x /= std
 
-        if self.source_augmentations:
-            x = self.source_augmentations(x, self.sample_rate)
-        x = torch.from_numpy(x.T)
-
         return x
 
     def __getitem__(self, index):
         audio_sources = {}
-        track_id = index // self.samples_per_track
+        track_id = index // self.ex_per_track
         perf = self.perf_key[track_id]
 
         self.mixture_path = perf
@@ -165,6 +155,10 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
                 mean=mix_mean,
                 std=mix_std,
             )
+            if self.source_augmentations:
+                x = self.source_augmentations(x, self.sample_rate)
+            x = torch.from_numpy(x.T)
+
             audio_sources[source] = x
 
         # Prepare targets and mixture
@@ -186,7 +180,7 @@ class DAMPVSEPDataset(torch.utils.data.Dataset):
         return audio_mix, audio_sources
 
     def get_track_name(self, idx):
-        track_id = idx // self.samples_per_track
+        track_id = idx // self.ex_per_track
         return self.perf_key[track_id]
 
     def get_tracks(self):
