@@ -4,6 +4,8 @@ from ..filterbanks import make_enc_dec
 from ..filterbanks.transforms import take_mag, take_cat
 from ..masknn import norms, activations
 from ..utils.torch_utils import pad_x_to_y
+from ..utils.deprecation_utils import VisibleDeprecationWarning
+import warnings
 
 
 class DeMask(BaseEncoderMaskerDecoder):
@@ -43,15 +45,23 @@ class DeMask(BaseEncoderMaskerDecoder):
         activation="relu",
         mask_act="relu",
         norm_type="gLN",
-        fb_type="stft",
+        fb_name="stft",
         n_filters=512,
         stride=256,
         kernel_size=512,
         sample_rate=16000,
         **fb_kwargs,
     ):
+        fb_type = fb_kwargs.pop("fb_type", None)
+        if fb_type:
+            warnings.warn(
+                "Using `fb_type` keyword argument is deprecated and "
+                "will be removed in v0.4.0. Use `fb_name` instead.",
+                VisibleDeprecationWarning,
+            )
+            fb_name = fb_type
         encoder, decoder = make_enc_dec(
-            fb_type,
+            fb_name,
             kernel_size=kernel_size,
             n_filters=n_filters,
             stride=stride,
@@ -150,14 +160,8 @@ class DeMask(BaseEncoderMaskerDecoder):
             "activation": self.activation,
             "mask_act": self.mask_act,
             "norm_type": self.norm_type,
-            "fb_type": self.fb_type,
-            "n_filters": self.n_filters,
-            "stride": self.stride,
-            "kernel_size": self.kernel_size,
-            "fb_kwargs": self.fb_kwargs,
-            "sample_rate": self._sample_rate,
         }
-        model_args.update(self.fb_kwargs)
+        model_args.update(self.encoder.filterbank.get_config())
         return model_args
 
 
