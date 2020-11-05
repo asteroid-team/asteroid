@@ -61,7 +61,7 @@ class DeMask(BaseEncoderMaskerDecoder):
 
         n_masker_in = self._get_n_feats_input(input_type, encoder.n_feats_out)
         n_masker_out = self._get_n_feats_output(output_type, encoder.n_feats_out)
-        net = _build_masker_nn(
+        masker = _build_masker_nn(
             n_masker_in,
             n_masker_out,
             norm_type=norm_type,
@@ -70,7 +70,6 @@ class DeMask(BaseEncoderMaskerDecoder):
             dropout=dropout,
             mask_act=mask_act,
         )
-        masker = nn.Sequential(*net)
         super().__init__(encoder, masker, decoder)
 
         self.input_type = input_type
@@ -187,4 +186,4 @@ def _build_masker_nn(
         in_chan = hidden_dim
 
     net.extend([nn.Conv1d(in_chan, n_out, 1), activations.get(mask_act)()])
-    return net
+    return nn.Sequential(*net)
