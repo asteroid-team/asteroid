@@ -13,6 +13,7 @@ masknet:
   skip_chan: 256      # Sc    
   hid_chan: 512       # H
   norm_type: gLN
+  n_src: 2
 # Training config
 training:
   epochs: 200
@@ -36,5 +37,4 @@ data:
   segment: 8.
   ex_per_track: 16
   channels: 1
-  n_src: 2
 

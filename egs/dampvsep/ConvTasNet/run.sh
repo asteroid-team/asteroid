@@ -37,9 +37,9 @@ weight_decay=0.
 
 # Data config
 task=separation  #'enh_vocal', 'separation'
-root_path=
-mixture=remix     # 'original' includes non-*linear effects,
-                  # 'remix' add both sources together
+root_path=        # full path to DAMP-VSEP
+mixture=remix     # 'original' includes non-linear effects,
+                  # 'remix' add both sources together in runtime
 train_set=english   # 'english' uses the english subset ~77 hrs
                     # 'singles' uses all singles performances subset ~174 hrs
 segment=3.0

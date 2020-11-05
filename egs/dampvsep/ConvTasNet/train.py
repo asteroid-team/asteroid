@@ -57,8 +57,6 @@ def main(conf):
         val_set, shuffle=False, batch_size=1, num_workers=conf["training"]["num_workers"]
     )
 
-    conf["masknet"].update({"n_src": conf["data"]["n_src"]})
-
     model = ConvTasNet(**conf["filterbank"], **conf["masknet"])
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
 
