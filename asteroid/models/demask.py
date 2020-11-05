@@ -106,56 +106,40 @@ class DeMask(BaseEncoderMaskerDecoder):
             return encoder.n_feats_out
         raise NotImplementedError("Output type should be either mag or reim")
 
-    def preprocess_masker_input(self, tf_rep):
-        """Preprocesses time-frequency representation for mask estimation.
-
-        The time-frenquency representation at the output of the encoder is
-        processed before being passed to the masker. The type of processing
-        depends on the value of :attr:`input_type`.
+    def forward_masker(self, tf_rep):
+        """Estimates masks based on time-frequency representations.
 
         Args:
-            tf_rep (torch.Tensor): Time-frequency representation given by the
-                encoder
+            tf_rep (torch.Tensor): Time-frequency representation in
+                (batch, freq, seq).
 
         Returns:
-            torch.Tensor: Data to be given as input for mask estimation
-
+            torch.Tensor: Estimated masks in (batch, freq, seq).
         """
+        masker_input = tf_rep
         if self.input_type == "mag":
-            return take_mag(tf_rep)
-        if self.input_type == "cat":
-            return take_cat(tf_rep)
-        # No need for NotImplementedError as input_type checked at init
-        return tf_rep
-
-    def preprocess_product_input(self, tf_rep):
-        """Preprocesses time-frequency representation before applying mask.
-
-        Args:
-            tf_rep (torch.Tensor): Time-frequency representation given by the
-                encoder
-
-        Returns:
-            torch.Tensor (torch.Tensor): Data onto which estimated masks are
-                applied
-        """
+            masker_input = take_mag(masker_input)
+        elif self.input_type == "cat":
+            masker_input = take_cat(masker_input)
+        est_masks = self.masker(masker_input)
         if self.output_type == "mag":
-            return tf_rep
-        return tf_rep.unsqueeze(1)
-
-    def postprocess_masks(self, est_masks):
-        """Postprocesses estimated masks, before applying them.
-
-        Args:
-            est_masks (torch.Tensor): Estimated masks
-
-        Returns:
-            torch.Tensor: Postprocessed masks.
-        """
-        if self.output_type == "mag":
-            return est_masks.repeat(1, 2, 1)
-        # No need for invalid output_types as checked at init
+            est_masks = est_masks.repeat(1, 2, 1)
         return est_masks
+
+    def apply_masks(self, tf_rep, est_masks):
+        """Applies masks to time-frequency representations.
+
+        Args:
+            tf_rep (torch.Tensor): Time-frequency representations in
+                (batch, freq, seq).
+            est_masks (torch.Tensor): Estimated masks in (batch, freq, seq).
+
+        Returns:
+            torch.Tensor: Masked time-frequency representations.
+        """
+        if self.output_type != "mag":
+            tf_rep = tf_rep.unsqueeze(1)
+        return est_masks * tf_rep
 
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
