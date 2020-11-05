@@ -89,12 +89,6 @@ class DeMask(BaseEncoderMaskerDecoder):
         self.activation = activation
         self.mask_act = mask_act
         self.norm_type = norm_type
-        self.fb_type = fb_type
-        self.n_filters = n_filters
-        self.stride = stride
-        self.kernel_size = kernel_size
-        self.fb_kwargs = fb_kwargs
-        self._sample_rate = sample_rate
 
     def _get_n_feats_input(self, input_type, encoder_n_out):
         if input_type == "reim":
