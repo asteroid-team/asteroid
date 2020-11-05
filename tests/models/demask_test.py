@@ -115,8 +115,7 @@ def test_get_model_args():
     expected = {
         "activation": "relu",
         "dropout": 0,
-        "fb_kwargs": {},
-        "fb_type": "stft",
+        "fb_name": "STFTFB",
         "hidden_dims": (1024,),
         "input_type": "mag",
         "kernel_size": 512,
