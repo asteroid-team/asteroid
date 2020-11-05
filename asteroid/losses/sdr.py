@@ -23,7 +23,7 @@ class PairwiseNegSDR(_Loss):
         :class:`torch.Tensor`: with shape [batch, n_src, n_src].
         Pairwise losses.
 
-    Examples:
+    Examples
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
@@ -33,8 +33,8 @@ class PairwiseNegSDR(_Loss):
         >>>                            pit_from='pairwise')
         >>> loss = loss_func(est_targets, targets)
 
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+    References
+        - [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
         International Conference on Acoustics, Speech and Signal
         Processing (ICASSP) 2019.
     """
@@ -48,6 +48,10 @@ class PairwiseNegSDR(_Loss):
         self.EPS = EPS
 
     def forward(self, est_targets, targets):
+        if targets.size() != est_targets.size() or targets.ndim != 3:
+            raise TypeError(
+                f"Inputs must be of shape [batch, n_src, time], got {targets.size()} and {est_targets.size()} instead"
+            )
         assert targets.size() == est_targets.size()
         # Step 1. Zero-mean norm
         if self.zero_mean:
@@ -107,7 +111,7 @@ class SingleSrcNegSDR(_Loss):
         :class:`torch.Tensor`: with shape [batch] if reduction='none' else
             [] scalar if reduction='mean'.
 
-    Examples:
+    Examples
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
@@ -117,8 +121,8 @@ class SingleSrcNegSDR(_Loss):
         >>>                            pit_from='pw_pt')
         >>> loss = loss_func(est_targets, targets)
 
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+    References
+        - [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
         International Conference on Acoustics, Speech and Signal
         Processing (ICASSP) 2019.
     """
@@ -134,7 +138,10 @@ class SingleSrcNegSDR(_Loss):
         self.EPS = 1e-8
 
     def forward(self, est_target, target):
-        assert target.size() == est_target.size()
+        if target.size() != est_target.size() or target.ndim != 2:
+            raise TypeError(
+                f"Inputs must be of shape [batch, time], got {target.size()} and {est_target.size()} instead"
+            )
         # Step 1. Zero-mean norm
         if self.zero_mean:
             mean_source = torch.mean(target, dim=1, keepdim=True)
@@ -176,16 +183,16 @@ class MultiSrcNegSDR(_Loss):
         take_log (bool, optional): by default the log10 of sdr is returned.
 
     Shape:
-        est_targets (:class:`torch.Tensor`): Expected shape [batch, time].
+        est_targets (:class:`torch.Tensor`): Expected shape [batch, n_src, time].
             Batch of target estimates.
-        targets (:class:`torch.Tensor`): Expected shape [batch, time].
+        targets (:class:`torch.Tensor`): Expected shape [batch, n_src, time].
             Batch of training targets.
 
     Returns:
         :class:`torch.Tensor`: with shape [batch] if reduction='none' else
             [] scalar if reduction='mean'.
 
-    Examples:
+    Examples
 
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
@@ -195,8 +202,8 @@ class MultiSrcNegSDR(_Loss):
         >>>                            pit_from='perm_avg')
         >>> loss = loss_func(est_targets, targets)
 
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
+    References
+        - [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE
         International Conference on Acoustics, Speech and Signal
         Processing (ICASSP) 2019.
 
@@ -212,8 +219,10 @@ class MultiSrcNegSDR(_Loss):
         self.EPS = 1e-8
 
     def forward(self, est_targets, targets):
-        assert targets.size() == est_targets.size()
-        # Step 1. Zero-mean norm
+        if targets.size() != est_targets.size() or targets.ndim != 3:
+            raise TypeError(
+                f"Inputs must be of shape [batch, n_src, time], got {targets.size()} and {est_targets.size()} instead"
+            )
         if self.zero_mean:
             mean_source = torch.mean(targets, dim=2, keepdim=True)
             mean_estimate = torch.mean(est_targets, dim=2, keepdim=True)

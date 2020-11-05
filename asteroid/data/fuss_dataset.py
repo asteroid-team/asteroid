@@ -14,9 +14,9 @@ class FUSSDataset(Dataset):
         return_bg (bool): Whether to return the background along the mixture
             and sources (useful for SIR, SAR computation). Default: False.
 
-    References:
-        [1] Scott Wisdom et al. "What's All the FUSS About Free Universal
-            Sound Separation Data?", 2020, in preparation.
+    References
+        - [1] Scott Wisdom et al. "What's All the FUSS About Free Universal
+        Sound Separation Data?", 2020, in preparation.
     """
 
     dataset_name = "FUSS"

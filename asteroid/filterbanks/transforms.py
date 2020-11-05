@@ -359,7 +359,7 @@ def ebased_vad(mag_spec, th_db: int = 40):
         torch.BoolTensor, the VAD mask.
 
 
-    Examples:
+    Examples
         >>> import torch
         >>> mag_spec = torch.abs(torch.randn(10, 2, 65, 16))
         >>> batch_src_mask = ebased_vad(mag_spec)

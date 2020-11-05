@@ -26,7 +26,7 @@ class SingleSrcMultiScaleSpectral(_Loss):
     Returns:
         :class:`torch.Tensor`: with shape [batch]
 
-    Examples:
+    Examples
         >>> import torch
         >>> targets = torch.randn(10, 32000)
         >>> est_targets = torch.randn(10, 32000)
@@ -43,10 +43,9 @@ class SingleSrcMultiScaleSpectral(_Loss):
         >>>                            pit_from='pw_pt')
         >>> loss = loss_func(est_targets, targets)
 
-    References:
-        [1] Jesse Engel and Lamtharn (Hanoi) Hantrakul and Chenjie Gu and
-        Adam Roberts DDSP: Differentiable Digital Signal Processing
-        International Conference on Learning Representations ICLR 2020 $
+    References
+        - [1] Jesse Engel and Lamtharn (Hanoi) Hantrakul and Chenjie Gu and
+        Adam Roberts "DDSP: Differentiable Digital Signal Processing" ICLR 2020.
     """
 
     def __init__(self, n_filters=None, windows_size=None, hops_size=None, alpha=1.0):

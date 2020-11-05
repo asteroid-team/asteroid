@@ -11,10 +11,9 @@ class DCCRNet(BaseDCUNet):  # CHECK-JIT
         stft_stride (int, optional): STFT hop length to use.
         sample_rate (float): Sampling rate of the model.
 
-    References:
-        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
-        Yanxin Hu et al.
-        https://arxiv.org/abs/2008.00264
+    References
+        - [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        Yanxin Hu et al. https://arxiv.org/abs/2008.00264
     """
 
     masknet_class = DCCRMaskNet

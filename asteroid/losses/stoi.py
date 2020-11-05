@@ -35,7 +35,7 @@ class NegSTOILoss(_NegSTOILoss):
         short-term envelope vectors is masked using this mask (unfolded) and
         the mean is computed taking the mask values into account.
 
-    Examples:
+    Examples
         >>> import torch
         >>> from asteroid.losses import PITLossWrapper
         >>> targets = torch.randn(10, 2, 32000)
@@ -44,13 +44,13 @@ class NegSTOILoss(_NegSTOILoss):
         >>> loss = loss_func(est_targets, targets)
 
     References
-        [1] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'A Short-Time
+        - [1] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'A Short-Time
             Objective Intelligibility Measure for Time-Frequency Weighted Noisy
             Speech', ICASSP 2010, Texas, Dallas.
-        [2] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'An Algorithm for
+        - [2] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'An Algorithm for
             Intelligibility Prediction of Time-Frequency Weighted Noisy Speech',
             IEEE Transactions on Audio, Speech, and Language Processing, 2011.
-        [3] Jesper Jensen and Cees H. Taal, 'An Algorithm for Predicting the
+        - [3] Jesper Jensen and Cees H. Taal, 'An Algorithm for Predicting the
             Intelligibility of Speech Masked by Modulated Noise Maskers',
             IEEE Transactions on Audio, Speech and Language Processing, 2016.
     """

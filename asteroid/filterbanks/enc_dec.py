@@ -223,8 +223,7 @@ class Decoder(_EncDec):
         output_padding (int): Additional size added to one side of the
             output shape.
 
-    Notes
-        `padding` and `output_padding` arguments are directly passed to
+    ..note:: `padding` and `output_padding` arguments are directly passed to
         F.conv_transpose1d.
     """
 

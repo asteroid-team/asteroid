@@ -12,7 +12,7 @@ class DNSDataset(data.Dataset):
         json_dir (str): path to the JSON directory (from the recipe).
 
     References
-        "The INTERSPEECH 2020 Deep Noise Suppression Challenge: Datasets,
+        - "The INTERSPEECH 2020 Deep Noise Suppression Challenge: Datasets,
         Subjective Testing Framework, and Challenge Results", Reddy et al. 2020.
     """
 

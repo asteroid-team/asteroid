@@ -16,12 +16,13 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
     Out-of-the-box, asteroid does only support MUSDB18-HQ which comes as
     uncompressed WAV files. To use the MUSDB18, please convert it to WAV first:
 
-    MUSDB18 HQ: https://zenodo.org/record/3338373
-    MUSDB18     https://zenodo.org/record/1117372
+    - MUSDB18 HQ: https://zenodo.org/record/3338373
+    - MUSDB18     https://zenodo.org/record/1117372
 
-    Note: The datasets are hosted on Zenodo and require that users
-          request access, since the tracks can only be used for
-          academic purposes. We manually check this requests.
+    .. note::
+        The datasets are hosted on Zenodo and require that users
+        request access, since the tracks can only be used for academic purposes.
+        We manually check this requests.
 
     This dataset asssumes music tracks in (sub)folders where each folder
     has a fixed number of sources (defaults to 4). For each track, a list
@@ -33,10 +34,10 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
     where sources from different tracks are mixed together.
 
     Folder Structure:
-        train/1/vocals.wav ---------------\
-        train/1/drums.wav -----------------+--> input (mix), output[target]
-        train/1/bass.wav ------------------|
-        train/1/other.wav ----------------/
+        >>> #train/1/vocals.wav ---------|
+        >>> #train/1/drums.wav ----------+--> input (mix), output[target]
+        >>> #train/1/bass.wav -----------|
+        >>> #train/1/other.wav ---------/
 
     Args:
         root (str): Root path of dataset
@@ -59,9 +60,8 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         random_segments (boolean, optional): Enables random offset for track segments.
         random_track_mix boolean: enables mixing of random sources from
             different tracks to assemble mix.
-        source_augmentations (:obj:`list` of `obj`:`callable`):
-            list of augmentation function names,
-            defaults to no-op augmentations (input = output)
+        source_augmentations (:obj:`list` of :obj:`callable`): list of augmentation
+            function names, defaults to no-op augmentations (input = output)
         sample_rate (int, optional): Samplerate of files in dataset.
 
     Attributes:
@@ -80,14 +80,13 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         random_segments (boolean, optional): Enables random offset for track segments.
         random_track_mix boolean: enables mixing of random sources from
             different tracks to assemble mix.
-        source_augmentations (:obj:`list` of `obj`:`callable`):
-            list of augmentation function names,
-            defaults to no-op augmentations (input = output)
+        source_augmentations (:obj:`list` of :obj:`callable`): list of augmentation
+            function names, defaults to no-op augmentations (input = output)
         sample_rate (int, optional): Samplerate of files in dataset.
         tracks (:obj:`list` of :obj:`Dict`): List of track metadata
 
     References
-        "The 2018 Signal Separation Evaluation Campaign" Stoter et al. 2018.
+        - "The 2018 Signal Separation Evaluation Campaign" Stoter et al. 2018.
     """
 
     dataset_name = "MUSDB18"
