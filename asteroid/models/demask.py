@@ -59,8 +59,8 @@ class DeMask(BaseEncoderMaskerDecoder):
             **fb_kwargs,
         )
 
-        n_masker_in = self._get_n_feats_input(input_type, encoder)
-        n_masker_out = self._get_n_feats_output(output_type, encoder)
+        n_masker_in = self._get_n_feats_input(input_type, encoder.n_feats_out)
+        n_masker_out = self._get_n_feats_output(output_type, encoder.n_feats_out)
         net = _build_masker_nn(
             n_masker_in,
             n_masker_out,
@@ -87,23 +87,23 @@ class DeMask(BaseEncoderMaskerDecoder):
         self.fb_kwargs = fb_kwargs
         self._sample_rate = sample_rate
 
-    def _get_n_feats_input(self, input_type, encoder):
+    def _get_n_feats_input(self, input_type, encoder_n_out):
         if input_type == "reim":
-            return encoder.n_feats_out
+            return encoder_n_out
 
         if input_type not in {"mag", "cat"}:
             raise NotImplementedError("Input type should be either mag, reim or cat")
 
-        n_feats_input = encoder.n_feats_out // 2
+        n_feats_input = encoder_n_out // 2
         if input_type == "cat":
-            n_feats_input += encoder.n_feats_out
+            n_feats_input += encoder_n_out
         return n_feats_input
 
-    def _get_n_feats_output(self, output_type, encoder):
+    def _get_n_feats_output(self, output_type, encoder_n_out):
         if output_type == "mag":
-            return encoder.n_feats_out // 2
+            return encoder_n_out // 2
         if output_type == "reim":
-            return encoder.n_feats_out
+            return encoder_n_out
         raise NotImplementedError("Output type should be either mag or reim")
 
     def forward_masker(self, tf_rep):
