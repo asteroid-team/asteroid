@@ -443,7 +443,7 @@ def _shape_reconstructed(reconstructed, size):
         torch.Tensor: Reshaped waveform
 
     """
-    if size.ndim == 1:
+    if len(size) == 1:
         return reconstructed.squeeze(0)
     return reconstructed
 
