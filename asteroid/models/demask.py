@@ -61,7 +61,7 @@ class DeMask(BaseEncoderMaskerDecoder):
 
         n_masker_in = self._get_n_feats_input(input_type, encoder.n_feats_out)
         n_masker_out = self._get_n_feats_output(output_type, encoder.n_feats_out)
-        masker = _build_masker_nn(
+        masker = build_demask_masker(
             n_masker_in,
             n_masker_out,
             norm_type=norm_type,
@@ -161,7 +161,7 @@ class DeMask(BaseEncoderMaskerDecoder):
         return model_args
 
 
-def _build_masker_nn(
+def build_demask_masker(
     n_in,
     n_out,
     activation="relu",
