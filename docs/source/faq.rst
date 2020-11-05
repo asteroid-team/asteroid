@@ -31,8 +31,14 @@ Not always. See the note on pretrained models Licenses :ref:`Note about licenses
 Separated audio is really bad, what is happening?
 -------------------------------------------------
 There are several possible cause to this, a common one is clipping.
+
 1. When training with scale invariant losses (e.g. SI-SNR) the audio output can be
 unbounded. However, waveform values should be normalized to [-1, 1] range before saving,
 otherwise they will be clipped.
 See `Clipping on Wikipedia <https://en.wikipedia.org/wiki/Clipping_(audio)>`_ and
 `issue #250 <https://github.com/mpariente/asteroid/issues/250>`_
+
+2. As all supervised learning approaches, source separation can suffer from
+generalization error when evaluated on unseen data. If your model works well
+on data similar to your training data but doesn't work on real data, that's probably why.
+More about this `on Wikipedia <https://en.wikipedia.org/wiki/Generalization_error>`_.
