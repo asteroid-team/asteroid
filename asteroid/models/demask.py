@@ -137,7 +137,7 @@ class DeMask(BaseEncoderMaskerDecoder):
         Returns:
             torch.Tensor: Masked time-frequency representations.
         """
-        if self.output_type != "mag":
+        if self.output_type == "reim":
             tf_rep = tf_rep.unsqueeze(1)
         return est_masks * tf_rep
 
