@@ -32,7 +32,7 @@ def main(conf):
         "sample_rate": conf["data"]["sample_rate"],
         "num_workers": conf["training"]["num_workers"],
         "mixture": conf["data"]["mixture"],
-        "task": conf["data"]["task"]
+        "task": conf["data"]["task"],
     }
 
     train_set = DAMPVSEPSinglesDataset(

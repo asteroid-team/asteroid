@@ -96,10 +96,12 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
 
     def _load_audio(self, path, start=0.0, duration=None, scaler=None, mean=0.0, std=1.0):
         import librosa
+
         # ignore warning related with
         # https://github.com/librosa/librosa/issues/1015
         # Soundfile can read OGG (vocal) but not M4A (background and mixture)
         import warnings
+
         warnings.filterwarnings("ignore", category=UserWarning)
 
         x, _ = librosa.load(
