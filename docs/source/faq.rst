@@ -15,7 +15,12 @@ Refs: `#164 <https://github.com/mpariente/asteroid/issues/164>`_,
 
 2. You stopped training too early. We've seen this happen, specially with DPRNN.
 Be sure that your training/validation losses are completely flat at the end of training.
-Need to attach a DPRNN log here.
+
+.. image:: ./_static/images/train_val_loss.png
+   :width: 500
+   :alt: Typical convergence graph
+
+|
 
 3. If it's not both, there is a real bug and we're happy you caught it!
 Please, open an issue with your torch/pytorch_lightning/asteroid versions to let us know.
