@@ -52,12 +52,6 @@ def test_wrapper(batch_size, n_src, time):
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape
 
-    # sinkhorn loss function / With and without return estimates
-    loss = PITLossWrapper(good_pairwise_loss_func, pit_from="pw_sinkpit")
-    loss(est_targets, targets)
-    loss_value, reordered_est = loss(est_targets, targets, return_est=True)
-    assert reordered_est.shape == est_targets.shape
-
 
 @pytest.mark.parametrize(
     "perm",
@@ -136,32 +130,3 @@ def test_best_perm_match(n_src):
 def test_raises_wrong_pit_from():
     with pytest.raises(ValueError):
         PITLossWrapper(lambda x: x, pit_from="unknown_mode")
-
-
-@pytest.mark.parametrize("batch_size", [1, 2])
-@pytest.mark.parametrize("n_src", [5, 10, 30])
-@pytest.mark.parametrize("time", [16000])
-@pytest.mark.parametrize("noise_level", [0.1])
-def test_sinkhorn_reordering(batch_size, n_src, time, noise_level):
-    # random data
-    targets = torch.randn(batch_size, n_src, time) * 10  # ground truth
-    noise = torch.randn(batch_size, n_src, time) * noise_level
-    est_targets = (
-        targets[:, torch.randperm(n_src), :] + noise
-    )  # reorder channels, and add small noise
-
-    # initialize wrapper
-    loss = PITLossWrapper(pairwise_mse, pit_from="pw_sinkpit")
-
-    # check if the reordering is working
-    min_loss_valid, reordered = loss(
-        est_targets, targets, return_est=True
-    )  # beta and n_iter are curretnly hard coded (beta = 100, n_iter = 2000)
-    loss_before_reorder = torch.mean((est_targets - targets) ** 2)
-    loss_after_reorder = torch.mean((reordered - targets) ** 2)
-    noise_energy = torch.mean(noise ** 2)
-
-    # verify that the reordering is correct
-    # if correct, `loss_after_reorder` should be very close to the noise energy.
-    assert loss_after_reorder <= loss_before_reorder
-    assert_allclose(loss_after_reorder, noise_energy)
