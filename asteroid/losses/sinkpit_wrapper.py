@@ -56,7 +56,7 @@ class SinkPITLossWrapper(nn.Module):
         >>> trainer.fit(system)
     """
 
-    def __init__(self, loss_func, n_iter=200, hungarian_validation=True, *args, **kwargs):
+    def __init__(self, loss_func, n_iter=200, hungarian_validation=True):
         super().__init__()
         self.loss_func = loss_func
         self._beta = 10
@@ -72,7 +72,7 @@ class SinkPITLossWrapper(nn.Module):
         assert beta > 0
         self._beta = beta
 
-    def forward(self, est_targets, targets, return_est=False, *args, **kwargs):
+    def forward(self, est_targets, targets, return_est=False, **kwargs):
         """Evaluate the loss using Sinkhorn's algorithm.
         Args:
             est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
