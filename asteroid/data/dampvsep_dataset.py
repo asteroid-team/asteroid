@@ -35,7 +35,7 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
             * ``'song_level'`` use mixture mean and std.
             * ```None``` no normalisation
         source_augmentations (Callable, optional): Augmentations applied to the sources (only).
-            Default to ``None``. 
+            Default to ``None``.
         mixture (str, optional): Whether to use the original mixture with non-linear effects
             or remix sources. Default to original.
             * ``'remix'`` for use addition to remix the sources.
@@ -189,7 +189,7 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
         return self.perf_key[track_id]
 
     def get_tracks(self):
-        """Loads metadata with tracks info. 
+        """Loads metadata with tracks info.
         Raises error if metadata doesn't exist.
         """
         metadata_path = Path(f"metadata/{self.split}_sr{self.sample_rate}.json")
