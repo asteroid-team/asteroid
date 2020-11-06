@@ -34,3 +34,8 @@ def parse_dataset(in_dir, out_json):
 
     with open(out_json, "w") as f:
         json.dump(examples, f, indent=4)
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    parse_dataset(args.in_dir, args.out_json)
