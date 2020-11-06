@@ -63,9 +63,6 @@ class SinkPITLossWrapper(nn.Module):
         self.n_iter = n_iter
         self.hungarian_validation = hungarian_validation
 
-    find_best_perm = PITLossWrapper.find_best_perm
-    reorder_source = PITLossWrapper.reorder_source
-
     @property
     def beta(self):
         return self._beta
@@ -115,15 +112,15 @@ class SinkPITLossWrapper(nn.Module):
             else:
                 # hungarian validation
                 # -> reorder the output by using the Hungarian algorithm below
-                min_loss, batch_indices = self.find_best_perm(pw_losses)
+                min_loss, batch_indices = PITLossWrapper.find_best_perm(pw_losses)
                 mean_loss = torch.mean(min_loss)
                 return mean_loss
         else:
             # test
             # -> reorder the output by using the Hungarian algorithm below
-            min_loss, batch_indices = self.find_best_perm(pw_losses)
+            min_loss, batch_indices = PITLossWrapper.find_best_perm(pw_losses)
             mean_loss = torch.mean(min_loss)
-            reordered = self.reorder_source(est_targets, batch_indices)
+            reordered = PITLossWrapper.reorder_source(est_targets, batch_indices)
             return mean_loss, reordered
 
     @staticmethod
