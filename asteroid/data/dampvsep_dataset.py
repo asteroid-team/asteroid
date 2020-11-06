@@ -121,6 +121,8 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
         return x
 
     def __getitem__(self, index):
+        import math
+
         audio_sources = {}
         track_id = index // self.ex_per_track
         perf = self.perf_key[track_id]
@@ -129,7 +131,7 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
 
         # Set start time of segment
         start = 0.0
-        duration = float(self.tracks[perf]["duration"])
+        duration = math.floor(float(self.tracks[perf]["duration"]) * 100) / 100
         if self.random_segments:
             start = random.uniform(0.0, float(self.tracks[perf]["duration"]) - self.segment)
             duration = float(self.segment)
