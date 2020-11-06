@@ -180,17 +180,14 @@ class SinkPITBetaScheduler(pl.callbacks.Callback):
             The default function is `sinkpit_default_beta_schedule`.
             :math: \beta = min(1.02^{epoch}, 10)
 
-    Example 1::
+    Example
         >>> from pytorch_lightning import Trainer
         >>> from asteroid.losses import SinkPITBetaScheduler
-        >>> sinkpit_beta_schedule = SinkPITBetaSchedule() # default scheduling function is used
+        >>> # Default scheduling function
+        >>> sinkpit_beta_schedule = SinkPITBetaSchedule()
         >>> trainer = Trainer(callbacks=[sinkpit_beta_schedule])
-
-    Example 2::
-        >>> from pytorch_lightning import Trainer
-        >>> from asteroid.losses import SinkPITBetaScheduler
-        >>> sinkpit_beta_schedule = SinkPITBetaScheduler(
-                lambda epoch : 1. if epoch < 10 else 100.) # user-defined schedule
+        >>> # User-defined schedule
+        >>> sinkpit_beta_schedule = SinkPITBetaScheduler(lambda ep: 1. if ep < 10 else 100.)
         >>> trainer = Trainer(callbacks=[sinkpit_beta_schedule])
     """
 
