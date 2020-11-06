@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid.models import save_publishable
-from .local.tac_dataset import TACDataset
+from local.tac_dataset import TACDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
@@ -29,7 +29,7 @@ class TACSystem(System):
     def common_step(self, batch, batch_nb, train=True):
         inputs, targets, valid = batch
 
-        est_targets = self(inputs, valid, 0)
+        est_targets = self(inputs, valid)
         loss = self.loss_func(est_targets, targets[:, 0]).mean()  # first channel is used as ref
 
         return loss
