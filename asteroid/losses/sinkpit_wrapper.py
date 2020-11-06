@@ -103,21 +103,19 @@ class SinkPITLossWrapper(nn.Module):
 
         if not return_est:
             if self.training or not self.hungarian_validation:
-                # train / sinkhorn validation
+                # Train or sinkhorn validation
                 min_loss, soft_perm = self.best_softperm_sinkhorn(
                     pw_losses, self._beta, self.n_iter
                 )
                 mean_loss = torch.mean(min_loss)
                 return mean_loss
             else:
-                # hungarian validation
-                # -> reorder the output by using the Hungarian algorithm below
+                # Reorder the output by using the Hungarian algorithm below
                 min_loss, batch_indices = PITLossWrapper.find_best_perm(pw_losses)
                 mean_loss = torch.mean(min_loss)
                 return mean_loss
         else:
-            # test
-            # -> reorder the output by using the Hungarian algorithm below
+            # Test -> reorder the output by using the Hungarian algorithm below
             min_loss, batch_indices = PITLossWrapper.find_best_perm(pw_losses)
             mean_loss = torch.mean(min_loss)
             reordered = PITLossWrapper.reorder_source(est_targets, batch_indices)
