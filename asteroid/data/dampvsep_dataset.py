@@ -196,7 +196,7 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
         if metadata_path.exists():
             tracks = json.load(open(metadata_path, "r"))
         else:
-            raise Exception(f"Metadata file for {self.split} not found")
+            raise RuntimeError(f"Metadata file for {self.split} not found")
         return tracks
 
     def get_infos(self):
