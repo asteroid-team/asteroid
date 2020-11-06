@@ -92,7 +92,7 @@ def test_proximity_sinkhorn_hungrian(batch_size, n_src, beta, n_iter, function_t
     assert_allclose(mean_loss_sinkhorn, mean_loss_hungarian)
 
 
-class testCallback(pl.callbacks.Callback):
+class TestCallback(pl.callbacks.Callback):
     def __init__(self, function, total, batch_size):
         self.f = function
         self.epoch = 0
@@ -141,7 +141,7 @@ def test_sinkpit_beta_scheduler(batch_size, n_src, len_wave, beta_schedule):
         fast_dev_run=False,
         callbacks=[
             SinkPITBetaScheduler(beta_schedule),
-            testCallback(
+            TestCallback(
                 beta_schedule, len(dataset), batch_size
             ),  # test if beta are the same at epoch_start and epoch_end.
         ],
