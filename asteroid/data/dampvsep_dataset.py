@@ -188,9 +188,8 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
         return self.perf_key[track_id]
 
     def get_tracks(self):
-        """
-        Loads metadata with tracks info.
-        Creates metadata if doesn't exist.
+        """Loads metadata with tracks info. 
+        Raises error if metadata doesn't exist.
         """
         metadata_path = Path(f"metadata/{self.split}_sr{self.sample_rate}.json")
         if metadata_path.exists():
