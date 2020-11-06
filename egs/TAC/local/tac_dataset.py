@@ -4,9 +4,13 @@ import soundfile as sf
 import torch
 import numpy as np
 from pathlib import Path
+from asteroid.data.librimix_dataset import librispeech_license
 
 
 class TACDataset(Dataset):
+
+    dataset_name = "Multi-channel Librispeech-derived dataset used in Transform Average Concatenate"
+
     def __init__(self, json_file, segment=None, samplerate=16000, max_mics=6, train=True):
 
         self.segment = segment
@@ -106,4 +110,26 @@ class TACDataset(Dataset):
             mixtures = torch.cat((mixtures, dummy), 0)
             sources = torch.cat((sources, dummy.unsqueeze(1).repeat(1, sources.shape[1], 1)), 0)
 
-        return mixtures, sources, valid_mics, c_ex
+        return mixtures, sources, valid_mics
+
+    def get_infos(self):
+        """Get dataset infos (for publishing models).
+
+        Returns:
+            dict, dataset infos with keys `dataset`, `task` and `licences`.
+        """
+        infos = dict()
+        infos["dataset"] = self.dataset_name
+        infos["task"] = "separate_noisy"
+        infos["licenses"] = [librispeech_license, tac_license]
+        return infos
+
+
+tac_license = dict(
+    title="End-to-end Microphone Permutation and Number Invariant Multi-channel Speech Separation",
+    title_link="https://arxiv.org/abs/1910.14104",
+    author="Yi Luo, Zhuo Chen, Nima Mesgarani, Takuya Yoshioka",
+    license="CC BY 4.0",
+    license_link="https://creativecommons.org/licenses/by/4.0/",
+    non_commercial=False,
+)
