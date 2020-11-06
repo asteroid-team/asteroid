@@ -25,7 +25,7 @@ class SinkPITLossWrapper(nn.Module):
         See :meth:`~PITLossWrapper.best_softperm_sinkhorn`
         and http://arxiv.org/abs/2010.11871
 
-    Example 1
+    Examples
         >>> import torch
         >>> from asteroid.losses import pairwise_neg_sisdr
         >>> sources = torch.randn(10, 3, 16000)
@@ -33,11 +33,9 @@ class SinkPITLossWrapper(nn.Module):
         >>> # Compute SinkPIT loss based on pairwise losses
         >>> loss_func = SinkPITLossWrapper(pairwise_neg_sisdr)
         >>> loss_val = loss_func(est_sources, sources)
-
-    A fixed temperature parameter `beta` (=10) is used unless a cooling callback is set.
-    The value can be dynamically changed using a cooling callback module as follows.
-
-    Example 2
+        >>> # A fixed temperature parameter `beta` (=10) is used
+        >>> # unless a cooling callback is set. The value can be
+        >>> # dynamically changed using a cooling callback module as follows.
         >>> model = NeuralNetworkModel()
         >>> optimizer = optim.Adam(model.parameters(), lr=1e-3)
         >>> dataset = YourDataset()
