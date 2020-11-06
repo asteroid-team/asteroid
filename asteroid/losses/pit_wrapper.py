@@ -314,7 +314,9 @@ class PITLossWrapper(nn.Module):
         # Just bring the numbers to cpu(), not the graph
         pwl_copy = pwl.detach().cpu()
         # Loop over batch + row indices are always ordered for square matrices.
-        batch_indices = torch.tensor([linear_sum_assignment(pwl)[1] for pwl in pwl_copy])
+        batch_indices = torch.tensor([linear_sum_assignment(pwl)[1] for pwl in pwl_copy]).to(
+            pwl.device
+        )
         min_loss = torch.gather(pwl, 2, batch_indices[..., None]).mean([-1, -2])
         return min_loss, batch_indices
 

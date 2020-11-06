@@ -15,6 +15,8 @@ class SinkPITLossWrapper(nn.Module):
         loss_func: function with signature (targets, est_targets, **kwargs).
         n_iter (int): number of the Sinkhorn iteration (default = 200).
             Supposed to be an even number.
+        hungarian_validation (boolean) : Whether to use the Hungarian algorithm
+            during the validation. (default = True)
 
         `loss_func` computes pairwise
         losses and returns a torch.Tensor of shape
@@ -62,11 +64,12 @@ class SinkPITLossWrapper(nn.Module):
         >>> trainer.fit(system)
     """
 
-    def __init__(self, loss_func, n_iter=200, *args, **kwargs):
+    def __init__(self, loss_func, n_iter=200, hungarian_validation=True, *args, **kwargs):
         super().__init__()
         self.loss_func = loss_func
         self._beta = 10
         self.n_iter = n_iter
+        self.hungarian_validation = hungarian_validation
 
     @property
     def beta(self):
@@ -106,18 +109,27 @@ class SinkPITLossWrapper(nn.Module):
         )
         assert pw_losses.shape[0] == targets.shape[0], "PIT loss needs same batch dim as input"
 
-        # train
         if not return_est:
-            min_loss, soft_perm = self.best_softperm_sinkhorn(pw_losses, self._beta, self.n_iter)
+            if self.training or not self.hungarian_validation:
+                # train / sinkhorn validation
+                min_loss, soft_perm = self.best_softperm_sinkhorn(
+                    pw_losses, self._beta, self.n_iter
+                )
+                mean_loss = torch.mean(min_loss)
+                return mean_loss
+            else:
+                # hungarian validation
+                # -> reorder the output by using the Hungarian algorithm below
+                min_loss, batch_indices = self.best_perm_hungarian(pw_losses)
+                mean_loss = torch.mean(min_loss)
+                return mean_loss
+        else:
+            # test
+            # -> reorder the output by using the Hungarian algorithm below
+            min_loss, batch_indices = self.best_perm_hungarian(pw_losses)
             mean_loss = torch.mean(min_loss)
-            return mean_loss
-
-        # valid/test
-        # -> reorder the output by using the Hungarian algorithm below
-        min_loss, batch_indices = self.best_perm_hungarian(pw_losses)
-        mean_loss = torch.mean(min_loss)
-        reordered = self.reorder_source(est_targets, batch_indices)
-        return mean_loss, reordered
+            reordered = self.reorder_source(est_targets, batch_indices)
+            return mean_loss, reordered
 
     @staticmethod
     def best_softperm_sinkhorn(pair_wise_losses, beta=10, n_iter=200):
