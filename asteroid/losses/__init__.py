@@ -1,5 +1,5 @@
 from .pit_wrapper import PITLossWrapper
-from .sinkpit_wrapper import SinkPITLossWrapper, SinkPITBetaScheduler, sinkpit_default_beta_schedule
+from .sinkpit_wrapper import SinkPITLossWrapper, SinkPITBetaScheduler
 from .sdr import singlesrc_neg_sisdr, multisrc_neg_sisdr
 from .sdr import singlesrc_neg_sdsdr, multisrc_neg_sdsdr
 from .sdr import singlesrc_neg_snr, multisrc_neg_snr
@@ -21,7 +21,6 @@ __all__ = [
     "PITLossWrapper",
     "SinkPITLossWrapper",
     "SinkPITBetaScheduler",
-    "sinkpit_default_beta_schedule",
     "singlesrc_neg_sisdr",
     "multisrc_neg_sisdr",
     "singlesrc_neg_sdsdr",
