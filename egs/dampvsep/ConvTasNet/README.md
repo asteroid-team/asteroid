@@ -1,27 +1,6 @@
-## DAMP-VSEP dataset
-
-All the information regarding the dataset can be found in 
-[zenodo](https://zenodo.org/record/3553059#.X5xKGnX7S-o).
-
-**References**
-If you use this dataset, please cite as follows :
-```BibTex
-@dataset{smule_inc_2019_3553059,
-  author       = {Smule, Inc},
-  title        = {{DAMP-VSEP: Smule Digital Archive of Mobile 
-                   Performances - Vocal Separation}},
-  month        = oct,
-  year         = 2019,
-  publisher    = {Zenodo},
-  version      = {1.0.1},
-  doi          = {10.5281/zenodo.3553059},
-  url          = {https://doi.org/10.5281/zenodo.3553059}
-}
-```
-
 ## Description
 
-ConvTasNet model trained using DAMP-VSEP dataset. 
+ConvTasNet model trained using DAMP-VSEP dataset.
 The dataset is preprocessed to obtain only single ensembles performances.
 The preprocess return two train sets, one validation and one test sets.
 
@@ -34,7 +13,7 @@ The details of the dataset:
 | train_english |  9243     |    77     |
 | train_singles |  20660    |   174     |
 | valid         |  100      |   0.8     |
-| test          |  100      |   0.8     | 
+| test          |  100      |   0.8     |
 
 
 
@@ -42,7 +21,7 @@ The details of the dataset:
 The next results were obtained by remixing the sources.
 Results using the original mixture are pending.
 
-|               | Mixture   |SI-SNRi(dB) (v)| STOI (v)|SDRi(dB) (b)| 
+|               | Mixture   |SI-SNRi(dB) (v)| STOI (v)|SDRi(dB) (b)|
 |:-------------:|:---------:|:-------------:|:-------:|:----------:|
 | train_english | remix     |        14.3   | 0.6872  |       14.5 |
 | train_english | original  |        ---    |   ---   |       ---  |
@@ -50,7 +29,7 @@ Results using the original mixture are pending.
 | train_singles | original  |        ---    |   ---   |       ---  |
 
 (v): vocal
-(b): background accompaniment 
+(b): background accompaniment
 
 ## Python requirements
 
