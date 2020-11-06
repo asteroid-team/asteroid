@@ -110,7 +110,7 @@ class testCallback(pl.callbacks.Callback):
         self.epoch += 1
 
 
-@pytest.mark.parametrize("batch_size", [1, 2, 3])
+@pytest.mark.parametrize("batch_size", [2])
 @pytest.mark.parametrize("n_src", [2, 10])
 @pytest.mark.parametrize("len_wave", [100])
 @pytest.mark.parametrize(
@@ -123,7 +123,7 @@ class testCallback(pl.callbacks.Callback):
 def test_sinkpit_beta_scheduler(batch_size, n_src, len_wave, beta_schedule):
     model = nn.Sequential(nn.Conv1d(1, n_src, 1), nn.ReLU())
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    dataset = DummyWaveformDataset(total=12, n_src=n_src, len_wave=len_wave)
+    dataset = DummyWaveformDataset(total=2 * batch_size, n_src=n_src, len_wave=len_wave)
     loader = data.DataLoader(
         dataset, batch_size=batch_size, num_workers=0
     )  # num_workers=0 means doing everything in the main process without calling subprocesses
