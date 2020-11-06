@@ -16,7 +16,7 @@ class SinkPITLossWrapper(nn.Module):
         n_iter (int): number of the Sinkhorn iteration (default = 200).
             Supposed to be an even number.
         hungarian_validation (boolean) : Whether to use the Hungarian algorithm
-            during the validation. (default = True)
+            for the validation. (default = True)
 
         `loss_func` computes pairwise
         losses and returns a torch.Tensor of shape
@@ -28,9 +28,6 @@ class SinkPITLossWrapper(nn.Module):
         See :meth:`~PITLossWrapper.best_softperm_sinkhorn`
         and http://arxiv.org/abs/2010.11871
 
-    For each of these modes, the best permutation and reordering will be
-    automatically computed.
-
     Example 1
         >>> import torch
         >>> from asteroid.losses import pairwise_neg_sisdr
@@ -41,7 +38,7 @@ class SinkPITLossWrapper(nn.Module):
         >>> loss_val = loss_func(est_sources, sources)
 
     A fixed temperature parameter `beta` (=10) is used unless a cooling callback is set.
-    A cooling callbacks regulates the value of `beta`.
+    The value can be dynamically changed using a cooling callback module as follows.
 
     Example 2
         >>> model = NeuralNetworkModel()
