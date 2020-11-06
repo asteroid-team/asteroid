@@ -191,6 +191,10 @@ def test_show():
     asteroid.show_available_models()
 
 
+def test_available_models():
+    all_models = asteroid.available_models()
+
+
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
 def test_demask(fb):
     model = DeMask(fb_type=fb)
