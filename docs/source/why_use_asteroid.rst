@@ -27,3 +27,12 @@ Asteroid has several target usage:
 - Use available recipes to build your own separation model.
 - Use pretrained models to process your files.
 - Hit the ground running with your research ideas!
+
+
+Want to know more?
+------------------
+
+- `Visit our webpage <https://asteroid-team.github.io/>`__
+- `Read our paper <https://arxiv.org/abs/2005.04132>`__
+- `Watch the presentation video <https://www.youtube.com/watch?v=imnZxQwuNcg>`__
+- `Check how we won the PyTorch Hackathon 2020 !<https://devpost.com/software/asteroid-the-pytorch-based-source-separation-toolkit>`__
