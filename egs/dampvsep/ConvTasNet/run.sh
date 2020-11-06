@@ -97,7 +97,7 @@ fi
 
 
 if [[ $stage -le 2 ]]; then
-	echo "Stage 2 : Evaluation"
+   echo "Stage 2 : Evaluation"
   $python_path -u eval.py --exp_dir $expdir --use_gpu 1 \
   	--out_dir $out_dir --n_save_ex 5 | tee logs/eval_${tag}.log
 	cp logs/eval_${tag}.log $expdir/eval.log
