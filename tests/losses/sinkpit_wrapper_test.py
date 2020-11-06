@@ -83,7 +83,7 @@ def test_proximity_sinkhorn_hungrian(batch_size, n_src, beta, n_iter, function_t
 
     # compute loss by sinkhorn
     loss_sinkhorn.beta = beta
-    mean_loss_sinkhorn = loss_hungarian(est_targets, targets, return_est=False)
+    mean_loss_sinkhorn = loss_sinkhorn(est_targets, targets, return_est=False)
 
     # compute loss by hungarian
     mean_loss_hungarian = loss_hungarian(est_targets, targets, return_est=False)
