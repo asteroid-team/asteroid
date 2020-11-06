@@ -1,11 +1,8 @@
-from itertools import permutations
 import torch
 from torch import nn
-from torch.testing import assert_allclose
-
 import pytorch_lightning as pl
 
-from asteroid.losses import PITLossWrapper
+from . import PITLossWrapper
 
 
 class SinkPITLossWrapper(nn.Module):
