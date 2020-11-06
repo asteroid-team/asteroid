@@ -34,7 +34,8 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
         norm (Str, optional): Type of normalisation to use. Default to ``None``
             * ``'song_level'`` use mixture mean and std.
             * ```None``` no normalisation
-        source_augmentations (Composite, optional): Default to ``None``
+        source_augmentations (Callable, optional): Augmentations applied to the sources (only).
+            Default to ``None``. 
         mixture (str, optional): Whether to use the original mixture with non-linear effects
             or remix sources. Default to original.
             * ``'remix'`` for use addition to remix the sources.
