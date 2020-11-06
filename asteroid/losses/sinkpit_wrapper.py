@@ -63,6 +63,9 @@ class SinkPITLossWrapper(nn.Module):
         self.n_iter = n_iter
         self.hungarian_validation = hungarian_validation
 
+    find_best_perm = PITLossWrapper.find_best_perm
+    reorder_source = PITLossWrapper.reorder_source
+
     @property
     def beta(self):
         return self._beta
@@ -112,13 +115,13 @@ class SinkPITLossWrapper(nn.Module):
             else:
                 # hungarian validation
                 # -> reorder the output by using the Hungarian algorithm below
-                min_loss, batch_indices = self.best_perm_hungarian(pw_losses)
+                min_loss, batch_indices = self.find_best_perm(pw_losses)
                 mean_loss = torch.mean(min_loss)
                 return mean_loss
         else:
             # test
             # -> reorder the output by using the Hungarian algorithm below
-            min_loss, batch_indices = self.best_perm_hungarian(pw_losses)
+            min_loss, batch_indices = self.find_best_perm(pw_losses)
             mean_loss = torch.mean(min_loss)
             reordered = self.reorder_source(est_targets, batch_indices)
             return mean_loss, reordered
@@ -148,20 +151,6 @@ class SinkPITLossWrapper(nn.Module):
         min_loss = torch.einsum("bij,bij->b", C + Z / beta, torch.exp(Z))
         min_loss = min_loss / n_src
         return min_loss, torch.exp(Z)
-
-    @staticmethod
-    def best_perm_hungarian(pair_wise_losses):
-        """Compute the best permutation using the Hungarian algorithm.
-        Alias to the default PITLossWrapper class.
-        """
-        return PITLossWrapper.find_best_perm(pair_wise_losses, perm_reduce=None)
-
-    @staticmethod
-    def reorder_source(*args, **kwargs):
-        """Reorder the output signals.
-        Alias to the default PITLossWrapper class.
-        """
-        return PITLossWrapper.reorder_source(*args, **kwargs)
 
 
 def sinkpit_default_beta_schedule(epoch):
