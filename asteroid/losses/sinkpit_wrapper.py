@@ -42,7 +42,24 @@ class SinkPITLossWrapper(nn.Module):
     A cooling callbacks regulates the value of `beta`.
 
     Example 2
-        TODO
+        >>> model = NeuralNetworkModel()
+        >>> optimizer = optim.Adam(model.parameters(), lr=1e-3)
+        >>> dataset = YourDataset()
+        >>> loader = data.DataLoader(dataset, batch_size=16)
+        >>> system = System(
+        >>>     model,
+        >>>     optimizer,
+        >>>     loss_func=SinkPITLossWrapper(pairwise_neg_sisdr),
+        >>>     train_loader=loader,
+        >>>     val_loader=loader,
+        >>>     )
+        >>>
+        >>> trainer = pl.Trainer(
+        >>>     max_epochs=100,
+        >>>     callbacks=[SinkPITBetaScheduler(lambda epoch : 1.02 ** epoch)],
+        >>>     )
+        >>>
+        >>> trainer.fit(system)
     """
 
     def __init__(self, loss_func, n_iter=200, *args, **kwargs):
