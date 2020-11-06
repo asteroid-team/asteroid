@@ -39,6 +39,10 @@ MUSDB18
 --------
 .. autoclass:: MUSDB18Dataset
 
+DAMP-VSEP
+---------
+.. autoclass:: DAMPVSEPSinglesDataset
+
 FUSS
 ----
 .. autoclass:: FUSSDataset
