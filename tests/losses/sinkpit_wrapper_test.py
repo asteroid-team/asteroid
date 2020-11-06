@@ -65,7 +65,7 @@ def test_wrapper(batch_size, n_src, time):
         [pairwise_mse, singlesrc_mse, multisrc_mse],
     ],
 )
-def test_proximity_sinkhorn_hungrian(batch_size, n_src, beta, n_iter, function_triplet):
+def test_proximity_sinkhorn_hungarian(batch_size, n_src, beta, n_iter, function_triplet):
     time = 16000
     noise_level = 0.1
     pairwise, nosrc, nonpit = function_triplet
@@ -92,7 +92,7 @@ def test_proximity_sinkhorn_hungrian(batch_size, n_src, beta, n_iter, function_t
     assert_allclose(mean_loss_sinkhorn, mean_loss_hungarian)
 
 
-class TestCallback(pl.callbacks.Callback):
+class _TestCallback(pl.callbacks.Callback):
     def __init__(self, function, total, batch_size):
         self.f = function
         self.epoch = 0
@@ -141,7 +141,7 @@ def test_sinkpit_beta_scheduler(batch_size, n_src, len_wave, beta_schedule):
         fast_dev_run=False,
         callbacks=[
             SinkPITBetaScheduler(beta_schedule),
-            TestCallback(
+            _TestCallback(
                 beta_schedule, len(dataset), batch_size
             ),  # test if beta are the same at epoch_start and epoch_end.
         ],
