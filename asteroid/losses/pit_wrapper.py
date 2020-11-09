@@ -257,12 +257,12 @@ class PITLossWrapper(nn.Module):
         assert est_targets.shape[0] == targets.shape[0]
         assert est_targets.shape[2] == targets.shape[2]
 
-        # get L, N and M
-        L = targets.shape[1]        # number of mixtures 
-        N = est_targets.shape[1]    # number of estimated sources
-        if N % L != 0:
+        # get dimensions
+        n_mixtures = targets.shape[1]        # number of mixtures 
+        n_est = est_targets.shape[1]         # number of estimated sources
+        if n_est % n_mixtures != 0:
             raise ValueError('The mixtures are assumed to contain the same number of sources')
-        M = N // L                  # number of sources in each mixture
+        n_src = n_est // n_mixtures          # number of sources in each mixture
 
         # Generate all unique partitions of size k from a list lst of
         # length n, where l = n // k is the number of parts. The total
@@ -278,10 +278,10 @@ class PITLossWrapper(nn.Module):
                         yield [list(c), *r]
 
         # Generate all the possible partitions
-        parts = list(combs(range(N), M, L))     
+        parts = list(combs(range(n_est), n_src, n_mixtures))     
         for p, partition in enumerate(parts):
-            assert len(partition[0]) == M
-            assert len(partition) == L
+            assert len(partition[0]) == n_src
+            assert len(partition) == n_mixtures
         
             # sum the sources according to the given partition
             est_mixes = torch.stack([torch.sum(est_targets[:, indexes, :], axis=1) for indexes in partition], axis=1)
@@ -340,11 +340,11 @@ class PITLossWrapper(nn.Module):
         assert est_targets.shape[0] == targets.shape[0]
         assert est_targets.shape[2] == targets.shape[2]
 
-        # get L, N and M
-        L = targets.shape[1]        # number of mixtures 
-        N = est_targets.shape[1]    # number of estimated sources
+        # get dimensions
+        n_mixtures = targets.shape[1]        # number of mixtures 
+        n_est = est_targets.shape[1]         # number of estimated sources
 
-        if L != 2:
+        if n_mixtures != 2:
             raise ValueError('Works only with two mixtures')
 
         # Generate all unique partitions of any size from a list lst of
@@ -358,9 +358,9 @@ class PITLossWrapper(nn.Module):
             return all_combinations
 
         # Generate all the possible partitions
-        parts = all_combinations(range(N))    
+        parts = all_combinations(range(n_est))    
         for p, partition in enumerate(parts):
-            assert len(partition) == L
+            assert len(partition) == n_mixtures
         
             # sum the sources according to the given partition
             est_mixes = torch.stack([torch.sum(est_targets[:, indexes, :], axis=1) for indexes in partition], axis=1)
