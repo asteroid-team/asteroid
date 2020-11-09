@@ -278,8 +278,9 @@ class PITLossWrapper(nn.Module):
                         yield [list(c), *r]
 
         # Generate all the possible partitions
+        loss_set = []
         parts = list(combs(range(n_est), n_src, n_mixtures))     
-        for p, partition in enumerate(parts):
+        for partition in parts:
             assert len(partition[0]) == n_src
             assert len(partition) == n_mixtures
         
@@ -287,11 +288,10 @@ class PITLossWrapper(nn.Module):
             est_mixes = torch.stack([torch.sum(est_targets[:, indexes, :], axis=1) for indexes in partition], axis=1)
 
             # get loss for the given partition
-            if p == 0:
-                loss_set = loss_func(est_mixes, targets, **kwargs)[:, None]
-            else:
-                loss_set = torch.cat([loss_set, loss_func(est_mixes, targets, **kwargs)[:, None]], dim=1)
-
+            loss_set.append(loss_func(est_mixes, targets, **kwargs)[:, None])
+            
+        loss_set = torch.cat(loss_set, dim=1)
+        
         # Indexes and values of min losses for each batch element
         min_loss, min_loss_indexes = torch.min(loss_set, dim=1, keepdim=True)
         assert len(min_loss_indexes) == est_mixes.shape[0]
@@ -358,19 +358,19 @@ class PITLossWrapper(nn.Module):
             return all_combinations
 
         # Generate all the possible partitions
+        loss_set = []
         parts = all_combinations(range(n_est))    
-        for p, partition in enumerate(parts):
+        for partition in parts:
             assert len(partition) == n_mixtures
         
             # sum the sources according to the given partition
             est_mixes = torch.stack([torch.sum(est_targets[:, indexes, :], axis=1) for indexes in partition], axis=1)
 
             # get loss for the given partition
-            if p == 0:
-                loss_set = loss_func(est_mixes, targets, **kwargs)[:, None]
-            else:
-                loss_set = torch.cat([loss_set, loss_func(est_mixes, targets, **kwargs)[:, None]], dim=1)
+            loss_set.append(loss_func(est_mixes, targets, **kwargs)[:, None])
 
+        loss_set = torch.cat(loss_set, dim=1)
+            
         # Indexes and values of min losses for each batch element
         min_loss, min_loss_indexes = torch.min(loss_set, dim=1, keepdim=True)
         assert len(min_loss_indexes) == est_mixes.shape[0]
