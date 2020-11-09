@@ -3,10 +3,10 @@ import warnings
 
 import torch.nn as nn
 from torch.nn.modules.activation import MultiheadAttention
-from asteroid.masknn import activations, norms
+from . import activations, norms
 import torch
-from asteroid.utils import has_arg
-from asteroid.dsp.overlap_add import DualPathProcessing
+from ..utils import has_arg
+from ..dsp.overlap_add import DualPathProcessing
 
 
 class ImprovedTransformedLayer(nn.Module):

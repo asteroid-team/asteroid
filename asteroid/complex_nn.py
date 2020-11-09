@@ -14,7 +14,7 @@ import functools
 import torch
 import torchaudio
 from torch import nn
-from asteroid.filterbanks import transforms
+from .filterbanks import transforms
 
 
 # Alias to denote PyTorch native complex tensor (complex64/complex128).

@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 from torch.nn.modules.loss import _Loss
-from asteroid.filterbanks import STFTFB, Encoder
-from asteroid.filterbanks.transforms import take_mag
+from ..filterbanks import STFTFB, Encoder
+from ..filterbanks.transforms import take_mag
 
 
 class SingleSrcMultiScaleSpectral(_Loss):

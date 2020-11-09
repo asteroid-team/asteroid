@@ -2,7 +2,7 @@ import torch
 from torch.utils import data
 import numpy as np
 import soundfile as sf
-from asteroid.data.wham_dataset import normalize_tensor_wav
+from .wham_dataset import normalize_tensor_wav
 
 from .wsj0_mix import wsj0_license
 
