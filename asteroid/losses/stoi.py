@@ -1,4 +1,8 @@
-from torch_stoi import NegSTOILoss as _NegSTOILoss
+import warnings
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from torch_stoi import NegSTOILoss as _NegSTOILoss
 
 
 class NegSTOILoss(_NegSTOILoss):
