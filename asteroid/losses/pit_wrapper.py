@@ -4,7 +4,7 @@ from torch import nn
 
 
 class PITLossWrapper(nn.Module):
-    """ Permutation invariant loss wrapper.
+    r""" Permutation invariant loss wrapper.
 
     Args:
         loss_func: function with signature (targets, est_targets, **kwargs).
