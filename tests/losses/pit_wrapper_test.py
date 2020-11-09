@@ -53,6 +53,44 @@ def test_wrapper(batch_size, n_src, time):
     assert reordered_est.shape == est_targets.shape
 
 
+@pytest.mark.parametrize("batch_size", [1, 2, 8])
+@pytest.mark.parametrize("factor", [1, 2, 3])
+@pytest.mark.parametrize("n_mix", [2])
+@pytest.mark.parametrize("time", [16000])
+def test_mixit_wrapper(batch_size, n_mix, time, factor):
+    mixtures = torch.randn(batch_size, n_mix, time)
+    n_src = n_mix * factor
+    targets = torch.randn(batch_size, n_src, time)
+    est_targets = torch.randn(batch_size, n_src, time)
+
+    # mix_it base case: targets == mixtures / With and without return estimates
+    loss = PITLossWrapper(good_batch_loss_func, pit_from="mix_it")
+    loss(est_targets, targets)
+    loss_value, reordered_est = loss(est_targets, targets, return_est=True)
+    assert reordered_est.shape == est_targets.shape
+
+    # mix_it / With and without return estimates
+    loss = PITLossWrapper(good_batch_loss_func, pit_from="mix_it")
+    loss(est_targets, mixtures)
+    loss_value, reordered_est = loss(est_targets, mixtures, return_est=True)
+    assert reordered_est.shape == mixtures.shape
+
+
+@pytest.mark.parametrize("batch_size", [1, 2, 8])
+@pytest.mark.parametrize("n_src", [2, 3, 4])
+@pytest.mark.parametrize("n_mix", [2])
+@pytest.mark.parametrize("time", [16000])
+def test_mixit_gen_wrapper(batch_size, n_src, n_mix, time):
+    mixtures = torch.randn(batch_size, n_mix, time)
+    est_targets = torch.randn(batch_size, n_src, time)
+
+    # mix_it_gen / With and without return estimates. Works only with two mixtures
+    loss = PITLossWrapper(good_batch_loss_func, pit_from="mix_it_gen")
+    loss(est_targets, mixtures)
+    loss_value, reordered_est = loss(est_targets, mixtures, return_est=True)
+    assert reordered_est.shape == mixtures.shape
+
+
 @pytest.mark.parametrize(
     "perm",
     list(itertools.permutations([0, 1, 2]))
@@ -114,19 +152,3 @@ def test_permreduce_args():
     loss_func = PITLossWrapper(pairwise_mse, pit_from="pw_mtx", perm_reduce=reduce_func)
     weights = torch.softmax(torch.randn(10, n_src), dim=-1)
     loss_func(est_sources, sources, reduce_kwargs={"class_weights": weights})
-
-
-@pytest.mark.parametrize("n_src", [2, 4, 5, 6, 8])
-def test_best_perm_match(n_src):
-    pwl = torch.randn(2, n_src, n_src)
-
-    min_loss, min_idx = PITLossWrapper.find_best_perm_factorial(pwl)
-    min_loss_hun, min_idx_hun = PITLossWrapper.find_best_perm_hungarian(pwl)
-
-    assert_allclose(min_loss, min_loss_hun)
-    assert_allclose(min_idx, min_idx_hun)
-
-
-def test_raises_wrong_pit_from():
-    with pytest.raises(ValueError):
-        PITLossWrapper(lambda x: x, pit_from="unknown_mode")
