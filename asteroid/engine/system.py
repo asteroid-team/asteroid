@@ -166,7 +166,7 @@ class System(pl.LightningModule):
                 epoch_schedulers.append(sched)
             else:
                 assert sched["interval"] in [
-                    "batch",
+                    "epoch",
                     "step",
                 ], "Scheduler interval should be either step or epoch"
                 epoch_schedulers.append(sched)
