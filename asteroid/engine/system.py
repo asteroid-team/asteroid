@@ -163,22 +163,23 @@ class System(pl.LightningModule):
 
     def configure_optimizers(self):
         """Initialize optimizers, batch-wise and epoch-wise schedulers."""
+        if self.scheduler is None:
+            return self.optimizer
 
-        if self.scheduler is not None:
-            if not isinstance(self.scheduler, (list, tuple)):
-                self.scheduler = [self.scheduler]  # support multiple schedulers
-            epoch_schedulers = []
-            for sched in self.scheduler:
-                if not isinstance(sched, dict):
-                    epoch_schedulers.append(sched)
-                else:
-                    assert sched["interval"] in [
-                        "batch",
-                        "epoch",
-                    ], "Scheduler interval should be either batch or epoch"
-                    epoch_schedulers.append(sched)
-            return [self.optimizer], epoch_schedulers
-        return self.optimizer
+        if not isinstance(self.scheduler, (list, tuple)):
+            self.scheduler = [self.scheduler]  # support multiple schedulers
+
+        epoch_schedulers = []
+        for sched in self.scheduler:
+            if not isinstance(sched, dict):
+                epoch_schedulers.append(sched)
+            else:
+                assert sched["interval"] in [
+                    "batch",
+                    "epoch",
+                ], "Scheduler interval should be either batch or epoch"
+                epoch_schedulers.append(sched)
+        return [self.optimizer], epoch_schedulers
 
     def train_dataloader(self):
         return self.train_loader
