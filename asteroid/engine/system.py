@@ -21,8 +21,8 @@ class System(pl.LightningModule):
         val_loader (torch.utils.data.DataLoader): Validation dataloader.
         scheduler (torch.optim.lr_scheduler._LRScheduler): Instance, or list
             of learning rate schedulers. Also supports dict or list of dict as
-            `{"interval": "batch", "scheduler": sched}` where `interval=="batch"`
-            for batch-wise schedulers and `interval=="epoch"` for classical ones.
+            `{"interval": "step", "scheduler": sched}` where `interval=="step"`
+            for step-wise schedulers and `interval=="epoch"` for classical ones.
         config: Anything to be saved with the checkpoints during training.
             The config dictionary to re-instantiate the run for example.
     .. note:: By default, `training_step` (used by `pytorch-lightning` in the
