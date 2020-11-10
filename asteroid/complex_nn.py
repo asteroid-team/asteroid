@@ -12,9 +12,13 @@ Note that Asteroid code has two other representations of complex numbers:
 """
 import functools
 import torch
-import torchaudio
+import warnings
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import torchaudio
 from torch import nn
-from asteroid.filterbanks import transforms
+from .filterbanks import transforms
 
 
 # Alias to denote PyTorch native complex tensor (complex64/complex128).

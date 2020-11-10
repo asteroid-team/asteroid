@@ -1,6 +1,6 @@
 import torch
 from scipy.signal import get_window
-from asteroid.losses.pit_wrapper import PITReorder
+from ..losses.pit_wrapper import PITReorder
 from torch import nn
 
 
