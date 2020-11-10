@@ -66,7 +66,7 @@ def main(conf):
         "scheduler": DPTNetScheduler(
             optimizer, len(train_loader) // conf["training"]["batch_size"], 64
         ),
-        "interval": "batch",
+        "interval": "step",
     }
 
     # Just after instantiating, save the args. Easy loading in the future.

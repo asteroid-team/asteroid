@@ -21,8 +21,8 @@ class System(pl.LightningModule):
         val_loader (torch.utils.data.DataLoader): Validation dataloader.
         scheduler (torch.optim.lr_scheduler._LRScheduler): Instance, or list
             of learning rate schedulers. Also supports dict or list of dict as
-            `{"interval": "batch", "scheduler": sched}` where `interval=="batch"`
-            for batch-wise schedulers and `interval=="epoch"` for classical ones.
+            `{"interval": "step", "scheduler": sched}` where `interval=="step"`
+            for step-wise schedulers and `interval=="epoch"` for classical ones.
         config: Anything to be saved with the checkpoints during training.
             The config dictionary to re-instantiate the run for example.
     .. note:: By default, `training_step` (used by `pytorch-lightning` in the
@@ -116,15 +116,6 @@ class System(pl.LightningModule):
         tensorboard_logs = {"train_loss": loss}
         return {"loss": loss, "log": tensorboard_logs}
 
-    def optimizer_step(self, *args, **kwargs) -> None:
-        if self.scheduler is not None:
-            if not isinstance(self.scheduler, (list, tuple)):
-                self.scheduler = [self.scheduler]  # support multiple schedulers
-            for sched in self.scheduler:
-                if isinstance(sched, dict) and sched["interval"] == "batch":
-                    sched["scheduler"].step()  # call step on each batch scheduler
-        super().optimizer_step(*args, **kwargs)
-
     def validation_step(self, batch, batch_nb):
         """Need to overwrite PL validation_step to do validation.
 
@@ -163,23 +154,26 @@ class System(pl.LightningModule):
 
     def configure_optimizers(self):
         """Initialize optimizers, batch-wise and epoch-wise schedulers."""
+        if self.scheduler is None:
+            return self.optimizer
 
-        if self.scheduler is not None:
-            if not isinstance(self.scheduler, (list, tuple)):
-                self.scheduler = [self.scheduler]  # support multiple schedulers
-            epoch_schedulers = []
-            for sched in self.scheduler:
-                if not isinstance(sched, dict):
-                    epoch_schedulers.append(sched)
-                else:
-                    assert sched["interval"] in [
-                        "batch",
-                        "epoch",
-                    ], "Scheduler interval should be either batch or epoch"
-                    if sched["interval"] == "epoch":
-                        epoch_schedulers.append(sched)
-            return [self.optimizer], epoch_schedulers
-        return self.optimizer
+        if not isinstance(self.scheduler, (list, tuple)):
+            self.scheduler = [self.scheduler]  # support multiple schedulers
+
+        epoch_schedulers = []
+        for sched in self.scheduler:
+            if not isinstance(sched, dict):
+                epoch_schedulers.append(sched)
+            else:
+                # Backward compat
+                if sched["interval"] == "batch":
+                    sched["interval"] = "step"
+                assert sched["interval"] in [
+                    "epoch",
+                    "step",
+                ], "Scheduler interval should be either step or epoch"
+                epoch_schedulers.append(sched)
+        return [self.optimizer], epoch_schedulers
 
     def train_dataloader(self):
         return self.train_loader
