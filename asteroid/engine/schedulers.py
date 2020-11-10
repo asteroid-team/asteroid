@@ -30,7 +30,9 @@ class _BaseScheduler(object):
         self._set_lr(lr)
 
     def load_state_dict(self, state_dict):
-        self.__dict__.update(state_dict)
+
+        self.__dict__.update({k : v for k, v in state_dict.items()
+                              if k != "optimizer"})
 
     def state_dict(self):
         return {key: value for key, value in self.__dict__.items()}
