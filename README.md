@@ -70,7 +70,8 @@ pip install asteroid
 ## Tutorials
 ([↑up to contents](#contents))
 Here is a list of notebooks showing example usage of Asteroid's features.
-- [Getting started with Asteroid](./notebooks/01_AsteroidGettingStarted.ipynb)
+- [Getting started with Asteroid](./notebooks/00_GettingStarted.ipynb)
+- [Introduction and Overview](./notebooks/01_APIOverview.ipynb)
 - [Filterbank API](./notebooks/02_Filterbank.ipynb)
 - [Permutation invariant training wrapper `PITLossWrapper`](./notebooks/03_PITLossWrapper.ipynb)
 - [Process large wav files](./notebooks/04_ProcessLargeAudioFiles.ipynb)
