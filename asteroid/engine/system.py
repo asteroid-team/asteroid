@@ -176,8 +176,7 @@ class System(pl.LightningModule):
                         "batch",
                         "epoch",
                     ], "Scheduler interval should be either batch or epoch"
-                    if sched["interval"] == "epoch":
-                        epoch_schedulers.append(sched)
+                    epoch_schedulers.append(sched)
             return [self.optimizer], epoch_schedulers
         return self.optimizer
 
