@@ -21,7 +21,7 @@ setup(
         "numpy",
         "scipy",
         "pandas",
-        "torch",
+        "torch>=1.3",
         "pytorch-lightning>=0.8,<0.10.0",
         "torch_optimizer",
         "soundfile",
