@@ -165,6 +165,9 @@ class System(pl.LightningModule):
             if not isinstance(sched, dict):
                 epoch_schedulers.append(sched)
             else:
+                # Backward compat
+                if sched["interval"] == "batch":
+                    sched["interval"] = "step"
                 assert sched["interval"] in [
                     "epoch",
                     "step",
