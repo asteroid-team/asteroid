@@ -1,4 +1,4 @@
-from itertools import permutations, combinations
+from itertools import permutations
 import torch
 from torch import nn
 from scipy.optimize import linear_sum_assignment
@@ -24,18 +24,6 @@ class PITLossWrapper(nn.Module):
               average loss for a given permutations of the sources and
               estimates. Output shape : :math:`(batch)`.
               See :meth:`~PITLossWrapper.best_perm_from_perm_avg_loss`.
-            * ``'mix_it'``(mixture invariant): `loss_func` computes the
-              loss for a given partition of the sources. Valid for any
-              number of mixtures as soon as they contain the same number
-              of sources.
-              Output shape : :math:`(batch)`.
-              See :meth:`~PITLossWrapper.best_part_mix_it`.
-            * ``'mix_it_gen'``(mixture invariant generalized): `loss_func`
-              computes the loss for a given partition of the sources.
-              Valid only for two mixtures, but those mixtures do not
-              necessarly have to contain the same number of sources.
-              Output shape : :math:`(batch)`.
-              See :meth:`~PITLossWrapper.best_part_mix_it_gen`.
 
             In terms of efficiency, ``'perm_avg'`` is the least efficicient.
 
@@ -76,10 +64,10 @@ class PITLossWrapper(nn.Module):
         self.loss_func = loss_func
         self.pit_from = pit_from
         self.perm_reduce = perm_reduce
-        if self.pit_from not in ['pw_mtx', 'pw_pt', 'perm_avg', 'mix_it', 'mix_it_gen']:
+        if self.pit_from not in ["pw_mtx", "pw_pt", "perm_avg"]:
             raise ValueError(
                 "Unsupported loss function type for now. Expected"
-                "one of [`pw_mtx`, `pw_pt`, `perm_avg`, `mix_it`, `mix_it_gen`]"
+                "one of [`pw_mtx`, `pw_pt`, `perm_avg`]"
             )
 
     def forward(self, est_targets, targets, return_est=False, reduce_kwargs=None, **kwargs):
@@ -122,24 +110,6 @@ class PITLossWrapper(nn.Module):
             if not return_est:
                 return mean_loss
             reordered = self.reorder_source(est_targets, batch_indices)
-            return mean_loss, reordered
-        elif self.pit_from == 'mix_it':
-            # Cannot get pairwise losses from this type of loss.
-            # Find best permutation and return ordered sources directly.
-            min_loss, reordered = self.best_part_mix_it(
-                self.loss_func, est_targets, targets, **kwargs
-            )
-            # Take the mean over the batch
-            mean_loss = torch.mean(min_loss)
-            return mean_loss, reordered
-        elif self.pit_from == 'mix_it_gen':
-            # Cannot get pairwise losses from this type of loss.
-            # Find best permutation and return ordered sources directly.
-            min_loss, reordered = self.best_part_mix_it_generalized(
-                self.loss_func, est_targets, targets, **kwargs
-            )
-            # Take the mean over the batch
-            mean_loss = torch.mean(min_loss)
             return mean_loss, reordered
         else:
             return
@@ -220,169 +190,6 @@ class PITLossWrapper(nn.Module):
         # Permutation indices for each batch.
         batch_indices = torch.stack([perms[m] for m in min_loss_idx], dim=0)
         return min_loss, batch_indices
-
-     @staticmethod
-    
-    @staticmethod
-    def best_part_mix_it(loss_func, est_targets, targets, **kwargs):
-        """ Find best partition of the estimated sources that gives
-            the minimum loss for the MixIT training paradigm in [1].
-             Valid for any number of mixtures as soon as they contain
-             the same number of sources.
-
-        Args:
-            loss_func: function with signature (targets, est_targets, **kwargs)
-                The loss function batch losses from.
-            est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
-                The batch of target estimates.
-            targets: torch.Tensor. Expected shape [batch, nsrc, *].
-                The batch of training targets.
-            **kwargs: additional keyword argument that will be passed to the
-                loss function.
-
-        Returns:
-            tuple:
-                :class:`torch.Tensor`: The loss corresponding to the best
-                permutation of size (batch,).
-
-                :class:`torch.LongTensor`: The indexes of the best permutations.
-
-        References:
-            [1] Scott Wisdom and Efthymios Tzinis and Hakan Erdogan and Ron J Weiss
-            and Kevin Wilson and John R Hershey, "Unsupervised sound separation using
-            mixtures of mixtures." arXiv preprint arXiv:2006.12701 (2020) $
-        """
-
-        # check input dimensions
-        assert est_targets.shape[0] == targets.shape[0]
-        assert est_targets.shape[2] == targets.shape[2]
-
-        # get dimensions
-        n_mixtures = targets.shape[1]        # number of mixtures 
-        n_est = est_targets.shape[1]         # number of estimated sources
-        if n_est % n_mixtures != 0:
-            raise ValueError('The mixtures are assumed to contain the same number of sources')
-        n_src = n_est // n_mixtures          # number of sources in each mixture
-
-        # Generate all unique partitions of size k from a list lst of
-        # length n, where l = n // k is the number of parts. The total
-        # number of such partitions is: NPK(n,k) = n! / ((k!)^l * l!)
-        # Algorithm recursively distributes items over parts
-        def combs(lst, k, l):
-            if l == 0:
-                yield []
-            else:
-                for c in combinations(lst, k):
-                    rest = [x for x in lst if x not in c]
-                    for r in combs(rest, k, l-1):
-                        yield [list(c), *r]
-
-        # Generate all the possible partitions
-        loss_set = []
-        parts = list(combs(range(n_est), n_src, n_mixtures))     
-        for partition in parts:
-            assert len(partition[0]) == n_src
-            assert len(partition) == n_mixtures
-        
-            # sum the sources according to the given partition
-            est_mixes = torch.stack([torch.sum(est_targets[:, indexes, :], axis=1) for indexes in partition], axis=1)
-
-            # get loss for the given partition
-            loss_set.append(loss_func(est_mixes, targets, **kwargs)[:, None])
-            
-        loss_set = torch.cat(loss_set, dim=1)
-        
-        # Indexes and values of min losses for each batch element
-        min_loss, min_loss_indexes = torch.min(loss_set, dim=1, keepdim=True)
-        assert len(min_loss_indexes) == est_mixes.shape[0]
-
-        # For each batch there is a different min_loss_idx
-        ordered = torch.zeros_like(est_mixes)
-        for b, idx in enumerate(min_loss_indexes):
-            right_partition = parts[idx]
-            # sum the estimated sources to get the estimated mixtures
-            ordered[b, :, :] = torch.stack([torch.sum(est_targets[b, indexes, :][None, :, :], axis=1) for indexes in right_partition], axis=1)
-
-        return min_loss, ordered
-
-    @staticmethod
-    def best_part_mix_it_generalized(loss_func, est_targets, targets, **kwargs):
-        """ Find best partition of the estimated sources that gives
-            the minimum loss for the MixIT training paradigm in [1].
-            Valid only for two mixtures, but those mixtures do not
-            necessarly have to contain the same number of sources.
-            It is allowed the case where one mixture is silent.
-
-        Args:
-            loss_func: function with signature (targets, est_targets, **kwargs)
-                The loss function batch losses from.
-            est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
-                The batch of target estimates.
-            targets: torch.Tensor. Expected shape [batch, nsrc, *].
-                The batch of training targets.
-            **kwargs: additional keyword argument that will be passed to the
-                loss function.
-
-        Returns:
-            tuple:
-                :class:`torch.Tensor`: The loss corresponding to the best
-                permutation of size (batch,).
-
-                :class:`torch.LongTensor`: The indexes of the best permutations.
-
-        References:
-            [1] Scott Wisdom and Efthymios Tzinis and Hakan Erdogan and Ron J Weiss
-            and Kevin Wilson and John R Hershey, "Unsupervised sound separation using
-            mixtures of mixtures." arXiv preprint arXiv:2006.12701 (2020) $
-        """
-
-        # check input dimensions
-        assert est_targets.shape[0] == targets.shape[0]
-        assert est_targets.shape[2] == targets.shape[2]
-
-        # get dimensions
-        n_mixtures = targets.shape[1]        # number of mixtures 
-        n_est = est_targets.shape[1]         # number of estimated sources
-
-        if n_mixtures != 2:
-            raise ValueError('Works only with two mixtures')
-
-        # Generate all unique partitions of any size from a list lst of
-        # length n. Algorithm recursively distributes items over parts
-        def all_combinations(lst):
-            all_combinations = []
-            for k in range(len(lst) + 1):
-                for c in combinations(lst, k):
-                    rest = [x for x in lst if x not in c]
-                    all_combinations.append([list(c), rest]) 
-            return all_combinations
-
-        # Generate all the possible partitions
-        loss_set = []
-        parts = all_combinations(range(n_est))    
-        for partition in parts:
-            assert len(partition) == n_mixtures
-        
-            # sum the sources according to the given partition
-            est_mixes = torch.stack([torch.sum(est_targets[:, indexes, :], axis=1) for indexes in partition], axis=1)
-
-            # get loss for the given partition
-            loss_set.append(loss_func(est_mixes, targets, **kwargs)[:, None])
-
-        loss_set = torch.cat(loss_set, dim=1)
-            
-        # Indexes and values of min losses for each batch element
-        min_loss, min_loss_indexes = torch.min(loss_set, dim=1, keepdim=True)
-        assert len(min_loss_indexes) == est_mixes.shape[0]
-
-        # For each batch there is a different min_loss_idx
-        ordered = torch.zeros_like(est_mixes)
-        for b, idx in enumerate(min_loss_indexes):
-            right_partition = parts[idx]
-            # sum the estimated sources to get the estimated mixtures
-            ordered[b, :, :] = torch.stack([torch.sum(est_targets[b, indexes, :][None, :, :], axis=1) for indexes in right_partition], axis=1)
-
-        return min_loss, ordered
 
     @staticmethod
     def find_best_perm(pair_wise_losses, perm_reduce=None, **kwargs):
