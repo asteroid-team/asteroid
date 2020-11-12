@@ -20,11 +20,11 @@ class MixITLossWrapper(nn.Module):
 
     Examples:
         >>> import torch
-        >>> from asteroid.losses import singlesrc_mse
+        >>> from asteroid.losses import multisrc_mse
         >>> mixtures = torch.randn(10, 2, 16000)
         >>> est_sources = torch.randn(10, 4, 16000)
         >>> # Compute MixIT loss based on pairwise losses
-        >>> loss_func = MixITLossWrapper(singlesrc_mse, generalized=True)
+        >>> loss_func = MixITLossWrapper(multisrc_mse, generalized=True)
         >>> loss_val = loss_func(est_sources, mixtures)
 
     References
