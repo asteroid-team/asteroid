@@ -35,13 +35,10 @@ class MixITLossWrapper(nn.Module):
         >>> loss_func = MixITLossWrapper(singlesrc_mse, pit_from='mix_it')
         >>> loss_val = loss_func(est_sources, mixtures)
     """
-    def __init__(self, loss_func, pit_from='pw_mtx'):
+    def __init__(self, loss_func, generalized=False):
         super().__init__()
         self.loss_func = loss_func
-        self.pit_from = pit_from
-        if self.pit_from not in ['mix_it', 'mix_it_gen']:
-            raise ValueError('Unsupported loss function type for now. Expected'
-                             'one of [`mix_it`, `mix_it_gen`]')
+        self.generalized = generalized
 
     def forward(self, est_targets, targets, return_est=False, **kwargs):
         """ Find the best partition and return the loss.
@@ -68,18 +65,14 @@ class MixITLossWrapper(nn.Module):
         assert est_targets.shape[0] == targets.shape[0]
         assert est_targets.shape[2] == targets.shape[2]
 
-        if self.pit_from == 'mix_it':
+        if not self.generalized:
             min_loss, min_loss_idx, parts = self.best_part_mix_it(
                 self.loss_func, est_targets, targets, **kwargs
             )
-
-        elif self.pit_from == 'mix_it_gen':
+        else:
             min_loss, min_loss_idx, parts = self.best_part_mix_it_generalized(
                 self.loss_func, est_targets, targets, **kwargs
             )
-
-        else:
-            return
 
         # Take the mean over the batch
         mean_loss = torch.mean(min_loss)
