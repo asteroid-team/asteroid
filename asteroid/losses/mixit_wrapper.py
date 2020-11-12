@@ -143,24 +143,13 @@ class MixITLossWrapper(nn.Module):
                         yield [list(c), *r]
 
         # Generate all the possible partitions
-        loss_set = []
-        parts = list(parts_mixit(range(nsrc), nsrcmix, nmix))    
-        for partition in parts:
-            assert len(partition[0]) == nsrcmix
-            assert len(partition) == nmix
-       
-            # sum the sources according to the given partition
-            est_mixes = torch.stack([torch.sum(est_targets[:, indexes, :], axis=1) for indexes in partition], axis=1)
-
-            # get loss for the given partition
-            loss_set.append(loss_func(est_mixes, targets, **kwargs)[:, None])
-
-        loss_set = torch.cat(loss_set, dim=1)
-
+        parts = list(parts_mixit(range(nsrc), nsrcmix, nmix))
+        # Compute the loss corresponding to each partition
+        loss_set = MixITLossWrapper.loss_set_from_parts(
+            loss_func, est_targets=est_targets, targets=targets, parts=parts, **kwargs
+        )
         # Indexes and values of min losses for each batch element
         min_loss, min_loss_indexes = torch.min(loss_set, dim=1, keepdim=True)
-        assert len(min_loss_indexes) == est_mixes.shape[0]
-
         return min_loss, min_loss_indexes, parts
 
     @staticmethod
@@ -212,24 +201,25 @@ class MixITLossWrapper(nn.Module):
             return partitions
 
         # Generate all the possible partitions
-        loss_set = []
         parts = parts_mixit_gen(range(nsrc))
-        for partition in parts:
-            assert len(partition) == nmix
-        
-            # sum the sources according to the given partition
-            est_mixes = torch.stack([torch.sum(est_targets[:, indexes, :], axis=1) for indexes in partition], axis=1)
-
-            # get loss for the given partition
-            loss_set.append(loss_func(est_mixes, targets, **kwargs)[:, None])
-
-        loss_set = torch.cat(loss_set, dim=1)
-
+        # Compute the loss corresponding to each partition
+        loss_set = MixITLossWrapper.loss_set_from_parts(
+            loss_func, est_targets=est_targets, targets=targets, parts=parts, **kwargs
+        )
         # Indexes and values of min losses for each batch element
         min_loss, min_loss_indexes = torch.min(loss_set, dim=1, keepdim=True)
-        assert len(min_loss_indexes) == est_mixes.shape[0]
-
         return min_loss, min_loss_indexes, parts
+
+    @staticmethod
+    def loss_set_from_parts(loss_func, est_targets, targets, parts, **kwargs):
+        loss_set = []
+        for partition in parts:
+            # sum the sources according to the given partition
+            est_mixes = torch.stack([est_targets[:, idx, :].sum(1) for idx in partition], dim=1)
+            # get loss for the given partition
+            loss_set.append(loss_func(est_mixes, targets, **kwargs)[:, None])
+        loss_set = torch.cat(loss_set, dim=1)
+        return loss_set
 
     @staticmethod
     def reorder_source(est_targets, targets, min_loss_idx, parts):
