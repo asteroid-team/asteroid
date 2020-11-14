@@ -50,7 +50,7 @@ def main(conf):
         conf["test_dir"],
         conf["task"],
         sample_rate=conf["sample_rate"],
-        nondefault_nsrc=model.masker.n_src,
+        nondefault_nsrc=None,
         segment=None,
     )  # Uses all segment length
     # Used to reorder sources only
@@ -69,6 +69,7 @@ def main(conf):
         est_sources = model(mix[None, None])
         _, indxs = torch.sort(torch.sqrt(torch.mean(est_sources ** 2, dim=-1)), descending=True)
         indxs = indxs[:, :2]
+
         est_sources = est_sources.gather(1, indxs.unsqueeze(-1).repeat(1, 1, est_sources.shape[-1]))
         loss, reordered_sources = loss_func(est_sources, sources[None], return_est=True)
         mix_np = mix[None].cpu().data.numpy()
@@ -139,11 +140,5 @@ if __name__ == "__main__":
         train_conf = yaml.safe_load(f)
     arg_dic["sample_rate"] = train_conf["data"]["sample_rate"]
     arg_dic["train_conf"] = train_conf
-
-    if args.task != arg_dic["train_conf"]["data"]["task"]:
-        print(
-            "Warning : the task used to test is different than "
-            "the one from training, be sure this is what you want."
-        )
 
     main(arg_dic)
