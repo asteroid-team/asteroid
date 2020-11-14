@@ -142,7 +142,6 @@ def main(conf):
         gpus=gpus,
         distributed_backend="ddp",
         gradient_clip_val=conf["training"]["gradient_clipping"],
-        train_percent_check=0.1,
     )
     trainer.fit(system)
 

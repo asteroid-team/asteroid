@@ -78,7 +78,7 @@ uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
 	tag=${task}_${sr_string}k${mode}_${uuid}
 fi
-expdir=exp/train_dptnet_${tag}
+expdir=exp/train_mixit_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
@@ -100,7 +100,7 @@ fi
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4 : Evaluation"
 	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
-		--task $task \
+		--task sep_clean \
 		--test_dir $test_dir \
 		--use_gpu $eval_use_gpu \
 		--exp_dir ${expdir} | tee logs/eval_${tag}.log
