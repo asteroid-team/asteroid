@@ -1,3 +1,4 @@
+import warnings
 from itertools import combinations
 import torch
 from torch import nn
@@ -24,7 +25,7 @@ class MixITLossWrapper(nn.Module):
         >>> mixtures = torch.randn(10, 2, 16000)
         >>> est_sources = torch.randn(10, 4, 16000)
         >>> # Compute MixIT loss based on pairwise losses
-        >>> loss_func = MixITLossWrapper(multisrc_mse, generalized=True)
+        >>> loss_func = MixITLossWrapper(multisrc_mse)
         >>> loss_val = loss_func(est_sources, mixtures)
 
     References
@@ -32,7 +33,7 @@ class MixITLossWrapper(nn.Module):
             mixtures of mixtures." arXiv:2006.12701 (2020)
     """
 
-    def __init__(self, loss_func, generalized=False):
+    def __init__(self, loss_func, generalized=True):
         super().__init__()
         self.loss_func = loss_func
         self.generalized = generalized

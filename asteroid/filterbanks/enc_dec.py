@@ -47,6 +47,9 @@ class Filterbank(nn.Module):
         }
         return config
 
+    def forward(self, waveform):
+        raise NotImplementedError("Filterbanks must be wrapped with an Encoder or a Decoder.")
+
 
 class _EncDec(nn.Module):
     """Base private class for Encoder and Decoder.
