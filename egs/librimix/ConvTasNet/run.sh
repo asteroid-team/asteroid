@@ -40,6 +40,7 @@ optimizer=adam
 lr=0.001
 weight_decay=0.
 # Data config
+# FIXME: this is wrong to have it written in plain
 train_dir=data/wav8k/min/train-360
 valid_dir=data/wav8k/min/dev
 test_dir=data/wav8k/min/test
