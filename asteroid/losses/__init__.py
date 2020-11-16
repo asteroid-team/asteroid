@@ -1,4 +1,5 @@
 from .pit_wrapper import PITLossWrapper
+from .mixit_wrapper import MixITLossWrapper
 from .sinkpit_wrapper import SinkPITLossWrapper, SinkPITBetaScheduler
 from .sdr import singlesrc_neg_sisdr, multisrc_neg_sisdr
 from .sdr import singlesrc_neg_sdsdr, multisrc_neg_sdsdr
@@ -19,6 +20,7 @@ from .mse import pairwise_mse, nosrc_mse, nonpit_mse
 
 __all__ = [
     "PITLossWrapper",
+    "MixITLossWrapper",
     "SinkPITLossWrapper",
     "SinkPITBetaScheduler",
     "singlesrc_neg_sisdr",
