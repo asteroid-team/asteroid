@@ -146,9 +146,8 @@ class WERTracker:
 
 def main(conf):
     compute_metrics = update_compute_metrics(conf["compute_wer"], COMPUTE_METRICS)
-    wer_tracker = (
-        MockTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, None)
-    )  # FIXME None
+    anno_df = pd.read_csv(os.path.join(conf["test_dir"], "annotations.csv"))
+    wer_tracker = MockTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, anno_df)
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
     model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
@@ -162,6 +161,7 @@ def main(conf):
         n_src=conf["train_conf"]["data"]["n_src"],
         segment=None,
         return_id=True,
+        # FIXME: ensure max mode for eval.
     )  # Uses all segment length
     # Used to reorder sources only
     loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx")
