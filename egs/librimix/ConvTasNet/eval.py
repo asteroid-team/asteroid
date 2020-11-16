@@ -1,5 +1,6 @@
 import os
 import random
+from typing import List
 import soundfile as sf
 import torch
 import yaml
@@ -17,6 +18,17 @@ from asteroid import ConvTasNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
 
+
+def import_wer():
+    try:
+        from jiwer import wer
+    except ModuleNotFoundError:
+        return None
+    else:
+        return wer
+
+
+wer = import_wer()
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -41,11 +53,102 @@ parser.add_argument("--exp_dir", default="exp/tmp", help="Experiment root")
 parser.add_argument(
     "--n_save_ex", type=int, default=10, help="Number of audio examples to save, -1 means all"
 )
+parser.add_argument(
+    "--compute-wer", type=int, default=0, help="Compute WER using ESPNet's pretrained model"
+)
 
-compute_metrics = ["si_sdr", "sdr", "sir", "sar", "stoi"]
+COMPUTE_METRICS = ["si_sdr", "sdr", "sir", "sar", "stoi"]
+ASR_MODEL_PATH = (
+    "Shinji Watanabe/librispeech_asr_train_asr_transformer_e18_raw_bpe_sp_valid.acc.best"
+)
+
+
+def update_compute_metrics(compute_wer, metric_list):
+    if not compute_wer:
+        return metric_list
+    try:
+        from espnet2.bin.asr_inference import Speech2Text
+        from espnet_model_zoo.downloader import ModelDownloader
+    except ModuleNotFoundError:
+        import warnings
+
+        warnings.warn("Couldn't find espnet installation. Continuing without.")
+        return metric_list
+    return metric_list + ["wer"]
+
+
+class MockTracker:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return dict()
+
+
+class WERTracker:
+    def __init__(self, model_name, trans_df):
+        from espnet2.bin.asr_inference import Speech2Text
+        from espnet_model_zoo.downloader import ModelDownloader
+
+        self.model_name = model_name
+        d = ModelDownloader()
+        self.asr_model = Speech2Text(**d.download_and_unpack(model_name))
+        self.input_txt_list = []
+        self.output_txt_list = []
+        self.sample_rate = int(d.data_frame[d.data_frame["name"] == model_name]["fs"])
+        self.trans_df = trans_df
+        self.trans_dic = self._df_to_dict(trans_df)
+
+    def __call__(
+        self, *, mix: np.ndarray, est_sources: np.ndarray, sample_rate: int, wav_id: List[str]
+    ):
+        """Compute and store best hypothesis for the mixture and the estimates"""
+        if sample_rate != self.sample_rate:
+            mix, est_sources = self.resample(
+                mix, est_sources, fs_from=sample_rate, fs_to=self.sample_rate
+            )
+        input_wer = output_wer = 0.0
+        # Count the mixture output for each speaker
+        txt = self.predict_hypothesis(mix)
+        for tmp_id in wav_id:
+            input_wer += wer(truth=self.trans_dic[tmp_id], hypothesis=txt) / len(wav_id)
+            self.input_txt_list.append(dict(utt_id=tmp_id, text=txt))
+        # Average WER for the estimate pair
+        for est, tmp_id in zip(est_sources, wav_id):
+            txt = self.predict_hypothesis(est)
+            output_wer += wer(truth=self.trans_dic[tmp_id], hypothesis=txt) / len(wav_id)
+            self.output_txt_list.append(dict(utt_id=tmp_id, text=txt))
+        return dict(input_wer=input_wer, wer=output_wer)
+
+    def predict_hypothesis(self, wav):
+        nbests = self.asr_model(wav)
+        text, *_ = nbests[0]
+        return text
+
+    def compute_wer(self, transcriptions):
+        # Is average WER the average over individual WER?
+        # Or computed overall with all S, D, I?
+        # Is it different than the average from call (probably)
+        return
+
+    def to_df(self):
+        # Should we have that?
+        return
+
+    def resample(self, *wavs: np.ndarray, fs_from=None, fs_to=None):
+        from resampy import resample as _resample
+
+        return [_resample(w, sr_orig=fs_from, sr_new=fs_to) for w in wavs]
+
+    def _df_to_dict(self, df):
+        return {k: v for k, v in zip(df["utt_id"].to_list(), df["text"].to_list())}
 
 
 def main(conf):
+    compute_metrics = update_compute_metrics(conf["compute_wer"], COMPUTE_METRICS)
+    wer_tracker = (
+        MockTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, None)
+    )  # FIXME None
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
     model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
@@ -58,6 +161,7 @@ def main(conf):
         sample_rate=conf["sample_rate"],
         n_src=conf["train_conf"]["data"]["n_src"],
         segment=None,
+        return_id=True,
     )  # Uses all segment length
     # Used to reorder sources only
     loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx")
@@ -72,7 +176,8 @@ def main(conf):
     torch.no_grad().__enter__()
     for idx in tqdm(range(len(test_set))):
         # Forward the network on the mixture.
-        mix, sources = tensors_to_device(test_set[idx], device=model_device)
+        mix, sources, ids = test_set[idx]
+        mix, sources = tensors_to_device([mix, sources], device=model_device)
         est_sources = model(mix.unsqueeze(0))
         loss, reordered_sources = loss_func(est_sources, sources[None], return_est=True)
         mix_np = mix.cpu().data.numpy()
@@ -88,6 +193,11 @@ def main(conf):
             metrics_list=compute_metrics,
         )
         utt_metrics["mix_path"] = test_set.mixture_path
+        utt_metrics.update(
+            **wer_tracker(
+                mix=mix_np, est_sources=sources_np, wav_id=ids, sample_rate=conf["sample_rate"]
+            )
+        )
         series_list.append(pd.Series(utt_metrics))
 
         # Save some examples in a folder. Wav files and metrics as text.
