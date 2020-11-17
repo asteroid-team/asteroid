@@ -6,7 +6,7 @@ import pandas as pd
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--libridir", required=True, type=str)
-parser.add_argument("--outdir", required=True, type=str)
+parser.add_argument("--outfile", required=True, type=str)
 parser.add_argument("--split", type=str, default="train-360")
 
 args = parser.parse_args()
@@ -25,4 +25,4 @@ for name in trans_txt_list:
         row_list.append(dict1)
 
 df = pd.DataFrame(row_list)
-df.to_csv(os.path.join(args.outdir, "annotations.csv"), index=False)
+df.to_csv(args.outfile, index=False)
