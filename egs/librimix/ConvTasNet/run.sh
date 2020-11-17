@@ -47,16 +47,24 @@ segment=3
 task=sep_clean  # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
 
 eval_use_gpu=1
+# Need to --compute_wer 1 --eval_mode max to be sure the user knows all the metrics
+# are for the all mode.
 compute_wer=0
+eval_mode=
 
 . utils/parse_options.sh
+
 
 sr_string=$(($sample_rate/1000))
 suffix=wav${sr_string}k/$mode
 
+if [ -z "$eval_mode" ]; then
+  eval_mode=$mode
+fi
+
 train_dir=data/$suffix/train-360
 valid_dir=data/$suffix/dev
-test_dir=data/$suffix/test
+test_dir=data/wav${sr_string}k/$eval_mode/test
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating Librimix dataset"
@@ -107,6 +115,10 @@ if [[ $stage -le 2 ]]; then
 	echo "Stage 2 : Evaluation"
 
 	if [[ $compute_wer -eq 1 ]]; then
+	  if [[ $eval_mode != "max" ]]; then
+	    echo "Cannot compute WER without max mode. Start again with --stage 2 --compute_wer 1 --eval_mode max"
+	    exit 1
+	  fi
     # Install espnet if not instaled
     if not python -c "import espnet" &> /dev/null; then
         echo 'This recipe requires espnet. Installing requirements.'
