@@ -40,11 +40,8 @@ optimizer=adam
 lr=0.001
 weight_decay=0.
 # Data config
-# FIXME: this is wrong to have it written in plain
-train_dir=data/wav8k/min/train-360
-valid_dir=data/wav8k/min/dev
-test_dir=data/wav8k/min/test
 sample_rate=8000
+mode=min
 n_src=2
 segment=3
 task=sep_clean  # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
@@ -54,6 +51,12 @@ compute_wer=0
 
 . utils/parse_options.sh
 
+sr_string=$(($sample_rate/1000))
+suffix=wav${sr_string}k/$mode
+
+train_dir=data/$suffix/train-360
+valid_dir=data/$suffix/dev
+test_dir=data/$suffix/test
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating Librimix dataset"
