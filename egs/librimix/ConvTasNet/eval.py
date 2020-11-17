@@ -11,6 +11,7 @@ import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
 from collections import Counter
+from pathlib import Path
 
 from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
@@ -183,7 +184,7 @@ class WERTracker:
 
 def main(conf):
     compute_metrics = update_compute_metrics(conf["compute_wer"], COMPUTE_METRICS)
-    anno_df = pd.read_csv(os.path.join(conf["test_dir"], "annotations.csv"))
+    anno_df = pd.read_csv(Path(conf["test_dir"]).parent.parent.parent / "test_annotations.csv")
     wer_tracker = MockTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, anno_df)
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
     model = ConvTasNet.from_pretrained(model_path)
