@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
+from collections import Counter
 
 from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
@@ -19,16 +20,29 @@ from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
 
 
-def import_wer():
+def import_compute_measures():
     try:
-        from jiwer import wer
+        from jiwer import compute_measures
+
+        # FIXME
+        # Which returns
+        #  {
+        #     "wer": wer,
+        #     "mer": mer,
+        #     "wil": wil,
+        #     "wip": wip,
+        #     "hits": H,
+        #     "substitutions": S,
+        #     "deletions": D,
+        #     "insertions": I,
+        # }
     except ModuleNotFoundError:
         return None
     else:
-        return wer
+        return compute_measures
 
 
-wer = import_wer()
+compute_measures = import_compute_measures()
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -98,6 +112,9 @@ class WERTracker:
         self.sample_rate = int(d.data_frame[d.data_frame["name"] == model_name]["fs"])
         self.trans_df = trans_df
         self.trans_dic = self._df_to_dict(trans_df)
+        # FIXME, set jiwer transform here for text preprocessing.
+        self.mix_counter = Counter()
+        self.est_counter = Counter()
 
     def __call__(
         self, *, mix: np.ndarray, est_sources: np.ndarray, sample_rate: int, wav_id: List[str]
@@ -107,35 +124,55 @@ class WERTracker:
             mix, est_sources = self.resample(
                 mix, est_sources, fs_from=sample_rate, fs_to=self.sample_rate
             )
-        input_wer = output_wer = 0.0
+        # FIXME: compute metrics on the references signals as well?
+        local_mix_counter = Counter()
+        local_est_counter = Counter()
         # Count the mixture output for each speaker
         txt = self.predict_hypothesis(mix)
         for tmp_id in wav_id:
-            input_wer += wer(truth=self.trans_dic[tmp_id], hypothesis=txt) / len(wav_id)
+            out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
+            self.mix_counter += out_count
+            local_mix_counter += out_count
             self.input_txt_list.append(dict(utt_id=tmp_id, text=txt))
         # Average WER for the estimate pair
         for est, tmp_id in zip(est_sources, wav_id):
             txt = self.predict_hypothesis(est)
-            output_wer += wer(truth=self.trans_dic[tmp_id], hypothesis=txt) / len(wav_id)
+            out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
+            self.est_counter += out_count
+            local_est_counter += out_count
             self.output_txt_list.append(dict(utt_id=tmp_id, text=txt))
-        return dict(input_wer=input_wer, wer=output_wer)
+        return dict(
+            input_wer=self.wer_from_hsdi(**dict(local_mix_counter)),
+            wer=self.wer_from_hsdi(**dict(local_est_counter)),
+        )
+
+    @staticmethod
+    def wer_from_hsdi(hits, substitutions, deletions, insertions):
+        wer = (substitutions + deletions + insertions) / (hits + substitutions + deletions)
+        return wer
+
+    @staticmethod
+    def hsdi(truth, hypothesis):
+        keep = ["hits", "substitutions", "deletions", "insertions"]
+        out = compute_measures(truth=truth, hypothesis=hypothesis).items()
+        return {k: v for k, v in out if k in keep}
+
+    @staticmethod
+    def dict_add(d, **kwargs):
+        assert d.keys() == kwargs.keys()
+        return {k: d[k] + kwargs[k] for k in d.keys()}
 
     def predict_hypothesis(self, wav):
         nbests = self.asr_model(wav)
         text, *_ = nbests[0]
         return text
 
-    def compute_wer(self, transcriptions):
-        # Is average WER the average over individual WER?
-        # Or computed overall with all S, D, I?
-        # Is it different than the average from call (probably)
-        return
-
     def to_df(self):
         # Should we have that?
         return
 
-    def resample(self, *wavs: np.ndarray, fs_from=None, fs_to=None):
+    @staticmethod
+    def resample(*wavs: np.ndarray, fs_from=None, fs_to=None):
         from resampy import resample as _resample
 
         return [_resample(w, sr_orig=fs_from, sr_new=fs_to) for w in wavs]
