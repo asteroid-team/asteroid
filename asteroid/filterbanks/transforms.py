@@ -433,7 +433,7 @@ def concat_deltas(feats: torch.Tensor, order: int = 1, dim: int = -1) -> torch.T
     """
     all_feats = [feats]
     for _ in range(order):
-        all_feats.append(compute_delta(feats[-1], dim=dim))
+        all_feats.append(compute_delta(all_feats[-1], dim=dim))
     return torch.cat(all_feats, dim=dim)
 
 
