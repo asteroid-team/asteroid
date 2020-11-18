@@ -227,3 +227,13 @@ def test_concat_deltas(dim, order):
     out_shape = list(phase_shape)
     out_shape[dim] = phase_shape[dim] * (1 + order)
     assert out_shape == list(cat_deltas.shape)
+
+
+@pytest.mark.parametrize("kernel_size", [40, 64])
+@pytest.mark.parametrize("stride_factor", [2, 4, None])
+def test_center_freq_correction(kernel_size, stride_factor):
+    spec = torch.randn(2, kernel_size + 2, 50)
+    stride = None if stride_factor is None else kernel_size // stride_factor
+    new_spec = transforms.centerfreq_correction(spec, kernel_size=kernel_size, stride=stride)
+    assert spec.shape == new_spec.shape
+    assert_allclose(transforms.take_mag(spec), transforms.take_mag(new_spec))
