@@ -200,6 +200,17 @@ def test_ebased_vad():
     assert (batch_src_mask[:, 0] == batch_1_mask).all()
 
 
+def test_to_polar():
+    spec_shape = [2, 514, 100]
+    spec = torch.randn(*spec_shape)
+    mag, phase = transforms.to_polar(spec, dim=-2)
+
+    out_shape = spec_shape
+    out_shape[-2] //= 2
+    assert out_shape == list(mag.shape)
+    assert out_shape == list(phase.shape)
+
+
 @pytest.mark.parametrize("dim", [1, 2, -1, -2])
 def test_delta(dim):
     phase = torch.randn(2, 257, 100)
