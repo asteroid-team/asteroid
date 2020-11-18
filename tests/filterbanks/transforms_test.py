@@ -237,3 +237,8 @@ def test_center_freq_correction(kernel_size, stride_factor):
     new_spec = transforms.centerfreq_correction(spec, kernel_size=kernel_size, stride=stride)
     assert spec.shape == new_spec.shape
     assert_allclose(transforms.take_mag(spec), transforms.take_mag(new_spec))
+
+
+def test_center_freq_correction_raises():
+    with pytest.raises(NotImplementedError):
+        transforms.centerfreq_correction(torch.randn(2, 10, 14), 12, 6, dim=-1)
