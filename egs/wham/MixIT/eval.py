@@ -69,7 +69,8 @@ def main(conf):
         est_sources = model(mix[None, None])
         _, indxs = torch.sort(torch.sqrt(torch.mean(est_sources ** 2, dim=-1)), descending=True)
         indxs = indxs[:, :2]
-
+        # we know a-priori that there are 2 sources in WHAM-clean (WSJ0-2mix clean)
+        # so we sort the estimated signals and take only the two with highest energy.
         est_sources = est_sources.gather(1, indxs.unsqueeze(-1).repeat(1, 1, est_sources.shape[-1]))
         loss, reordered_sources = loss_func(est_sources, sources[None], return_est=True)
         mix_np = mix[None].cpu().data.numpy()
