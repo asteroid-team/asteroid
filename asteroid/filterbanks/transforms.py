@@ -1,4 +1,7 @@
+from typing import Tuple
+
 import torch
+import numpy as np
 
 from ..utils.torch_utils import script_if_tracing
 
@@ -369,19 +372,3 @@ def ebased_vad(mag_spec, th_db: int = 40):
     to_view = list(mag_spec.shape[:-2]) + [1, -1]
     max_log_mag = torch.max(log_mag.view(to_view), -1, keepdim=True)[0]
     return log_mag > (max_log_mag - th_db)
-
-
-_inputs = {"reim": (take_reim, 1), "mag": (take_mag, 1 / 2), "cat": (take_cat, 1 + 1 / 2)}
-_inputs["real"] = _inputs["reim"]
-_inputs["mod"] = _inputs["mag"]
-_inputs["concat"] = _inputs["cat"]
-
-
-_masks = {
-    "reim": (apply_real_mask, 1),
-    "mag": (apply_mag_mask, 1 / 2),
-    "complex": (apply_complex_mask, 1),
-}
-_masks["real"] = _masks["reim"]
-_masks["mod"] = _masks["mag"]
-_masks["comp"] = _masks["complex"]
