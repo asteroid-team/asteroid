@@ -425,3 +425,54 @@ def concat_deltas(feats: torch.Tensor, order: int = 1, dim: int = -1) -> torch.T
     for _ in range(order):
         all_feats.append(compute_delta(feats[-1], dim=dim))
     return torch.cat(all_feats, dim=dim)
+
+
+def centerfreq_correction(
+    spec: torch.Tensor,
+    kernel_size: int,
+    stride: int = None,
+    dim: int = -2,
+) -> torch.Tensor:
+    """Corrects phase from the input spectrogram so that a sinusoid in the
+    middle of a bin keeps the same phase from one frame to the next.
+
+    Args:
+        spec: Spectrogram tensor of shape (batch, n_freq + 2, frames).
+        kernel_size (int): Kernel size of the STFT.
+        stride (int): Stride of the STFT.
+        dim (int): Only works of dim=-2.
+
+    Returns:
+        Tensor: the input spec with corrected phase.
+    """
+    if dim != -2:
+        raise NotImplementedError
+    if stride is None:
+        stride = kernel_size // 2
+    # Phase will be (batch, n_freq // 2 + 1, frames)
+    mag, phase = to_polar(spec, dim=dim)
+    new_phase = phase_centerfreq_correction(phase, kernel_size=kernel_size, stride=stride)
+    new_spec = from_polar(mag, new_phase, dim=dim)
+    return new_spec
+
+
+def phase_centerfreq_correction(
+    phase: torch.Tensor,
+    kernel_size: int,
+    stride: int = None,
+) -> torch.Tensor:
+    """Corrects phase so that a sinusoid in the middle of a bin keeps the
+    same phase from one frame to the next.
+
+    Args:
+        phase: tensor of shape (batch, n_freq//2 + 1, frames)
+        kernel_size (int): Kernel size of the STFT.
+        stride (int): Stride of the STFT.
+
+    Returns:
+        Tensor: corrected phase.
+    """
+    *_, freq, frames = phase.shape
+    tmp = torch.arange(freq).unsqueeze(-1) * torch.arange(frames)[None]
+    correction = -2 * tmp * stride * np.pi / kernel_size
+    return phase + correction
