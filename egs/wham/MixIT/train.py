@@ -52,7 +52,8 @@ class MixITSystem(System):
         est_sources = self(mixture)
 
         _, indxs = torch.sort(torch.sqrt(torch.mean(est_sources ** 2, dim=-1)), descending=True)
-        indxs = indxs[:, :2]
+        indxs = indxs[:, :2]  # we know a-priori that in eval there are 2 sources,
+        # we thus discard the estimates with lower energy.
         est_sources = est_sources.gather(1, indxs.unsqueeze(-1).repeat(1, 1, est_sources.shape[-1]))
 
         loss = self.loss_func["pit"](est_sources, oracle)
