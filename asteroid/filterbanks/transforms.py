@@ -349,6 +349,13 @@ def from_mag_and_phase(mag, phase, dim: int = -2):
 from_polar = from_mag_and_phase
 
 
+def to_polar(spec: torch.Tensor, dim: int = -2) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Splits Asteroid complex-like tensor into magnitude and phase."""
+    mag = take_mag(spec, dim=dim)
+    phase = angle(spec, dim=dim)
+    return mag, phase
+
+
 @script_if_tracing
 def ebased_vad(mag_spec, th_db: int = 40):
     """Compute energy-based VAD from a magnitude spectrogram (or equivalent).
