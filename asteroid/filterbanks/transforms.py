@@ -345,6 +345,10 @@ def from_mag_and_phase(mag, phase, dim: int = -2):
     return torch.cat([mag * torch.cos(phase), mag * torch.sin(phase)], dim=dim)
 
 
+# Alias
+from_polar = from_mag_and_phase
+
+
 @script_if_tracing
 def ebased_vad(mag_spec, th_db: int = 40):
     """Compute energy-based VAD from a magnitude spectrogram (or equivalent).
