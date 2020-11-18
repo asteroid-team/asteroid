@@ -13,7 +13,7 @@ from pprint import pprint
 from asteroid.metrics import get_metrics
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
-from asteroid.models import ConvTasNet
+from asteroid.models import DPRNNTasNet
 from asteroid.utils import tensors_to_device
 from asteroid.models import save_publishable
 
@@ -41,7 +41,7 @@ compute_metrics = ["si_sdr", "sdr", "sir", "sar", "stoi"]
 
 def main(conf):
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
-    model = ConvTasNet.from_pretrained(model_path)
+    model = DPRNNTasNet.from_pretrained(model_path)
     # Handle device placement
     if conf["use_gpu"]:
         model.cuda()
