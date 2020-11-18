@@ -396,7 +396,12 @@ def compute_delta(feats: torch.Tensor, dim: int = -1) -> torch.Tensor:
         Tensor: Tensor of deltas.
 
     Examples
-        TODO
+        >>> import torch
+        >>> phase = torch.randn(2, 257, 100)
+        >>> # Compute instantaneous frequency
+        >>> inst_freq = compute_delta(phase, dim=-1)
+        >>> # Or group delay
+        >>> group_delay = compute_delta(phase, dim=-2)
     """
     if dim != -1:
         return compute_delta(feats.transpose(-1, dim), dim=-1).transpose(-1, dim)
@@ -419,7 +424,12 @@ def concat_deltas(feats: torch.Tensor, order: int = 1, dim: int = -1) -> torch.T
         Tensor: Concatenation of the features, the deltas and subsequent deltas.
 
     Examples
-        TODO
+        >>> import torch
+        >>> phase = torch.randn(2, 257, 100)
+        >>> # Compute second order instantaneous frequency
+        >>> phase_and_inst_freq = concat_deltas(phase, order=2, dim=-1)
+        >>> # Or group delay
+        >>> phase_and_group_delay = concat_deltas(phase, order=2, dim=-2)
     """
     all_feats = [feats]
     for _ in range(order):
