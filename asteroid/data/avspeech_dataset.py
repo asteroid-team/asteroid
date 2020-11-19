@@ -121,7 +121,7 @@ class AVSpeechDataset(data.Dataset):
 
     References
         - [1]: "Looking to Listen at the Cocktail Party: A Speaker-Independent Audio-Visual
-        Model for Speech Separation" Ephrat et. al https://arxiv.org/abs/1804.03619
+          Model for Speech Separation" Ephrat et. al https://arxiv.org/abs/1804.03619
     """
 
     dataset_name = "AVSpeech"

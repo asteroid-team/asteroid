@@ -61,7 +61,7 @@ class SmsWsjDataset(data.Dataset):
 
     References
         - "SMS-WSJ: Database, performance measures, and baseline recipe for
-         multi-channel source separation and recognition", Drude et al. 2019
+          multi-channel source separation and recognition", Drude et al. 2019
     """
 
     dataset_name = "SMS_WSJ"
