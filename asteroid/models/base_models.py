@@ -285,16 +285,12 @@ class BaseEncoderMaskerDecoder(BaseModel):
     """
 
     def __init__(self, encoder, masker, decoder, encoder_activation=None):
-        super().__init__()
+        super().__init__(sample_rate=getattr(self.encoder, "sample_rate", None))
         self.encoder = encoder
         self.masker = masker
         self.decoder = decoder
         self.encoder_activation = encoder_activation
         self.enc_activation = activations.get(encoder_activation or "linear")()
-
-    @property
-    def sample_rate(self):
-        return getattr(self.encoder, "sample_rate", None)
 
     def forward(self, wav):
         """Enc/Mask/Dec model forward
