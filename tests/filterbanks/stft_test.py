@@ -152,3 +152,4 @@ def test_melgram_encoder(n_filters, n_mels, ndim):
     mel_spec = enc(wav)
     assert wav.shape[:-1] == mel_spec.shape[:-2]
     assert mel_spec.shape[-2] == n_mels
+    conf = melgram_fb.get_config()
