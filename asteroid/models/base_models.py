@@ -32,8 +32,9 @@ class BaseModel(nn.Module):
 
     """
 
-    def __init__(self):
+    def __init__(self, sample_rate: float = 8000.0):
         super().__init__()
+        self.__sample_rate = sample_rate
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError
@@ -41,7 +42,16 @@ class BaseModel(nn.Module):
     @property
     def sample_rate(self):
         """Operating sample rate of the model (float)."""
-        raise NotImplementedError
+        return self.__sample_rate
+
+    @sample_rate.setter
+    def sample_rate(self, new_sample_rate: float):
+        warnings.warn(
+            "Other sub-components of the model might have a `sample_rate` "
+            "attribute, be sure to modify them for consistency.",
+            UserWarning,
+        )
+        self.__sample_rate = new_sample_rate
 
     @torch.no_grad()
     def separate(self, wav, output_dir=None, force_overwrite=False, resample=False, **kwargs):
