@@ -5,6 +5,7 @@ from .stft_fb import STFTFB
 from .enc_dec import Filterbank, Encoder, Decoder
 from .griffin_lim import griffin_lim, misi
 from .multiphase_gammatone_fb import MultiphaseGammatoneFB
+from .melgram_fb import MelGramFB
 
 
 def make_enc_dec(
