@@ -17,7 +17,7 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):  # CHECK-JIT
 
     """
 
-    masknet_class = DCUMaskNet
+    masknet_class = NotImplemented
 
     def __init__(
         self,

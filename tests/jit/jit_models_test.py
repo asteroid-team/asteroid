@@ -2,6 +2,8 @@ import torch
 import pytest
 from torch.testing import assert_allclose
 from asteroid.models import (
+    DCCRNet,
+    DCUNet,
     DeMask,
     ConvTasNet,
     DPRNNTasNet,
@@ -46,14 +48,11 @@ def small_model_params():
             "kernel_size": 32,
             "stride": 16,
         },
-        LSTMTasNet.__name__: {
-            "n_src": 2,
-            "hid_size": 4,
-            "n_layers": 1,
-            "dropout": 0.0,
-            "n_filters": 32,
-            "kernel_size": 32,
-            "stride": 16,
+        DCCRNet.__name__: {
+            "architecture": "DCCRN-CL",
+        },
+        DCUNet.__name__: {
+            "architecture": "DCUNet-10",
         },
         DeMask.__name__: {
             "input_type": "mag",
@@ -66,6 +65,15 @@ def small_model_params():
             "stride": 16,
             "n_filters": 32,
             "kernel_size": 32,
+        },
+        LSTMTasNet.__name__: {
+            "n_src": 2,
+            "hid_size": 4,
+            "n_layers": 1,
+            "dropout": 0.0,
+            "n_filters": 32,
+            "kernel_size": 32,
+            "stride": 16,
         },
         SuDORMRFNet.__name__: {
             "n_src": 2,
@@ -91,25 +99,34 @@ def small_model_params():
 
 
 @pytest.mark.parametrize(
-    "test_data",
+    "model_def",
     (
-        (torch.rand(240) - 0.5) * 2,
-        (torch.rand(1, 220) - 0.5) * 2,
-        (torch.rand(4, 256) - 0.5) * 2,
-        (torch.rand(1, 1, 301) - 0.5) * 2,
-        (torch.rand(3, 1, 290) - 0.5) * 2,
+        DCCRNet,
+        DCUNet,
+        DeMask,
     ),
 )
-def test_enhancement_model(small_model_params, test_data):
-    params = small_model_params["DeMask"]
-    filter_bank = "free"
+@pytest.mark.parametrize(
+    "test_data",
+    (
+        (torch.rand(4740) - 0.5) * 2,
+        (torch.rand(1, 4720) - 0.5) * 2,
+        (torch.rand(4, 4756) - 0.5) * 2,
+        (torch.rand(1, 1, 4801) - 0.5) * 2,
+        (torch.rand(3, 1, 4790) - 0.5) * 2,
+    ),
+)
+def test_enhancement_model(small_model_params, model_def, test_data):
     device = get_default_device()
-    inputs = ((torch.rand(1, 201, device=device) - 0.5) * 2,)
-    test_data = test_data.to(device)
-    model = DeMask(**params, fb_type=filter_bank).eval().to(device)
+    params = small_model_params[model_def.__name__]
+    model = model_def(**params)
+    model = model.eval().to(device)
+    # Random input uniformly distributed in [-1, 1]
+    inputs = ((torch.rand(1, 4701, device=device) - 0.5) * 2,)
     traced = torch.jit.trace(model, inputs)
 
     # check forward
+    test_data = test_data.to(device)
     with torch.no_grad():
         ref = model(test_data)
         out = traced(test_data)

@@ -1,3 +1,6 @@
+import torch
+from .. import complex_nn
+from ..filterbanks.transforms import from_torchaudio
 from ..masknn.recurrent import DCCRMaskNet
 from .dcunet import BaseDCUNet
 
@@ -25,6 +28,18 @@ class DCCRNet(BaseDCUNet):  # CHECK-JIT
             *args,
             stft_kernel_size=stft_kernel_size,
             sample_rate=sample_rate,
-            masknet_kwargs={"n_freqs": stft_kernel_size // 2 + 1, **(masknet_kwargs or {})},
+            masknet_kwargs={"n_freqs": stft_kernel_size // 2, **(masknet_kwargs or {})},
             **kwargs,
+        )
+
+    def forward_encoder(self, wav):
+        tf_rep = self.encoder(wav)
+        # Remove Nyquist frequency bin
+        return complex_nn.as_torch_complex(tf_rep)[..., :-1, :]
+
+    def apply_masks(self, tf_rep, est_masks):
+        masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
+        # Pad Nyquist frequency bin
+        return from_torchaudio(
+            torch.view_as_real(torch.nn.functional.pad(masked_tf_rep, (0, 0, 0, 1)))
         )

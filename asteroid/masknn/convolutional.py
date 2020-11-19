@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch import nn
 import warnings
@@ -417,7 +418,9 @@ class DCUNetComplexEncoderBlock(nn.Module):  # CHECK-JIT
     ):
         super().__init__()
 
-        self.conv = complex_nn.ComplexConv2d(in_chan, out_chan, kernel_size, stride, padding)
+        self.conv = complex_nn.ComplexConv2d(
+            in_chan, out_chan, kernel_size, stride, padding, bias=norm_type is None
+        )
 
         self.norm = norms.get_complex(norm_type)(out_chan)
 
@@ -454,6 +457,7 @@ class DCUNetComplexDecoderBlock(nn.Module):  # CHECK-JIT
         kernel_size,
         stride,
         padding,
+        output_padding=(0, 0),
         norm_type="bN",
         activation="leaky_relu",
     ):
@@ -464,9 +468,10 @@ class DCUNetComplexDecoderBlock(nn.Module):  # CHECK-JIT
         self.kernel_size = kernel_size
         self.stride = stride
         self.padding = padding
+        self.output_padding = output_padding
 
         self.deconv = complex_nn.ComplexConvTranspose2d(
-            in_chan, out_chan, kernel_size, stride, padding
+            in_chan, out_chan, kernel_size, stride, padding, output_padding, bias=norm_type is None
         )
 
         self.norm = norms.get_complex(norm_type)(out_chan)
@@ -484,12 +489,42 @@ class DCUMaskNet(BaseDCUMaskNet):  # CHECK-JIT
     Valid `architecture` values for the ``default_architecture`` classmethod are:
     "Large-DCUNet-20", "DCUNet-20", "DCUNet-16", "DCUNet-10".
 
+    Input shape is expected to be [batch, n_freqs, time], with `n_freqs - 1` divisible
+    by `f_0 * f_1 * ... * f_N` where `f_k` are the frequency strides of the encoders,
+    and `time - 1` is divisible by `t_0 * t_1 * ... * t_N` where `t_N` are the time
+    strides of the encoders.
+
     References
         - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
         Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
     _architectures = DCUNET_ARCHITECTURES
+
+    def __init__(self, encoders, decoders, **kwargs):
+        self.encoders_stride_product = np.prod(
+            [enc_stride for _, _, _, enc_stride, _ in encoders], axis=0
+        )
+
+        # Avoid circual import
+        from .convolutional import DCUNetComplexDecoderBlock, DCUNetComplexEncoderBlock
+
+        super().__init__(
+            encoders=[DCUNetComplexEncoderBlock(*args) for args in encoders],
+            decoders=[DCUNetComplexDecoderBlock(*args) for args in decoders[:-1]],
+            output_layer=complex_nn.ComplexConvTranspose2d(*decoders[-1]),
+            **kwargs,
+        )
+
+    def _check_input_dims(self, x):
+        # TODO: We can probably lift the shape requirements once Keras-style "same"
+        # padding for convolutions has landed: https://github.com/pytorch/pytorch/pull/42190
+        freq_prod, time_prod = self.encoders_stride_product
+        if (x.shape[1] - 1) % freq_prod or (x.shape[2] - 1) % time_prod:
+            raise TypeError(
+                f"Input shape must be [batch, freq + 1, time + 1] with freq divisible by "
+                f"{freq_prod} and time divisible by {time_prod}, got {x.shape} instead"
+            )
 
 
 class SuDORMRF(nn.Module):
