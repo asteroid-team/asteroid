@@ -65,19 +65,24 @@ def average_arrays_in_dic(dic):
     return dic
 
 
-def get_wav_random_start_stop(signal_len, desired_len=4 * 8000):
+def get_wav_random_start_stop(signal_len, desired_len=4 * 8000, np_rng=None):
     """Get indexes for a chunk of signal of a given length.
 
     Args:
         signal_len (int): length of the signal to trim.
         desired_len (int): the length of [start:stop]
+        np_rng (numpy.random.Generator, optional): The NumPy random generator to use.
+            If `None` (the default), uses the generatored returned by
+            :func:`numpy.random.default_rng()`.
 
     Returns:
         tuple: random start integer, stop integer.
     """
     if desired_len is None:
         return 0, signal_len
-    rand_start = np.random.randint(0, max(1, signal_len - desired_len))
+    if np_rng is None:
+        np_rng = np.random.default_rng()
+    rand_start = np_rng.integers(0, max(1, signal_len - desired_len))
     stop = min(signal_len, rand_start + desired_len)
     return rand_start, stop
 

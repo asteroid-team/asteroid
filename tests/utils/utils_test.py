@@ -103,6 +103,12 @@ def test_get_start_stop(sig_len, desired):
     assert stop == start + min(sig_len, desired)
 
 
+def test_get_start_stop_np_rng():
+    np_rng = np.random.default_rng(42)
+    expected_random_result = (88, 93)
+    assert utils.get_wav_random_start_stop(1000, 5, np_rng=np_rng) == expected_random_result
+
+
 def test_unet_decoder_args():
     a, b, c, d = np.random.randint(1, 100, size=4)
     encoders = (
