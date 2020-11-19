@@ -36,11 +36,11 @@ class Filterbank(nn.Module):
         """ Abstract method for filters. """
         raise NotImplementedError
 
-    def post_encode(self, spec: torch.Tensor):
+    def post_analysis(self, spec: torch.Tensor):
         """Apply transform to encoder convolution."""
         return spec
 
-    def pre_decode(self, spec: torch.Tensor):
+    def pre_synthesis(self, spec: torch.Tensor):
         """Apply transform before decoder transposed convolution."""
         return spec
 
