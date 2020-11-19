@@ -154,17 +154,16 @@ def test_enhancement_model(small_model_params, model_def, test_data):
     ),
 )
 def test_trace_bss_model(small_model_params, model_def, test_data):
-    filter_bank_type = "free"
     device = get_default_device()
+    params = small_model_params[model_def.__name__]
+    model = model_def(**params)
+    model = model.eval().to(device)
     # Random input uniformly distributed in [-1, 1]
     inputs = ((torch.rand(1, 201, device=device) - 0.5) * 2,)
-    test_data = test_data.to(device)
-    params = small_model_params[model_def.__name__]
-    model = model_def(**params, fb_name=filter_bank_type)
-    model = model.eval().to(device)
     traced = torch.jit.trace(model, inputs)
 
     # check forward
+    test_data = test_data.to(device)
     with torch.no_grad():
         ref = model(test_data)
         out = traced(test_data)
@@ -180,7 +179,7 @@ def get_default_device():
 # def test_padder():
 #     model_def = SuDORMRFNet
 #     params = small_model_params[model_def.__name__]
-#     model = model_def(**params, fb_name="free")
+#     model = model_def(**params)
 
 
 if __name__ == "__main__":
@@ -195,7 +194,7 @@ if __name__ == "__main__":
         "n_filters": 32,
         "kernel_size": 21,
     }
-    model = model_def(**params, fb_name="free")
+    model = model_def(**params)
     u = torch.randn(3, 250)
     import ipdb
 
