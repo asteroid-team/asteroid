@@ -10,6 +10,23 @@ from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download
 
 
+def is_overridden(method_name, obj, parent=None) -> bool:
+    def last_parent_with_method(fn, cls):
+        # FIXME
+        return BaseModel
+
+    if not hasattr(obj, method_name):
+        return False
+
+    instance_attr = getattr(obj, method_name)
+    if not instance_attr:
+        return False
+
+    parent = parent if parent is not None else last_parent_with_method(method_name, obj)
+    super_attr = getattr(parent, method_name)
+    return instance_attr.__code__ is not super_attr.__code__
+
+
 @script_if_tracing
 def _unsqueeze_to_3d(x):
     if x.ndim == 1:
@@ -90,7 +107,7 @@ class BaseModel(nn.Module):
         model_device = next(self.parameters()).device
         wav = wav.to(model_device)
         # Forward
-        out_wavs = self._separate(wav, **kwargs)
+        out_wavs = self.forward_wav(wav, **kwargs)
 
         # FIXME: for now this is the best we can do.
         out_wavs *= wav.abs().sum() / (out_wavs.abs().sum())
@@ -150,16 +167,22 @@ class BaseModel(nn.Module):
                 est_src = resample(est_src, orig_sr=self.sample_rate, target_sr=fs)
             sf.write(save_name, est_src, fs)
 
-    def _separate(self, wav, *args, **kwargs):
-        """Hidden separation method
+    def forward_wav(self, wav, *args, **kwargs):
+        """Separation method for waveforms.
+        In case the network doesn't have waveforms as input/output, overwrite
+        this method to separate from waveform to waveform.
 
         Args:
             wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
-
-        Returns:
-            The output of self(wav, *args, **kwargs).
         """
+        if is_overridden("_separate", self, parent=BaseModel):
+            return self._separate(wav, *args, **kwargs)
+        return self(wav, *args, **kwargs)
+
+    # Need deprecating decoractor here. Override forward_wav
+    def _separate(self, wav, *args, **kwargs):
+        """Deprecated."""
         return self(wav, *args, **kwargs)
 
     @classmethod
