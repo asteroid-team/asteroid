@@ -285,7 +285,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
     """
 
     def __init__(self, encoder, masker, decoder, encoder_activation=None):
-        super().__init__(sample_rate=getattr(self.encoder, "sample_rate", None))
+        super().__init__(sample_rate=getattr(encoder, "sample_rate", None))
         self.encoder = encoder
         self.masker = masker
         self.decoder = decoder
