@@ -10,6 +10,7 @@ Note that Asteroid code has two other representations of complex numbers:
   The concatenated (2 * n) dimension may be at an arbitrary position, i.e. the tensor
   is of shape [..., 2 * n, ...].  See `asteroid.filterbanks.transforms` for details.
 """
+from typing import Union, List, Tuple
 import functools
 import torch
 import warnings
@@ -34,7 +35,7 @@ def torch_complex_from_magphase(mag, phase):
     return as_torch_complex((mag * torch.cos(phase), mag * torch.sin(phase)))
 
 
-def as_torch_complex(x, asteroid_dim=-2):
+def as_torch_complex(x: Union[List, Tuple, torch.Tensor], asteroid_dim=-2):
     """Convert complex `x` to complex. Input may be one of:
 
     - PyTorch native complex
