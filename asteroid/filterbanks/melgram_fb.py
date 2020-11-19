@@ -55,7 +55,7 @@ class MelGramFB(STFTFB):
         )
         self.n_feats_out = n_mels
 
-    def post_encode(self, spec: torch.Tensor):
+    def post_analysis(self, spec: torch.Tensor):
         return self.mel_scale(spec)
 
     def get_config(self):

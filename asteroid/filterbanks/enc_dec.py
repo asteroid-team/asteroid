@@ -167,7 +167,7 @@ class Encoder(_EncDec):
             padding=self.padding,
             as_conv1d=self.as_conv1d,
         )
-        return self.filterbank.post_encode(spec)
+        return self.filterbank.post_analysis(spec)
 
 
 @script_if_tracing
@@ -264,7 +264,7 @@ class Decoder(_EncDec):
             :class:`torch.Tensor`: The corresponding time domain signal.
         """
         filters = self.get_filters()
-        spec = self.filterbank.pre_decode(spec)
+        spec = self.filterbank.pre_synthesis(spec)
         return multishape_conv_transpose1d(
             spec,
             filters,
