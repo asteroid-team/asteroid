@@ -18,7 +18,7 @@ class MelGramFB(STFTFB):
             Defaults to 8000.
         n_mels (int): Number of mel bands.
         fmin (float): Minimum frequency of the mel filters.
-        fmax (float): Maximum frequency of the mel filters.
+        fmax (float): Maximum frequency of the mel filters. Defaults to sample_rate//2.
         norm (str): Mel normalization {None, 'slaney', or number}.
             See `librosa.filters.mel`
         **kwargs:
@@ -73,7 +73,7 @@ class MelScale(torch.nn.Module):
             Defaults to 8000.
         n_mels (int): Number of mel bands.
         fmin (float): Minimum frequency of the mel filters.
-        fmax (float): Maximum frequency of the mel filters.
+        fmax (float): Maximum frequency of the mel filters. Defaults to sample_rate//2.
         norm (str): Mel normalization {None, 'slaney', or number}.
             See `librosa.filters.mel`
     """
