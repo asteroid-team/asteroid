@@ -7,7 +7,7 @@ from sklearn.cluster import KMeans
 from asteroid import torch_utils
 import asteroid.filterbanks as fb
 from asteroid.engine.optimizers import make_optimizer
-from asteroid.filterbanks.transforms import take_mag, apply_mag_mask, ebased_vad
+from asteroid.filterbanks.transforms import mag, apply_mag_mask, ebased_vad
 from asteroid.masknn.blocks import SingleRNN
 from asteroid.utils.torch_utils import pad_x_to_y
 
@@ -101,7 +101,7 @@ class Model(nn.Module):
         if len(x.shape) == 2:
             x = x.unsqueeze(1)
         tf_rep = self.encoder(x)
-        final_proj, mask_out = self.masker(take_mag(tf_rep))
+        final_proj, mask_out = self.masker(mag(tf_rep))
         return final_proj, mask_out
 
     def separate(self, x):
@@ -109,7 +109,7 @@ class Model(nn.Module):
         if len(x.shape) == 2:
             x = x.unsqueeze(1)
         tf_rep = self.encoder(x)
-        proj, mask_out = self.masker(take_mag(tf_rep))
+        proj, mask_out = self.masker(mag(tf_rep))
         masked = apply_mag_mask(tf_rep.unsqueeze(1), mask_out)
         wavs = torch_utils.pad_x_to_y(self.decoder(masked), x)
         dic_out = dict(tfrep=tf_rep, mask=mask_out, masked_tfrep=masked, proj=proj)
@@ -121,7 +121,7 @@ class Model(nn.Module):
         if len(x.shape) == 2:
             x = x.unsqueeze(1)
         tf_rep = self.encoder(x)
-        mag_spec = take_mag(tf_rep)
+        mag_spec = mag(tf_rep)
         proj, mask_out = self.masker(mag_spec)
         active_bins = ebased_vad(mag_spec)
         active_proj = proj[active_bins.view(1, -1)]

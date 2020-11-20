@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.loss import _Loss
 from ..filterbanks import STFTFB, Encoder
-from ..filterbanks.transforms import take_mag
+from ..filterbanks.transforms import mag
 
 
 class SingleSrcMultiScaleSpectral(_Loss):
@@ -80,8 +80,8 @@ class SingleSrcMultiScaleSpectral(_Loss):
 
     def compute_spectral_loss(self, encoder, est_target, target, EPS=1e-8):
         batch_size = est_target.shape[0]
-        spect_est_target = take_mag(encoder(est_target)).view(batch_size, -1)
-        spect_target = take_mag(encoder(target)).view(batch_size, -1)
+        spect_est_target = mag(encoder(est_target)).view(batch_size, -1)
+        spect_target = mag(encoder(target)).view(batch_size, -1)
         linear_loss = self.norm1(spect_est_target - spect_target)
         log_loss = self.norm1(torch.log(spect_est_target + EPS) - torch.log(spect_target + EPS))
         return linear_loss + self.alpha * log_loss

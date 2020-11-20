@@ -1,9 +1,9 @@
+import math
+import torch
 from typing import Tuple
 
-import torch
-import numpy as np
-
 from ..utils.torch_utils import script_if_tracing
+from ..utils.deprecation_utils import mark_deprecated
 
 
 def mul_c(inp, other, dim: int = -2):
@@ -47,11 +47,18 @@ def mul_c(inp, other, dim: int = -2):
     return torch.cat([real1 * real2 - imag1 * imag2, real1 * imag2 + imag1 * real2], dim=dim)
 
 
-def take_reim(x, dim: int = -2):
-    return x
+def reim(x, dim: int = -2) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Returns a tuple (re, im).
+
+    Args:
+        x (:class:`torch.Tensor`): Complex valued tensor.
+        dim (int): frequency (or equivalent) dimension along which real and
+            imaginary values are concatenated.
+    """
+    return torch.chunk(x, 2, dim=dim)
 
 
-def take_mag(x, dim: int = -2, EPS: float = 1e-8):
+def mag(x, dim: int = -2, EPS: float = 1e-8):
     """Takes the magnitude of a complex tensor.
 
     The operands is assumed to have the real parts of each entry followed by
@@ -86,8 +93,15 @@ def take_mag(x, dim: int = -2, EPS: float = 1e-8):
     return power.pow(0.5)
 
 
-def take_cat(x, dim: int = -2):
-    return torch.cat([take_mag(x, dim=dim), x], dim=dim)
+def magreim(x, dim: int = -2):
+    """Returns a concatenation of (mag, re, im).
+
+    Args:
+        x (:class:`torch.Tensor`): Complex valued tensor.
+        dim (int): frequency (or equivalent) dimension along which real and
+            imaginary values are concatenated.
+    """
+    return torch.cat([mag(x, dim=dim), x], dim=dim)
 
 
 def apply_real_mask(tf_rep, mask, dim: int = -2):
@@ -253,7 +267,7 @@ def is_torchaudio_complex(x):
     """Check if tensor is Torchaudio-style complex-like (last dimension is 2).
 
     Args:
-        tensor (torch.Tensor): tensor to be checked.
+        x (torch.Tensor): tensor to be checked.
 
     Returns:
         True if last dimension is 2, else False.
@@ -329,11 +343,11 @@ def angle(tensor, dim: int = -2):
     return torch.atan2(imag, real)
 
 
-def from_mag_and_phase(mag, phase, dim: int = -2):
+def from_magphase(mag_spec, phase, dim: int = -2):
     """Return a complex-like torch tensor from magnitude and phase components.
 
     Args:
-        mag (torch.tensor): magnitude of the tensor.
+        mag_spec (torch.tensor): magnitude of the tensor.
         phase (torch.tensor): angle of the tensor
         dim(int, optional): the frequency (or equivalent) dimension along which
             real and imaginary values are concatenated.
@@ -342,18 +356,14 @@ def from_mag_and_phase(mag, phase, dim: int = -2):
         :class:`torch.Tensor`:
             The corresponding complex-like torch tensor.
     """
-    return torch.cat([mag * torch.cos(phase), mag * torch.sin(phase)], dim=dim)
-
-
-# Alias
-from_polar = from_mag_and_phase
+    return torch.cat([mag_spec * torch.cos(phase), mag_spec * torch.sin(phase)], dim=dim)
 
 
 def magphase(spec: torch.Tensor, dim: int = -2) -> Tuple[torch.Tensor, torch.Tensor]:
     """Splits Asteroid complex-like tensor into magnitude and phase."""
-    mag = take_mag(spec, dim=dim)
+    mag_val = mag(spec, dim=dim)
     phase = angle(spec, dim=dim)
-    return mag, phase
+    return mag_val, phase
 
 
 @script_if_tracing
@@ -460,9 +470,9 @@ def centerfreq_correction(
     if stride is None:
         stride = kernel_size // 2
     # Phase will be (batch, n_freq // 2 + 1, frames)
-    mag, phase = magphase(spec, dim=dim)
+    mag_spec, phase = magphase(spec, dim=dim)
     new_phase = phase_centerfreq_correction(phase, kernel_size=kernel_size, stride=stride)
-    new_spec = from_polar(mag, new_phase, dim=dim)
+    new_spec = from_magphase(mag_spec, new_phase, dim=dim)
     return new_spec
 
 
@@ -484,5 +494,25 @@ def phase_centerfreq_correction(
     """
     *_, freq, frames = phase.shape
     tmp = torch.arange(freq).unsqueeze(-1) * torch.arange(frames)[None]
-    correction = -2 * tmp * stride * np.pi / kernel_size
+    correction = -2 * tmp * stride * math.pi / kernel_size
     return phase + correction
+
+
+@mark_deprecated(None, None)
+def take_reim(x, dim: int = -2):
+    return x
+
+
+@mark_deprecated("Please use `asteroid.filterbanks.transforms.mag` instead.", None)
+def take_mag(*args, **kwargs):
+    return mag(*args, **kwargs)
+
+
+@mark_deprecated("Please use `asteroid.filterbanks.transforms.magreim` instead.", None)
+def take_cat(*args, **kwargs):
+    return magreim(*args, **kwargs)
+
+
+@mark_deprecated("Please use `asteroid.filterbanks.transforms.from_magphase` instead.", None)
+def from_mag_and_phase(*args, **kwargs):
+    return from_magphase(*args, **kwargs)
