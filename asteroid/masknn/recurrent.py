@@ -499,7 +499,7 @@ class LSTMMasker(nn.Module):
         return config
 
 
-class DCCRMaskNetRNN(nn.Module):  # CHECK-JIT
+class DCCRMaskNetRNN(nn.Module):
     """RNN (LSTM) layer between encoders and decoders introduced in [1].
 
     Args:
@@ -545,7 +545,7 @@ class DCCRMaskNetRNN(nn.Module):  # CHECK-JIT
         return x
 
 
-class DCCRMaskNet(BaseDCUMaskNet):  # CHECK-JIT
+class DCCRMaskNet(BaseDCUMaskNet):
     """Masking part of DCCRNet, as proposed in [1].
 
     Valid `architecture` values for the ``default_architecture`` classmethod are:
