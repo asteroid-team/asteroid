@@ -47,7 +47,7 @@ def mul_c(inp, other, dim: int = -2):
     return torch.cat([real1 * real2 - imag1 * imag2, real1 * imag2 + imag1 * real2], dim=dim)
 
 
-def reim(x, dim: int = -2) -> Tuple[torch.Tensor]:
+def reim(x, dim: int = -2) -> Tuple[torch.Tensor, torch.Tensor]:
     """Returns a tuple (re, im).
 
     Args:
