@@ -60,7 +60,7 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, m
     for _ in range(n_iter):
         prev_built = rebuilt
         # Go to the time domain
-        complex_specgram = transforms.from_mag_and_phase(mag_specgram, angles)
+        complex_specgram = transforms.from_magphase(mag_specgram, angles)
         waveform = istft_dec(complex_specgram)
         # And back to TF domain
         rebuilt = stft_enc(waveform)
@@ -68,7 +68,7 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, m
         diff = rebuilt - momentum / (1 + momentum) * prev_built
         angles = transforms.angle(diff)
 
-    final_complex_spec = transforms.from_mag_and_phase(mag_specgram, angles)
+    final_complex_spec = transforms.from_magphase(mag_specgram, angles)
     return istft_dec(final_complex_spec)
 
 
@@ -149,7 +149,7 @@ def misi(
     for _ in range(n_iter):
         prev_built = rebuilt
         # Go to the time domain
-        complex_specgram = transforms.from_mag_and_phase(mag_specgrams, angles)
+        complex_specgram = transforms.from_magphase(mag_specgrams, angles)
         wavs = istft_dec(complex_specgram)
         # Make wavs sum up to the mixture
         consistent_wavs = mixture_consistency(
@@ -162,5 +162,5 @@ def misi(
         diff = rebuilt - momentum / (1 + momentum) * prev_built
         angles = transforms.angle(diff)
     # Final source estimates
-    final_complex_spec = transforms.from_mag_and_phase(mag_specgrams, angles)
+    final_complex_spec = transforms.from_magphase(mag_specgrams, angles)
     return istft_dec(final_complex_spec)

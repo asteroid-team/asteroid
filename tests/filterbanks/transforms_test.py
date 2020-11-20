@@ -164,7 +164,7 @@ def test_angle_mag_recompostion(dim):
     complex_tensor = torch.randn(tensor_shape)
     phase = transforms.angle(complex_tensor, dim=dim)
     mag = transforms.mag(complex_tensor, dim=dim)
-    tensor_back = transforms.from_mag_and_phase(mag, phase, dim=dim)
+    tensor_back = transforms.from_magphase(mag, phase, dim=dim)
     assert_allclose(complex_tensor, tensor_back)
 
 
