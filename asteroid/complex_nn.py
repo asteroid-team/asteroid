@@ -19,6 +19,7 @@ with warnings.catch_warnings():
     import torchaudio
 from torch import nn
 from .filterbanks import transforms
+from .utils.torch_utils import script_if_tracing
 
 
 # Alias to denote PyTorch native complex tensor (complex64/complex128).
@@ -36,7 +37,7 @@ def torch_complex_from_magphase(mag, phase):
     )
 
 
-@torch.jit.script
+@script_if_tracing
 def as_torch_complex(x, asteroid_dim: int = -2):
     """Convert complex `x` to complex. Input may be one of:
 
