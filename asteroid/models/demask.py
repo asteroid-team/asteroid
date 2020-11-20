@@ -1,7 +1,7 @@
 from torch import nn
 from .base_models import BaseEncoderMaskerDecoder
 from ..filterbanks import make_enc_dec
-from ..filterbanks.transforms import take_mag, take_cat
+from ..filterbanks.transforms import mag, take_cat
 from ..masknn import norms, activations
 from ..utils.torch_utils import pad_x_to_y
 from ..utils.deprecation_utils import VisibleDeprecationWarning
@@ -121,7 +121,7 @@ class DeMask(BaseEncoderMaskerDecoder):
         """
         masker_input = tf_rep
         if self.input_type == "mag":
-            masker_input = take_mag(masker_input)
+            masker_input = mag(masker_input)
         elif self.input_type == "cat":
             masker_input = take_cat(masker_input)
         est_masks = self.masker(masker_input)

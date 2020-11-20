@@ -96,6 +96,6 @@ class MelScale(torch.nn.Module):
         self.register_buffer("fb_mat", torch.from_numpy(fb_mat).unsqueeze(0))
 
     def forward(self, spec: torch.Tensor):
-        mag_spec = transforms.take_mag(spec, dim=-2)
+        mag_spec = transforms.mag(spec, dim=-2)
         mel_spec = torch.matmul(self.fb_mat, mag_spec)
         return mel_spec

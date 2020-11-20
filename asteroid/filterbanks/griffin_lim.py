@@ -34,7 +34,7 @@ def griffin_lim(mag_specgram, stft_enc, angles=None, istft_dec=None, n_iter=6, m
         >>> wav = torch.randn(2, 1, 8000)
         >>> spec = stft(wav)
         >>> masked_spec = spec * torch.sigmoid(torch.randn_like(spec))
-        >>> mag = transforms.take_mag(masked_spec, -2)
+        >>> mag = transforms.mag(masked_spec, -2)
         >>> est_wav = griffin_lim(mag, stft, n_iter=32)
 
     References
@@ -116,7 +116,7 @@ def misi(
         >>> wav = torch.randn(2, 3, 8000)
         >>> specs = stft(wav)
         >>> masked_specs = specs * torch.sigmoid(torch.randn_like(specs))
-        >>> mag = transforms.take_mag(masked_specs, -2)
+        >>> mag = transforms.mag(masked_specs, -2)
         >>> est_wav = misi(wav.sum(1), mag, stft, n_iter=32)
 
     References
