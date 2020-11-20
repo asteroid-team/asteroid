@@ -69,7 +69,7 @@ def small_model_params():
         LSTMTasNet.__name__: {
             "n_src": 2,
             "hid_size": 4,
-            "n_layers": 1,
+            "n_layers": 2,
             "dropout": 0.0,
             "n_filters": 32,
             "kernel_size": 32,
