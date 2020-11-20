@@ -349,7 +349,7 @@ def from_mag_and_phase(mag, phase, dim: int = -2):
 from_polar = from_mag_and_phase
 
 
-def to_polar(spec: torch.Tensor, dim: int = -2) -> Tuple[torch.Tensor, torch.Tensor]:
+def magphase(spec: torch.Tensor, dim: int = -2) -> Tuple[torch.Tensor, torch.Tensor]:
     """Splits Asteroid complex-like tensor into magnitude and phase."""
     mag = take_mag(spec, dim=dim)
     phase = angle(spec, dim=dim)
@@ -460,7 +460,7 @@ def centerfreq_correction(
     if stride is None:
         stride = kernel_size // 2
     # Phase will be (batch, n_freq // 2 + 1, frames)
-    mag, phase = to_polar(spec, dim=dim)
+    mag, phase = magphase(spec, dim=dim)
     new_phase = phase_centerfreq_correction(phase, kernel_size=kernel_size, stride=stride)
     new_spec = from_polar(mag, new_phase, dim=dim)
     return new_spec

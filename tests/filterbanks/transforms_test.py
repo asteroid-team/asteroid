@@ -200,10 +200,10 @@ def test_ebased_vad():
     assert (batch_src_mask[:, 0] == batch_1_mask).all()
 
 
-def test_to_polar():
+def test_magphase():
     spec_shape = [2, 514, 100]
     spec = torch.randn(*spec_shape)
-    mag, phase = transforms.to_polar(spec, dim=-2)
+    mag, phase = transforms.magphase(spec, dim=-2)
 
     out_shape = spec_shape
     out_shape[-2] //= 2
