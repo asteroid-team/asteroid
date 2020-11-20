@@ -1,4 +1,7 @@
+from typing import Tuple
+
 import torch
+import numpy as np
 
 from ..utils.torch_utils import script_if_tracing
 
@@ -342,6 +345,17 @@ def from_mag_and_phase(mag, phase, dim: int = -2):
     return torch.cat([mag * torch.cos(phase), mag * torch.sin(phase)], dim=dim)
 
 
+# Alias
+from_polar = from_mag_and_phase
+
+
+def magphase(spec: torch.Tensor, dim: int = -2) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Splits Asteroid complex-like tensor into magnitude and phase."""
+    mag = take_mag(spec, dim=dim)
+    phase = angle(spec, dim=dim)
+    return mag, phase
+
+
 @script_if_tracing
 def ebased_vad(mag_spec, th_db: int = 40):
     """Compute energy-based VAD from a magnitude spectrogram (or equivalent).
@@ -371,17 +385,104 @@ def ebased_vad(mag_spec, th_db: int = 40):
     return log_mag > (max_log_mag - th_db)
 
 
-_inputs = {"reim": (take_reim, 1), "mag": (take_mag, 1 / 2), "cat": (take_cat, 1 + 1 / 2)}
-_inputs["real"] = _inputs["reim"]
-_inputs["mod"] = _inputs["mag"]
-_inputs["concat"] = _inputs["cat"]
+def compute_delta(feats: torch.Tensor, dim: int = -1) -> torch.Tensor:
+    """Compute delta coefficients of a tensor.
+
+    Args:
+        feats: Input features to compute deltas with.
+        dim: feature dimension in the feats tensor.
+
+    Returns:
+        Tensor: Tensor of deltas.
+
+    Examples
+        >>> import torch
+        >>> phase = torch.randn(2, 257, 100)
+        >>> # Compute instantaneous frequency
+        >>> inst_freq = compute_delta(phase, dim=-1)
+        >>> # Or group delay
+        >>> group_delay = compute_delta(phase, dim=-2)
+    """
+    if dim != -1:
+        return compute_delta(feats.transpose(-1, dim), dim=-1).transpose(-1, dim)
+    # First frame has nothing. Then each frame is the diff with the previous one.
+    delta = feats.new_zeros(feats.shape)
+    delta[..., 1:] = feats[..., 1:] - feats[..., :-1]
+    return delta
 
 
-_masks = {
-    "reim": (apply_real_mask, 1),
-    "mag": (apply_mag_mask, 1 / 2),
-    "complex": (apply_complex_mask, 1),
-}
-_masks["real"] = _masks["reim"]
-_masks["mod"] = _masks["mag"]
-_masks["comp"] = _masks["complex"]
+def concat_deltas(feats: torch.Tensor, order: int = 1, dim: int = -1) -> torch.Tensor:
+    """Concatenate delta coefficients of a tensor to itself.
+
+    Args:
+        feats: Input features to compute deltas with.
+        order: Order of the delta e.g with order==2, compute delta of delta
+            as well.
+        dim: feature dimension in the feats tensor.
+
+    Returns:
+        Tensor: Concatenation of the features, the deltas and subsequent deltas.
+
+    Examples
+        >>> import torch
+        >>> phase = torch.randn(2, 257, 100)
+        >>> # Compute second order instantaneous frequency
+        >>> phase_and_inst_freq = concat_deltas(phase, order=2, dim=-1)
+        >>> # Or group delay
+        >>> phase_and_group_delay = concat_deltas(phase, order=2, dim=-2)
+    """
+    all_feats = [feats]
+    for _ in range(order):
+        all_feats.append(compute_delta(all_feats[-1], dim=dim))
+    return torch.cat(all_feats, dim=dim)
+
+
+def centerfreq_correction(
+    spec: torch.Tensor,
+    kernel_size: int,
+    stride: int = None,
+    dim: int = -2,
+) -> torch.Tensor:
+    """Corrects phase from the input spectrogram so that a sinusoid in the
+    middle of a bin keeps the same phase from one frame to the next.
+
+    Args:
+        spec: Spectrogram tensor of shape (batch, n_freq + 2, frames).
+        kernel_size (int): Kernel size of the STFT.
+        stride (int): Stride of the STFT.
+        dim (int): Only works of dim=-2.
+
+    Returns:
+        Tensor: the input spec with corrected phase.
+    """
+    if dim != -2:
+        raise NotImplementedError
+    if stride is None:
+        stride = kernel_size // 2
+    # Phase will be (batch, n_freq // 2 + 1, frames)
+    mag, phase = magphase(spec, dim=dim)
+    new_phase = phase_centerfreq_correction(phase, kernel_size=kernel_size, stride=stride)
+    new_spec = from_polar(mag, new_phase, dim=dim)
+    return new_spec
+
+
+def phase_centerfreq_correction(
+    phase: torch.Tensor,
+    kernel_size: int,
+    stride: int = None,
+) -> torch.Tensor:
+    """Corrects phase so that a sinusoid in the middle of a bin keeps the
+    same phase from one frame to the next.
+
+    Args:
+        phase: tensor of shape (batch, n_freq//2 + 1, frames)
+        kernel_size (int): Kernel size of the STFT.
+        stride (int): Stride of the STFT.
+
+    Returns:
+        Tensor: corrected phase.
+    """
+    *_, freq, frames = phase.shape
+    tmp = torch.arange(freq).unsqueeze(-1) * torch.arange(frames)[None]
+    correction = -2 * tmp * stride * np.pi / kernel_size
+    return phase + correction
