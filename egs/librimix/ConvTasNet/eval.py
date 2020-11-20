@@ -147,18 +147,15 @@ class WERTracker:
         )
 
     @staticmethod
-    def wer_from_hsdi(hits, substitutions, deletions, insertions):
+    def wer_from_hsdi(hits=0, substitutions=0, deletions=0, insertions=0):
         wer = (substitutions + deletions + insertions) / (hits + substitutions + deletions)
         return wer
 
     @staticmethod
     def hsdi(truth, hypothesis):
-        keep = {"hits": 0, "substitutions": 0, "deletions": 0, "insertions": 0}
+        keep = ["hits", "substitutions", "deletions", "insertions"]
         out = compute_measures(truth=truth, hypothesis=hypothesis).items()
-        for k, v in out:
-            if k in keep:
-                keep[k] = v
-        return keep
+        return {k: v for k, v in out if k in keep}
 
     @staticmethod
     def dict_add(d, **kwargs):
