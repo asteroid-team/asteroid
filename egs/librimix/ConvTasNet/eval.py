@@ -69,7 +69,7 @@ parser.add_argument(
     "--n_save_ex", type=int, default=10, help="Number of audio examples to save, -1 means all"
 )
 parser.add_argument(
-    "--compute-wer", type=int, default=0, help="Compute WER using ESPNet's pretrained model"
+    "--compute_wer", type=int, default=0, help="Compute WER using ESPNet's pretrained model"
 )
 
 COMPUTE_METRICS = ["si_sdr", "sdr", "sir", "sar", "stoi"]
@@ -86,7 +86,6 @@ def update_compute_metrics(compute_wer, metric_list):
         from espnet_model_zoo.downloader import ModelDownloader
     except ModuleNotFoundError:
         import warnings
-
         warnings.warn("Couldn't find espnet installation. Continuing without.")
         return metric_list
     return metric_list + ["wer"]
@@ -154,9 +153,12 @@ class WERTracker:
 
     @staticmethod
     def hsdi(truth, hypothesis):
-        keep = ["hits", "substitutions", "deletions", "insertions"]
+        keep = {"hits": 0, "substitutions": 0, "deletions": 0, "insertions": 0}
         out = compute_measures(truth=truth, hypothesis=hypothesis).items()
-        return {k: v for k, v in out if k in keep}
+        for k, v in out:
+            if k in keep:
+                keep[k] = v
+        return keep
 
     @staticmethod
     def dict_add(d, **kwargs):
@@ -228,7 +230,7 @@ def main(conf):
             sources_np,
             est_sources_np,
             sample_rate=conf["sample_rate"],
-            metrics_list=compute_metrics,
+            metrics_list=COMPUTE_METRICS,
         )
         utt_metrics["mix_path"] = test_set.mixture_path
         utt_metrics.update(

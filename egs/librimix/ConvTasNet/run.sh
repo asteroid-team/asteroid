@@ -120,7 +120,8 @@ if [[ $stage -le 2 ]]; then
 	    exit 1
 	  fi
     # Install espnet if not instaled
-    if not python -c "import espnet" &> /dev/null; then
+
+    if ! python -c "import espnet" &> /dev/null; then
         echo 'This recipe requires espnet. Installing requirements.'
         $python_path -m pip install espnet_model_zoo
         $python_path -m pip install jiwer

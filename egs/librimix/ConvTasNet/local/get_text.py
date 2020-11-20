@@ -11,9 +11,8 @@ parser.add_argument("--split", type=str, default="train-360")
 
 args = parser.parse_args()
 
-libridir = f"LibriSpeech/{args.split}"
+libridir = os.path.join(args.libridir, args.split)
 trans_txt_list = glob.glob(os.path.join(libridir, "**/*.txt"), recursive=True)
-
 row_list = []
 for name in trans_txt_list:
     f = open(name, "r")
