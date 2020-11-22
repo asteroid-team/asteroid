@@ -77,7 +77,7 @@ def test_mag(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
         batch, freq, time = tf_rep.shape
-        mag = transforms.take_mag(tf_rep, dim=1)
+        mag = transforms.mag(tf_rep, dim=1)
         assert mag.shape == (batch, freq // 2, time)
 
 
@@ -85,7 +85,7 @@ def test_cat(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
         batch, freq, time = tf_rep.shape
-        mag = transforms.take_cat(tf_rep, dim=1)
+        mag = transforms.magreim(tf_rep, dim=1)
         assert mag.shape == (batch, 3 * (freq // 2), time)
 
 
@@ -163,8 +163,8 @@ def test_angle_mag_recompostion(dim):
     tensor_shape[dim] = 2 * tensor_shape[dim]
     complex_tensor = torch.randn(tensor_shape)
     phase = transforms.angle(complex_tensor, dim=dim)
-    mag = transforms.take_mag(complex_tensor, dim=dim)
-    tensor_back = transforms.from_mag_and_phase(mag, phase, dim=dim)
+    mag = transforms.mag(complex_tensor, dim=dim)
+    tensor_back = transforms.from_magphase(mag, phase, dim=dim)
     assert_allclose(complex_tensor, tensor_back)
 
 
@@ -236,7 +236,7 @@ def test_center_freq_correction(kernel_size, stride_factor):
     stride = None if stride_factor is None else kernel_size // stride_factor
     new_spec = transforms.centerfreq_correction(spec, kernel_size=kernel_size, stride=stride)
     assert spec.shape == new_spec.shape
-    assert_allclose(transforms.take_mag(spec), transforms.take_mag(new_spec))
+    assert_allclose(transforms.mag(spec), transforms.mag(new_spec))
 
 
 def test_center_freq_correction_raises():

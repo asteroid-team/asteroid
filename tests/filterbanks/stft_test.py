@@ -98,7 +98,7 @@ def test_griffinlim(fb_config, feed_istft, feed_angle):
     spec = stft(wav)
     tf_mask = torch.sigmoid(torch.randn_like(spec))
     masked_spec = spec * tf_mask
-    mag = transforms.take_mag(masked_spec, -2)
+    mag = transforms.mag(masked_spec, -2)
     angles = None if not feed_angle else transforms.angle(masked_spec, -2)
     griffin_lim(mag, stft, angles=angles, istft_dec=istft, n_iter=3)
 
@@ -119,7 +119,7 @@ def test_misi(fb_config, feed_istft, feed_angle):
     tf_mask = torch.sigmoid(torch.randn(*shape))
     masked_specs = spec * tf_mask
     # Separate mag and angle.
-    mag = transforms.take_mag(masked_specs, -2)
+    mag = transforms.mag(masked_specs, -2)
     angles = None if not feed_angle else transforms.angle(masked_specs, -2)
     est_wavs = misi(wav, mag, stft, angles=angles, istft_dec=istft, n_iter=2)
     # We actually don't know the last dim because ISTFT(STFT()) cuts the end

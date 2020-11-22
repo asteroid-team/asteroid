@@ -1,4 +1,5 @@
 import warnings
+from functools import wraps
 
 
 class VisibleDeprecationWarning(UserWarning):
@@ -25,18 +26,25 @@ class DeprecationMixin:
         )
 
 
-def deprecate_func(func, old_name):
-    """Function to return DeprecationWarning when a deprecated function
-    is called. Example to come."""
+def mark_deprecated(message, version=None):
+    """Decorator to add deprecation message.
 
-    def func_with_warning(*args, **kwargs):
-        """ Deprecated function, please read your warnings. """
-        warnings.warn(
-            "{} is deprecated since v0.1.0, it will be removed in "
-            "v0.2.0. Please use {} instead."
-            "".format(old_name, func.__name__),
-            VisibleDeprecationWarning,
-        )
-        return func(*args, **kwargs)
+    Args:
+        message: Migration steps to be given to users.
+    """
 
-    return func_with_warning
+    def decorator(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            from_what = "a future release" if version is None else f"asteroid v{version}"
+            warn_message = (
+                f"{func.__module__}.{func.__name__} has been deprecated "
+                f"and will be removed from {from_what}. "
+                f"{message}"
+            )
+            warnings.warn(warn_message, VisibleDeprecationWarning, stacklevel=2)
+            return func(*args, **kwargs)
+
+        return wrapped
+
+    return decorator
