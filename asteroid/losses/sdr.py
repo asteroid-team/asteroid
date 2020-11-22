@@ -1,6 +1,5 @@
 import torch
 from torch.nn.modules.loss import _Loss
-from ..utils.deprecation_utils import DeprecationMixin
 
 
 class PairwiseNegSDR(_Loss):
@@ -262,24 +261,3 @@ singlesrc_neg_snr = SingleSrcNegSDR("snr")
 multisrc_neg_sisdr = MultiSrcNegSDR("sisdr")
 multisrc_neg_sdsdr = MultiSrcNegSDR("sdsdr")
 multisrc_neg_snr = MultiSrcNegSDR("snr")
-
-
-# Legacy
-class NonPitSDR(MultiSrcNegSDR, DeprecationMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.warn_deprecated()
-
-
-class NoSrcSDR(SingleSrcNegSDR, DeprecationMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.warn_deprecated()
-
-
-nosrc_neg_sisdr = singlesrc_neg_sisdr
-nosrc_neg_sdsdr = singlesrc_neg_sdsdr
-nosrc_neg_snr = singlesrc_neg_snr
-nonpit_neg_sisdr = multisrc_neg_sisdr
-nonpit_neg_sdsdr = multisrc_neg_sdsdr
-nonpit_neg_snr = multisrc_neg_snr
