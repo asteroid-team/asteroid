@@ -22,4 +22,18 @@ DCCRN_ARCHITECTURES = {
             ( 32,   1, (5, 2), (2, 1), (2, 0), (1, 0)),
         ],
     ),
+    "DCCRN-MINI": (
+        # Encoders:
+        # (in_chan, out_chan, kernel_size, stride, padding)
+        [
+            (1, 4, (5, 2), (2, 1), (2, 0)),
+            (4, 8, (5, 2), (2, 1), (2, 0)),
+        ],
+        # Decoders:
+        # (in_chan, out_chan, kernel_size, stride, padding, output_padding)
+        [
+            (16, 4, (5, 2), (2, 1), (2, 0), (1, 0)),
+            ( 8, 1, (5, 2), (2, 1), (2, 0), (1, 0)),
+        ],
+    ),
 }
