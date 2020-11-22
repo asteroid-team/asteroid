@@ -8,7 +8,7 @@ from asteroid import torch_utils
 import asteroid.filterbanks as fb
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.filterbanks.transforms import mag, apply_mag_mask, ebased_vad
-from asteroid.masknn.blocks import SingleRNN
+from asteroid.masknn.recurrent import SingleRNN
 from asteroid.utils.torch_utils import pad_x_to_y
 
 
