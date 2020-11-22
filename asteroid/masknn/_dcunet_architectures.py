@@ -37,6 +37,17 @@ def make_unet_encoder_decoder_args(encoder_args, decoder_args):
 # fmt: off
 
 DCUNET_ARCHITECTURES = {
+    "DCUNet-MINI": make_unet_encoder_decoder_args(
+        # Encoders:
+        # (in_chan, out_chan, kernel_size, stride, padding)
+        [
+            (1, 4, (7, 5), (2, 2), "auto"),
+            (4, 8, (7, 5), (2, 2), "auto"),
+            (8, 16, (5, 3), (2, 2), "auto"),
+        ],
+        # Decoders: automatic inverse
+        "auto",
+    ),
     "DCUNet-10": make_unet_encoder_decoder_args(
         # Encoders:
         # (in_chan, out_chan, kernel_size, stride, padding)
