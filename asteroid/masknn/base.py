@@ -92,8 +92,16 @@ class BaseDCUMaskNet(BaseUNet):
         )
 
     def forward(self, x):
-        self._check_input_dims(x)
-        return super().forward(x.unsqueeze(1))
+        fixed_x = self.fix_input_dims(x)
+        out = super().forward(fixed_x.unsqueeze(1))
+        out = self.fix_output_dims(out, x)
+        return out
 
-    def _check_input_dims(self, x):
-        """Overwrite this in subclasses to implement dimension checks."""
+    def fix_input_dims(self, x):
+        """Overwrite this in subclasses to implement input dimension checks."""
+        return x
+
+    def fix_output_dims(self, y, x):
+        """Overwrite this in subclasses to implement output dimension checks.
+        y is the output and x was the input (passed to use the shape)."""
+        return y

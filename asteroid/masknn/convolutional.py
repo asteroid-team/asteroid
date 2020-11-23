@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 import numpy as np
 import torch
 from torch import nn
@@ -11,6 +13,7 @@ from ..utils import has_arg
 from ..utils.deprecation_utils import VisibleDeprecationWarning
 from ._dcunet_architectures import DCUNET_ARCHITECTURES
 from ._local import _DilatedConvNorm, _NormAct, _ConvNormAct, _ConvNorm
+from ..utils.torch_utils import script_if_tracing
 
 
 class Conv1DBlock(nn.Module):
@@ -516,15 +519,32 @@ class DCUMaskNet(BaseDCUMaskNet):
             **kwargs,
         )
 
-    def _check_input_dims(self, x):
-        # TODO: We can probably lift the shape requirements once Keras-style "same"
-        # padding for convolutions has landed: https://github.com/pytorch/pytorch/pull/42190
-        freq_prod, time_prod = self.encoders_stride_product
-        if (x.shape[1] - 1) % freq_prod or (x.shape[2] - 1) % time_prod:
-            raise TypeError(
-                f"Input shape must be [batch, freq + 1, time + 1] with freq divisible by "
-                f"{freq_prod} and time divisible by {time_prod}, got {x.shape} instead"
-            )
+    def fix_input_dims(self, x):
+        return _fix_input_dims(x, torch.from_numpy(self.encoders_stride_product))
+
+    def fix_output_dims(self, out, x):
+        return _fix_output_dims(out, x)
+
+
+@script_if_tracing
+def _fix_input_dims(x, encoders_stride_product):
+    freq_prod = int(encoders_stride_product[0])
+    time_prod = int(encoders_stride_product[1])
+    if (x.shape[1] - 1) % freq_prod:
+        raise TypeError(
+            f"Input shape must be [batch, freq + 1, time + 1] with freq divisible by "
+            f"{freq_prod}, got {x.shape} instead"
+        )
+    if (x.shape[2] - 1) % time_prod:
+        div, mod = divmod((x.shape[2] - 1), time_prod)
+        pad_shape = [0, time_prod - mod]
+        x = nn.functional.pad(x, pad_shape, mode="constant")
+    return x
+
+
+@script_if_tracing
+def _fix_output_dims(out, x):
+    return out[..., : x.shape[-1]]
 
 
 class SuDORMRF(nn.Module):
