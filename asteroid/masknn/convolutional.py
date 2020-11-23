@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np
 import torch
@@ -13,7 +13,7 @@ from ..utils import has_arg
 from ..utils.deprecation_utils import VisibleDeprecationWarning
 from ._dcunet_architectures import DCUNET_ARCHITECTURES
 from ._local import _DilatedConvNorm, _NormAct, _ConvNormAct, _ConvNorm
-from ..utils.torch_utils import script_if_tracing
+from ..utils.torch_utils import script_if_tracing, pad_or_trim_x_to_y
 
 
 class Conv1DBlock(nn.Module):
@@ -504,7 +504,8 @@ class DCUMaskNet(BaseDCUMaskNet):
 
     _architectures = DCUNET_ARCHITECTURES
 
-    def __init__(self, encoders, decoders, **kwargs):
+    def __init__(self, encoders, decoders, fix_length_mode=None, **kwargs):
+        self.fix_length_mode = fix_length_mode
         self.encoders_stride_product = np.prod(
             [enc_stride for _, _, _, enc_stride, _ in encoders], axis=0
         )
@@ -520,14 +521,17 @@ class DCUMaskNet(BaseDCUMaskNet):
         )
 
     def fix_input_dims(self, x):
-        return _fix_input_dims(x, torch.from_numpy(self.encoders_stride_product))
+        return _fix_dcu_input_dims(
+            self.fix_length_mode, x, torch.from_numpy(self.encoders_stride_product)
+        )
 
     def fix_output_dims(self, out, x):
-        return _fix_output_dims(out, x)
+        return _fix_dcu_output_dims(self.fix_length_mode, out, x)
 
 
 @script_if_tracing
-def _fix_input_dims(x, encoders_stride_product):
+def _fix_dcu_input_dims(fix_length_mode: Optional[str], x, encoders_stride_product):
+    """Pad or trim `x` to a length compatible with DCUNet."""
     freq_prod = int(encoders_stride_product[0])
     time_prod = int(encoders_stride_product[1])
     if (x.shape[1] - 1) % freq_prod:
@@ -535,16 +539,28 @@ def _fix_input_dims(x, encoders_stride_product):
             f"Input shape must be [batch, freq + 1, time + 1] with freq divisible by "
             f"{freq_prod}, got {x.shape} instead"
         )
-    if (x.shape[2] - 1) % time_prod:
-        div, mod = divmod((x.shape[2] - 1), time_prod)
-        pad_shape = [0, time_prod - mod]
-        x = nn.functional.pad(x, pad_shape, mode="constant")
+    time_remainder = (x.shape[2] - 1) % time_prod
+    if time_remainder:
+        if fix_length_mode is None:
+            raise TypeError(
+                f"Input shape must be [batch, freq + 1, time + 1] with time divisible by "
+                f"{time_prod}, got {x.shape} instead. See the 'fix_length_mode' argument "
+                f"to 'DCUMaskNet' for ways to fix this."
+            )
+        elif fix_length_mode == "pad":
+            pad_shape = [0, time_prod - time_remainder]
+            x = nn.functional.pad(x, pad_shape, mode="constant")
+        elif fix_length_mode == "trim":
+            x = x[..., :-time_remainder]
+        else:
+            raise ValueError(f"Unknown fix_length mode '{fix_length_mode}'")
     return x
 
 
 @script_if_tracing
-def _fix_output_dims(out, x):
-    return out[..., : x.shape[-1]]
+def _fix_dcu_output_dims(fix_length_mode: Optional[str], out, x):
+    """Fix shape of `out` to the original shape of `x`."""
+    return pad_or_trim_x_to_y(out, x)
 
 
 class SuDORMRF(nn.Module):
