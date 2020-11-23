@@ -59,7 +59,7 @@ def small_model_params():
         },
         DCCRNet.__name__: {
             "stft_kernel_size": 256,
-            "architecture": "DCCRN-MINI",
+            "architecture": "mini",
         },
         DeMask.__name__: {
             "input_type": "mag",
@@ -132,7 +132,7 @@ def test_enhancement_model(small_model_params, model_def, test_data):
 def test_dcunet_model(test_shape: Tuple, matching_samples):
     n_samples = 5010
     device = get_default_device()
-    model = DCUNet(architecture="DCUNet-MINI").eval().to(device)
+    model = DCUNet(architecture="mini").eval().to(device)
     # Random input uniformly distributed in [-1, 1]
     inputs = torch.rand(1, n_samples, device=device)
     traced = torch.jit.trace(model, (inputs,))

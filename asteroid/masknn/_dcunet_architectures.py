@@ -37,17 +37,6 @@ def make_unet_encoder_decoder_args(encoder_args, decoder_args):
 # fmt: off
 
 DCUNET_ARCHITECTURES = {
-    "DCUNet-MINI": make_unet_encoder_decoder_args(
-        # Encoders:
-        # (in_chan, out_chan, kernel_size, stride, padding)
-        [
-            (1, 4, (7, 5), (2, 2), "auto"),
-            (4, 8, (7, 5), (2, 2), "auto"),
-            (8, 16, (5, 3), (2, 2), "auto"),
-        ],
-        # Decoders: automatic inverse
-        "auto",
-    ),
     "DCUNet-10": make_unet_encoder_decoder_args(
         # Encoders:
         # (in_chan, out_chan, kernel_size, stride, padding)
@@ -124,5 +113,18 @@ DCUNET_ARCHITECTURES = {
             (135, 90, (1, 7), (1, 1), "auto", (0, 0)),
             ( 90,  1, (7, 1), (1, 1), "auto", (0, 0)),
         ],
+    ),
+    "mini": make_unet_encoder_decoder_args(
+        # This is a dummy architecture used for Asteroid unit tests.
+
+        # Encoders:
+        # (in_chan, out_chan, kernel_size, stride, padding)
+        [
+            (1, 4, (7, 5), (2, 2), "auto"),
+            (4, 8, (7, 5), (2, 2), "auto"),
+            (8, 16, (5, 3), (2, 2), "auto"),
+        ],
+        # Decoders: automatic inverse
+        "auto",
     ),
 }

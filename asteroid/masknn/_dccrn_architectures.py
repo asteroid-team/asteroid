@@ -22,7 +22,9 @@ DCCRN_ARCHITECTURES = {
             ( 32,   1, (5, 2), (2, 1), (2, 0), (1, 0)),
         ],
     ),
-    "DCCRN-MINI": (
+    "mini": (
+        # This is a dummy architecture used for Asteroid unit tests.
+
         # Encoders:
         # (in_chan, out_chan, kernel_size, stride, padding)
         [
