@@ -20,6 +20,12 @@ from asteroid.models import (
 from asteroid.models.base_models import BaseModel
 
 
+def test_set_sample_rate_raises_warning():
+    model = BaseModel(sample_rate=8000.0)
+    with pytest.warns(UserWarning):
+        model.sample_rate = 16000.0
+
+
 def test_convtasnet_sep():
     nnet = ConvTasNet(
         n_src=2,

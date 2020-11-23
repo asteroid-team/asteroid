@@ -45,15 +45,15 @@ class SingleSrcPMSQE(nn.Module):
         >>> stft = Encoder(STFTFB(kernel_size=512, n_filters=512, stride=256))
         >>> # Usage by itself
         >>> ref, est = torch.randn(2, 1, 16000), torch.randn(2, 1, 16000)
-        >>> ref_spec = transforms.take_mag(stft(ref))
-        >>> est_spec = transforms.take_mag(stft(est))
+        >>> ref_spec = transforms.mag(stft(ref))
+        >>> est_spec = transforms.mag(stft(est))
         >>> loss_func = SingleSrcPMSQE()
         >>> loss_value = loss_func(est_spec, ref_spec)
         >>> # Usage with PITLossWrapper
         >>> loss_func = PITLossWrapper(SingleSrcPMSQE(), pit_from='pw_pt')
         >>> ref, est = torch.randn(2, 3, 16000), torch.randn(2, 3, 16000)
-        >>> ref_spec = transforms.take_mag(stft(ref))
-        >>> est_spec = transforms.take_mag(stft(est))
+        >>> ref_spec = transforms.mag(stft(ref))
+        >>> est_spec = transforms.mag(stft(est))
         >>> loss_value = loss_func(ref_spec, est_spec)
     """
 

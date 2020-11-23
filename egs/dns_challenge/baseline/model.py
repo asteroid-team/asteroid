@@ -6,7 +6,7 @@ from torch import nn
 
 from asteroid.engine.system import System
 from asteroid.filterbanks import make_enc_dec
-from asteroid.filterbanks.transforms import take_cat, take_mag
+from asteroid.filterbanks.transforms import magreim, mag
 from asteroid.filterbanks.transforms import apply_real_mask
 from asteroid.filterbanks.transforms import apply_mag_mask
 from asteroid.masknn import blocks
@@ -75,9 +75,9 @@ class Model(nn.Module):
         tf_rep = self.encoder(x)
         # Estimate TF mask from STFT features : cat([re, im, mag])
         if self.is_complex:
-            to_masker = take_cat(tf_rep)
+            to_masker = magreim(tf_rep)
         else:
-            to_masker = take_mag(tf_rep)
+            to_masker = mag(tf_rep)
         # LSTM masker expects a feature dimension last (not like 1D conv)
         est_masks = self.masker(to_masker.transpose(1, 2)).transpose(1, 2)
         # Apply TF mask
@@ -155,10 +155,10 @@ def distance(estimate, target, is_complex=True):
     if is_complex:
         # Take the difference in the complex plane and compute the squared norm
         # of the remaining vector.
-        return take_mag(estimate - target).pow(2).mean()
+        return mag(estimate - target).pow(2).mean()
     else:
         # Compute the mean difference between magnitudes.
-        return (take_mag(estimate) - take_mag(target)).pow(2).mean()
+        return (mag(estimate) - mag(target)).pow(2).mean()
 
 
 def load_best_model(train_conf, exp_dir):

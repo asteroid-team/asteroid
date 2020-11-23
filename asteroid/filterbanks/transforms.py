@@ -1,6 +1,9 @@
+import math
 import torch
+from typing import Tuple
 
 from ..utils.torch_utils import script_if_tracing
+from ..utils.deprecation_utils import mark_deprecated
 
 
 def mul_c(inp, other, dim: int = -2):
@@ -44,11 +47,18 @@ def mul_c(inp, other, dim: int = -2):
     return torch.cat([real1 * real2 - imag1 * imag2, real1 * imag2 + imag1 * real2], dim=dim)
 
 
-def take_reim(x, dim: int = -2):
-    return x
+def reim(x, dim: int = -2) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Returns a tuple (re, im).
+
+    Args:
+        x (:class:`torch.Tensor`): Complex valued tensor.
+        dim (int): frequency (or equivalent) dimension along which real and
+            imaginary values are concatenated.
+    """
+    return torch.chunk(x, 2, dim=dim)
 
 
-def take_mag(x, dim: int = -2, EPS: float = 1e-8):
+def mag(x, dim: int = -2, EPS: float = 1e-8):
     """Takes the magnitude of a complex tensor.
 
     The operands is assumed to have the real parts of each entry followed by
@@ -83,8 +93,15 @@ def take_mag(x, dim: int = -2, EPS: float = 1e-8):
     return power.pow(0.5)
 
 
-def take_cat(x, dim: int = -2):
-    return torch.cat([take_mag(x, dim=dim), x], dim=dim)
+def magreim(x, dim: int = -2):
+    """Returns a concatenation of (mag, re, im).
+
+    Args:
+        x (:class:`torch.Tensor`): Complex valued tensor.
+        dim (int): frequency (or equivalent) dimension along which real and
+            imaginary values are concatenated.
+    """
+    return torch.cat([mag(x, dim=dim), x], dim=dim)
 
 
 def apply_real_mask(tf_rep, mask, dim: int = -2):
@@ -250,7 +267,7 @@ def is_torchaudio_complex(x):
     """Check if tensor is Torchaudio-style complex-like (last dimension is 2).
 
     Args:
-        tensor (torch.Tensor): tensor to be checked.
+        x (torch.Tensor): tensor to be checked.
 
     Returns:
         True if last dimension is 2, else False.
@@ -326,11 +343,11 @@ def angle(tensor, dim: int = -2):
     return torch.atan2(imag, real)
 
 
-def from_mag_and_phase(mag, phase, dim: int = -2):
+def from_magphase(mag_spec, phase, dim: int = -2):
     """Return a complex-like torch tensor from magnitude and phase components.
 
     Args:
-        mag (torch.tensor): magnitude of the tensor.
+        mag_spec (torch.tensor): magnitude of the tensor.
         phase (torch.tensor): angle of the tensor
         dim(int, optional): the frequency (or equivalent) dimension along which
             real and imaginary values are concatenated.
@@ -339,7 +356,14 @@ def from_mag_and_phase(mag, phase, dim: int = -2):
         :class:`torch.Tensor`:
             The corresponding complex-like torch tensor.
     """
-    return torch.cat([mag * torch.cos(phase), mag * torch.sin(phase)], dim=dim)
+    return torch.cat([mag_spec * torch.cos(phase), mag_spec * torch.sin(phase)], dim=dim)
+
+
+def magphase(spec: torch.Tensor, dim: int = -2) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Splits Asteroid complex-like tensor into magnitude and phase."""
+    mag_val = mag(spec, dim=dim)
+    phase = angle(spec, dim=dim)
+    return mag_val, phase
 
 
 @script_if_tracing
@@ -371,17 +395,124 @@ def ebased_vad(mag_spec, th_db: int = 40):
     return log_mag > (max_log_mag - th_db)
 
 
-_inputs = {"reim": (take_reim, 1), "mag": (take_mag, 1 / 2), "cat": (take_cat, 1 + 1 / 2)}
-_inputs["real"] = _inputs["reim"]
-_inputs["mod"] = _inputs["mag"]
-_inputs["concat"] = _inputs["cat"]
+def compute_delta(feats: torch.Tensor, dim: int = -1) -> torch.Tensor:
+    """Compute delta coefficients of a tensor.
+
+    Args:
+        feats: Input features to compute deltas with.
+        dim: feature dimension in the feats tensor.
+
+    Returns:
+        Tensor: Tensor of deltas.
+
+    Examples
+        >>> import torch
+        >>> phase = torch.randn(2, 257, 100)
+        >>> # Compute instantaneous frequency
+        >>> inst_freq = compute_delta(phase, dim=-1)
+        >>> # Or group delay
+        >>> group_delay = compute_delta(phase, dim=-2)
+    """
+    if dim != -1:
+        return compute_delta(feats.transpose(-1, dim), dim=-1).transpose(-1, dim)
+    # First frame has nothing. Then each frame is the diff with the previous one.
+    delta = feats.new_zeros(feats.shape)
+    delta[..., 1:] = feats[..., 1:] - feats[..., :-1]
+    return delta
 
 
-_masks = {
-    "reim": (apply_real_mask, 1),
-    "mag": (apply_mag_mask, 1 / 2),
-    "complex": (apply_complex_mask, 1),
-}
-_masks["real"] = _masks["reim"]
-_masks["mod"] = _masks["mag"]
-_masks["comp"] = _masks["complex"]
+def concat_deltas(feats: torch.Tensor, order: int = 1, dim: int = -1) -> torch.Tensor:
+    """Concatenate delta coefficients of a tensor to itself.
+
+    Args:
+        feats: Input features to compute deltas with.
+        order: Order of the delta e.g with order==2, compute delta of delta
+            as well.
+        dim: feature dimension in the feats tensor.
+
+    Returns:
+        Tensor: Concatenation of the features, the deltas and subsequent deltas.
+
+    Examples
+        >>> import torch
+        >>> phase = torch.randn(2, 257, 100)
+        >>> # Compute second order instantaneous frequency
+        >>> phase_and_inst_freq = concat_deltas(phase, order=2, dim=-1)
+        >>> # Or group delay
+        >>> phase_and_group_delay = concat_deltas(phase, order=2, dim=-2)
+    """
+    all_feats = [feats]
+    for _ in range(order):
+        all_feats.append(compute_delta(all_feats[-1], dim=dim))
+    return torch.cat(all_feats, dim=dim)
+
+
+def centerfreq_correction(
+    spec: torch.Tensor,
+    kernel_size: int,
+    stride: int = None,
+    dim: int = -2,
+) -> torch.Tensor:
+    """Corrects phase from the input spectrogram so that a sinusoid in the
+    middle of a bin keeps the same phase from one frame to the next.
+
+    Args:
+        spec: Spectrogram tensor of shape (batch, n_freq + 2, frames).
+        kernel_size (int): Kernel size of the STFT.
+        stride (int): Stride of the STFT.
+        dim (int): Only works of dim=-2.
+
+    Returns:
+        Tensor: the input spec with corrected phase.
+    """
+    if dim != -2:
+        raise NotImplementedError
+    if stride is None:
+        stride = kernel_size // 2
+    # Phase will be (batch, n_freq // 2 + 1, frames)
+    mag_spec, phase = magphase(spec, dim=dim)
+    new_phase = phase_centerfreq_correction(phase, kernel_size=kernel_size, stride=stride)
+    new_spec = from_magphase(mag_spec, new_phase, dim=dim)
+    return new_spec
+
+
+def phase_centerfreq_correction(
+    phase: torch.Tensor,
+    kernel_size: int,
+    stride: int = None,
+) -> torch.Tensor:
+    """Corrects phase so that a sinusoid in the middle of a bin keeps the
+    same phase from one frame to the next.
+
+    Args:
+        phase: tensor of shape (batch, n_freq//2 + 1, frames)
+        kernel_size (int): Kernel size of the STFT.
+        stride (int): Stride of the STFT.
+
+    Returns:
+        Tensor: corrected phase.
+    """
+    *_, freq, frames = phase.shape
+    tmp = torch.arange(freq).unsqueeze(-1) * torch.arange(frames)[None]
+    correction = -2 * tmp * stride * math.pi / kernel_size
+    return phase + correction
+
+
+@mark_deprecated(None, None)
+def take_reim(x, dim: int = -2):
+    return x
+
+
+@mark_deprecated("Please use `asteroid.filterbanks.transforms.mag` instead.", None)
+def take_mag(*args, **kwargs):
+    return mag(*args, **kwargs)
+
+
+@mark_deprecated("Please use `asteroid.filterbanks.transforms.magreim` instead.", None)
+def take_cat(*args, **kwargs):
+    return magreim(*args, **kwargs)
+
+
+@mark_deprecated("Please use `asteroid.filterbanks.transforms.from_magphase` instead.", None)
+def from_mag_and_phase(*args, **kwargs):
+    return from_magphase(*args, **kwargs)
