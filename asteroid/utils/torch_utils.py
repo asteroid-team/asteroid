@@ -119,6 +119,61 @@ def pad_x_to_y(x: torch.Tensor, y: torch.Tensor, axis: int = -1) -> torch.Tensor
     return nn.functional.pad(x, [0, inp_len - output_len])
 
 
+@script_if_tracing
+def pad_x_to_shape(x: torch.Tensor, shape, axis: int = -1) -> torch.Tensor:
+    """Right-pad first argument to have same size as the given `shape`
+
+    Args:
+        x (torch.Tensor): Tensor to be padded.
+        shape (Union[torch.Tensor, Tuple]): Shape to pad `x` to
+        axis (int): Axis to pad on.
+
+    Returns:
+        torch.Tensor, `x` padded to match `shape`.
+    """
+    if axis != -1:
+        raise NotImplementedError
+    inp_len = int(shape[axis])
+    output_len = x.shape[axis]
+    return nn.functional.pad(x, [0, inp_len - output_len])
+
+
+@script_if_tracing
+def trim_x_to_shape(x: torch.Tensor, shape, axis: int = -1) -> torch.Tensor:
+    """Right-trim first argument to have same size as the given `shape`
+
+    Args:
+        x (torch.Tensor): Tensor to be trimmed.
+        shape (Union[torch.Tensor, Tuple]): Shape to trim `x` to
+        axis (int): Axis to trim on.
+
+    Returns:
+        torch.Tensor, `x` trimmed to match `shape`.
+    """
+    if axis != -1:
+        raise NotImplementedError
+    inp_len = int(shape[axis])
+    return x[..., :inp_len]
+
+
+@script_if_tracing
+def pad_or_trim_x_to_shape(x: torch.Tensor, shape, axis: int = -1) -> torch.Tensor:
+    """Right-pad or right-trim first argument to have same size as the given `shape`
+
+    Args:
+        x (torch.Tensor): Tensor to be padded/trimmed.
+        shape (Union[torch.Tensor, Tuple]): Shape to pad/trim `x` to
+        axis (int): Axis to pad/trim on.
+
+    Returns:
+        torch.Tensor, `x` padded/trimmed to match `shape`.
+    """
+    if x.shape[axis] < shape[axis]:
+        return pad_x_to_shape(x, shape, axis=axis)
+    else:
+        return trim_x_to_shape(x, shape, axis=axis)
+
+
 def load_state_dict_in(state_dict, model):
     """Strictly loads state_dict in model, or the next submodel.
         Useful to load standalone model after training it with System.

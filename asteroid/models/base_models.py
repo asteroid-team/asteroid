@@ -6,7 +6,7 @@ import torch
 from torch import nn
 
 from ..masknn import activations
-from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
+from ..utils.torch_utils import pad_x_to_shape, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download
 
 
@@ -312,7 +312,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         masked_tf_rep = self.apply_masks(tf_rep, est_masks)
         decoded = self.forward_decoder(masked_tf_rep)
 
-        reconstructed = pad_x_to_y(decoded, wav)
+        reconstructed = pad_x_to_shape(decoded, shape)
         return _shape_reconstructed(reconstructed, shape)
 
     def forward_encoder(self, wav):
