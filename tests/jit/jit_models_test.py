@@ -130,7 +130,7 @@ def test_enhancement_model(small_model_params, model_def, test_data):
 @pytest.mark.parametrize("test_shape", [(2,), (3, 1)])
 @pytest.mark.parametrize("matching_samples", [4701, 8800, 17001])
 def test_dcunet_model(test_shape: Tuple, matching_samples):
-    n_samples = 4701
+    n_samples = 5010
     device = get_default_device()
     model = DCUNet(architecture="DCUNet-MINI").eval().to(device)
     # Random input uniformly distributed in [-1, 1]
