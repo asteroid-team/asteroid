@@ -1,8 +1,8 @@
 import torch
 
 from .. import complex_nn
-from ..filterbanks import make_enc_dec
-from ..filterbanks.transforms import from_torchaudio
+from asteroid_filterbanks import make_enc_dec
+from asteroid_filterbanks.transforms import from_torchaudio
 from ..masknn.convolutional import DCUMaskNet
 from .base_models import BaseEncoderMaskerDecoder
 

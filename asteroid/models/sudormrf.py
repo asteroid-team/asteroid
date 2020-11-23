@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import math
 
-from ..filterbanks import make_enc_dec
+from asteroid_filterbanks import make_enc_dec
 from ..masknn import SuDORMRF, SuDORMRFImproved
 from .base_models import BaseEncoderMaskerDecoder
 from ..utils.torch_utils import script_if_tracing

@@ -1,4 +1,4 @@
-from ..filterbanks import make_enc_dec
+from asteroid_filterbanks import make_enc_dec
 from ..masknn import DPTransformer
 from .base_models import BaseEncoderMaskerDecoder
 

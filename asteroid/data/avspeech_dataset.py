@@ -7,7 +7,7 @@ from torch.utils import data
 from torch.nn import functional as F
 import pandas as pd
 from typing import Union
-from ..filterbanks import Encoder, Decoder, STFTFB
+from asteroid_filterbanks import Encoder, Decoder, STFTFB
 
 
 def get_frames(video):
