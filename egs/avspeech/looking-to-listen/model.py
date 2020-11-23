@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from pathlib import Path
 from asteroid import torch_utils
 from asteroid.engine.optimizers import make_optimizer
-from asteroid.filterbanks import transforms
+from asteroid_filterbanks import transforms
 
 
 # Reference: https://github.com/bill9800/speech_separation/blob/master/model/lib/utils.py

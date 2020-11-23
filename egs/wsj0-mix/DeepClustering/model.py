@@ -5,9 +5,9 @@ from torch import nn
 from sklearn.cluster import KMeans
 
 from asteroid import torch_utils
-import asteroid.filterbanks as fb
+import asteroid_filterbanks as fb
 from asteroid.engine.optimizers import make_optimizer
-from asteroid.filterbanks.transforms import mag, apply_mag_mask, ebased_vad
+from asteroid_filterbanks.transforms import mag, apply_mag_mask, ebased_vad
 from asteroid.masknn.recurrent import SingleRNN
 from asteroid.utils.torch_utils import pad_x_to_y
 

@@ -1,6 +1,6 @@
 from torch import nn
 
-import asteroid.filterbanks as fb
+import asteroid_filterbanks as fb
 from asteroid.masknn import TDConvNet
 from asteroid.engine.optimizers import make_optimizer
 
