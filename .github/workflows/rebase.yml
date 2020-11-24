@@ -18,3 +18,19 @@ jobs:
       uses: cirrus-actions/rebase@1.3.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Publish built docs to gh-pages branch.
+    - name: Commit documentation changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -m commit --allow-empty "Trigger build" || true
+        # The above command will fail if no changes were present, so we ignore that.
+    - name: Push changes
+#      if: github.ref == 'refs/heads/master'
+      uses: ad-m/github-push-action@master
+      with:
+        branch: ${{ github.ref }}
+#        directory: gh-pages
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+#        force: true
