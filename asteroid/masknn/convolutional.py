@@ -490,7 +490,9 @@ class DCUMaskNet(BaseDCUMaskNet):
     """Masking part of DCUNet, as proposed in [1].
 
     Valid `architecture` values for the ``default_architecture`` classmethod are:
-    "Large-DCUNet-20", "DCUNet-20", "DCUNet-16", "DCUNet-10".
+    "Large-DCUNet-20", "DCUNet-20", "DCUNet-16", "DCUNet-10" and "mini".
+
+    Valid `fix_length_mode` values are [None, "pad", "trim"].
 
     Input shape is expected to be [batch, n_freqs, time], with `n_freqs - 1` divisible
     by `f_0 * f_1 * ... * f_N` where `f_k` are the frequency strides of the encoders,
@@ -544,8 +546,8 @@ def _fix_dcu_input_dims(fix_length_mode: Optional[str], x, encoders_stride_produ
         if fix_length_mode is None:
             raise TypeError(
                 f"Input shape must be [batch, freq + 1, time + 1] with time divisible by "
-                f"{time_prod}, got {x.shape} instead. See the 'fix_length_mode' argument "
-                f"to 'DCUMaskNet' for ways to fix this."
+                f"{time_prod}, got {x.shape} instead. Set the 'fix_length_mode' argument "
+                f"in 'DCUNet' to 'pad' or 'trim' to fix shapes automatically."
             )
         elif fix_length_mode == "pad":
             pad_shape = [0, time_prod - time_remainder]
