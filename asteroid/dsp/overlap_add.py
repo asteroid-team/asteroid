@@ -10,9 +10,14 @@ class LambdaOverlapAdd(torch.nn.Module):
     Segment input signal, apply lambda function (a neural network for example)
     and combine with OLA.
 
+    `LambdaOverlapAdd` can be used with :mod:`asteroid.separate` and the
+    `asteroid-infer` CLI.
+
     Args:
         nnet (callable): Function to apply to each segment.
-        n_src (int): Number of sources in the output of nnet.
+        n_src (Optional[int]): Number of sources in the output of nnet.
+            If None, the number of sources is determined by the network's output,
+            but some correctness checks cannot be performed.
         window_size (int): Size of segmenting window.
         hop_size (int): Segmentation hop size.
         window (str): Name of the window (see scipy.signal.get_window) used
@@ -36,8 +41,14 @@ class LambdaOverlapAdd(torch.nn.Module):
         >>>     reorder_chunks=True,
         >>>     enable_grad=False,
         >>> )
+
+        >>> # Process wav tensor:
         >>> wav = torch.randn(1, 1, 500000)
         >>> out_wavs = continuous_nnet.forward(wav)
+
+        >>> # asteroid.separate.Separatable support:
+        >>> from asteroid.separate import file_separate
+        >>> file_separate(continuous_nnet, "example.wav")
     """
 
     def __init__(
@@ -91,14 +102,14 @@ class LambdaOverlapAdd(torch.nn.Module):
             # user must handle multichannel by reshaping to batch
             if frame_idx == 0:
                 assert frame.ndim == 3, "nnet should return (batch, n_src, time)"
-                assert frame.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
-            frame = frame.reshape(batch * self.n_src, -1)
+                if self.n_src is not None:
+                    assert frame.shape[1] == self.n_src, "nnet should return (batch, n_src, time)"
+                n_src = frame.shape[1]
+            frame = frame.reshape(batch * n_src, -1)
 
             if frame_idx != 0 and self.reorder_chunks:
                 # we determine best perm based on xcorr with previous sources
-                frame = _reorder_sources(
-                    frame, out[-1], self.n_src, self.window_size, self.hop_size
-                )
+                frame = _reorder_sources(frame, out[-1], n_src, self.window_size, self.hop_size)
 
             if self.use_window:
                 frame = frame * self.window
@@ -106,7 +117,7 @@ class LambdaOverlapAdd(torch.nn.Module):
                 frame = frame / (self.window_size / self.hop_size)
             out.append(frame)
 
-        out = torch.stack(out).reshape(n_chunks, batch * self.n_src, self.window_size)
+        out = torch.stack(out).reshape(n_chunks, batch * n_src, self.window_size)
         out = out.permute(1, 2, 0)
 
         out = torch.nn.functional.fold(
@@ -116,7 +127,7 @@ class LambdaOverlapAdd(torch.nn.Module):
             padding=(self.window_size, 0),
             stride=(self.hop_size, 1),
         )
-        return out.squeeze(-1).reshape(batch, self.n_src, -1)
+        return out.squeeze(-1).reshape(batch, n_src, -1)
 
     def forward(self, x):
         """Forward module: segment signal, apply func, combine with OLA.
@@ -131,6 +142,15 @@ class LambdaOverlapAdd(torch.nn.Module):
         with torch.autograd.set_grad_enabled(self.enable_grad):
             olad = self.ola_forward(x)
             return olad
+
+    # Implement `asteroid.separate.Separatable` (separation support)
+
+    @property
+    def sample_rate(self):
+        return self.nnet.sample_rate
+
+    def _separate(self, wav, *args, **kwargs):
+        return self.forward(wav, *args, **kwargs)
 
 
 def _reorder_sources(
