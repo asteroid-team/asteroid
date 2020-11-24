@@ -8,11 +8,11 @@ import asteroid
 
 def print_versions():
     """CLI function to get info about the Asteroid and dependency versions."""
-    for k, v in asteroid_env().items():
+    for k, v in asteroid_versions().items():
         print(f"{k:20s}{v}")
 
 
-def asteroid_env():
+def asteroid_versions():
     return {
         "Asteroid": asteroid_version(),
         "PyTorch": pytorch_version(),
