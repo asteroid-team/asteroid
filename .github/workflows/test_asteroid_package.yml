@@ -11,10 +11,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6]  #, 3.7, 3.8]
-        pytorch-version: [
-            "torch==1.7.0+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html",
-            "--pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html"
-        ]
+        pytorch-version: ["1.7.0", "nightly"]
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 10
@@ -37,7 +34,12 @@ jobs:
         python -m pip install --upgrade --user pip --quiet
         python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
         python -m pip install pytest coverage codecov --upgrade-strategy only-if-needed --quiet
-        python -m pip install $TORCH_INSTALL
+        if [ $TORCH_INSTALL == "1.7.0" ]; then
+          INSTALL="torch==1.7.0+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html"
+        else
+          INSTALL="--pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html"
+        fi
+        python -m pip install $INSTALL
         python -m pip install -r requirements.txt --quiet
         python --version
         pip --version
