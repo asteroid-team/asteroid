@@ -231,7 +231,7 @@ class DPRNNBlock(nn.Module):
         x = output.transpose(1, 2).transpose(2, -1).reshape(B * K, L, N)
         x = self.inter_RNN(x)
         x = self.inter_linear(x)
-        x = x.reshape(B, K, L, N).transpose(1, -1).transpose(2, -1)
+        x = x.reshape(B, K, L, N).transpose(1, -1).transpose(2, -1).contiguous()
         x = self.inter_norm(x)
         return output + x
 

@@ -137,6 +137,7 @@ def test_sudormrf_imp():
     )
 
 
+@pytest.mark.filterwarnings("ignore: DPTransformer input dim")
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
 def test_dptnet(fb):
     _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, fb_name=fb))
@@ -224,7 +225,7 @@ def test_available_models():
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
 def test_demask(fb):
-    model = DeMask(fb_type=fb)
+    model = DeMask(fb_name=fb)
     test_input = torch.randn(1, 801)
 
     model_conf = model.serialize()
