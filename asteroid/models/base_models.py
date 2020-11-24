@@ -1,6 +1,6 @@
 import torch
 
-from .. import foo
+from .. import separate
 from ..masknn import activations
 from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download
@@ -25,9 +25,9 @@ class BaseModel(torch.nn.Module):
     Need to overwrite the `forward` method, the `sample_rate` property and
     the `get_model_args` method.
 
-    Models inheriting from `BaseModel` can be used by `foo.separate` and by the
-    `asteroid-infer` CLI. For models whose `forward` doesn't return waveform tensors,
-    overwrite `_separate` to return waveform tensors.
+    Models inheriting from `BaseModel` can be used by :mod:`asteroid.separate`
+    and by the `asteroid-infer` CLI. For models whose `forward` doesn't return
+    waveform tensors, overwrite `_separate` to return waveform tensors.
     """
 
     def __init__(self, sample_rate: float = 8000.0):
@@ -52,20 +52,20 @@ class BaseModel(torch.nn.Module):
         self.__sample_rate = new_sample_rate
 
     def separate(self, *args, **kwargs):
-        """Convenience for ``foo.separate(self, ...)``."""
-        return foo.separate(self, *args, **kwargs)
+        """Convenience for ``asteroid.separate.separate(self, ...)``."""
+        return separate.separate(self, *args, **kwargs)
 
     def torch_separate(self, *args, **kwargs):
-        """Convenience for ``foo.torch_separate(self, ...)``."""
-        return foo.torch_separate(self, *args, **kwargs)
+        """Convenience for ``asteroid.separate.torch_separate(self, ...)``."""
+        return separate.torch_separate(self, *args, **kwargs)
 
     def numpy_separate(self, *args, **kwargs):
-        """Convenience for ``foo.numpy_separate(self, ...)``."""
-        return foo.numpy_separate(self, *args, **kwargs)
+        """Convenience for ``asteroid.separate.numpy_separate(self, ...)``."""
+        return separate.numpy_separate(self, *args, **kwargs)
 
     def file_separate(self, *args, **kwargs):
-        """Convenience for ``foo.file_separate(self, ...)``."""
-        return foo.file_separate(self, *args, **kwargs)
+        """Convenience for ``asteroid.separate.file_separate(self, ...)``."""
+        return separate.file_separate(self, *args, **kwargs)
 
     def _separate(self, wav, *args, **kwargs):
         """Hidden separation method
