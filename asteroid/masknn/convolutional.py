@@ -553,7 +553,8 @@ def _fix_dcu_input_dims(fix_length_mode: Optional[str], x, encoders_stride_produ
             pad_shape = [0, time_prod - time_remainder]
             x = nn.functional.pad(x, pad_shape, mode="constant")
         elif fix_length_mode == "trim":
-            x = x[..., :-time_remainder]
+            pad_shape = [0, -time_remainder]
+            x = nn.functional.pad(x, pad_shape, mode="constant")
         else:
             raise ValueError(f"Unknown fix_length mode '{fix_length_mode}'")
     return x

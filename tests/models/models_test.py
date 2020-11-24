@@ -143,7 +143,7 @@ def test_dptnet(fb):
     _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, fb_name=fb))
 
 
-@pytest.mark.skipif("torch_version_tuple() < (1, 8)")
+# @pytest.mark.skipif("torch_version_tuple() < (1, 8)")
 def test_dcunet():
     _, istft = make_enc_dec("stft", 512, 512)
     input_samples = istft(torch.zeros((514, 17))).shape[0]
