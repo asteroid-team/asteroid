@@ -11,10 +11,11 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
     """Base class for ``DCUNet`` and ``DCCRNet`` classes.
 
     Args:
+        architecture (str): The architecture to use. Overriden by subclasses.
         stft_kernel_size (int): STFT frame length to use
         stft_stride (int, optional): STFT hop length to use.
         sample_rate (float): Sampling rate of the model.
-
+        masknet_kwargs (optional): Passed to the masknet constructor.
     """
 
     masknet_class = NotImplemented
@@ -25,7 +26,7 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
         stft_kernel_size=512,
         stft_stride=None,
         sample_rate=16000.0,
-        masknet_kwargs=None,
+        **masknet_kwargs,
     ):
         self.architecture = architecture
         self.stft_kernel_size = stft_kernel_size
@@ -39,7 +40,7 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
             stride=stft_stride,
             sample_rate=sample_rate,
         )
-        masker = self.masknet_class.default_architecture(architecture, **(masknet_kwargs or {}))
+        masker = self.masknet_class.default_architecture(architecture, **masknet_kwargs)
         super().__init__(encoder, masker, decoder)
 
     def forward_encoder(self, wav):
@@ -57,7 +58,7 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
             "stft_kernel_size": self.stft_kernel_size,
             "stft_stride": self.stft_stride,
             "sample_rate": self.sample_rate,
-            "masknet_kwargs": self.masknet_kwargs,
+            **self.masknet_kwargs,
         }
         return model_args
 
@@ -70,6 +71,8 @@ class DCUNet(BaseDCUNet):
             "DCUNet-10", "DCUNet-16", "DCUNet-20", "Large-DCUNet-20".
         stft_kernel_size (int): STFT frame length to use
         stft_stride (int, optional): STFT hop length to use.
+        sample_rate (float): Sampling rate of the model.
+        masknet_kwargs (optional): Passed to :class:`DCUMaskNet`
 
     References
         - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",

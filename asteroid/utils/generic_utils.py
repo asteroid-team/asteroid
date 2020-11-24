@@ -87,13 +87,13 @@ def unet_decoder_args(encoders, *, skip_connections):
     given the arguments used to construct the encoder.
 
     Args:
-        encoders (list of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding)):
+        encoders (tuple of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding)):
             List of arguments used to construct the encoders
         skip_connections (bool): Whether to include skip connections in the
             calculation of decoder input channels.
 
     Return:
-        list of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding):
+        tuple of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding):
             Arguments to be used to construct decoders
     """
     decoder_args = []
@@ -105,4 +105,4 @@ def unet_decoder_args(encoders, *, skip_connections):
         decoder_args.append(
             (enc_out_chan + skip_in_chan, enc_in_chan, enc_kernel_size, enc_stride, enc_padding)
         )
-    return decoder_args
+    return tuple(decoder_args)

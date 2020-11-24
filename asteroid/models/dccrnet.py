@@ -13,6 +13,7 @@ class DCCRNet(BaseDCUNet):
         stft_kernel_size (int): STFT frame length to use
         stft_stride (int, optional): STFT hop length to use.
         sample_rate (float): Sampling rate of the model.
+        masknet_kwargs (optional): Passed to :class:`DCCRMaskNet`
 
     References
         - [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
@@ -21,15 +22,12 @@ class DCCRNet(BaseDCUNet):
 
     masknet_class = DCCRMaskNet
 
-    def __init__(
-        self, *args, stft_kernel_size=512, sample_rate=16000.0, masknet_kwargs=None, **kwargs
-    ):
+    def __init__(self, *args, stft_kernel_size=512, **masknet_kwargs):
+        masknet_kwargs.setdefault("n_freqs", stft_kernel_size // 2)
         super().__init__(
             *args,
             stft_kernel_size=stft_kernel_size,
-            sample_rate=sample_rate,
-            masknet_kwargs={"n_freqs": stft_kernel_size // 2, **(masknet_kwargs or {})},
-            **kwargs,
+            **masknet_kwargs,
         )
 
     def forward_encoder(self, wav):

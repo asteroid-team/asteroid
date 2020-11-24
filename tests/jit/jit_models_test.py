@@ -132,7 +132,7 @@ def test_enhancement_model(small_model_params, model_def, test_data):
 def test_dcunet_model(test_shape: Tuple, matching_samples):
     n_samples = 5010
     device = get_default_device()
-    model = DCUNet(architecture="mini", masknet_kwargs={"fix_length_mode": "pad"}).eval().to(device)
+    model = DCUNet(architecture="mini", fix_length_mode="pad").eval().to(device)
     # Random input uniformly distributed in [-1, 1]
     inputs = torch.rand(1, n_samples, device=device)
     traced = torch.jit.trace(model, (inputs,))

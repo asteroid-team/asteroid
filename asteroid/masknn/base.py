@@ -68,18 +68,22 @@ class BaseDCUMaskNet(BaseUNet):
     _architectures = NotImplemented
 
     @classmethod
-    def default_architecture(cls, architecture: str, **kwargs):
+    def default_architecture(cls, architecture: str, n_src=1, **kwargs):
         """Create a masknet instance from a predefined, named architecture.
 
         Args:
             architecture (str): Name of predefined architecture. Valid values
                 are dependent on the concrete subclass of ``BaseDCUMaskNet``.
-            kwargs (optional): Passed to ``__init__`.
+            n_src (int, optional): Number of sources
+            kwargs (optional): Passed to ``__init__``.
         """
         encoders, decoders = cls._architectures[architecture]
+        # Fix n_src in last decoder
+        in_chan, _ignored_out_chan, *rest = decoders[-1]
+        decoders = (*decoders[:-1], (in_chan, n_src, *rest))
         return cls(encoders, decoders, **kwargs)
 
-    def __init__(self, encoders, decoders, output_layer=None, mask_bound="tanh", **kwargs):
+    def __init__(self, encoders, decoders, output_layer=None, mask_bound="tanh", n_src=1, **kwargs):
         self.mask_bound = mask_bound
         super().__init__(
             encoders=encoders,

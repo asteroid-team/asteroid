@@ -18,6 +18,7 @@ from asteroid.models import (
     SuDORMRFNet,
 )
 from asteroid.models.base_models import BaseModel
+from asteroid.utils.test_utils import torch_version_tuple
 
 
 def test_set_sample_rate_raises_warning():
@@ -142,14 +143,19 @@ def test_dptnet(fb):
     _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, fb_name=fb))
 
 
+@pytest.mark.skipif("torch_version_tuple() < (1, 8)")
 def test_dcunet():
     _, istft = make_enc_dec("stft", 512, 512)
-    _default_test_model(DCUNet("DCUNet-10"), input_samples=istft(torch.zeros((514, 17))).shape[0])
+    input_samples = istft(torch.zeros((514, 17))).shape[0]
+    _default_test_model(DCUNet("DCUNet-10"), input_samples=input_samples)
+    _default_test_model(DCUNet("DCUNet-10", n_src=2), input_samples=input_samples)
 
 
 def test_dccrnet():
     _, istft = make_enc_dec("stft", 512, 512)
-    _default_test_model(DCCRNet("DCCRN-CL"), input_samples=istft(torch.zeros((514, 16))).shape[0])
+    input_samples = istft(torch.zeros((514, 16))).shape[0]
+    _default_test_model(DCCRNet("DCCRN-CL"), input_samples=input_samples)
+    _default_test_model(DCCRNet("DCCRN-CL", n_src=2), input_samples=input_samples)
 
 
 def _default_test_model(model, input_samples=801):
