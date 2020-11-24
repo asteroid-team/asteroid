@@ -102,7 +102,7 @@ def script_if_tracing(fn):
 
 @script_if_tracing
 def pad_x_to_y(x: torch.Tensor, y: torch.Tensor, axis: int = -1) -> torch.Tensor:
-    """Right-pad first argument to have same size as second argument
+    """Right-pad or right-trim first argument to have same size as second argument
 
     Args:
         x (torch.Tensor): Tensor to be padded.
@@ -117,44 +117,6 @@ def pad_x_to_y(x: torch.Tensor, y: torch.Tensor, axis: int = -1) -> torch.Tensor
     inp_len = y.shape[axis]
     output_len = x.shape[axis]
     return nn.functional.pad(x, [0, inp_len - output_len])
-
-
-@script_if_tracing
-def trim_x_to_y(x: torch.Tensor, y: torch.Tensor, axis: int = -1) -> torch.Tensor:
-    """Right-trim first argument to have same size as second argument
-
-    Args:
-        x (torch.Tensor): Tensor to be trimmed.
-        y (torch.Tensor): Tensor to trim `x` to.
-        axis (int): Axis to trim on.
-
-    Returns:
-        torch.Tensor, `x` trimmed to match `y`'s shape.
-    """
-    if axis != -1:
-        raise NotImplementedError
-    inp_len = y.shape[axis]
-    return x[..., :inp_len]
-
-
-@script_if_tracing
-def pad_or_trim_x_to_y(x: torch.Tensor, y: torch.Tensor, axis: int = -1) -> torch.Tensor:
-    """Right-pad or right-trim first argument to have same size as second argument
-
-    Args:
-        x (torch.Tensor): Tensor to be padded/trimmed.
-        y (torch.Tensor): Tensor to pad/trim `x` to.
-        axis (int): Axis to pad/trim on.
-
-    Returns:
-        torch.Tensor, `x` padded/trimmed to match `y`'s shape.
-    """
-    if x.shape[axis] < y.shape[axis]:
-        return pad_x_to_y(x, y, axis=axis)
-    elif x.shape[axis] > y.shape[axis]:
-        return trim_x_to_y(x, y, axis=axis)
-    else:
-        return x
 
 
 def load_state_dict_in(state_dict, model):
