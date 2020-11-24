@@ -106,7 +106,7 @@ def test_enhancement_model(small_model_params, test_data):
     device = get_default_device()
     inputs = ((torch.rand(1, 201, device=device) - 0.5) * 2,)
     test_data = test_data.to(device)
-    model = DeMask(**params, fb_type=filter_bank).eval().to(device)
+    model = DeMask(**params, fb_name=filter_bank).eval().to(device)
     traced = torch.jit.trace(model, inputs)
 
     # check forward
