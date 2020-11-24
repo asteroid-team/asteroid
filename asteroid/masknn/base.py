@@ -83,7 +83,7 @@ class BaseDCUMaskNet(BaseUNet):
         decoders = (*decoders[:-1], (in_chan, n_src, *rest))
         return cls(encoders, decoders, **kwargs)
 
-    def __init__(self, encoders, decoders, output_layer=None, mask_bound="tanh", n_src=1, **kwargs):
+    def __init__(self, encoders, decoders, output_layer=None, mask_bound="tanh", **kwargs):
         self.mask_bound = mask_bound
         super().__init__(
             encoders=encoders,
