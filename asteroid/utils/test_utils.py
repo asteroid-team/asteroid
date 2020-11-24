@@ -29,3 +29,8 @@ class DummyWaveformDataset(data.Dataset):
         mixed = torch.randn(self.inp_n_sig, self.inp_len_wave)
         srcs = torch.randn(self.out_n_sig, self.out_len_wave)
         return mixed, srcs
+
+
+def torch_version_tuple():
+    version, *suffix = torch.__version__.split("+")
+    return tuple(map(int, version.split("."))) + tuple(suffix)

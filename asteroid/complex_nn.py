@@ -20,6 +20,7 @@ with warnings.catch_warnings():
     import torchaudio
 from torch import nn
 from .filterbanks import transforms
+from .utils.torch_utils import script_if_tracing
 
 
 # Alias to denote PyTorch native complex tensor (complex64/complex128).
@@ -32,10 +33,13 @@ def is_torch_complex(x):
 
 
 def torch_complex_from_magphase(mag, phase):
-    return as_torch_complex((mag * torch.cos(phase), mag * torch.sin(phase)))
+    return torch.view_as_complex(
+        torch.stack((mag * torch.cos(phase), mag * torch.sin(phase)), dim=-1)
+    )
 
 
-def as_torch_complex(x: Union[List, Tuple, torch.Tensor], asteroid_dim=-2):
+@script_if_tracing
+def as_torch_complex(x, asteroid_dim: int = -2):
     """Convert complex `x` to complex. Input may be one of:
 
     - PyTorch native complex
@@ -50,7 +54,7 @@ def as_torch_complex(x: Union[List, Tuple, torch.Tensor], asteroid_dim=-2):
         ValueError: If type of `x` is not understood.
     """
     if isinstance(x, (list, tuple)) and len(x) == 2:
-        return torch.view_as_complex(torch.stack(x, dim=-1))
+        return torch_complex_from_magphase(*x)
     elif is_torch_complex(x):
         return x
     else:
@@ -82,7 +86,7 @@ def on_reim(f):
 
     @functools.wraps(f)
     def cf(x):
-        return as_torch_complex((f(x.real), f(x.imag)))
+        return torch_complex_from_magphase(f(x.real), f(x.imag))
 
     # functools.wraps keeps the original name of `f`, which might be confusing,
     # since we are creating a new function that behaves differently.
@@ -106,7 +110,7 @@ class OnReIm(nn.Module):
         self.im_module = module_cls(*args, **kwargs)
 
     def forward(self, x):
-        return as_torch_complex((self.re_module(x.real), self.im_module(x.imag)))
+        return torch_complex_from_magphase(self.re_module(x.real), self.im_module(x.imag))
 
 
 class ComplexMultiplicationWrapper(nn.Module):
@@ -129,11 +133,9 @@ class ComplexMultiplicationWrapper(nn.Module):
         self.im_module = module_cls(*args, **kwargs)
 
     def forward(self, x: ComplexTensor) -> ComplexTensor:
-        return as_torch_complex(
-            (
-                self.re_module(x.real) - self.im_module(x.imag),
-                self.re_module(x.imag) + self.im_module(x.real),
-            )
+        return torch_complex_from_magphase(
+            self.re_module(x.real) - self.im_module(x.imag),
+            self.re_module(x.imag) + self.im_module(x.real),
         )
 
 

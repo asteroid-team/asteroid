@@ -105,18 +105,18 @@ def test_get_start_stop(sig_len, desired):
 
 def test_unet_decoder_args():
     a, b, c, d = np.random.randint(1, 100, size=4)
-    encoders = [
+    encoders = (
         (a, b, "ks1", "st1", "pad1"),
         (b, c, "ks2", "st2", "pad2"),
         (c, d, "ks3", "st3", "pad3"),
-    ]
-    assert utils.unet_decoder_args(encoders, skip_connections=False) == [
+    )
+    assert utils.unet_decoder_args(encoders, skip_connections=False) == (
         (1 * d, c, "ks3", "st3", "pad3"),
         (1 * c, b, "ks2", "st2", "pad2"),
         (1 * b, a, "ks1", "st1", "pad1"),
-    ]
-    assert utils.unet_decoder_args(encoders, skip_connections=True) == [
+    )
+    assert utils.unet_decoder_args(encoders, skip_connections=True) == (
         (1 * d, c, "ks3", "st3", "pad3"),
         (2 * c, b, "ks2", "st2", "pad2"),
         (2 * b, a, "ks1", "st1", "pad1"),
-    ]
+    )
