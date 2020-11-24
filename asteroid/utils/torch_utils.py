@@ -151,8 +151,10 @@ def pad_or_trim_x_to_y(x: torch.Tensor, y: torch.Tensor, axis: int = -1) -> torc
     """
     if x.shape[axis] < y.shape[axis]:
         return pad_x_to_y(x, y, axis=axis)
-    else:
+    elif x.shape[axis] > y.shape[axis]:
         return trim_x_to_y(x, y, axis=axis)
+    else:
+        return x
 
 
 def load_state_dict_in(state_dict, model):
