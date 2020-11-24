@@ -11,8 +11,8 @@ except ImportError:  # noqa
         pass
 
 
-from asteroid.dsp.overlap_add import LambdaOverlapAdd
-from asteroid.utils import get_device
+from .dsp.overlap_add import LambdaOverlapAdd
+from .utils import get_device
 
 
 class Separatable(Protocol):
