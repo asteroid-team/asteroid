@@ -13,7 +13,7 @@ from ..utils import has_arg
 from ..utils.deprecation_utils import VisibleDeprecationWarning
 from ._dcunet_architectures import DCUNET_ARCHITECTURES
 from ._local import _DilatedConvNorm, _NormAct, _ConvNormAct, _ConvNorm
-from ..utils.torch_utils import script_if_tracing, pad_or_trim_x_to_y
+from ..utils.torch_utils import script_if_tracing, pad_x_to_y
 
 
 class Conv1DBlock(nn.Module):
@@ -563,7 +563,7 @@ def _fix_dcu_input_dims(fix_length_mode: Optional[str], x, encoders_stride_produ
 @script_if_tracing
 def _fix_dcu_output_dims(fix_length_mode: Optional[str], out, x):
     """Fix shape of `out` to the original shape of `x`."""
-    return pad_or_trim_x_to_y(out, x)
+    return pad_x_to_y(out, x)
 
 
 class SuDORMRF(nn.Module):
