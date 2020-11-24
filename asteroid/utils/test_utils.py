@@ -32,5 +32,5 @@ class DummyWaveformDataset(data.Dataset):
 
 
 def torch_version_tuple():
-    version, suffix = torch.__version__.split("+")
-    return tuple(map(int, version.split("."))) + (suffix,)
+    version, *suffix = torch.__version__.split("+")
+    return tuple(map(int, version.split("."))) + tuple(suffix)
