@@ -144,11 +144,32 @@ def test_dptnet(fb):
 
 def test_dcunet():
     _, istft = make_enc_dec("stft", 512, 512)
-    _default_test_model(DCUNet("DCUNet-10"), input_samples=istft(torch.zeros((514, 17))).shape[0])
+    input_samples = istft(torch.zeros((514, 17))).shape[0]
+    _default_test_model(DCUNet("DCUNet-10"), input_samples=input_samples)
+    _default_test_model(DCUNet("DCUNet-10", n_src=2), input_samples=input_samples)
+
+    # DCUMaskNet should fail with wrong freqency dimensions
+    DCUNet("mini").masker(torch.zeros((1, 9, 17), dtype=torch.complex64))
+    with pytest.raises(TypeError):
+        DCUNet("mini").masker(torch.zeros((1, 42, 17), dtype=torch.complex64))
+
+    # DCUMaskNet should fail with wrong time dimensions if fix_length_mode is not used
+    DCUNet("mini", fix_length_mode="pad").masker(torch.zeros((1, 9, 17), dtype=torch.complex64))
+    DCUNet("mini", fix_length_mode="trim").masker(torch.zeros((1, 9, 17), dtype=torch.complex64))
+    with pytest.raises(TypeError):
+        DCUNet("mini").masker(torch.zeros((1, 9, 16), dtype=torch.complex64))
 
 
 def test_dccrnet():
-    _default_test_model(DCCRNet("DCCRN-CL"), input_samples=1300)
+    _, istft = make_enc_dec("stft", 512, 512)
+    input_samples = istft(torch.zeros((514, 16))).shape[0]
+    _default_test_model(DCCRNet("DCCRN-CL"), input_samples=input_samples)
+    _default_test_model(DCCRNet("DCCRN-CL", n_src=2), input_samples=input_samples)
+
+    # DCCRMaskNet should fail with wrong input dimensions
+    DCCRNet("mini").masker(torch.zeros((1, 256, 3), dtype=torch.complex64))
+    with pytest.raises(TypeError):
+        DCCRNet("mini").masker(torch.zeros((1, 42, 3), dtype=torch.complex64))
 
 
 def _default_test_model(model, input_samples=801):

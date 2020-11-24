@@ -40,6 +40,9 @@ class SingleRNN(nn.Module):
         self.rnn_type = rnn_type
         self.input_size = input_size
         self.hidden_size = hidden_size
+        self.n_layers = n_layers
+        self.dropout = dropout
+        self.bidirectional = bidirectional
         self.rnn = getattr(nn, rnn_type)(
             input_size,
             hidden_size,
@@ -48,6 +51,10 @@ class SingleRNN(nn.Module):
             batch_first=True,
             bidirectional=bool(bidirectional),
         )
+
+    @property
+    def output_size(self):
+        return self.hidden_size * (2 if self.bidirectional else 1)
 
     def forward(self, inp):
         """ Input shape [batch, seq, feats] """
@@ -492,7 +499,7 @@ class LSTMMasker(nn.Module):
         return config
 
 
-class DCCRMaskNetRNN(nn.Module):  # CHECK-JIT
+class DCCRMaskNetRNN(nn.Module):
     """RNN (LSTM) layer between encoders and decoders introduced in [1].
 
     Args:
@@ -502,25 +509,31 @@ class DCCRMaskNetRNN(nn.Module):  # CHECK-JIT
             `n_chans * n_freqs`.
         hid_size (int, optional): Number of units in RNN.
         rnn_type (str, optional): Type of RNN to use. See ``SingleRNN`` for valid values.
+        n_layers (int, optional): Number of layers used in RNN.
         norm_type (Optional[str], optional): Norm to use after linear.
             See ``asteroid.masknn.norms`` for valid values. (Not used in [1]).
+        rnn_kwargs (optional): Passed to ``SingleRNN``.
 
     References
         - [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
         Yanxin Hu et al. https://arxiv.org/abs/2008.00264
     """
 
-    def __init__(self, in_size, hid_size=128, rnn_type="LSTM", norm_type=None):
+    def __init__(
+        self, in_size, hid_size=128, rnn_type="LSTM", n_layers=2, norm_type=None, **rnn_kwargs
+    ):
         super().__init__()
 
-        self.rnn = complex_nn.ComplexMultiplicationWrapper(SingleRNN, rnn_type, in_size, hid_size)
-        self.linear = complex_nn.ComplexMultiplicationWrapper(nn.Linear, hid_size, in_size)
+        self.rnn = complex_nn.ComplexMultiplicationWrapper(
+            SingleRNN, rnn_type, in_size, hid_size, n_layers=n_layers, **rnn_kwargs
+        )
+        self.linear = complex_nn.ComplexMultiplicationWrapper(
+            nn.Linear, self.rnn.re_module.output_size, in_size
+        )
         self.norm = norms.get_complex(norm_type)
 
     def forward(self, x: complex_nn.ComplexTensor):
         """Input shape: [batch, ..., time]"""
-        # Remember x for skip connection
-        skip_conn = x
         # Permute to [batch, time, ...]
         x = x.permute(0, x.ndim - 1, *range(1, x.ndim - 1))
         # RNN + Linear expect [batch, time, rest]
@@ -529,10 +542,10 @@ class DCCRMaskNetRNN(nn.Module):  # CHECK-JIT
         x = x.permute(0, *range(2, x.ndim), 1)
         if self.norm is not None:
             x = self.norm(x)
-        return x + skip_conn
+        return x
 
 
-class DCCRMaskNet(BaseDCUMaskNet):  # CHECK-JIT
+class DCCRMaskNet(BaseDCUMaskNet):
     """Masking part of DCCRNet, as proposed in [1].
 
     Valid `architecture` values for the ``default_architecture`` classmethod are:
@@ -544,8 +557,11 @@ class DCCRMaskNet(BaseDCUMaskNet):  # CHECK-JIT
         decoders (list of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding))
             Arguments of decoders of the u-net
         n_freqs (int): Number of frequencies (dim 1) of input to ``.forward()`.
-            `n_freqs - 1` must be divisible by `f_0 * f_1 * ... * f_N` where `f_k` are
-            the frequency strides of the encoders.
+            Must be divisible by `f_0 * f_1 * ... * f_N` where `f_k` are the frequency
+            strides of the encoders.
+
+    Input shape is expected to be [batch, n_freqs, time], with `n_freqs` divisible
+    by `f_0 * f_1 * ... * f_N` where `f_k` are the frequency strides of the encoders.
 
     References
         -[1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
@@ -555,14 +571,35 @@ class DCCRMaskNet(BaseDCUMaskNet):  # CHECK-JIT
     _architectures = DCCRN_ARCHITECTURES
 
     def __init__(self, encoders, decoders, n_freqs, **kwargs):
-        encoders_stride_prod = np.prod([enc_stride for _, _, _, enc_stride, _ in encoders], axis=0)
-        freq_prod, _ = encoders_stride_prod
+        self.encoders_stride_product = np.prod(
+            [enc_stride for _, _, _, enc_stride, _ in encoders], axis=0
+        )
+
+        freq_prod, _ = self.encoders_stride_product
         last_encoder_out_shape = (encoders[-1][1], int(np.ceil(n_freqs / freq_prod)))
 
+        # Avoid circual import
+        from .convolutional import DCUNetComplexDecoderBlock, DCUNetComplexEncoderBlock
+
         super().__init__(
-            encoders,
-            decoders,
-            intermediate_layer=DCCRMaskNetRNN(np.prod(last_encoder_out_shape)),
+            encoders=[
+                *(DCUNetComplexEncoderBlock(*args, activation="prelu") for args in encoders),
+                DCCRMaskNetRNN(np.prod(last_encoder_out_shape)),
+            ],
+            decoders=[
+                torch.nn.Identity(),
+                *(DCUNetComplexDecoderBlock(*args, activation="prelu") for args in decoders[:-1]),
+            ],
+            output_layer=complex_nn.ComplexConvTranspose2d(*decoders[-1]),
             **kwargs,
         )
-        self.n_freqs = n_freqs
+
+    def fix_input_dims(self, x):
+        # TODO: We can probably lift the shape requirements once Keras-style "same"
+        # padding for convolutions has landed: https://github.com/pytorch/pytorch/pull/42190
+        freq_prod, _ = self.encoders_stride_product
+        if x.shape[1] % freq_prod:
+            raise TypeError(
+                f"Input shape must be [batch, freq, time] with freq divisible by {freq_prod}, got {x.shape} instead"
+            )
+        return x
