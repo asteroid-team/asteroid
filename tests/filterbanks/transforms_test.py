@@ -67,6 +67,7 @@ def test_comp_mask(encoder_list):
         assert_allclose(masked, tf_rep)
 
 
+@pytest.mark.filterwarnings("ignore:asteroid.filterbanks.transforms.take_reim")
 def test_reim(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]

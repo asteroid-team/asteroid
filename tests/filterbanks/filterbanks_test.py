@@ -41,7 +41,7 @@ def test_fb_def_and_forward_lowdim(fb_class, fb_config):
     # Assert for 4D inputs
     tf_out_4d = tf_out.repeat(1, 2, 1, 1)
     out_4d = dec(tf_out_4d)
-    assert_allclose(out, out_4d[:, 0])
+    assert_allclose(out, out_4d[:, :1])
     # Asser for 2D inputs
     assert_allclose(out[0, 0], dec(tf_out[0]))
     assert tf_out.shape[1] == enc.filterbank.n_feats_out

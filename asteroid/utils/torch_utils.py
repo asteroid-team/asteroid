@@ -102,15 +102,15 @@ def script_if_tracing(fn):
 
 @script_if_tracing
 def pad_x_to_y(x: torch.Tensor, y: torch.Tensor, axis: int = -1) -> torch.Tensor:
-    """Pad first argument to have same size as second argument
+    """Right-pad or right-trim first argument to have same size as second argument
 
     Args:
         x (torch.Tensor): Tensor to be padded.
-        y (torch.Tensor): Tensor to pad x to.
+        y (torch.Tensor): Tensor to pad `x` to.
         axis (int): Axis to pad on.
 
     Returns:
-        torch.Tensor, x padded to match y's shape.
+        torch.Tensor, `x` padded to match `y`'s shape.
     """
     if axis != -1:
         raise NotImplementedError
