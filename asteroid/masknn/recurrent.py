@@ -593,12 +593,3 @@ class DCCRMaskNet(BaseDCUMaskNet):
             output_layer=complex_nn.ComplexConvTranspose2d(*decoders[-1]),
             **kwargs,
         )
-
-    def _check_input_dims(self, x):
-        # TODO: We can probably lift the shape requirements once Keras-style "same"
-        # padding for convolutions has landed: https://github.com/pytorch/pytorch/pull/42190
-        freq_prod, _ = self.encoders_stride_product
-        if x.shape[1] % freq_prod:
-            raise TypeError(
-                f"Input shape must be [batch, freq, time] with freq divisible by {freq_prod}, got {x.shape} instead"
-            )
