@@ -32,7 +32,7 @@ jobs:
 
     - name: Install python dependencies
       env:
-        TORCH_INSTALL: ${{ matrix.python-version }}
+        TORCH_INSTALL: ${{ matrix.pytorch-version }}
       run: |
         python -m pip install --upgrade --user pip --quiet
         python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
