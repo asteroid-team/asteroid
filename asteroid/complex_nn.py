@@ -38,6 +38,10 @@ def torch_complex_from_magphase(mag, phase):
     )
 
 
+def torch_complex_from_reim(re, im):
+    return torch.view_as_complex(torch.stack([re, im], dim=-1))
+
+
 @script_if_tracing
 def as_torch_complex(x, asteroid_dim: int = -2):
     """Convert complex `x` to complex. Input may be one of:
@@ -54,7 +58,7 @@ def as_torch_complex(x, asteroid_dim: int = -2):
         ValueError: If type of `x` is not understood.
     """
     if isinstance(x, (list, tuple)) and len(x) == 2:
-        return torch_complex_from_magphase(*x)
+        return torch_complex_from_reim(*x)
     elif is_torch_complex(x):
         return x
     else:
@@ -89,7 +93,7 @@ def on_reim(f):
 
     @functools.wraps(f)
     def cf(x):
-        return torch_complex_from_magphase(f(x.real), f(x.imag))
+        return torch_complex_from_reim(f(x.real), f(x.imag))
 
     # functools.wraps keeps the original name of `f`, which might be confusing,
     # since we are creating a new function that behaves differently.
@@ -113,7 +117,7 @@ class OnReIm(nn.Module):
         self.im_module = module_cls(*args, **kwargs)
 
     def forward(self, x):
-        return torch_complex_from_magphase(self.re_module(x.real), self.im_module(x.imag))
+        return torch_complex_from_reim(self.re_module(x.real), self.im_module(x.imag))
 
 
 class ComplexMultiplicationWrapper(nn.Module):
@@ -136,7 +140,7 @@ class ComplexMultiplicationWrapper(nn.Module):
         self.im_module = module_cls(*args, **kwargs)
 
     def forward(self, x: ComplexTensor) -> ComplexTensor:
-        return torch_complex_from_magphase(
+        return torch_complex_from_reim(
             self.re_module(x.real) - self.im_module(x.imag),
             self.re_module(x.imag) + self.im_module(x.real),
         )
