@@ -48,26 +48,29 @@ so hop on and help us!
 
 ## Installation
 ([↑up to contents](#contents))
-In order to install Asteroid, clone the repo and install it using
-conda (if you don't already have a conda installation, please follow
-the instructions [here][miniconda]), pip or python : 
+To install Asteroid, clone the repo and install it using
+conda, pip or python :
 ```bash
+# First clone and enter the repo
 git clone https://github.com/mpariente/asteroid
 cd asteroid
-# With conda:
-$ conda env create -f environment.yml
-$ conda activate asteroid
-# Without conda: install install-required deps
-pip install numpy Cython
+```
+
+- With `pip`
+```bash
 # Install with pip in editable mode
 pip install -e .
 # Or, install with python in dev mode
 # python setup.py develop
 ```
-Asteroid is also on PyPI, you can install the latest release
-with
+- With conda (if you don't already have conda, see [here][miniconda].)
 ```bash
-pip install numpy Cython
+conda env create -f environment.yml
+conda activate asteroid
+```
+
+- Asteroid is also on PyPI, you can install the latest release with
+```bash
 pip install asteroid
 ```
 
