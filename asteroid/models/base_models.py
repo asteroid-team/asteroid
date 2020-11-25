@@ -5,23 +5,7 @@ from .. import separate
 from ..masknn import activations
 from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download
-
-
-def is_overridden(method_name, obj, parent=None) -> bool:
-    def last_parent_with_method(fn, cls):
-        # FIXME
-        return BaseModel
-
-    if not hasattr(obj, method_name):
-        return False
-
-    instance_attr = getattr(obj, method_name)
-    if not instance_attr:
-        return False
-
-    parent = parent if parent is not None else last_parent_with_method(method_name, obj)
-    super_attr = getattr(parent, method_name)
-    return instance_attr.__code__ is not super_attr.__code__
+from ..utils.deprecation_utils import is_overridden, mark_deprecated
 
 
 @script_if_tracing
@@ -98,7 +82,7 @@ class BaseModel(torch.nn.Module):
             return self._separate(wav, *args, **kwargs)
         return self(wav, *args, **kwargs)
 
-    # Need deprecating decoractor here. Override forward_wav
+    @mark_deprecated("Use `forward_wav` instead.")
     def _separate(self, wav, *args, **kwargs):
         """Deprecated."""
         return self(wav, *args, **kwargs)

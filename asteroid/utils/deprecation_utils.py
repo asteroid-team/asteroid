@@ -48,3 +48,20 @@ def mark_deprecated(message, version=None):
         return wrapped
 
     return decorator
+
+
+def is_overridden(method_name, obj, parent=None) -> bool:
+    def last_parent_with_method(fn, cls):
+        # FIXME
+        return None
+
+    if not hasattr(obj, method_name):
+        return False
+
+    instance_attr = getattr(obj, method_name)
+    if not instance_attr:
+        return False
+
+    parent = parent if parent is not None else last_parent_with_method(method_name, obj)
+    super_attr = getattr(parent, method_name)
+    return instance_attr.__code__ is not super_attr.__code__
