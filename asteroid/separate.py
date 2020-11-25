@@ -18,7 +18,7 @@ from .utils import get_device
 class Separatable(Protocol):
     """Things that are separatable."""
 
-    def _separate(self, wav, **kwargs):
+    def forward_wav(self, wav, **kwargs):
         """
         Args:
             wav (torch.Tensor): waveform tensor.
@@ -45,23 +45,25 @@ def separate(
     Also supports filenames.
 
     Args:
-        model (Separatable, for example asteroid.models.BaseModel): Model to use
+        model (Separatable, for example asteroid.models.BaseModel): Model to use.
         wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
             Shape: 1D, 2D or 3D tensor, time last.
         output_dir (str): path to save all the wav files. If None,
             estimated sources will be saved next to the original ones.
-        force_overwrite (bool): whether to overwrite existing files (when separating from file)..
-        resample (bool): Whether to resample input files with wrong sample rate (when separating from file).
-        **kwargs: keyword arguments to be passed to `_separate`.
+        force_overwrite (bool): whether to overwrite existing files
+            (when separating from file).
+        resample (bool): Whether to resample input files with wrong sample rate
+            (when separating from file).
+        **kwargs: keyword arguments to be passed to `forward_wav`.
 
     Returns:
         Union[torch.Tensor, numpy.ndarray, None], the estimated sources.
             (batch, n_src, time) or (n_src, time) w/o batch dim.
 
     .. note::
-        By default, `separate` calls `model._separate` which calls `forward`.
-        For models whose `forward` doesn't return waveform tensors,
-        overwrite their `_separate` method to return waveform tensors.
+        `separate` calls `model.forward_wav` which calls `forward` by default.
+        For models whose `forward` doesn't have waveform tensors as input/ouput,
+        overwrite their `forward_wav` method to separate from waveform to waveform.
     """
     if isinstance(wav, str):
         file_separate(
@@ -90,7 +92,7 @@ def torch_separate(model: Separatable, wav: torch.Tensor, **kwargs) -> torch.Ten
     model_device = get_device(model, default="cpu")
     wav = wav.to(model_device)
     # Forward
-    separate_func = getattr(model, "_separate", model)
+    separate_func = getattr(model, "forward_wav", model)
     out_wavs = separate_func(wav, **kwargs)
 
     # FIXME: for now this is the best we can do.

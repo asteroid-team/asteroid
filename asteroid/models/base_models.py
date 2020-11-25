@@ -5,6 +5,7 @@ from .. import separate
 from ..masknn import activations
 from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download
+from ..utils.deprecation_utils import is_overridden, mark_deprecated, VisibleDeprecationWarning
 
 
 @script_if_tracing
@@ -27,8 +28,9 @@ class BaseModel(torch.nn.Module):
     the `get_model_args` method.
 
     Models inheriting from `BaseModel` can be used by :mod:`asteroid.separate`
-    and by the `asteroid-infer` CLI. For models whose `forward` doesn't return
-    waveform tensors, overwrite `_separate` to return waveform tensors.
+    and by the `asteroid-infer` CLI. For models whose `forward` doesn't go from
+    waveform to waveform tensors, overwrite `forward_wav` to return
+    waveform tensors.
     """
 
     def __init__(self, sample_rate: float = 8000.0):
@@ -68,16 +70,30 @@ class BaseModel(torch.nn.Module):
         """Convenience for ``asteroid.separate.file_separate(self, ...)``."""
         return separate.file_separate(self, *args, **kwargs)
 
-    def _separate(self, wav, *args, **kwargs):
-        """Hidden separation method
+    def forward_wav(self, wav, *args, **kwargs):
+        """Separation method for waveforms.
+
+        In case the network's `forward` doesn't have waveforms as input/output,
+        overwrite this method to separate from waveform to waveform.
+        Should return a single torch.Tensor, the separated waveforms.
 
         Args:
-            wav (Union[torch.Tensor, numpy.ndarray, str]): waveform array/tensor.
+            wav (torch.Tensor): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
-
-        Returns:
-            The output of self(wav, *args, **kwargs).
         """
+        if is_overridden("_separate", self, parent=BaseModel):
+            # If `_separate` is overridden, the mark_deprecated won't be triggered.
+            warnings.warn(
+                "`BaseModel._separate` has been deprecated and will be remove from a "
+                "future release. Use `forward_wav` instead",
+                VisibleDeprecationWarning,
+            )
+            return self._separate(wav, *args, **kwargs)
+        return self(wav, *args, **kwargs)
+
+    @mark_deprecated("Use `forward_wav` instead.")
+    def _separate(self, wav, *args, **kwargs):
+        """Deprecated."""
         return self(wav, *args, **kwargs)
 
     @classmethod
