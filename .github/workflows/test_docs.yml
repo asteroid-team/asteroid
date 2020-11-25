@@ -47,9 +47,11 @@ jobs:
 
     - name: Build the docs
       run: |
+        pip install -e .  # Install asteroid-* scripts
         cd docs
         make html
         touch build/html/.nojekyll  # prevents use jekyll to build doc
+        grep -qHrn "System Message" build/html && exit 1 || true # Check for "System Message" errors
 
     # Create an artifact of the html output.
     - uses: actions/upload-artifact@v1
