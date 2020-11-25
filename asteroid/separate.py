@@ -18,7 +18,7 @@ from .utils import get_device
 class Separatable(Protocol):
     """Things that are separatable."""
 
-    def _separate(self, wav, **kwargs):
+    def forward_wav(self, wav, **kwargs):
         """
         Args:
             wav (torch.Tensor): waveform tensor.
@@ -90,7 +90,7 @@ def torch_separate(model: Separatable, wav: torch.Tensor, **kwargs) -> torch.Ten
     model_device = get_device(model, default="cpu")
     wav = wav.to(model_device)
     # Forward
-    separate_func = getattr(model, "_separate", model)
+    separate_func = getattr(model, "forward_wav", model)
     out_wavs = separate_func(wav, **kwargs)
 
     # FIXME: for now this is the best we can do.
