@@ -6,34 +6,34 @@ Filterbank API
 
 Filterbank, Encoder and Decoder
 -----------------
-.. autoclass:: asteroid.filterbanks.Filterbank
+.. autoclass:: asteroid_filterbanks.Filterbank
    :members:
-.. autoclass:: asteroid.filterbanks.Encoder
-   :members:
-   :show-inheritance:
-.. autoclass:: asteroid.filterbanks.Decoder
+.. autoclass:: asteroid_filterbanks.Encoder
    :members:
    :show-inheritance:
-.. autoclass:: asteroid.filterbanks.make_enc_dec
+.. autoclass:: asteroid_filterbanks.Decoder
    :members:
-.. autoclass:: asteroid.filterbanks.get
+   :show-inheritance:
+.. autoclass:: asteroid_filterbanks.make_enc_dec
+   :members:
+.. autoclass:: asteroid_filterbanks.get
 
 Learnable filterbanks
 ---------------------
 
 :hidden:`Free`
 ~~~~~~~~~~~~~~~~
-.. automodule:: asteroid.filterbanks.free_fb
+.. automodule:: asteroid_filterbanks.free_fb
     :members:
 
 :hidden:`Analytic Free`
 ~~~~~~~~~~~~~~~~
-.. automodule:: asteroid.filterbanks.analytic_free_fb
+.. automodule:: asteroid_filterbanks.analytic_free_fb
     :members:
 
 :hidden:`Parameterized Sinc`
 ~~~~~~~~~~~~~~~~
-.. automodule:: asteroid.filterbanks.param_sinc_fb
+.. automodule:: asteroid_filterbanks.param_sinc_fb
     :members:
 
 Fixed filterbanks
@@ -41,12 +41,16 @@ Fixed filterbanks
 
 :hidden:`STFT`
 ~~~~~~~~~~~~~~~~
-.. automodule:: asteroid.filterbanks.stft_fb
+.. automodule:: asteroid_filterbanks.stft_fb
     :members:
 
-:hidden:`MP-GTFB`
+:hidden:`MelGram`
+.. automodule:: asteroid_filterbanks.melgram_fb
+    :members:
+
+:hidden:`MPGT`
 ~~~~~~~~~~~~~~~~
-.. automodule:: asteroid.filterbanks.multiphase_gammatone_fb
+.. automodule:: asteroid_filterbanks.multiphase_gammatone_fb
     :members:
 
 Transforms
@@ -55,12 +59,11 @@ Transforms
 :hidden:`Griffin-Lim and MISI`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: asteroid.filterbanks.griffin_lim
+.. automodule:: asteroid_filterbanks.griffin_lim
    :members:
 
 :hidden:`Complex transforms`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: asteroid.filterbanks.transforms
+.. automodule:: asteroid_filterbanks.transforms
    :members:
-

@@ -23,7 +23,7 @@ class TwoStepTDCN(nn.Module):
 
     Args:
         pretrained_filterbank: A pretrained encoder decoder like the one
-            implemented in asteroid.filterbanks.simple_adaptive
+            implemented in asteroid_filterbanks.simple_adaptive
         n_sources (int, optional): Number of masks to estimate.
         n_blocks (int, optional): Number of convolutional blocks in each
             repeat. Defaults to 8.

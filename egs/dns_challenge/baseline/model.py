@@ -5,11 +5,11 @@ import torch
 from torch import nn
 
 from asteroid.engine.system import System
-from asteroid.filterbanks import make_enc_dec
-from asteroid.filterbanks.transforms import magreim, mag
-from asteroid.filterbanks.transforms import apply_real_mask
-from asteroid.filterbanks.transforms import apply_mag_mask
-from asteroid.masknn import blocks
+from asteroid_filterbanks import make_enc_dec
+from asteroid_filterbanks.transforms import magreim, mag
+from asteroid_filterbanks.transforms import apply_real_mask
+from asteroid_filterbanks.transforms import apply_mag_mask
+from asteroid.masknn.recurrent import StackedResidualRNN
 from asteroid.engine.optimizers import make_optimizer
 from asteroid import torch_utils
 
@@ -115,7 +115,7 @@ class SimpleModel(nn.Module):
         output_size = input_size if output_size is None else output_size
         self.output_size = output_size
         self.in_proj_layer = nn.Linear(input_size, hidden_size)
-        self.residual_rec = blocks.StackedResidualRNN(
+        self.residual_rec = StackedResidualRNN(
             rnn_type, hidden_size, n_layers=n_layers, dropout=dropout
         )
         self.out_proj_layer = nn.Linear(hidden_size, output_size)

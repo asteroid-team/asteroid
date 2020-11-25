@@ -27,6 +27,7 @@ setup(
         "soundfile",
         "pb_bss_eval",
         "torch_stoi",
+        "asteroid-filterbanks",
     ],
     extras_require={
         "tests": ["pytest"],

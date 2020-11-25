@@ -3,7 +3,7 @@ import os
 import torch
 from torch import nn
 
-import asteroid.filterbanks as fb
+import asteroid_filterbanks as fb
 from asteroid import torch_utils
 from asteroid.masknn import DPRNN
 from asteroid.engine.optimizers import make_optimizer

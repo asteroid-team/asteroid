@@ -19,7 +19,7 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import torchaudio
 from torch import nn
-from .filterbanks import transforms
+from asteroid_filterbanks import transforms
 from .utils.torch_utils import script_if_tracing
 
 

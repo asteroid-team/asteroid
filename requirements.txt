@@ -12,3 +12,4 @@ SoundFile>=0.10.2
 pre-commit
 black==20.8b1
 librosa>=0.8.0
+asteroid-filterbanks>=0.1.0
