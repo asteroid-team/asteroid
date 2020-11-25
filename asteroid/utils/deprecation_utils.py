@@ -80,8 +80,10 @@ def is_overridden(method_name, obj, parent=None) -> bool:
     if not hasattr(obj, method_name):
         return False
 
-    instance_attr = getattr(obj, method_name)
-    if not instance_attr:
+    try:
+        instance_attr = getattr(obj, method_name)
+    except AttributeError:
+        return False
         return False
 
     mro = get_mro(obj)[1:]  # All parent classes in order, self excluded

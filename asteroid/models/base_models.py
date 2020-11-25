@@ -72,6 +72,7 @@ class BaseModel(torch.nn.Module):
 
     def forward_wav(self, wav, *args, **kwargs):
         """Separation method for waveforms.
+
         In case the network's `forward` doesn't have waveforms as input/output,
         overwrite this method to separate from waveform to waveform.
         Should return a single torch.Tensor, the separated waveforms.
