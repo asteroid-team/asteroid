@@ -31,3 +31,5 @@ For development installation, you can fork/clone the GitHub repo and locally ins
 
 This is an editable install (``-e`` flag), it means that source code changes (or branch switching) are
 automatically taken into account when importing asteroid.
+
+You can also use ``conda env create -f environment.yml`` to create a Conda env directly.
