@@ -1,4 +1,4 @@
-"""Complex building blocks that work with _PyTorch native_ complex tensors, i.e.
+"""Complex building blocks that work with PyTorch native (!) complex tensors, i.e.
 dtypes complex64/complex128, or tensors for which `.is_complex()` returns True.
 
 Note that Asteroid code has two other representations of complex numbers:
@@ -117,13 +117,13 @@ class ComplexMultiplicationWrapper(nn.Module):
     """Make a complex-valued module `F` from a real-valued module `f` by applying
     complex multiplication rules:
 
-        F(a + i b) = f1(a) - f1(b) + i (f2(b) + f2(a))
+    F(a + i b) = f1(a) - f1(b) + i (f2(b) + f2(a))
 
     where `f1`, `f2` are instances of `f` that do *not* share weights.
 
     Args:
         module_cls (callable): A class or function that returns a Torch module/functional.
-            Constructor of `f` in the formula above.  Called 2x with *args, **kwargs,
+            Constructor of `f` in the formula above.  Called 2x with `*args`, `**kwargs`,
             to construct the real and imaginary component modules.
     """
 
@@ -159,9 +159,9 @@ def bound_complex_mask(mask: ComplexTensor, bound_type="tanh"):
 
     Valid bound types, for a complex mask $M = |M| ⋅ e^{i φ(M)}$:
 
-    - Unbounded ("UBD"): $M_{\mathrm{UBD}} = M$
-    - Sigmoid ("BDSS"): $M_{\mathrm{BDSS}} = σ(|M|) e^{i σ(φ(M))}$
-    - Tanh ("BDT"): $M_{\mathrm{BDT}} = \mathrm{tanh}(|M|) e^{i φ(M)}$
+    - Unbounded ("UBD"): :math:`M_{\mathrm{UBD}} = M`
+    - Sigmoid ("BDSS"): :math:`M_{\mathrm{BDSS}} = σ(|M|) e^{i σ(φ(M))}`
+    - Tanh ("BDT"): :math:`M_{\mathrm{BDT}} = \mathrm{tanh}(|M|) e^{i φ(M)}`
 
     Args:
         bound_type (str or None): The type of bound to use, either of
@@ -169,7 +169,7 @@ def bound_complex_mask(mask: ComplexTensor, bound_type="tanh"):
 
     References
         - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
-        Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
+          Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
     if bound_type in {"BDSS", "sigmoid"}:
         return on_reim(torch.sigmoid)(mask)

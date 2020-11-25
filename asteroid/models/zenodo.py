@@ -12,14 +12,7 @@ class Zenodo(object):
         use_sandbox (bool): Whether to use the sandbox (default: True)
             Note that `api_key` are different in sandbox.
 
-    Methods (all methods return the requests response):
-        create_new_deposition
-        change_metadata_in_deposition,
-        upload_new_file_to_deposition
-        publish_deposition
-        get_deposition
-        remove_deposition
-        remove_all_depositions
+    All methods return the requests response.
 
     .. note:: A Zenodo record is something that is public and cannot be deleted.
         A Zenodo deposit has not yet been published, is private and can be
@@ -95,6 +88,7 @@ class Zenodo(object):
 
     def upload_new_file_to_deposition(self, dep_id, file, name=None):
         """Upload one file to existing deposition.
+
         Args:
             dep_id (int): deposition id. You cna get it with
                 `r = create_new_deposition(); dep_id = r.json()['id']`

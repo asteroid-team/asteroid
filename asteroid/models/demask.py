@@ -11,6 +11,7 @@ import warnings
 class DeMask(BaseEncoderMaskerDecoder):
     """
     Simple MLP model for surgical mask speech enhancement A transformed-domain masking approach is used.
+
     Args:
         input_type (str, optional): whether the magnitude spectrogram "mag" or both real imaginary parts "reim" are
                     passed as features to the masker network.

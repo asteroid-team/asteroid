@@ -49,4 +49,4 @@ FUSS
 
 AVSpeech
 --------
-.. autoclass:: avspeech_dataset
+.. autoclass:: AVSpeechDataset

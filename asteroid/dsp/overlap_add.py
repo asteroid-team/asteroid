@@ -45,7 +45,6 @@ class LambdaOverlapAdd(torch.nn.Module):
         >>> # Process wav tensor:
         >>> wav = torch.randn(1, 1, 500000)
         >>> out_wavs = continuous_nnet.forward(wav)
-
         >>> # asteroid.separate.Separatable support:
         >>> from asteroid.separate import file_separate
         >>> file_separate(continuous_nnet, "example.wav")

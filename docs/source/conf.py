@@ -57,6 +57,7 @@ extensions = [
     # Or linkcode to find the corresponding code in github. Start with viewcode
     # 'sphinx.ext.linkcode',
     # 'recommonmark',
+    "sphinxcontrib.programoutput",
     "m2r2",
     "nbsphinx",
 ]

@@ -39,8 +39,8 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
 
     References
         - [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
-        for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
-        https://arxiv.org/abs/1809.07454
+          for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
+          https://arxiv.org/abs/1809.07454
     """
 
     def __init__(

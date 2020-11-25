@@ -265,6 +265,7 @@ def zenodo_upload(model, token, model_path=None, use_sandbox=False):
 
 def make_metadata_from_model(model):
     """Create Zenodo deposit metadata for a given publishable model.
+
     Args:
         model (dict): Dictionary with all infos needed to publish.
             More info to come.
@@ -272,7 +273,7 @@ def make_metadata_from_model(model):
     Returns:
         dict, the metadata to create the Zenodo deposit with.
 
-    .. note::We remove the PESQ from the final results as a license is needed to
+    .. note:: We remove the PESQ from the final results as a license is needed to
         use it.
     """
     infos = model["infos"]
@@ -326,6 +327,7 @@ def make_metadata_from_model(model):
 
 def two_level_dict_html(dic):
     """Two-level dict to HTML.
+
     Args:
         dic (dict): two-level dict
 
@@ -347,6 +349,7 @@ def two_level_dict_html(dic):
 
 def display_one_level_dict(dic):
     """Single level dict to HTML
+
     Args:
         dic (dict):
 
