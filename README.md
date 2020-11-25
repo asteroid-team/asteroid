@@ -59,7 +59,7 @@ $ conda env create -f environment.yml
 $ conda activate asteroid
 # Without conda: install install-required deps
 pip install numpy Cython
-# In both cases: install with pip in editable mode
+# Install with pip in editable mode
 pip install -e .
 # Or, install with python in dev mode
 # python setup.py develop
