@@ -65,12 +65,13 @@ def as_torch_complex(x, asteroid_dim: int = -2):
         is_torchaudio_complex = transforms.is_torchaudio_complex(x)
         is_asteroid_complex = transforms.is_asteroid_complex(x, asteroid_dim)
         if is_torchaudio_complex and is_asteroid_complex:
-            warnings.warn(
-                f"Tensor of shape {x.shape} is both a valid Torchaudio-style and "
-                "Asteroid-style complex. PyTorch complex conversion is ambiguous."
-                "Assuming Torchaudio-style.",
-                RuntimeWarning,
-            )
+            if not torch.jit.is_scripting():
+                warnings.warn(
+                    f"Tensor of shape {x.shape} is both a valid Torchaudio-style and "
+                    "Asteroid-style complex. PyTorch complex conversion is ambiguous."
+                    "Assuming Torchaudio-style.",
+                    RuntimeWarning,
+                )
             return torch.view_as_complex(x)
         elif is_torchaudio_complex:
             return torch.view_as_complex(x)
