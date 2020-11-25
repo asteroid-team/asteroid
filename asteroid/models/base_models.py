@@ -1,6 +1,7 @@
 import torch
+import warnings
 
-from .. import foo
+from .. import separate
 from ..masknn import activations
 from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download
@@ -25,13 +26,14 @@ class BaseModel(torch.nn.Module):
     Need to overwrite the `forward` method, the `sample_rate` property and
     the `get_model_args` method.
 
-    Models inheriting from `BaseModel` can be used by `foo.separate` and by the
-    `asteroid-infer` CLI. For models whose `forward` doesn't return waveform tensors,
-    overwrite `_separate` to return waveform tensors.
+    Models inheriting from `BaseModel` can be used by :mod:`asteroid.separate`
+    and by the `asteroid-infer` CLI. For models whose `forward` doesn't return
+    waveform tensors, overwrite `_separate` to return waveform tensors.
     """
 
-    def __init__(self):
+    def __init__(self, sample_rate: float = 8000.0):
         super().__init__()
+        self.__sample_rate = sample_rate
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError
@@ -39,23 +41,32 @@ class BaseModel(torch.nn.Module):
     @property
     def sample_rate(self):
         """Operating sample rate of the model (float)."""
-        raise NotImplementedError
+        return self.__sample_rate
+
+    @sample_rate.setter
+    def sample_rate(self, new_sample_rate: float):
+        warnings.warn(
+            "Other sub-components of the model might have a `sample_rate` "
+            "attribute, be sure to modify them for consistency.",
+            UserWarning,
+        )
+        self.__sample_rate = new_sample_rate
 
     def separate(self, *args, **kwargs):
-        """Convenience for ``foo.separate(self, ...)``."""
-        return foo.separate(self, *args, **kwargs)
+        """Convenience for ``asteroid.separate.separate(self, ...)``."""
+        return separate.separate(self, *args, **kwargs)
 
     def torch_separate(self, *args, **kwargs):
-        """Convenience for ``foo.torch_separate(self, ...)``."""
-        return foo.torch_separate(self, *args, **kwargs)
+        """Convenience for ``asteroid.separate.torch_separate(self, ...)``."""
+        return separate.torch_separate(self, *args, **kwargs)
 
     def numpy_separate(self, *args, **kwargs):
-        """Convenience for ``foo.numpy_separate(self, ...)``."""
-        return foo.numpy_separate(self, *args, **kwargs)
+        """Convenience for ``asteroid.separate.numpy_separate(self, ...)``."""
+        return separate.numpy_separate(self, *args, **kwargs)
 
     def file_separate(self, *args, **kwargs):
-        """Convenience for ``foo.file_separate(self, ...)``."""
-        return foo.file_separate(self, *args, **kwargs)
+        """Convenience for ``asteroid.separate.file_separate(self, ...)``."""
+        return separate.file_separate(self, *args, **kwargs)
 
     def _separate(self, wav, *args, **kwargs):
         """Hidden separation method
@@ -182,16 +193,12 @@ class BaseEncoderMaskerDecoder(BaseModel):
     """
 
     def __init__(self, encoder, masker, decoder, encoder_activation=None):
-        super().__init__()
+        super().__init__(sample_rate=getattr(encoder, "sample_rate", None))
         self.encoder = encoder
         self.masker = masker
         self.decoder = decoder
         self.encoder_activation = encoder_activation
         self.enc_activation = activations.get(encoder_activation or "linear")()
-
-    @property
-    def sample_rate(self):
-        return getattr(self.encoder, "sample_rate", None)
 
     def forward(self, wav):
         """Enc/Mask/Dec model forward

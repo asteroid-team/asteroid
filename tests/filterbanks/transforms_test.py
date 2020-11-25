@@ -67,6 +67,7 @@ def test_comp_mask(encoder_list):
         assert_allclose(masked, tf_rep)
 
 
+@pytest.mark.filterwarnings("ignore:asteroid.filterbanks.transforms.take_reim")
 def test_reim(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
@@ -77,7 +78,7 @@ def test_mag(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
         batch, freq, time = tf_rep.shape
-        mag = transforms.take_mag(tf_rep, dim=1)
+        mag = transforms.mag(tf_rep, dim=1)
         assert mag.shape == (batch, freq // 2, time)
 
 
@@ -85,7 +86,7 @@ def test_cat(encoder_list):
     for (enc, fb_dim) in encoder_list:
         tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
         batch, freq, time = tf_rep.shape
-        mag = transforms.take_cat(tf_rep, dim=1)
+        mag = transforms.magreim(tf_rep, dim=1)
         assert mag.shape == (batch, 3 * (freq // 2), time)
 
 
@@ -163,8 +164,8 @@ def test_angle_mag_recompostion(dim):
     tensor_shape[dim] = 2 * tensor_shape[dim]
     complex_tensor = torch.randn(tensor_shape)
     phase = transforms.angle(complex_tensor, dim=dim)
-    mag = transforms.take_mag(complex_tensor, dim=dim)
-    tensor_back = transforms.from_mag_and_phase(mag, phase, dim=dim)
+    mag = transforms.mag(complex_tensor, dim=dim)
+    tensor_back = transforms.from_magphase(mag, phase, dim=dim)
     assert_allclose(complex_tensor, tensor_back)
 
 
@@ -198,3 +199,47 @@ def test_ebased_vad():
     batch_1_mask = transforms.ebased_vad(mag_spec[:, 0])
     # Assert independence of VAD output
     assert (batch_src_mask[:, 0] == batch_1_mask).all()
+
+
+def test_magphase():
+    spec_shape = [2, 514, 100]
+    spec = torch.randn(*spec_shape)
+    mag, phase = transforms.magphase(spec, dim=-2)
+
+    out_shape = spec_shape
+    out_shape[-2] //= 2
+    assert out_shape == list(mag.shape)
+    assert out_shape == list(phase.shape)
+
+
+@pytest.mark.parametrize("dim", [1, 2, -1, -2])
+def test_delta(dim):
+    phase = torch.randn(2, 257, 100)
+    delta_phase = transforms.compute_delta(phase, dim=dim)
+    assert phase.shape == delta_phase.shape
+
+
+@pytest.mark.parametrize("dim", [1, 2, -1, -2])
+@pytest.mark.parametrize("order", [1, 2])
+def test_concat_deltas(dim, order):
+    phase_shape = [2, 257, 100]
+    phase = torch.randn(*phase_shape)
+    cat_deltas = transforms.concat_deltas(phase, order=order, dim=dim)
+    out_shape = list(phase_shape)
+    out_shape[dim] = phase_shape[dim] * (1 + order)
+    assert out_shape == list(cat_deltas.shape)
+
+
+@pytest.mark.parametrize("kernel_size", [40, 64])
+@pytest.mark.parametrize("stride_factor", [2, 4, None])
+def test_center_freq_correction(kernel_size, stride_factor):
+    spec = torch.randn(2, kernel_size + 2, 50)
+    stride = None if stride_factor is None else kernel_size // stride_factor
+    new_spec = transforms.centerfreq_correction(spec, kernel_size=kernel_size, stride=stride)
+    assert spec.shape == new_spec.shape
+    assert_allclose(transforms.mag(spec), transforms.mag(new_spec))
+
+
+def test_center_freq_correction_raises():
+    with pytest.raises(NotImplementedError):
+        transforms.centerfreq_correction(torch.randn(2, 10, 14), 12, 6, dim=-1)

@@ -28,7 +28,21 @@ Steps to reproduce the behavior (code sample and stack trace):
 
 ### Environment
 
- - Asteroid Version or commit tag (`git log --pretty=format:'%h' -n 1`)
- - PyTorch Version (e.g., 1.6.0)
- - PyTorchLightning Version
- - Additional info (environment, custom script, etc..)
+#### Package versions
+
+Run `asteroid-versions` and paste the output here:
+
+```
+Paste here
+```
+
+Alternatively, if you cannot install Asteroid or have an old version that doesn't have the `asteroid-versions` script,
+please output the output of:
+
+```
+pip freeze | egrep -i 'pytorch|torch|asteroid'
+```
+
+#### Additional info
+
+Additional info (environment, custom script, etc...)

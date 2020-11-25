@@ -7,7 +7,7 @@ import warnings
 from typing import List
 
 import asteroid
-from asteroid.foo import separate
+from asteroid.separate import separate
 from asteroid.dsp import LambdaOverlapAdd
 from asteroid.models.publisher import upload_publishable
 from asteroid.models.base_models import BaseModel

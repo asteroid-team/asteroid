@@ -10,7 +10,8 @@ class LambdaOverlapAdd(torch.nn.Module):
     Segment input signal, apply lambda function (a neural network for example)
     and combine with OLA.
 
-    `LambdaOverlapAdd` can be used with `foo.separate` and the `asteroid-infer` CLI.
+    `LambdaOverlapAdd` can be used with :mod:`asteroid.separate` and the
+    `asteroid-infer` CLI.
 
     Args:
         nnet (callable): Function to apply to each segment.
@@ -44,9 +45,8 @@ class LambdaOverlapAdd(torch.nn.Module):
         >>> # Process wav tensor:
         >>> wav = torch.randn(1, 1, 500000)
         >>> out_wavs = continuous_nnet.forward(wav)
-
-        >>> # foo.Separatable support:
-        >>> from asteroid.foo import file_separate
+        >>> # asteroid.separate.Separatable support:
+        >>> from asteroid.separate import file_separate
         >>> file_separate(continuous_nnet, "example.wav")
     """
 
@@ -142,7 +142,7 @@ class LambdaOverlapAdd(torch.nn.Module):
             olad = self.ola_forward(x)
             return olad
 
-    # Implement `foo.Separatable` (separation support)
+    # Implement `asteroid.separate.Separatable` (separation support)
 
     @property
     def sample_rate(self):

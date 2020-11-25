@@ -36,6 +36,14 @@ class Filterbank(nn.Module):
         """ Abstract method for filters. """
         raise NotImplementedError
 
+    def post_analysis(self, spec: torch.Tensor):
+        """Apply transform to encoder convolution."""
+        return spec
+
+    def pre_synthesis(self, spec: torch.Tensor):
+        """Apply transform before decoder transposed convolution."""
+        return spec
+
     def get_config(self):
         """ Returns dictionary of arguments to re-instantiate the class. """
         config = {
@@ -152,13 +160,14 @@ class Encoder(_EncDec):
             >>> (batch, any, dim, time) --> (batch, any, dim, freq, conv_time)
         """
         filters = self.get_filters()
-        return multishape_conv1d(
+        spec = multishape_conv1d(
             waveform,
             filters=filters,
             stride=self.stride,
             padding=self.padding,
             as_conv1d=self.as_conv1d,
         )
+        return self.filterbank.post_analysis(spec)
 
 
 @script_if_tracing
@@ -255,6 +264,7 @@ class Decoder(_EncDec):
             :class:`torch.Tensor`: The corresponding time domain signal.
         """
         filters = self.get_filters()
+        spec = self.filterbank.pre_synthesis(spec)
         return multishape_conv_transpose1d(
             spec,
             filters,
