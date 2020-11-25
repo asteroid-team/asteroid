@@ -50,6 +50,7 @@ jobs:
         cd docs
         make html
         touch build/html/.nojekyll  # prevents use jekyll to build doc
+        grep -Hrni "System Message" . # check error
 
     # Create an artifact of the html output.
     - uses: actions/upload-artifact@v1
