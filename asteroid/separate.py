@@ -63,7 +63,7 @@ def separate(
     .. note::
         `separate` calls `model.forward_wav` which calls `forward` by default.
         For models whose `forward` doesn't have waveform tensors as input/ouput,
-        overwrite their `forward_wav` method to to separate from waveform to waveform.
+        overwrite their `forward_wav` method to separate from waveform to waveform.
     """
     if isinstance(wav, str):
         file_separate(
