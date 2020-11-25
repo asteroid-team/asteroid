@@ -8,7 +8,7 @@ Note that Asteroid code has two other representations of complex numbers:
 - Asteroid style representation, identical to the Torchaudio representation, but
   with the last dimension concatenated: tensor([r1, r2, ..., rn, i1, i2, ..., in]).
   The concatenated (2 * n) dimension may be at an arbitrary position, i.e. the tensor
-  is of shape [..., 2 * n, ...].  See `asteroid.filterbanks.transforms` for details.
+  is of shape [..., 2 * n, ...].  See `asteroid_filterbanks.transforms` for details.
 """
 from typing import Union, List, Tuple
 import functools

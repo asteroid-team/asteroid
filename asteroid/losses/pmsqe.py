@@ -40,7 +40,7 @@ class SingleSrcPMSQE(nn.Module):
 
     Examples
         >>> import torch
-        >>> from asteroid.filterbanks import STFTFB, Encoder, transforms
+        >>> from asteroid_filterbanks import STFTFB, Encoder, transforms
         >>> from asteroid.losses import PITLossWrapper, SingleSrcPMSQE
         >>> stft = Encoder(STFTFB(kernel_size=512, n_filters=512, stride=256))
         >>> # Usage by itself

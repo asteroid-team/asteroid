@@ -1,6 +1,6 @@
 import torch
 from .. import complex_nn
-from ..filterbanks.transforms import from_torchaudio
+from asteroid_filterbanks.transforms import from_torchaudio
 from ..masknn.recurrent import DCCRMaskNet
 from .dcunet import BaseDCUNet
 

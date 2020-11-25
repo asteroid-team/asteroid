@@ -10,7 +10,7 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
         tgt_index (torch.Tensor): Dominating source index in each TF bin.
             Expected shape: [batch, frequency, frame]
         binary_mask (torch.Tensor): VAD in TF plane. Bool or Float.
-            See asteroid.filterbanks.transforms.ebased_vad.
+            See asteroid.dsp.vad.ebased_vad.
 
     Returns:
          `torch.Tensor`. Deep clustering loss for every batch sample.
