@@ -29,7 +29,7 @@ class BaseModel(torch.nn.Module):
 
     Models inheriting from `BaseModel` can be used by :mod:`asteroid.separate`
     and by the `asteroid-infer` CLI. For models whose `forward` doesn't go from
-    waveform to waveform waveform tensors, overwrite `forward_wav` to return
+    waveform to waveform tensors, overwrite `forward_wav` to return
     waveform tensors.
     """
 
