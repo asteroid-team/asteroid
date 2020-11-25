@@ -23,7 +23,6 @@ from asteroid_filterbanks import transforms
 from .utils.torch_utils import script_if_tracing
 
 
-
 # Alias to denote PyTorch native complex tensor (complex64/complex128).
 # `.is_complex()` returns True on these tensors.
 ComplexTensor = torch.Tensor
