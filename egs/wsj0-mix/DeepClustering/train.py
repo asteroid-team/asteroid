@@ -10,7 +10,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_mse
 from asteroid.losses import deep_clustering_loss
-from asteroid_filterbanks.transforms import mag, ebased_vad
+from asteroid_filterbanks.transforms import mag
+from asteroid.dsp.vad import ebased_vad
 
 from asteroid.data.wsj0_mix import make_dataloaders
 from model import make_model_and_optimizer
