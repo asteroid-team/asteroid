@@ -63,7 +63,7 @@ from asteroid.models import DeMask
 #         'activation': 'relu',
 #         'dropout': 0,
 #         'fb_kwargs': {},
-#         'fb_type': 'stft',
+#         'fb_name': 'stft',
 #         'hidden_dims': [1024],
 #         'input_type': 'mag',
 #         'kernel_size': 512,
@@ -78,7 +78,7 @@ from asteroid.models import DeMask
 
 
 @pytest.mark.parametrize("input_type", ("mag", "cat", "reim"))
-@pytest.mark.parametrize("fb_type", ("stft", "free"))
+@pytest.mark.parametrize("fb_name", ("stft", "free"))
 @pytest.mark.parametrize("output_type", ("mag", "reim"))
 @pytest.mark.parametrize(
     "data",
@@ -90,11 +90,11 @@ from asteroid.models import DeMask
         (torch.rand(2, 1, 50, requires_grad=False) - 0.5) * 2,
     ),
 )
-def test_forward(input_type, output_type, fb_type, data):
+def test_forward(input_type, output_type, fb_name, data):
     demask = DeMask(
         input_type=input_type,
         output_type=output_type,
-        fb_type=fb_type,
+        fb_name=fb_name,
         hidden_dims=(16,),
         kernel_size=8,
         n_filters=8,

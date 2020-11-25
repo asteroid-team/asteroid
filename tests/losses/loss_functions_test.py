@@ -143,8 +143,8 @@ def test_pmsqe(sample_rate):
         stft = Encoder(STFTFB(kernel_size=256, n_filters=256, stride=128))
     # Usage by itself
     ref, est = torch.randn(2, 1, 16000), torch.randn(2, 1, 16000)
-    ref_spec = transforms.take_mag(stft(ref))
-    est_spec = transforms.take_mag(stft(est))
+    ref_spec = transforms.mag(stft(ref))
+    est_spec = transforms.mag(stft(est))
     loss_func = SingleSrcPMSQE(sample_rate=sample_rate)
     loss_value = loss_func(est_spec, ref_spec)
     # Assert output has shape (batch,)
@@ -164,8 +164,8 @@ def test_pmsqe_pit(n_src, sample_rate):
         stft = Encoder(STFTFB(kernel_size=256, n_filters=256, stride=128))
     # Usage by itself
     ref, est = torch.randn(2, n_src, 16000), torch.randn(2, n_src, 16000)
-    ref_spec = transforms.take_mag(stft(ref))
-    est_spec = transforms.take_mag(stft(est))
+    ref_spec = transforms.mag(stft(ref))
+    est_spec = transforms.mag(stft(est))
     loss_func = PITLossWrapper(SingleSrcPMSQE(sample_rate=sample_rate), pit_from="pw_pt")
     # Assert forward ok.
     loss_func(est_spec, ref_spec)

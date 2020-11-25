@@ -69,3 +69,22 @@ def test_loader_submodule():
 def test_jitable_shape(data, expected):
     output = torch_utils.jitable_shape(data)
     assert torch.equal(output, expected)
+
+
+def test_get_device():
+    # We have only CPU in CI so can't test with real devices.
+
+    class FakeTensor:
+        device = "dev1"
+
+    class FakeModule:
+        def parameters(self):
+            yield FakeTensor()
+
+    class UnknownObject:
+        pass
+
+    assert torch_utils.get_device(FakeTensor()) == "dev1"
+    assert torch_utils.get_device(FakeModule()) == "dev1"
+    with pytest.raises(TypeError):
+        torch_utils.get_device(UnknownObject())

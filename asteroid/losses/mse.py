@@ -1,4 +1,3 @@
-from ..utils.deprecation_utils import DeprecationMixin
 from torch.nn.modules.loss import _Loss
 
 
@@ -74,15 +73,3 @@ MultiSrcMSE = SingleSrcMSE
 pairwise_mse = PairwiseMSE()
 singlesrc_mse = SingleSrcMSE()
 multisrc_mse = MultiSrcMSE()
-
-
-# Legacy
-class NoSrcMSE(SingleSrcMSE, DeprecationMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.warn_deprecated()
-
-
-NonPitMSE = NoSrcMSE
-nosrc_mse = singlesrc_mse
-nonpit_mse = multisrc_mse

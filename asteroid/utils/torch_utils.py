@@ -57,6 +57,31 @@ def tensors_to_device(tensors, device):
         return tensors
 
 
+def get_device(tensor_or_module, default=None):
+    """Get the device of a tensor or a module.
+
+    Args:
+        tensor_or_module (Union[torch.Tensor, torch.nn.Module]):
+            The object to get the device from. Can be a `torch.Tensor`,
+            a `torch.nn.Module`, or anything else that has a `device` attribute
+            or a `parameters() -> Iterator[torch.Tensor]` method.
+        default (Optional[Union[str, torch.device]]): If the device can not be
+            determined, return this device instead. If `None` (the default),
+            raise a `TypeError` instead.
+
+    Returns:
+        torch.device: The device that `tensor_or_module` is on.
+    """
+    if hasattr(tensor_or_module, "device"):
+        return tensor_or_module.device
+    elif hasattr(tensor_or_module, "parameters"):
+        return next(tensor_or_module.parameters()).device
+    elif default is None:
+        raise TypeError(f"Don't know how to get device of {type(tensor_or_module)} object")
+    else:
+        return torch.device(default)
+
+
 def is_tracing():
     # Taken for pytorch for compat in 1.6.0
     """
@@ -102,15 +127,15 @@ def script_if_tracing(fn):
 
 @script_if_tracing
 def pad_x_to_y(x: torch.Tensor, y: torch.Tensor, axis: int = -1) -> torch.Tensor:
-    """Pad first argument to have same size as second argument
+    """Right-pad or right-trim first argument to have same size as second argument
 
     Args:
         x (torch.Tensor): Tensor to be padded.
-        y (torch.Tensor): Tensor to pad x to.
+        y (torch.Tensor): Tensor to pad `x` to.
         axis (int): Axis to pad on.
 
     Returns:
-        torch.Tensor, x padded to match y's shape.
+        torch.Tensor, `x` padded to match `y`'s shape.
     """
     if axis != -1:
         raise NotImplementedError

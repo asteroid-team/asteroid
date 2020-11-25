@@ -38,6 +38,7 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    supported_datasets
    training_and_evaluation
    readmes/pretrained_models.md
+   cli
    faq
 
 .. toctree::
@@ -53,7 +54,6 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    package_reference/optimizers
    package_reference/dsp
    package_reference/utils
-   package_reference/cli
 
 .. toctree::
    :maxdepth: 1

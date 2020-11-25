@@ -56,13 +56,13 @@ class WhamRDataset(data.Dataset):
             or ``'sep_reverb_noisy'``.
 
             * ``'sep_clean'`` for two-speaker clean (anechoic) source
-                separation.
+              separation.
             * ``'sep_noisy'`` for two-speaker noisy (anechoic) source
-                separation.
+              separation.
             * ``'sep_reverb'`` for two-speaker clean reverberant
-                source separation.
+              source separation.
             * ``'sep_reverb_noisy'`` for two-speaker noisy reverberant source
-                separation.
+              separation.
 
         sample_rate (int, optional): The sampling rate of the wav files.
         segment (float, optional): Length of the segments used for training,
@@ -74,7 +74,7 @@ class WhamRDataset(data.Dataset):
 
     References
         - "WHAMR!: Noisy and Reverberant Single-Channel Speech Separation",
-        Maciejewski et al. 2020
+          Maciejewski et al. 2020
     """
 
     dataset_name = "WHAMR"

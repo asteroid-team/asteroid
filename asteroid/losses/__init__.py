@@ -1,21 +1,15 @@
 from .pit_wrapper import PITLossWrapper
 from .mixit_wrapper import MixITLossWrapper
 from .sinkpit_wrapper import SinkPITLossWrapper, SinkPITBetaScheduler
-from .sdr import singlesrc_neg_sisdr, multisrc_neg_sisdr
-from .sdr import singlesrc_neg_sdsdr, multisrc_neg_sdsdr
-from .sdr import singlesrc_neg_snr, multisrc_neg_snr
-from .mse import singlesrc_mse, multisrc_mse
+from .sdr import PairwiseNegSDR
+from .sdr import pairwise_neg_sisdr, singlesrc_neg_sisdr, multisrc_neg_sisdr
+from .sdr import pairwise_neg_sdsdr, singlesrc_neg_sdsdr, multisrc_neg_sdsdr
+from .sdr import pairwise_neg_snr, singlesrc_neg_snr, multisrc_neg_snr
+from .mse import pairwise_mse, singlesrc_mse, multisrc_mse
 from .cluster import deep_clustering_loss
 from .pmsqe import SingleSrcPMSQE
 from .stoi import NegSTOILoss as SingleSrcNegSTOI
 from .multi_scale_spectral import SingleSrcMultiScaleSpectral
-
-# Legacy
-from .sdr import pairwise_neg_sisdr, nosrc_neg_sisdr, nonpit_neg_sisdr
-from .sdr import pairwise_neg_sdsdr, nosrc_neg_sdsdr, nonpit_neg_sdsdr
-from .sdr import pairwise_neg_snr, nosrc_neg_snr, nonpit_neg_snr
-from .sdr import PairwiseNegSDR
-from .mse import pairwise_mse, nosrc_mse, nonpit_mse
 
 
 __all__ = [
@@ -23,29 +17,21 @@ __all__ = [
     "MixITLossWrapper",
     "SinkPITLossWrapper",
     "SinkPITBetaScheduler",
+    "PairwiseNegSDR",
     "singlesrc_neg_sisdr",
+    "pairwise_neg_sisdr",
     "multisrc_neg_sisdr",
+    "pairwise_neg_sdsdr",
     "singlesrc_neg_sdsdr",
     "multisrc_neg_sdsdr",
+    "pairwise_neg_snr",
     "singlesrc_neg_snr",
     "multisrc_neg_snr",
+    "pairwise_mse",
     "singlesrc_mse",
     "multisrc_mse",
     "deep_clustering_loss",
     "SingleSrcPMSQE",
     "SingleSrcNegSTOI",
     "SingleSrcMultiScaleSpectral",
-    "pairwise_neg_sisdr",
-    "nosrc_neg_sisdr",
-    "nonpit_neg_sisdr",
-    "pairwise_neg_sdsdr",
-    "nosrc_neg_sdsdr",
-    "nonpit_neg_sdsdr",
-    "pairwise_neg_snr",
-    "nosrc_neg_snr",
-    "nonpit_neg_snr",
-    "PairwiseNegSDR",
-    "pairwise_mse",
-    "nosrc_mse",
-    "nonpit_mse",
 ]
