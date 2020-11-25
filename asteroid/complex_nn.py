@@ -1,4 +1,4 @@
-"""Complex building blocks that work with _PyTorch native_ complex tensors, i.e.
+"""Complex building blocks that work with PyTorch native (!) complex tensors, i.e.
 dtypes complex64/complex128, or tensors for which `.is_complex()` returns True.
 
 Note that Asteroid code has two other representations of complex numbers:
@@ -10,11 +10,17 @@ Note that Asteroid code has two other representations of complex numbers:
   The concatenated (2 * n) dimension may be at an arbitrary position, i.e. the tensor
   is of shape [..., 2 * n, ...].  See `asteroid.filterbanks.transforms` for details.
 """
+from typing import Union, List, Tuple
 import functools
 import torch
-import torchaudio
+import warnings
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import torchaudio
 from torch import nn
-from asteroid.filterbanks import transforms
+from .filterbanks import transforms
+from .utils.torch_utils import script_if_tracing
 
 
 # Alias to denote PyTorch native complex tensor (complex64/complex128).
@@ -27,10 +33,13 @@ def is_torch_complex(x):
 
 
 def torch_complex_from_magphase(mag, phase):
-    return as_torch_complex((mag * torch.cos(phase), mag * torch.sin(phase)))
+    return torch.view_as_complex(
+        torch.stack((mag * torch.cos(phase), mag * torch.sin(phase)), dim=-1)
+    )
 
 
-def as_torch_complex(x, asteroid_dim=-2):
+@script_if_tracing
+def as_torch_complex(x, asteroid_dim: int = -2):
     """Convert complex `x` to complex. Input may be one of:
 
     - PyTorch native complex
@@ -45,7 +54,7 @@ def as_torch_complex(x, asteroid_dim=-2):
         ValueError: If type of `x` is not understood.
     """
     if isinstance(x, (list, tuple)) and len(x) == 2:
-        return torch.view_as_complex(torch.stack(x, dim=-1))
+        return torch_complex_from_magphase(*x)
     elif is_torch_complex(x):
         return x
     else:
@@ -77,7 +86,7 @@ def on_reim(f):
 
     @functools.wraps(f)
     def cf(x):
-        return as_torch_complex((f(x.real), f(x.imag)))
+        return torch_complex_from_magphase(f(x.real), f(x.imag))
 
     # functools.wraps keeps the original name of `f`, which might be confusing,
     # since we are creating a new function that behaves differently.
@@ -101,20 +110,20 @@ class OnReIm(nn.Module):
         self.im_module = module_cls(*args, **kwargs)
 
     def forward(self, x):
-        return as_torch_complex((self.re_module(x.real), self.im_module(x.imag)))
+        return torch_complex_from_magphase(self.re_module(x.real), self.im_module(x.imag))
 
 
 class ComplexMultiplicationWrapper(nn.Module):
     """Make a complex-valued module `F` from a real-valued module `f` by applying
     complex multiplication rules:
 
-        F(a + i b) = f1(a) - f1(b) + i (f2(b) + f2(a))
+    F(a + i b) = f1(a) - f1(b) + i (f2(b) + f2(a))
 
     where `f1`, `f2` are instances of `f` that do *not* share weights.
 
     Args:
         module_cls (callable): A class or function that returns a Torch module/functional.
-            Constructor of `f` in the formula above.  Called 2x with *args, **kwargs,
+            Constructor of `f` in the formula above.  Called 2x with `*args`, `**kwargs`,
             to construct the real and imaginary component modules.
     """
 
@@ -124,11 +133,9 @@ class ComplexMultiplicationWrapper(nn.Module):
         self.im_module = module_cls(*args, **kwargs)
 
     def forward(self, x: ComplexTensor) -> ComplexTensor:
-        return as_torch_complex(
-            (
-                self.re_module(x.real) - self.im_module(x.imag),
-                self.re_module(x.imag) + self.im_module(x.real),
-            )
+        return torch_complex_from_magphase(
+            self.re_module(x.real) - self.im_module(x.imag),
+            self.re_module(x.imag) + self.im_module(x.real),
         )
 
 
@@ -152,9 +159,9 @@ def bound_complex_mask(mask: ComplexTensor, bound_type="tanh"):
 
     Valid bound types, for a complex mask $M = |M| ⋅ e^{i φ(M)}$:
 
-    - Unbounded ("UBD"): $M_{\mathrm{UBD}} = M$
-    - Sigmoid ("BDSS"): $M_{\mathrm{BDSS}} = σ(|M|) e^{i σ(φ(M))}$
-    - Tanh ("BDT"): $M_{\mathrm{BDT}} = \mathrm{tanh}(|M|) e^{i φ(M)}$
+    - Unbounded ("UBD"): :math:`M_{\mathrm{UBD}} = M`
+    - Sigmoid ("BDSS"): :math:`M_{\mathrm{BDSS}} = σ(|M|) e^{i σ(φ(M))}`
+    - Tanh ("BDT"): :math:`M_{\mathrm{BDT}} = \mathrm{tanh}(|M|) e^{i φ(M)}`
 
     Args:
         bound_type (str or None): The type of bound to use, either of
@@ -162,7 +169,7 @@ def bound_complex_mask(mask: ComplexTensor, bound_type="tanh"):
 
     References
         - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
-        Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
+          Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
     if bound_type in {"BDSS", "sigmoid"}:
         return on_reim(torch.sigmoid)(mask)

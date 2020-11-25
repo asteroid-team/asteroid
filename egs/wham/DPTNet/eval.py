@@ -9,7 +9,7 @@ import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
 
-from asteroid import DPRNNTasNet
+from asteroid import DPTNet
 from asteroid.metrics import get_metrics
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid.data.wham_dataset import WhamDataset
@@ -40,7 +40,7 @@ compute_metrics = ["si_sdr", "sdr", "sir", "sar", "stoi"]
 
 def main(conf):
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
-    model = DPRNNTasNet.from_pretrained(model_path)
+    model = DPTNet.from_pretrained(model_path)
     # Handle device placement
     if conf["use_gpu"]:
         model.cuda()

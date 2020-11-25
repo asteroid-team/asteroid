@@ -10,7 +10,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_mse
 from asteroid.losses import deep_clustering_loss
-from asteroid.filterbanks.transforms import take_mag, ebased_vad
+from asteroid.filterbanks.transforms import mag, ebased_vad
 
 from asteroid.data.wsj0_mix import make_dataloaders
 from model import make_model_and_optimizer
@@ -91,7 +91,7 @@ class ChimeraSystem(System):
     def common_step(self, batch, batch_nb, train=False):
         inputs, targets, masks = self.unpack_data(batch)
         embeddings, est_masks = self(inputs)
-        spec = take_mag(self.model.encoder(inputs.unsqueeze(1)))
+        spec = mag(self.model.encoder(inputs.unsqueeze(1)))
         if self.mask_mixture:
             est_masks = est_masks * spec.unsqueeze(1)
             masks = masks * spec.unsqueeze(1)
@@ -131,7 +131,7 @@ class ChimeraSystem(System):
     def unpack_data(self, batch, EPS=1e-8):
         mix, sources = batch
         # Compute magnitude spectrograms and IRM
-        src_mag_spec = take_mag(self.model.encoder(sources))
+        src_mag_spec = mag(self.model.encoder(sources))
         real_mask = src_mag_spec / (src_mag_spec.sum(1, keepdim=True) + EPS)
         # Get the src idx having the maximum energy
         binary_mask = real_mask.argmax(1)

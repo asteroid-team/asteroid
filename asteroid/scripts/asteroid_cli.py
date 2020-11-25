@@ -1,4 +1,5 @@
 import os
+import argparse
 import yaml
 import itertools
 import glob
@@ -6,6 +7,8 @@ import warnings
 from typing import List
 
 import asteroid
+from asteroid.separate import separate
+from asteroid.dsp import LambdaOverlapAdd
 from asteroid.models.publisher import upload_publishable
 from asteroid.models.base_models import BaseModel
 
@@ -17,24 +20,19 @@ SUPPORTED_EXTENSIONS = [
 ]
 
 
+def validate_window_length(n):
+    try:
+        n = int(n)
+    except ValueError:
+        raise argparse.ArgumentTypeError("Must be integer")
+    if n < 10:
+        # Note: This doesn't allow for hop < 10.
+        raise argparse.ArgumentTypeError("Must be given in samples, not seconds")
+    return n
+
+
 def upload():
-    """CLI function to upload pretrained models.
-
-    Args:
-        publish_dir (str): Path to the publishing directory.
-            Usually under exp/exp_name/publish_dir
-        uploader (str): Full name of the uploader (Ex: Manuel Pariente)
-        affiliation (str, optional): Affiliation (no accent).
-        git_username (str, optional): GitHub username.
-        token (str): Access token generated to upload depositions.
-        force_publish (bool): Whether to directly publish without
-            asking confirmation before. Defaults to False.
-        use_sandbox (bool): Whether to use Zenodo's sandbox instead of
-            the official Zenodo.
-
-    """
-    import argparse
-
+    """CLI function to upload pretrained models."""
     parser = argparse.ArgumentParser()
     parser.add_argument("publish_dir", type=str, help="Path to the publish dir.")
     parser.add_argument(
@@ -90,25 +88,15 @@ def upload():
 
 
 def infer():
-    """CLI function to run pretrained model inference on wav files.
-
-    Args:
-        url_or_path(str): Path to the pretrained model.
-        files (List(str)): Path to the wav files to separate. Also support list
-            of filenames, directory names and globs.
-        force_overwrite (bool): Whether to overwrite output wav files.
-        resample (bool): Whether to resample wrong sample rate input files.
-        output_dir (str): Output directory to save files.
-    """
-    import argparse
-
+    """CLI function to run pretrained model inference on wav files."""
     parser = argparse.ArgumentParser()
     parser.add_argument("url_or_path", type=str, help="Path to the pretrained model.")
     parser.add_argument(
         "--files",
         default=None,
+        required=True,
         type=str,
-        help="Path to the wav files to separate. Also support list of filenames, "
+        help="Path to the wav files to separate. Also supports list of filenames, "
         "directory names and globs.",
         nargs="+",
     )
@@ -125,19 +113,59 @@ def infer():
         help="Whether to resample wrong sample rate input files.",
     )
     parser.add_argument(
+        "-w",
+        "--ola-window",
+        type=validate_window_length,
+        default=None,
+        help="Overlap-add window to use. If not set (default), overlap-add is not used.",
+    )
+    parser.add_argument(
+        "--ola-hop",
+        type=validate_window_length,
+        default=None,
+        help="Overlap-add hop length in samples. Defaults to ola-window // 2. Only used if --ola-window is set.",
+    )
+    parser.add_argument(
+        "--ola-window-type",
+        type=str,
+        default="hanning",
+        help="Type of overlap-add window to use. Only used if --ola-window is set.",
+    )
+    parser.add_argument(
+        "--ola-no-reorder",
+        action="store_true",
+        help="Disable automatic reordering of overlap-add chunk. See asteroid.dsp.LambdaOverlapAdd for details. "
+        "Only used if --ola-window is set.",
+    )
+    parser.add_argument(
         "-o", "--output-dir", default=None, type=str, help="Output directory to save files."
     )
     args = parser.parse_args()
 
     model = BaseModel.from_pretrained(pretrained_model_conf_or_path=args.url_or_path)
+    if args.ola_window is not None:
+        model = LambdaOverlapAdd(
+            model,
+            n_src=None,
+            window_size=args.ola_window,
+            hop_size=args.ola_hop,
+            window=args.ola_window_type,
+            reorder_chunks=not args.ola_no_reorder,
+        )
     file_list = _process_files_as_list(args.files)
 
     for f in file_list:
-        model.separate(f, force_overwrite=args.force_overwrite, output_dir=args.output_dir)
+        separate(
+            model,
+            f,
+            force_overwrite=args.force_overwrite,
+            output_dir=args.output_dir,
+            resample=args.resample,
+        )
 
 
 def register_sample_rate():
-    """ CLI to register sample rate to an Asteroid model saved without `sample_rate`,  before 0.4.0."""
+    """CLI to register sample rate to an Asteroid model saved without `sample_rate`,  before 0.4.0."""
 
     def _register_sample_rate(filename, sample_rate):
         import torch
@@ -145,8 +173,6 @@ def register_sample_rate():
         conf = torch.load(filename, map_location="cpu")
         conf["model_args"]["sample_rate"] = sample_rate
         torch.save(conf, filename)
-
-    import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("filename", type=str, help="Model file to edit.")
@@ -156,8 +182,8 @@ def register_sample_rate():
     _register_sample_rate(filename=args.filename, sample_rate=args.sample_rate)
 
 
-def _process_files_as_list(files_str: List) -> List:
-    """ Support filename, folder name, and globs. Returns list of filenames."""
+def _process_files_as_list(files_str: List[str]) -> List[str]:
+    """Support filename, folder name, and globs. Returns list of filenames."""
     all_files = []
     for f in files_str:
         # Existing file
@@ -175,7 +201,7 @@ def _process_files_as_list(files_str: List) -> List:
 
 
 def glob_dir(d):
-    """ Return all filenames in directory that match the supported extensions."""
+    """Return all filenames in directory that match the supported extensions."""
     return list(
         itertools.chain(
             *[

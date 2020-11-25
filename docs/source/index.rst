@@ -21,23 +21,25 @@ large range of datasets and architectures, and a set of recipes to reproduce som
 
 .. toctree::
    :maxdepth: 1
+   :caption: Notebooks and Tutorials
+
+   Getting started with Asteroid <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_AsteroidGettingStarted.ipynb>
+   Introduction and Overview <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb>
+   Understanding the Filterbank API <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/02_Filterbank.ipynb>
+   Our PITLossWrapper explained <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb>
+   Processing large wav files <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb>
+   Community: Numpy vs. Asteroid STFT <https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j>
+
+.. toctree::
+   :maxdepth: 1
    :caption: Asteroid
 
    readmes/egs_README.md
    supported_datasets
    training_and_evaluation
    readmes/pretrained_models.md
+   cli
    faq
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Notebooks and Tutorials
-
-   NB: Getting stated with Asteroid <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/01_AsteroidGettingStarted.ipynb>
-   NB: Understanding the Filterbank API <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/02_Filterbank.ipynb>
-   NB: Our PITLossWrapper explained <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb>
-   NB: Processing large wav files <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb>
-   Community NB: Numpy vs. Asteroid STFT <https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j>
 
 .. toctree::
    :maxdepth: 1
@@ -52,7 +54,6 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    package_reference/optimizers
    package_reference/dsp
    package_reference/utils
-   package_reference/cli
 
 .. toctree::
    :maxdepth: 1

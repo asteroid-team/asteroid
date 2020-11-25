@@ -33,7 +33,7 @@ class _BaseScheduler(object):
         self.__dict__.update(state_dict)
 
     def state_dict(self):
-        return {key: value for key, value in self.__dict__.items()}
+        return {key: value for key, value in self.__dict__.items() if key != "optimizer"}
 
     def plot(self, start=0, stop=100_000):  # noqa
         """Plot the scheduler values from start to stop."""

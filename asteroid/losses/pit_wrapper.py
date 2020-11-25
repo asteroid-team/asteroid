@@ -8,7 +8,7 @@ class PITLossWrapper(nn.Module):
     r"""Permutation invariant loss wrapper.
 
     Args:
-        loss_func: function with signature (targets, est_targets, **kwargs).
+        loss_func: function with signature (est_targets, targets, **kwargs).
         pit_from (str): Determines how PIT is applied.
 
             * ``'pw_mtx'`` (pairwise matrix): `loss_func` computes pairwise
@@ -135,7 +135,7 @@ class PITLossWrapper(nn.Module):
         for a given loss function.
 
         Args:
-            loss_func: function with signature (targets, est_targets, **kwargs)
+            loss_func: function with signature (est_targets, targets, **kwargs)
                 The loss function to get pair-wise losses from.
             est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
                 The batch of target estimates.
@@ -164,7 +164,7 @@ class PITLossWrapper(nn.Module):
         """Find best permutation from loss function with source axis.
 
         Args:
-            loss_func: function with signature (targets, est_targets, **kwargs)
+            loss_func: function with signature (est_targets, targets, **kwargs)
                 The loss function batch losses from.
             est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
                 The batch of target estimates.
@@ -314,7 +314,9 @@ class PITLossWrapper(nn.Module):
         # Just bring the numbers to cpu(), not the graph
         pwl_copy = pwl.detach().cpu()
         # Loop over batch + row indices are always ordered for square matrices.
-        batch_indices = torch.tensor([linear_sum_assignment(pwl)[1] for pwl in pwl_copy])
+        batch_indices = torch.tensor([linear_sum_assignment(pwl)[1] for pwl in pwl_copy]).to(
+            pwl.device
+        )
         min_loss = torch.gather(pwl, 2, batch_indices[..., None]).mean([-1, -2])
         return min_loss, batch_indices
 

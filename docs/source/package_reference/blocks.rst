@@ -16,3 +16,8 @@ Norms
 .. automodule:: asteroid.masknn.norms
    :members:
 
+Complex number support
+----------------------
+.. automodule:: asteroid.complex_nn
+   :members:
+

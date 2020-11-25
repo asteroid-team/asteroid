@@ -32,7 +32,7 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
 
     References
         - [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
-        Tzinis et al. MLSP 2020.
+          Tzinis et al. MLSP 2020.
     """
 
     def __init__(
@@ -106,7 +106,7 @@ class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):
 
     References
         - [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
-        Tzinis et al. MLSP 2020.
+          Tzinis et al. MLSP 2020.
     """
 
     def __init__(

@@ -13,6 +13,12 @@ def show_available_models():
     print(" \n".join(list(MODELS_URLS_HASHTABLE.keys())))
 
 
+def available_models():
+    from .utils.hub_utils import MODELS_URLS_HASHTABLE
+
+    return MODELS_URLS_HASHTABLE
+
+
 __all__ = [
     "ConvTasNet",
     "DPRNNTasNet",
