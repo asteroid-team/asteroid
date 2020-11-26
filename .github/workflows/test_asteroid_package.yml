@@ -56,6 +56,8 @@ jobs:
     - name: Model-sharing tests
       run: |
         coverage run -a -m py.test tests/models/publish_test.py
+        chmod +x ./tests/cli_test.sh
+        ./tests/cli_test.sh
       env:  # Access token as an env variable
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
