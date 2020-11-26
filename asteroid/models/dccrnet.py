@@ -32,7 +32,7 @@ class DCCRNet(BaseDCUNet):
     def forward_encoder(self, wav):
         tf_rep = self.encoder(wav)
         # Remove Nyquist frequency bin
-        return to_torch_complex(tf_rep[..., :-1, :])
+        return to_torch_complex(tf_rep)[..., :-1, :]
 
     def apply_masks(self, tf_rep, est_masks):
         masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
