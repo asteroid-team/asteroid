@@ -8,7 +8,7 @@ coverage run -a `which asteroid-register-sr` tmp.th 8000
 coverage run -a `which asteroid-infer` tmp.th --files tmp.wav
 coverage run -a `which asteroid-infer` tmp.th --files tmp.wav tmp2.wav --force-overwrite
 coverage run -a `which asteroid-infer` tmp.th --files tmp.wav --ola-window 1000 --force-overwrite
-coverage run -a `which asteroid-infer` tmp.th --files tmp.wav --ola-window 1000 --no-reorder --force-overwrite
+coverage run -a `which asteroid-infer` tmp.th --files tmp.wav --ola-window 1000 --ola-no-reorder --force-overwrite
 
 # asteroid-upload
 
