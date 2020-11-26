@@ -19,8 +19,6 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import torchaudio
 from torch import nn
-from asteroid_filterbanks import transforms
-from .utils.torch_utils import script_if_tracing
 
 
 # Alias to denote PyTorch native complex tensor (complex64/complex128).
@@ -40,47 +38,6 @@ def torch_complex_from_magphase(mag, phase):
 
 def torch_complex_from_reim(re, im):
     return torch.view_as_complex(torch.stack([re, im], dim=-1))
-
-
-@script_if_tracing
-def as_torch_complex(x, asteroid_dim: int = -2):
-    """Convert complex `x` to complex. Input may be one of:
-
-    - PyTorch native complex
-    - Torchaudio style complex
-    - Asteroid style complex
-    - Tuple or list of (real, imaginary) components
-
-    Args:
-        asteroid_dim (int, optional): Dimension to check for Asteroid-style complex.
-
-    Raises:
-        ValueError: If type of `x` is not understood.
-    """
-    if isinstance(x, (list, tuple)) and len(x) == 2:
-        return torch_complex_from_reim(*x)
-    elif is_torch_complex(x):
-        return x
-    else:
-        is_torchaudio_complex = transforms.is_torchaudio_complex(x)
-        is_asteroid_complex = transforms.is_asteroid_complex(x, asteroid_dim)
-        if is_torchaudio_complex and is_asteroid_complex:
-            if not torch.jit.is_scripting():
-                warnings.warn(
-                    f"Tensor of shape {x.shape} is both a valid Torchaudio-style and "
-                    "Asteroid-style complex. PyTorch complex conversion is ambiguous."
-                    "Assuming Torchaudio-style.",
-                    RuntimeWarning,
-                )
-            return torch.view_as_complex(x)
-        elif is_torchaudio_complex:
-            return torch.view_as_complex(x)
-        elif is_asteroid_complex:
-            return torch.view_as_complex(transforms.to_torchaudio(x, asteroid_dim))
-        else:
-            raise RuntimeError(
-                f"Do not know how to convert tensor of shape {x.shape}, dtype={x.dtype} to complex"
-            )
 
 
 def on_reim(f):
