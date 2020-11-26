@@ -239,7 +239,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         reconstructed = pad_x_to_y(decoded, wav)
         return _shape_reconstructed(reconstructed, shape)
 
-    def forward_encoder(self, wav):
+    def forward_encoder(self, wav: torch.Tensor) -> torch.Tensor:
         """Computes time-frequency representation of `wav`.
 
         Args:
@@ -249,23 +249,9 @@ class BaseEncoderMaskerDecoder(BaseModel):
             torch.Tensor, of shape (batch, feat, seq).
         """
         tf_rep = self.encoder(wav)
-        tf_rep = self.postprocess_encoded(tf_rep)
         return self.enc_activation(tf_rep)
 
-    def postprocess_encoded(self, tf_rep):
-        """Hook to perform transformations on the encoded, time-frequency domain
-        representation (output of the encoder) before encoder activation is applied.
-
-        Args:
-            tf_rep (Tensor of shape (batch, freq, time)):
-                Output of the encoder, before encoder activation is applied.
-
-        Return:
-            Transformed `tf_rep`
-        """
-        return tf_rep
-
-    def forward_masker(self, tf_rep):
+    def forward_masker(self, tf_rep: torch.Tensor) -> torch.Tensor:
         """Estimates masks from time-frequency representation.
 
         Args:
@@ -275,23 +261,9 @@ class BaseEncoderMaskerDecoder(BaseModel):
         Returns:
             torch.Tensor: Estimated masks
         """
-        est_masks = self.masker(tf_rep)
-        return self.postprocess_masks(est_masks)
+        return self.masker(tf_rep)
 
-    def postprocess_masks(self, masks):
-        """Hook to perform transformations on the masks (output of the masker) before
-        masks are applied.
-
-        Args:
-            masks (Tensor of shape (batch, n_src, freq, time)):
-                Output of the masker
-
-        Return:
-            Transformed `masks`
-        """
-        return masks
-
-    def apply_masks(self, tf_rep, est_masks):
+    def apply_masks(self, tf_rep: torch.Tensor, est_masks: torch.Tensor) -> torch.Tensor:
         """Applies masks to time-frequency representation.
 
         Args:
@@ -302,23 +274,9 @@ class BaseEncoderMaskerDecoder(BaseModel):
         Returns:
             torch.Tensor: Masked time-frequency representations.
         """
-        masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
-        return self.postprocess_masked(masked_tf_rep)
+        return est_masks * tf_rep.unsqueeze(1)
 
-    def postprocess_masked(self, masked_tf_rep):
-        """Hook to perform transformations on the masked time-frequency domain
-        representation (result of masking in the time-frequency domain) before decoding.
-
-        Args:
-            masked_tf_rep (Tensor of shape (batch, n_src, freq, time)):
-                Masked time-frequency representation, before decoding.
-
-        Return:
-            Transformed `masked_tf_rep`
-        """
-        return masked_tf_rep
-
-    def forward_decoder(self, masked_tf_rep):
+    def forward_decoder(self, masked_tf_rep: torch.Tensor) -> torch.Tensor:
         """Reconstructs time-domain waveforms from masked representations.
 
         Args:
@@ -327,21 +285,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         Returns:
             torch.Tensor: Time-domain waveforms.
         """
-        decoded = self.decoder(masked_tf_rep)
-        return self.postprocess_decoded(decoded)
-
-    def postprocess_decoded(self, decoded):
-        """Hook to perform transformations on the decoded, time domain representation
-        (output of the decoder) before original shape reconstruction.
-
-        Args:
-            decoded (Tensor of shape (batch, n_src, time)):
-                Output of the decoder, before original shape reconstruction.
-
-        Return:
-            Transformed `decoded`
-        """
-        return decoded
+        return self.decoder(masked_tf_rep)
 
     def get_model_args(self):
         """ Arguments needed to re-instantiate the model. """
