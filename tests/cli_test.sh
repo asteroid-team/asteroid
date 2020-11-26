@@ -1,4 +1,5 @@
 # Save a model (tmp.th) and two wavfiles (tmp.wav, tmp2.wav)
+which python
 python tests/cli_setup.py
 
 # asteroid-register-sr`
