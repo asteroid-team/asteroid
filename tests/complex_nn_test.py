@@ -26,32 +26,6 @@ def test_torch_complex_from_reim():
     assert_allclose(cnn.torch_complex_from_reim(comp.real, comp.imag), comp)
 
 
-def test_as_torch_complex():
-    shape = (1, 257, 100)
-    re = torch.randn(shape)
-    im = torch.randn(shape)
-    # From mag and phase
-    out = cnn.as_torch_complex((re, im))
-    # From torch.complex
-    out2 = cnn.as_torch_complex(out)
-    assert_allclose(out, out2)
-    # From torchaudio, ambiguous
-    with pytest.warns(RuntimeWarning):
-        out3 = cnn.as_torch_complex(torch.view_as_real(out))
-    assert_allclose(out3, out)
-
-    # From torchaudio, unambiguous
-    _ = cnn.as_torch_complex(torch.randn(1, 5, 2))
-    # From asteroid
-    out4 = cnn.as_torch_complex(transforms.from_torchaudio(torch.view_as_real(out), dim=-2))
-    assert_allclose(out4, out)
-
-
-def test_as_torch_complex_raises():
-    with pytest.raises(RuntimeError):
-        cnn.as_torch_complex(torch.randn(1, 5, 3))
-
-
 def test_onreim():
     inp = torch.randn(10, 10, dtype=torch.complex64)
     # Identity
