@@ -1,8 +1,5 @@
-import torch
-
-from .. import complex_nn
 from asteroid_filterbanks import make_enc_dec
-from asteroid_filterbanks.transforms import from_torchaudio
+from asteroid_filterbanks.transforms import from_torch_complex, to_torch_complex
 from ..masknn.convolutional import DCUMaskNet
 from .base_models import BaseEncoderMaskerDecoder
 
@@ -45,11 +42,11 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
 
     def forward_encoder(self, wav):
         tf_rep = self.encoder(wav)
-        return complex_nn.as_torch_complex(tf_rep)
+        return to_torch_complex(tf_rep)
 
     def apply_masks(self, tf_rep, est_masks):
         masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
-        return from_torchaudio(torch.view_as_real(masked_tf_rep))
+        return from_torch_complex(masked_tf_rep)
 
     def get_model_args(self):
         """Arguments needed to re-instantiate the model."""
