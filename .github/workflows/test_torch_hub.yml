@@ -22,7 +22,8 @@ jobs:
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip --quiet
-        python -m pip install asteroid-filterbanks --quiet
+        python -m pip install torch torchaudio --quiet
+        python -m pip install numpy asteroid-filterbanks torch_stoi --quiet
         python --version
         pip --version
         python -m pip list
