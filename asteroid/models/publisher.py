@@ -3,7 +3,6 @@ import torch
 import subprocess
 from pprint import pprint
 
-from .zenodo import Zenodo
 
 PLEASE_PUBLISH = (
     "\nDon't forget to share your pretrained models at "
@@ -248,7 +247,8 @@ def zenodo_upload(model, token, model_path=None, use_sandbox=False):
         model_path_was_none = True
         model_path = "tmp.pth"
         torch.save(model, model_path)
-        # raise ValueError("Need path")
+
+    from .zenodo import Zenodo
 
     zen = Zenodo(token, use_sandbox=use_sandbox)
     metadata = make_metadata_from_model(model)
