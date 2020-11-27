@@ -165,8 +165,12 @@ class System(pl.LightningModule):
         epoch_schedulers = []
         for sched in self.scheduler:
             if not isinstance(sched, dict):
+                if isinstance(sched, ReduceLROnPlateau):
+                    sched = {"scheduler": sched, "monitor": self.default_monitor}
                 epoch_schedulers.append(sched)
             else:
+                sched.setdefault("monitor", self.default_monitor)
+                sched.setdefault("frequency", 1)
                 # Backward compat
                 if sched["interval"] == "batch":
                     sched["interval"] = "step"
