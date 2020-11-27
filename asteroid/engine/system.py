@@ -39,6 +39,7 @@ class System(pl.LightningModule):
         loss_func,
         train_loader,
         val_loader=None,
+        test_loader=None,
         scheduler=None,
         config=None,
     ):
@@ -48,6 +49,7 @@ class System(pl.LightningModule):
         self.loss_func = loss_func
         self.train_loader = train_loader
         self.val_loader = val_loader
+        self.test_loader = test_loader
         self.scheduler = scheduler
         config = {} if config is None else config
         self.config = config
@@ -152,6 +154,29 @@ class System(pl.LightningModule):
         tensorboard_logs = {"val_loss": avg_loss}
         return {"val_loss": avg_loss, "log": tensorboard_logs, "progress_bar": tensorboard_logs}
 
+    def test_step(self, batch, batch_nb):
+
+        inputs, targets = batch
+        est_targets = self(inputs)
+
+        # log 6 example images
+        # or generated text... or whatever
+        sample_imgs = x[:6]
+        grid = torchvision.utils.make_grid(sample_imgs)
+        self.logger.experiment.add_image('example_images', grid, 0)
+
+        # calculate acc
+        labels_hat = torch.argmax(out, dim=1)
+        test_acc = torch.sum(y == labels_hat).item() / (len(y) * 1.0)
+
+        # log the outputs!
+        result = pl.EvalResult(checkpoint_on=loss)
+        result.log_dict({'test_loss': loss, 'test_acc': test_acc})
+        return result
+
+    def test_epoch_end(self, outputs):
+        pass
+
     def configure_optimizers(self):
         """Initialize optimizers, batch-wise and epoch-wise schedulers."""
         if self.scheduler is None:
@@ -180,6 +205,9 @@ class System(pl.LightningModule):
 
     def val_dataloader(self):
         return self.val_loader
+
+    def test_dataloader(self):
+        return self.test_loader
 
     def on_save_checkpoint(self, checkpoint):
         """ Overwrite if you want to save more things in the checkpoint."""
