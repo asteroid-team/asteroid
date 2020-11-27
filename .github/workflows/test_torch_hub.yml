@@ -32,6 +32,6 @@ jobs:
       run: |
         python -c "import torch; print(torch.hub.list('mpariente/asteroid:$BRANCH'))"
 
-    - name: TorchHub list
+    - name: TorchHub help
       run: |
         python -c "import torch; print(torch.hub.help('mpariente/asteroid:$BRANCH', 'conv_tasnet'))"
