@@ -2,7 +2,6 @@ import numpy as np
 import torch
 from torch import tensor
 import torch.nn as nn
-from scipy.io import loadmat
 import pathlib
 import os
 
@@ -482,7 +481,7 @@ class SingleSrcPMSQE(nn.Module):
         # Bark matrix
         local_path = pathlib.Path(__file__).parent.absolute()
         bark_path = os.path.join(local_path, "bark_matrix_16k.mat")
-        bark_matrix = loadmat(bark_path)["Bark_matrix_16k"].astype("float32")
+        bark_matrix = self.load_mat(bark_path)["Bark_matrix_16k"].astype("float32")
         self.bark_matrix = nn.Parameter(tensor(bark_matrix), requires_grad=False)
 
     def register_8k_constants(self):
@@ -627,5 +626,10 @@ class SingleSrcPMSQE(nn.Module):
         # Bark matrix
         local_path = pathlib.Path(__file__).parent.absolute()
         bark_path = os.path.join(local_path, "bark_matrix_8k.mat")
-        bark_matrix = loadmat(bark_path)["Bark_matrix_8k"].astype("float32")
+        bark_matrix = self.load_mat(bark_path)["Bark_matrix_8k"].astype("float32")
         self.bark_matrix = nn.Parameter(tensor(bark_matrix), requires_grad=False)
+
+    def load_mat(self, *args, **kwargs):
+        from scipy.io import loadmat
+
+        return loadmat(*args, **kwargs)
