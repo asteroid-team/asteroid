@@ -37,11 +37,10 @@ def test_as_torch_complex():
     with pytest.warns(VisibleDeprecationWarning):
         out2 = cnn.as_torch_complex(out)
     assert_allclose(out, out2)
-    # From torchaudio, ambiguous
-    with pytest.warns(RuntimeWarning):
+    # From torchaudio, ambiguous, error
+    with pytest.raises(RuntimeError):
         with pytest.warns(VisibleDeprecationWarning):
-            out3 = cnn.as_torch_complex(torch.view_as_real(out))
-    assert_allclose(out3, out)
+            cnn.as_torch_complex(torch.view_as_real(out))
 
     # From torchaudio, unambiguous
     with pytest.warns(VisibleDeprecationWarning):

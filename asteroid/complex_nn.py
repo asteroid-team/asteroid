@@ -69,7 +69,7 @@ def as_torch_complex(x, asteroid_dim: int = -2):
         is_torchaudio_complex = transforms.is_torchaudio_complex(x)
         is_asteroid_complex = transforms.is_asteroid_complex(x, asteroid_dim)
         if is_torchaudio_complex and is_asteroid_complex:
-            raise ValueError(
+            raise RuntimeError(
                 f"Tensor of shape {x.shape} is both a valid Torchaudio-style and "
                 "Asteroid-style complex. PyTorch complex conversion is ambiguous."
             )
@@ -78,7 +78,7 @@ def as_torch_complex(x, asteroid_dim: int = -2):
         elif is_asteroid_complex:
             return torch.view_as_complex(transforms.to_torchaudio(x, asteroid_dim))
         else:
-            raise ValueError(
+            raise RuntimeError(
                 f"Do not know how to convert tensor of shape {x.shape}, dtype={x.dtype} to complex"
             )
 
