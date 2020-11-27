@@ -4,7 +4,7 @@ import pytest
 import math
 
 from asteroid import complex_nn as cnn
-from asteroid.utils.test_utils import torch_version_tuple
+from asteroid.utils.deprecation_utils import VisibleDeprecationWarning
 from asteroid_filterbanks import transforms
 
 
@@ -24,6 +24,38 @@ def test_torch_complex_from_magphase():
 def test_torch_complex_from_reim():
     comp = torch.randn(10, 12, dtype=torch.complex64)
     assert_allclose(cnn.torch_complex_from_reim(comp.real, comp.imag), comp)
+
+
+def test_as_torch_complex():
+    shape = (1, 257, 100)
+    re = torch.randn(shape)
+    im = torch.randn(shape)
+    # From mag and phase
+    with pytest.warns(VisibleDeprecationWarning):
+        out = cnn.as_torch_complex((re, im))
+    # From torch.complex
+    with pytest.warns(VisibleDeprecationWarning):
+        out2 = cnn.as_torch_complex(out)
+    assert_allclose(out, out2)
+    # From torchaudio, ambiguous
+    with pytest.warns(RuntimeWarning):
+        with pytest.warns(VisibleDeprecationWarning):
+            out3 = cnn.as_torch_complex(torch.view_as_real(out))
+    assert_allclose(out3, out)
+
+    # From torchaudio, unambiguous
+    with pytest.warns(VisibleDeprecationWarning):
+        _ = cnn.as_torch_complex(torch.randn(1, 5, 2))
+    # From asteroid
+    with pytest.warns(VisibleDeprecationWarning):
+        out4 = cnn.as_torch_complex(transforms.from_torchaudio(torch.view_as_real(out), dim=-2))
+    assert_allclose(out4, out)
+
+
+def test_as_torch_complex_raises():
+    with pytest.raises(RuntimeError):
+        with pytest.warns(VisibleDeprecationWarning):
+            cnn.as_torch_complex(torch.randn(1, 5, 3))
 
 
 def test_onreim():
