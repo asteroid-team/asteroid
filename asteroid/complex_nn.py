@@ -8,19 +8,19 @@ Note that Asteroid code has two other representations of complex numbers:
 - Asteroid style representation, identical to the Torchaudio representation, but
   with the last dimension concatenated: tensor([r1, r2, ..., rn, i1, i2, ..., in]).
   The concatenated (2 * n) dimension may be at an arbitrary position, i.e. the tensor
-  is of shape [..., 2 * n, ...].  See `asteroid.filterbanks.transforms` for details.
+  is of shape [..., 2 * n, ...].  See `asteroid_filterbanks.transforms` for details.
 """
-from typing import Union, List, Tuple
 import functools
 import torch
 import warnings
+from asteroid_filterbanks import transforms
+from .utils.torch_utils import script_if_tracing
+from .utils.deprecation_utils import mark_deprecated
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import torchaudio
 from torch import nn
-from asteroid_filterbanks import transforms
-from .utils.torch_utils import script_if_tracing
 
 
 # Alias to denote PyTorch native complex tensor (complex64/complex128).
@@ -38,6 +38,14 @@ def torch_complex_from_magphase(mag, phase):
     )
 
 
+def torch_complex_from_reim(re, im):
+    return torch.view_as_complex(torch.stack([re, im], dim=-1))
+
+
+@mark_deprecated(
+    "Use `torch.view_as_complex`, `torch_complex_from_magphase`, `torch_complex_from_reim` or "
+    "`asteroid_filterbanks.transforms.from_torch_complex` instead."
+)
 @script_if_tracing
 def as_torch_complex(x, asteroid_dim: int = -2):
     """Convert complex `x` to complex. Input may be one of:
@@ -54,14 +62,14 @@ def as_torch_complex(x, asteroid_dim: int = -2):
         ValueError: If type of `x` is not understood.
     """
     if isinstance(x, (list, tuple)) and len(x) == 2:
-        return torch_complex_from_magphase(*x)
+        return torch_complex_from_reim(*x)
     elif is_torch_complex(x):
         return x
     else:
         is_torchaudio_complex = transforms.is_torchaudio_complex(x)
         is_asteroid_complex = transforms.is_asteroid_complex(x, asteroid_dim)
         if is_torchaudio_complex and is_asteroid_complex:
-            raise ValueError(
+            raise RuntimeError(
                 f"Tensor of shape {x.shape} is both a valid Torchaudio-style and "
                 "Asteroid-style complex. PyTorch complex conversion is ambiguous."
             )
@@ -70,7 +78,7 @@ def as_torch_complex(x, asteroid_dim: int = -2):
         elif is_asteroid_complex:
             return torch.view_as_complex(transforms.to_torchaudio(x, asteroid_dim))
         else:
-            raise ValueError(
+            raise RuntimeError(
                 f"Do not know how to convert tensor of shape {x.shape}, dtype={x.dtype} to complex"
             )
 
@@ -86,7 +94,7 @@ def on_reim(f):
 
     @functools.wraps(f)
     def cf(x):
-        return torch_complex_from_magphase(f(x.real), f(x.imag))
+        return torch_complex_from_reim(f(x.real), f(x.imag))
 
     # functools.wraps keeps the original name of `f`, which might be confusing,
     # since we are creating a new function that behaves differently.
@@ -110,7 +118,7 @@ class OnReIm(nn.Module):
         self.im_module = module_cls(*args, **kwargs)
 
     def forward(self, x):
-        return torch_complex_from_magphase(self.re_module(x.real), self.im_module(x.imag))
+        return torch_complex_from_reim(self.re_module(x.real), self.im_module(x.imag))
 
 
 class ComplexMultiplicationWrapper(nn.Module):
@@ -133,7 +141,7 @@ class ComplexMultiplicationWrapper(nn.Module):
         self.im_module = module_cls(*args, **kwargs)
 
     def forward(self, x: ComplexTensor) -> ComplexTensor:
-        return torch_complex_from_magphase(
+        return torch_complex_from_reim(
             self.re_module(x.real) - self.im_module(x.imag),
             self.re_module(x.imag) + self.im_module(x.real),
         )

@@ -123,8 +123,6 @@ def file_separate(
     import soundfile as sf
 
     if not hasattr(model, "sample_rate"):
-        if isinstance(model, LambdaOverlapAdd):
-            model = model.nnet
         raise TypeError(
             f"This function requires your model ({type(model).__name__}) to have a "
             "'sample_rate' attribute. See `BaseModel.sample_rate` for details."

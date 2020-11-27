@@ -6,6 +6,8 @@ import soundfile as sf
 import asteroid
 from asteroid import models
 from asteroid.filterbanks import make_enc_dec
+from asteroid.dsp import LambdaOverlapAdd
+from asteroid.separate import separate
 from asteroid.models import (
     ConvTasNet,
     DCCRNet,
@@ -231,3 +233,19 @@ def test_demask(fb):
     model_conf = model.serialize()
     reconstructed_model = DeMask.from_pretrained(model_conf)
     assert_allclose(model(test_input), reconstructed_model(test_input))
+
+
+def test_separate():
+    nnet = ConvTasNet(
+        n_src=2,
+        n_repeats=2,
+        n_blocks=3,
+        bn_chan=16,
+        hid_chan=4,
+        skip_chan=8,
+        n_filters=32,
+    )
+    # Test torch input
+    wav = torch.rand(1, 1, 8000)
+    model = LambdaOverlapAdd(nnet, None, window_size=1000)
+    out = separate(model, wav)
