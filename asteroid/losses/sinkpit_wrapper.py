@@ -1,6 +1,5 @@
 import torch
 from torch import nn
-import pytorch_lightning as pl
 
 from . import PITLossWrapper
 
@@ -27,6 +26,7 @@ class SinkPITLossWrapper(nn.Module):
 
     Examples
         >>> import torch
+        >>> import pytorch_lightning as pl
         >>> from asteroid.losses import pairwise_neg_sisdr
         >>> sources = torch.randn(10, 3, 16000)
         >>> est_sources = torch.randn(10, 3, 16000)
