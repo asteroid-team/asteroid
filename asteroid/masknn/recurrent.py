@@ -1,6 +1,3 @@
-import functools
-
-import numpy as np
 import torch
 from torch import nn
 from torch.nn.functional import fold, unfold
@@ -571,6 +568,8 @@ class DCCRMaskNet(BaseDCUMaskNet):
     _architectures = DCCRN_ARCHITECTURES
 
     def __init__(self, encoders, decoders, n_freqs, **kwargs):
+        import numpy as np
+
         self.encoders_stride_product = np.prod(
             [enc_stride for _, _, _, enc_stride, _ in encoders], axis=0
         )
