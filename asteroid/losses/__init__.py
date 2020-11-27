@@ -8,8 +8,13 @@ from .sdr import pairwise_neg_snr, singlesrc_neg_snr, multisrc_neg_snr
 from .mse import pairwise_mse, singlesrc_mse, multisrc_mse
 from .cluster import deep_clustering_loss
 from .pmsqe import SingleSrcPMSQE
-from .stoi import NegSTOILoss as SingleSrcNegSTOI
 from .multi_scale_spectral import SingleSrcMultiScaleSpectral
+
+try:
+    from .stoi import NegSTOILoss as SingleSrcNegSTOI
+except ModuleNotFoundError:
+    # Is installed with asteroid, but remove the deps for TorchHub.
+    SingleSrcNegSTOI = lambda *a, **kw: print("Install `torch_stoi` to use `SingleSrcNegSTOI`")
 
 
 __all__ = [
