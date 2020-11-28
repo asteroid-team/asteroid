@@ -25,3 +25,11 @@ from the `docs/` folder, that'll be easier.
 ```bash
 alias run_docs='make clean; make html; firefox build/html/index.html'
 ```
+
+
+### Writing good docstrings
+
+- Start with [RST and Sphinx CheatSheet](https://thomas-cokelaer.info/tutorials/sphinx/rest_syntax.html)
+- Linking to method in a class `:func:~mymodule.myclass.myfunc`.
+([Ref](https://stackoverflow.com/questions/21289806/link-to-class-method-in-python-docstring))
+-

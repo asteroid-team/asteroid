@@ -55,19 +55,19 @@ class BaseModel(torch.nn.Module):
         self.__sample_rate = new_sample_rate
 
     def separate(self, *args, **kwargs):
-        """Convenience for ``asteroid.separate.separate(self, ...)``."""
+        """Convenience for :func:`~asteroid.separate.separate`."""
         return separate.separate(self, *args, **kwargs)
 
     def torch_separate(self, *args, **kwargs):
-        """Convenience for ``asteroid.separate.torch_separate(self, ...)``."""
+        """Convenience for :func:`~asteroid.separate.torch_separate`."""
         return separate.torch_separate(self, *args, **kwargs)
 
     def numpy_separate(self, *args, **kwargs):
-        """Convenience for ``asteroid.separate.numpy_separate(self, ...)``."""
+        """Convenience for :func:`~asteroid.separate.numpy_separate`."""
         return separate.numpy_separate(self, *args, **kwargs)
 
     def file_separate(self, *args, **kwargs):
-        """Convenience for ``asteroid.separate.file_separate(self, ...)``."""
+        """Convenience for :func:`~asteroid.separate.file_separate`."""
         return separate.file_separate(self, *args, **kwargs)
 
     def forward_wav(self, wav, *args, **kwargs):
