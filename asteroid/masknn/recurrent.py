@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torch.nn.functional import fold, unfold
+import numpy as np
 
 from .. import complex_nn
 from ..utils import has_arg
@@ -356,7 +357,7 @@ class DPRNN(nn.Module):
             padding=(self.chunk_size, 0),
             stride=(self.hop_size, 1),
         )
-        n_chunks = output.size(-1)
+        n_chunks = output.shape[-1]
         output = output.reshape(batch, self.bn_chan, self.chunk_size, n_chunks)
         # Apply stacked DPRNN Blocks sequentially
         output = self.net(output)
@@ -568,8 +569,6 @@ class DCCRMaskNet(BaseDCUMaskNet):
     _architectures = DCCRN_ARCHITECTURES
 
     def __init__(self, encoders, decoders, n_freqs, **kwargs):
-        import numpy as np
-
         self.encoders_stride_product = np.prod(
             [enc_stride for _, _, _, enc_stride, _ in encoders], axis=0
         )
@@ -599,6 +598,7 @@ class DCCRMaskNet(BaseDCUMaskNet):
         freq_prod, _ = self.encoders_stride_product
         if x.shape[1] % freq_prod:
             raise TypeError(
-                f"Input shape must be [batch, freq, time] with freq divisible by {freq_prod}, got {x.shape} instead"
+                f"Input shape must be [batch, freq, time] with freq divisible by {freq_prod}, "
+                f"got {x.shape} instead"
             )
         return x
