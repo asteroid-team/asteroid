@@ -120,7 +120,7 @@ class AVSpeechDataset(data.Dataset):
         n_src (int): number of sources.
 
     References
-        "Looking to Listen at the Cocktail Party: A Speaker-Independent Audio-Visual
+        [1] "Looking to Listen at the Cocktail Party: A Speaker-Independent Audio-Visual
         Model for Speech Separation" Ephrat et. al https://arxiv.org/abs/1804.03619
     """
 
