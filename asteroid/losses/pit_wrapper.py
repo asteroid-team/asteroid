@@ -1,11 +1,7 @@
 from itertools import permutations
 import torch
 from torch import nn
-
-try:
-    from scipy.optimize import linear_sum_assignment
-except ModuleNotFoundError:
-    linear_sum_assignment = None  # Hub
+from scipy.optimize import linear_sum_assignment
 
 
 class PITLossWrapper(nn.Module):
@@ -220,7 +216,7 @@ class PITLossWrapper(nn.Module):
                 :class:`torch.Tensor`: The indices of the best permutations.
         """
         n_src = pair_wise_losses.shape[-1]
-        if perm_reduce is not None or n_src <= 3 or linear_sum_assignment is None:
+        if perm_reduce is not None or n_src <= 3:
             min_loss, batch_indices = PITLossWrapper.find_best_perm_factorial(
                 pair_wise_losses, perm_reduce=perm_reduce, **kwargs
             )
