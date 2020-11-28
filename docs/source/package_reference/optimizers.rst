@@ -4,7 +4,8 @@ Optimizers & Schedulers
 Optimizers
 ----------
 
-Asteroid relies on ``torch_optimizer`` and ``torch`` for optimizers.
+Asteroid relies on `torch_optimizer <https://github.com/jettify/pytorch-optimizer>`_ and
+``torch`` for optimizers.
 We provide a simple ``get`` method that retrieves optimizers from string,
 which makes it easy to specify optimizers from the command line.
 
@@ -44,5 +45,5 @@ Schedulers
 Asteroid provides step-wise learning schedulers, integrable to
 ``pytorch-lightning`` via ``System``.
 
-.. automodule:::: asteroid.engine.schedulers
+.. automodule:: asteroid.engine.schedulers
    :members:
