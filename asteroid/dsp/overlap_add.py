@@ -256,7 +256,7 @@ class DualPathProcessing(nn.Module):
                 $(batch, channels, chunksize, nchunks)$.
             output_size (int, optional): sequence length of original feature tensor.
                 If None, the original length cached by the previous call of
-                :func:`~overlap_add.DualPathProcessing.unfold` will be used.
+                :meth:`unfold` will be used.
 
         Returns:
             :class:`torch.Tensor`:  feature tensor of shape $(batch, channels, time)$.
