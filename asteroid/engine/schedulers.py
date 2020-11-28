@@ -1,5 +1,8 @@
 import torch
 from torch.optim.optimizer import Optimizer
+import pytorch_lightning as pl
+
+from ..losses import SinkPITLossWrapper
 
 
 class BaseScheduler(object):
@@ -148,6 +151,42 @@ class DPTNetScheduler(BaseScheduler):
             )
         return lr
 
+def sinkpit_default_beta_schedule(epoch):
+    return min([1.02 ** epoch, 10])
 
+
+class SinkPITBetaScheduler(pl.callbacks.Callback):
+    r"""Scheduler of the beta value of SinkPITLossWrapper
+    This module is used as a Callback function of `pytorch_lightning.Trainer`.
+
+    Args:
+        cooling_schedule (callable) : A callable that takes a parameter `epoch` (int)
+            and returns the value of `beta` (float).
+
+    The default function is ``sinkpit_default_beta_schedule``: :math:`\beta = min(1.02^{epoch}, 10)`
+
+    Example
+        >>> from pytorch_lightning import Trainer
+        >>> from asteroid.losses import SinkPITBetaScheduler
+        >>> # Default scheduling function
+        >>> sinkpit_beta_schedule = SinkPITBetaSchedule()
+        >>> trainer = Trainer(callbacks=[sinkpit_beta_schedule])
+        >>> # User-defined schedule
+        >>> sinkpit_beta_schedule = SinkPITBetaScheduler(lambda ep: 1. if ep < 10 else 100.)
+        >>> trainer = Trainer(callbacks=[sinkpit_beta_schedule])
+    """
+
+    def __init__(self, cooling_schedule=sinkpit_default_beta_schedule):
+        self.cooling_schedule = cooling_schedule
+
+    def on_epoch_start(self, trainer, pl_module):
+        assert isinstance(pl_module.loss_func, SinkPITLossWrapper)
+        assert trainer.current_epoch == pl_module.current_epoch  # same
+        epoch = pl_module.current_epoch
+        # step = pl_module.global_step
+        beta = self.cooling_schedule(epoch)
+        pl_module.loss_func.beta = beta      
+        
+        
 # Backward compat
 _BaseScheduler = BaseScheduler
