@@ -399,9 +399,9 @@ class DCUNetComplexEncoderBlock(nn.Module):
         stride (Tuple[int, int]): Convolution stride.
         padding (Tuple[int, int]): Convolution padding.
         norm_type (str, optional): Type of normalization to use.
-            See :func:`~asteroid.masknn.norms` for valid values.
+            See :mod:`~asteroid.masknn.norms` for valid values.
         activation (str, optional): Type of activation to use.
-            See :func:`~asteroid.masknn.activations` for valid values.
+            See :mod:`~asteroid.masknn.activations` for valid values.
 
     References
         [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
@@ -443,9 +443,9 @@ class DCUNetComplexDecoderBlock(nn.Module):
         stride (Tuple[int, int]): Convolution stride.
         padding (Tuple[int, int]): Convolution padding.
         norm_type (str, optional): Type of normalization to use.
-            See :func:`~asteroid.masknn.norms` for valid values.
+            See :mod:`~asteroid.masknn.norms` for valid values.
         activation (str, optional): Type of activation to use.
-            See :func:`~asteroid.masknn.activations` for valid values.
+            See :mod:`~asteroid.masknn.activations` for valid values.
 
     References
         [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
