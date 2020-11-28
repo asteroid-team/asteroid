@@ -30,7 +30,7 @@ author = "Manuel Pariente et al."
 # The short X.Y version
 version = "0.4.0"
 # The full version, including alpha/beta/rc tags
-release = "0.4.0alpha"
+release = "0.4.0rc1"
 
 # -- General configuration ---------------------------------------------------
 
@@ -53,7 +53,7 @@ extensions = [
     # 'sphinxcontrib.fulltoc',  # breaks pytorch-theme with unexpected
     # w argument 'titles_only'
     # We can either use viewcode, which shows source code in the doc page
-    "sphinx.ext.viewcode",
+    "sphinx.ext.linkcode",
     # Or linkcode to find the corresponding code in github. Start with viewcode
     # 'sphinx.ext.linkcode',
     # 'recommonmark',
@@ -106,6 +106,47 @@ exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
+
+
+# Resolve function for the linkcode extension. Now, the source button links
+# to the Github code instead of code in the docs.
+def linkcode_resolve(domain, info):
+    # TODO: handle the release better. Maybe use the versioneer?
+    if domain != "py" or not info["module"]:
+        return None
+    info["module"] = info["module"].replace("asteroid.filterbanks", "asteroid_filterbanks")
+    link_to_afb = "asteroid_filterbanks" in info["module"]
+    repos_name = "asteroid_filterbanks" if link_to_afb else "asteroid"
+
+    def str_from(string, start="asteroid"):
+        return string[string.find(start) :]
+
+    def find_source():
+        import inspect
+
+        # try to find the correct line number, based on code from numpy and lasagne (5 years old)
+        # get(asteroid, engine) -> get(engine, system) -> get(system, engine)
+        obj = sys.modules[info["module"]]
+        for part in info["fullname"].split("."):
+            obj = getattr(obj, part)
+        fn = inspect.getsourcefile(obj)
+        source, lineno = inspect.getsourcelines(obj)
+        return fn, lineno, lineno + len(source) - 1
+
+    filename = info["module"].replace(".", "/")
+    tag = "master" if "dev" in release else ("v" + release)
+
+    if "asteroid_filterbanks" in filename:
+        base_url = "https://github.com/asteroid-team/asteroid-filterbanks/blob/master/%s"
+    else:
+        base_url = f"https://github.com/mpariente/asteroid/blob/{tag}/%s"
+
+    try:
+        file, start, end = find_source()
+    except:
+        return base_url % str_from(filename, start=repos_name)
+    return base_url % str_from(file, start=repos_name) + "#L%d-L%d" % (start, end)
+
 
 # -- Options for HTML output -------------------------------------------------
 
