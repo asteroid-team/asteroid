@@ -56,7 +56,7 @@ class WhamDataset(data.Dataset):
             normalized with the standard deviation of the mixture.
 
     References
-        - "WHAM!: Extending Speech Separation to Noisy Environments",
+        "WHAM!: Extending Speech Separation to Noisy Environments",
         Wichern et al. 2019
     """
 

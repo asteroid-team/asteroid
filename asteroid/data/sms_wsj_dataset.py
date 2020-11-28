@@ -60,8 +60,8 @@ class SmsWsjDataset(data.Dataset):
             normalized with the standard deviation of the mixture.
 
     References
-        - "SMS-WSJ: Database, performance measures, and baseline recipe for
-          multi-channel source separation and recognition", Drude et al. 2019
+        "SMS-WSJ: Database, performance measures, and baseline recipe for
+        multi-channel source separation and recognition", Drude et al. 2019
     """
 
     dataset_name = "SMS_WSJ"

@@ -86,7 +86,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         tracks (:obj:`list` of :obj:`Dict`): List of track metadata
 
     References
-        - "The 2018 Signal Separation Evaluation Campaign" Stoter et al. 2018.
+        "The 2018 Signal Separation Evaluation Campaign" Stoter et al. 2018.
     """
 
     dataset_name = "MUSDB18"
