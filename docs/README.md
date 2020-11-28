@@ -30,6 +30,7 @@ alias run_docs='make clean; make html; firefox build/html/index.html'
 ### Writing good docstrings
 
 - Start with [RST and Sphinx CheatSheet](https://thomas-cokelaer.info/tutorials/sphinx/rest_syntax.html)
-- Linking to method in a class `:func:~mymodule.myclass.myfunc`.
-([Ref](https://stackoverflow.com/questions/21289806/link-to-class-method-in-python-docstring))
+- [Cross-referencing Python objects](https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#cross-referencing-python-objects)
+    - Linking to any method in the package `:func:~mymodule.myclass.myfunc`.
+    - Linking to a method in the class `:meth:mymethod`.
 -

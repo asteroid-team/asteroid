@@ -145,4 +145,3 @@ class SinkPITLossWrapper(nn.Module):
         min_loss = torch.einsum("bij,bij->b", C + Z / beta, torch.exp(Z))
         min_loss = min_loss / n_src
         return min_loss, torch.exp(Z)
-      

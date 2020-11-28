@@ -151,6 +151,7 @@ class DPTNetScheduler(BaseScheduler):
             )
         return lr
 
+
 def sinkpit_default_beta_schedule(epoch):
     return min([1.02 ** epoch, 10])
 
@@ -185,8 +186,8 @@ class SinkPITBetaScheduler(pl.callbacks.Callback):
         epoch = pl_module.current_epoch
         # step = pl_module.global_step
         beta = self.cooling_schedule(epoch)
-        pl_module.loss_func.beta = beta      
-        
-        
+        pl_module.loss_func.beta = beta
+
+
 # Backward compat
 _BaseScheduler = BaseScheduler
