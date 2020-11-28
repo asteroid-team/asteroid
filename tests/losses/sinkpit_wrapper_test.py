@@ -15,8 +15,8 @@ from asteroid.engine.system import System
 from asteroid.utils.test_utils import DummyWaveformDataset
 
 # target modules
-from asteroid.losses import SinkPITLossWrapper, SinkPITBetaScheduler
-from asteroid.losses.sinkpit_wrapper import sinkpit_default_beta_schedule
+from asteroid.losses import SinkPITLossWrapper
+from asteroid.engine.schedulers import sinkpit_default_beta_schedule, SinkPITBetaScheduler
 
 
 def bad_loss_func_ndim0(y_pred, y_true):

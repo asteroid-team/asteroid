@@ -1,7 +1,6 @@
 import torch
-from scipy.signal import get_window
-from ..losses.pit_wrapper import PITReorder
 from torch import nn
+from ..losses.pit_wrapper import PITReorder
 
 
 class LambdaOverlapAdd(torch.nn.Module):
@@ -69,6 +68,8 @@ class LambdaOverlapAdd(torch.nn.Module):
         self.n_src = n_src
 
         if window:
+            from scipy.signal import get_window  # for torch.hub
+
             window = get_window(window, self.window_size).astype("float32")
             window = torch.from_numpy(window)
             self.use_window = True

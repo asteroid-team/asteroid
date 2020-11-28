@@ -1,0 +1,37 @@
+name: TorchHub integration
+
+on: push
+
+jobs:
+  src-test:
+    name: TorchHub integration
+    runs-on: ubuntu-latest
+
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: True
+    steps:
+    - name: Extract branch name
+      run: echo "::set-env name=BRANCH::${GITHUB_REF#refs/heads/}"
+    - name: Check branch name
+      run: echo $BRANCH
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade pip --quiet
+        python -m pip install torch --quiet
+        python -m pip install numpy scipy asteroid-filterbanks --quiet
+        python --version
+        pip --version
+        python -m pip list
+
+    - name: TorchHub list
+      run: |
+        python -c "import torch; print(torch.hub.list('mpariente/asteroid:$BRANCH'))"
+
+    - name: TorchHub help
+      run: |
+        python -c "import torch; print(torch.hub.help('mpariente/asteroid:$BRANCH', 'conv_tasnet'))"
