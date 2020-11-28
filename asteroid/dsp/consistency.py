@@ -10,10 +10,9 @@ def mixture_consistency(
 ) -> torch.Tensor:
     """Applies mixture consistency to a tensor of estimated sources.
 
-    Args
+    Args:
         mixture (torch.Tensor): Mixture waveform or TF representation.
-        est_sources (torch.Tensor): Estimated sources waveforms or TF
-            representations.
+        est_sources (torch.Tensor): Estimated sources waveforms or TF representations.
         src_weights (torch.Tensor): Consistency weight for each source.
             Shape needs to be broadcastable to `est_source`.
             We make sure that the weights sum up to 1 along dim `dim`.
@@ -23,11 +22,6 @@ def mixture_consistency(
     Returns
         torch.Tensor with same shape as `est_sources`, after applying mixture
         consistency.
-
-    Notes
-        This method can be used only in 'complete' separation tasks, otherwise
-        the residual error will contain unwanted sources. For example, this
-        won't work with the task `sep_noisy` from WHAM.
 
     Examples
         >>> # Works on waveforms
@@ -39,10 +33,14 @@ def mixture_consistency(
         >>> est_sources = torch.randn(10, 2, 514, 400)
         >>> new_est_sources = mixture_consistency(mix, est_sources, dim=1)
 
+    .. note::
+        This method can be used only in 'complete' separation tasks, otherwise
+        the residual error will contain unwanted sources. For example, this
+        won't work with the task `"sep_noisy"` from WHAM.
+
     References
-        - Scott Wisdom, John R Hershey, Kevin Wilson, Jeremy Thorpe, Michael
-        Chinen, Brian Patton, and Rif A Saurous. "Differentiable consistency
-        constraints for improved deep speech enhancement", ICASSP 2019.
+        Scott Wisdom et al. "Differentiable consistency constraints for improved
+        deep speech enhancement", ICASSP 2019.
     """
     # If the source weights are not specified, the weights are the relative
     # power of each source to the sum. w_i = P_i / (P_all), P for power.
