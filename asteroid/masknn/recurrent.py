@@ -568,10 +568,8 @@ class DCCRMaskNet(BaseDCUMaskNet):
     _architectures = DCCRN_ARCHITECTURES
 
     def __init__(self, encoders, decoders, n_freqs, **kwargs):
-        import numpy as np
-
-        self.encoders_stride_product = np.prod(
-            [enc_stride for _, _, _, enc_stride, _ in encoders], axis=0
+        self.encoders_stride_product = torch.prod(
+            torch.tensor([enc_stride for _, _, _, enc_stride, _ in encoders], axis=0)
         )
 
         freq_prod, _ = self.encoders_stride_product
