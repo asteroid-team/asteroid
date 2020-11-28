@@ -225,11 +225,11 @@ class PITLossWrapper(nn.Module):
 
     @staticmethod
     def reorder_source(source, batch_indices):
-        """Reorder sources according to the best permutation.
+        r"""Reorder sources according to the best permutation.
 
         Args:
-            source (torch.Tensor): Tensor of shape :math:
-            batch_indices (torch.Tensor): Tensor of shape :math:.
+            source (torch.Tensor): Tensor of shape :math:`(batch, n_src, time)`
+            batch_indices (torch.Tensor): Tensor of shape :math:`(batch, n_src)`.
                 Contains optimal permutation indices for each batch.
 
         Returns:
@@ -247,7 +247,7 @@ class PITLossWrapper(nn.Module):
 
         Args:
             pair_wise_losses (:class:`torch.Tensor`):
-                Tensor of shape :math:. Pairwise losses.
+                Tensor of shape :math:`(batch, n_src, n_src)`. Pairwise losses.
             perm_reduce (Callable): torch function to reduce permutation losses.
                 Defaults to None (equivalent to mean). Signature of the func
                 (pwl_set, **kwargs) : :math:`(B, n\_src!, n\_src) -> (B, n\_src!)`
