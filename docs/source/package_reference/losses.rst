@@ -15,14 +15,21 @@ Asteroid supports regular Permutation Invariant Training (PIT), it's extension
 using Sinkhorn algorithm (SinkPIT) as well as Mixture Invariant Training (MixIT).
 
 
+:hidden:`PIT`
+~~~~~~~~~~~~~~~~
 .. automodule:: asteroid.losses.pit_wrapper
    :members:
 
+:hidden:`MixIT`
+~~~~~~~~~~~~~~~~
+.. automodule:: asteroid.losses.mixit_wrapper
+   :members:
+
+:hidden:`SinkPIT`
+~~~~~~~~~~~~~~~~
 .. automodule:: asteroid.losses.sinkpit_wrapper
    :members:
 
-.. automodule:: asteroid.losses.mixit_wrapper
-   :members:
 
 Available loss functions
 ------------------------
