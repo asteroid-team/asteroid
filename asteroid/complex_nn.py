@@ -165,7 +165,7 @@ class BoundComplexMask(nn.Module):
 def bound_complex_mask(mask: ComplexTensor, bound_type="tanh"):
     r"""Bound a complex mask, as proposed in [1], section 3.2.
 
-    Valid bound types, for a complex mask $M = |M| ⋅ e^{i φ(M)}$:
+    Valid bound types, for a complex mask :math:`M = |M| ⋅ e^{i φ(M)}`:
 
     - Unbounded ("UBD"): :math:`M_{\mathrm{UBD}} = M`
     - Sigmoid ("BDSS"): :math:`M_{\mathrm{BDSS}} = σ(|M|) e^{i σ(φ(M))}`
@@ -177,7 +177,7 @@ def bound_complex_mask(mask: ComplexTensor, bound_type="tanh"):
 
     References
         [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
-          Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
+        Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
     if bound_type in {"BDSS", "sigmoid"}:
         return on_reim(torch.sigmoid)(mask)

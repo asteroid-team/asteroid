@@ -26,9 +26,9 @@ class ImprovedTransformedLayer(nn.Module):
         norm (str, optional): Type of normalization to use.
 
     References
-        - [1] Chen, Jingjing, Qirong Mao, and Dong Liu. "Dual-Path Transformer
+        [1] Chen, Jingjing, Qirong Mao, and Dong Liu. "Dual-Path Transformer
         Network: Direct Context-Aware Modeling for End-to-End Monaural Speech Separation."
-         arXiv (2020).
+        arXiv (2020).
     """
 
     def __init__(
@@ -67,8 +67,7 @@ class ImprovedTransformedLayer(nn.Module):
 
 
 class DPTransformer(nn.Module):
-    """Dual-path Transformer
-        introduced in [1].
+    """Dual-path Transformer introduced in [1].
 
     Args:
         in_chan (int): Number of input filters.
@@ -89,9 +88,9 @@ class DPTransformer(nn.Module):
         dropout (float, optional): Dropout ratio, must be in [0,1].
 
     References
-        - [1] Chen, Jingjing, Qirong Mao, and Dong Liu. "Dual-Path Transformer
+        [1] Chen, Jingjing, Qirong Mao, and Dong Liu. "Dual-Path Transformer
         Network: Direct Context-Aware Modeling for End-to-End Monaural Speech Separation."
-         arXiv (2020).
+        arXiv (2020).
     """
 
     def __init__(
@@ -181,13 +180,13 @@ class DPTransformer(nn.Module):
             self.output_act = mask_nl_class()
 
     def forward(self, mixture_w):
-        """
+        r"""Forward.
+
         Args:
-            mixture_w (:class:`torch.Tensor`): Tensor of shape
-                [batch, n_filters, n_frames]
+            mixture_w (:class:`torch.Tensor`): Tensor of shape $(batch, nfilters, nframes)$
+
         Returns:
-            :class:`torch.Tensor`
-                estimated mask of shape [batch, n_src, n_filters, n_frames]
+            :class:`torch.Tensor`: estimated mask of shape $(batch, nsrc, nfilters, nframes)$
         """
         if self.input_layer is not None:
             mixture_w = self.input_layer(mixture_w.transpose(1, 2)).transpose(1, 2)
