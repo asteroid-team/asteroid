@@ -14,7 +14,10 @@ try:
     from .stoi import NegSTOILoss as SingleSrcNegSTOI
 except ModuleNotFoundError:
     # Is installed with asteroid, but remove the deps for TorchHub.
-    SingleSrcNegSTOI = lambda *a, **kw: print("Install `torch_stoi` to use `SingleSrcNegSTOI`")
+    def f():
+        raise ModuleNotFoundError("No module named 'torch_stoi'")
+
+    SingleSrcNegSTOI = lambda *a, **kw: f()
 
 
 __all__ = [
