@@ -45,12 +45,13 @@ Fixed filterbanks
     :members:
 
 :hidden:`MelGram`
+~~~~~~~~~~~~~~~~~
 .. automodule:: asteroid_filterbanks.melgram_fb
     :members:
 
 :hidden:`MPGT`
 ~~~~~~~~~~~~~~~~
-.. automodule:: asteroid_filterbanks.multiphase_gammatone_fb
+.. autoclass:: asteroid_filterbanks.multiphase_gammatone_fb.MultiphaseGammatoneFB
     :members:
 
 Transforms
