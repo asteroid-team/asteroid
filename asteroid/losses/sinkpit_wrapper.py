@@ -130,10 +130,11 @@ class SinkPITLossWrapper(nn.Module):
             n_iter (int) : Number of iteration. Even number. (default = 200)
 
         Returns:
-            :class:`torch.Tensor`: The loss corresponding to the best
-            permutation of size (batch,).
+            - :class:`torch.Tensor`:
+              The loss corresponding to the best permutation of size (batch,).
 
-            :class:`torch.Tensor`: A soft permutation matrix.
+            - :class:`torch.Tensor`:
+              A soft permutation matrix.
         """
         C = pair_wise_losses.transpose(-1, -2)
         n_src = C.shape[-1]

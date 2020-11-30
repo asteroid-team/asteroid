@@ -94,12 +94,14 @@ class MixITLossWrapper(nn.Module):
                 loss function.
 
         Returns:
-            :class:`torch.Tensor`: The loss corresponding to the best
-            permutation of size (batch,).
+            - :class:`torch.Tensor`:
+              The loss corresponding to the best permutation of size (batch,).
 
-            :class:`torch.LongTensor`: The indices of the best partition.
+            - :class:`torch.LongTensor`:
+              The indices of the best partition.
 
-            :class:`list`: list of the possible partitions of the sources.
+            - :class:`list`:
+              list of the possible partitions of the sources.
 
         """
         nmix = targets.shape[1]
@@ -149,12 +151,14 @@ class MixITLossWrapper(nn.Module):
                 loss function.
 
         Returns:
-            :class:`torch.Tensor`: The loss corresponding to the best
-            permutation of size (batch,).
+            - :class:`torch.Tensor`:
+              The loss corresponding to the best permutation of size (batch,).
 
-            :class:`torch.LongTensor`: The indexes of the best permutations.
+            - :class:`torch.LongTensor`:
+              The indexes of the best permutations.
 
-            :class:`list`: list of the possible partitions of the sources.
+            - :class:`list`:
+              list of the possible partitions of the sources.
         """
         nmix = targets.shape[1]  # number of mixtures
         nsrc = est_targets.shape[1]  # number of estimated sources
