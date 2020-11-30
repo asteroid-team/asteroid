@@ -59,7 +59,7 @@ class System(pl.LightningModule):
         # torch doesn't support None in the summary writer for now, convert
         # None to strings temporarily.
         # See https://github.com/pytorch/pytorch/issues/33140
-        self.hparams = Namespace(**self.config_to_hparams(config))
+        self.hparams = Namespace(**self.config_to_hparams(self.config))
 
     def forward(self, *args, **kwargs):
         """Applies forward pass of the model.
