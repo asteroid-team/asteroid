@@ -28,6 +28,7 @@ setup(
         "pb_bss_eval",
         "torch_stoi",
         "asteroid-filterbanks",
+        "librosa",
     ],
     extras_require={
         "tests": ["pytest"],
