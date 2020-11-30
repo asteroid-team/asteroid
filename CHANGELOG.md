@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 [src] Remove deprecated losses (#343)
 [src] Remove deprecated blocks (#344)
 [src] BaseEncoderMaskerDecoder: remove old hooks (#309)
+[src] Remove deprecated kernel_size in TDConvNet (#368)
 
 ### Added
 [src&tests] Add sample_rate property (float) in `BaseModel`.  (#274)
