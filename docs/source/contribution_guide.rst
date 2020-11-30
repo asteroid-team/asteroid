@@ -21,10 +21,10 @@ here is the basic process.
    for how to find appropriate tasks:
 
    -  Look through the `issue
-      tracker <https://github.com/mpariente/asteroid/issues/>`__ and see if
+      tracker <https://github.com/asteroid-team/asteroid/issues/>`__ and see if
       there are any issues you know how to fix. Issues that are
       confirmed by other contributors tend to be better to investigate.
-      
+
    -  Join us on Slack and let us know you're interested in getting to
       know Asteroid. We're very happy to help out researchers and
       partners get up to speed with the codebase.
@@ -53,7 +53,7 @@ here is the basic process.
 
 -  **Code it out!**
 
-   -  See the technical guide and read the code for advice for working with 
+   -  See the technical guide and read the code for advice for working with
       Asteroid in a technical form.
 
 -  **Open a pull request.**
@@ -93,7 +93,7 @@ Reporting Issues
 ~~~~~~~~~~~~~~~~
 
 If you've identified an issue, first search through the `list of
-existing issues <https://github.com/mpariente/asteroid/issues>`__ on the
+existing issues <https://github.com/asteroid-team/asteroid/issues>`__ on the
 repo. If you are unable to find a similar issue, then create a new one.
 Supply as much information you can to reproduce the problematic
 behavior. Also, include any additional insights like the behavior you
@@ -111,8 +111,8 @@ proposed solution. We can provide guidance that saves you time.
 Adding Tutorials
 ~~~~~~~~~~~~~~~~
 
-Most our tutorials come from our team but we are very open to 
-additional contributions. Have a notebook leveraging Asteroid? Open a PR 
+Most our tutorials come from our team but we are very open to
+additional contributions. Have a notebook leveraging Asteroid? Open a PR
 to let us know!
 
 Improving Documentation & Tutorials
@@ -128,14 +128,14 @@ works.
 Participating in online discussions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can find active discussions happening on our 
+You can find active discussions happening on our
 `slack workspace <https://join.slack.com/t/asteroid-dev/shared_invite/zt-cn9y85t3-QNHXKD1Et7qoyzu1Ji5bcA>`__.
 
 Submitting pull requests to fix open issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can view a list of all open issues
-`here <https://github.com/mpariente/asteroid/issues>`__. Commenting on an
+`here <https://github.com/asteroid-team/asteroid/issues>`__. Commenting on an
 issue is a great way to get the attention of the team. From here you can
 share your ideas and how you plan to resolve the issue.
 
@@ -152,13 +152,13 @@ Reviewing open pull requests
 We appreciate your help reviewing and commenting on pull requests. Our
 team strives to keep the number of open pull requests at a manageable
 size, we respond quickly for more information if we need it, and we
-merge PRs that we think are useful. However, additional eyes on pull requests 
+merge PRs that we think are useful. However, additional eyes on pull requests
 is always appreciated.
 
 Improving code readability
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Improve code readability helps everyone. 
+Improve code readability helps everyone.
 We plan to integrate ``black``/DeepSource in the CI process, but readability
 issues can still persist and we'll welcome your corrections.
 
@@ -228,7 +228,7 @@ Common Mistakes To Avoid
       to be accidentally broken, it's important to put in the time to
       work out a testing strategy.
 
--  **Is your PR too long?** It's easier for us to review and merge small PRs. 
+-  **Is your PR too long?** It's easier for us to review and merge small PRs.
    Difficulty of reviewing a PR scales nonlinearly with its size.
    You can try to split it up if possible, else it helps if there is a complete
    description of the contents of the PR: it's easier to review code

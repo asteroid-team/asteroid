@@ -19,10 +19,10 @@ def demask(name_url_or_file=None, **kwargs):
     Examples:
         >>> from torch import hub
         >>> # Instantiate without pretrained weights
-        >>> model = hub.load('mpariente/asteroid', 'demask')
+        >>> model = hub.load('asteroid-team/asteroid', 'demask')
         >>> # Use pretrained weights
         >>> URL = "popcornell/DeMask_Surgical_mask_speech_enhancement_v1"
-        >>> model = hub.load('mpariente/asteroid', 'demask', URL)
+        >>> model = hub.load('asteroid-team/asteroid', 'demask', URL)
     """
     # No pretrained weights
     if name_url_or_file is None:
@@ -46,10 +46,10 @@ def conv_tasnet(name_url_or_file=None, **kwargs):
     Examples:
         >>> from torch import hub
         >>> # Instantiate without pretrained weights
-        >>> model = hub.load('mpariente/asteroid', 'conv_tasnet', n_src=2)
+        >>> model = hub.load('asteroid-team/asteroid', 'conv_tasnet', n_src=2)
         >>> # Use pretrained weights
         >>> URL = "TOCOME"
-        >>> model = hub.load('mpariente/asteroid', 'conv_tasnet', URL)
+        >>> model = hub.load('asteroid-team/asteroid', 'conv_tasnet', URL)
     """
     # No pretrained weights
     if name_url_or_file is None:
@@ -73,10 +73,10 @@ def dprnn_tasnet(name_url_or_file=None, **kwargs):
     Examples:
         >>> from torch import hub
         >>> # Instantiate without pretrained weights
-        >>> model = hub.load('mpariente/asteroid', 'dprnn_tasnet')
+        >>> model = hub.load('asteroid-team/asteroid', 'dprnn_tasnet')
         >>> # Use pretrained weights
         >>> URL = "TOCOME"
-        >>> model = hub.load('mpariente/asteroid', 'dprnn_tasnet', URL)
+        >>> model = hub.load('asteroid-team/asteroid', 'dprnn_tasnet', URL)
     """
     # No pretrained weights
     if name_url_or_file is None:
@@ -100,10 +100,10 @@ def lstm_tasnet(name_url_or_file=None, **kwargs):
     Examples:
         >>> from torch import hub
         >>> # Instantiate without pretrained weights
-        >>> model = hub.load('mpariente/asteroid', 'lstm_tasnet')
+        >>> model = hub.load('asteroid-team/asteroid', 'lstm_tasnet')
         >>> # Use pretrained weights
         >>> URL = "TOCOME"
-        >>> model = hub.load('mpariente/asteroid', 'lstm_tasnet', URL)
+        >>> model = hub.load('asteroid-team/asteroid', 'lstm_tasnet', URL)
     """
     # No pretrained weights
     if name_url_or_file is None:
@@ -127,10 +127,10 @@ def dpt_net(name_url_or_file=None, **kwargs):
     Examples:
         >>> from torch import hub
         >>> # Instantiate without pretrained weights
-        >>> model = hub.load('mpariente/asteroid', 'dpt_net')
+        >>> model = hub.load('asteroid-team/asteroid', 'dpt_net')
         >>> # Use pretrained weights
         >>> URL = "TOCOME"
-        >>> model = hub.load('mpariente/asteroid', 'dpt_net', URL)
+        >>> model = hub.load('asteroid-team/asteroid', 'dpt_net', URL)
     """
     # No pretrained weights
     if name_url_or_file is None:
@@ -154,10 +154,10 @@ def sudormrf_net(name_url_or_file=None, **kwargs):
     Examples:
         >>> from torch import hub
         >>> # Instantiate without pretrained weights
-        >>> model = hub.load('mpariente/asteroid', 'sudormrf_net')
+        >>> model = hub.load('asteroid-team/asteroid', 'sudormrf_net')
         >>> # Use pretrained weights
         >>> URL = "TOCOME"
-        >>> model = hub.load('mpariente/asteroid', 'sudormrf_net', URL)
+        >>> model = hub.load('asteroid-team/asteroid', 'sudormrf_net', URL)
     """
     # No pretrained weights
     if name_url_or_file is None:
@@ -181,10 +181,10 @@ def sudormrf_improved_net(name_url_or_file=None, **kwargs):
     Examples:
         >>> from torch import hub
         >>> # Instantiate without pretrained weights
-        >>> model = hub.load('mpariente/asteroid', 'lstm_tasnet')
+        >>> model = hub.load('asteroid-team/asteroid', 'lstm_tasnet')
         >>> # Use pretrained weights
         >>> URL = "TOCOME"
-        >>> model = hub.load('mpariente/asteroid', 'lstm_tasnet', URL)
+        >>> model = hub.load('asteroid-team/asteroid', 'lstm_tasnet', URL)
     """
     # No pretrained weights
     if name_url_or_file is None:

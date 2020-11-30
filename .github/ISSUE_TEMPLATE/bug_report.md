@@ -8,8 +8,8 @@ assignees: ''
 ---
 
 ### Before reporting a bug:
-First, please search [previous issues](https://github.com/mpariente/asteroid/issues)
-and [the FAQ](https://mpariente.github.io/asteroid/faq.html) and be sure this hasn't
+First, please search [previous issues](https://github.com/asteroid-team/asteroid/issues)
+and [the FAQ](https://asteroid-team.github.io/asteroid/faq.html) and be sure this hasn't
 been answered elsewhere.
 
 ## 🐛 Bug

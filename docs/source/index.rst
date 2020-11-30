@@ -23,11 +23,11 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    :maxdepth: 1
    :caption: Notebooks and Tutorials
 
-   Getting started with Asteroid <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_AsteroidGettingStarted.ipynb>
-   Introduction and Overview <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb>
-   Understanding the Filterbank API <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/02_Filterbank.ipynb>
-   Our PITLossWrapper explained <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb>
-   Processing large wav files <http://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb>
+   Getting started with Asteroid <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/00_AsteroidGettingStarted.ipynb>
+   Introduction and Overview <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb>
+   Understanding the Filterbank API <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/02_Filterbank.ipynb>
+   Our PITLossWrapper explained <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb>
+   Processing large wav files <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb>
    Community: Numpy vs. Asteroid STFT <https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j>
 
 .. toctree::
