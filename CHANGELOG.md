@@ -5,6 +5,70 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 
+## [0.4.0] - 2020-11-30
+
+### Breaking
+[src] BC-breaking: Load models without sample_rate (#285)
+[src] Remove deprecated losses (#343)
+[src] Remove deprecated blocks (#344)
+[src] BaseEncoderMaskerDecoder: remove old hooks (#309)
+
+### Added
+[src&tests] Add sample_rate property (float) in `BaseModel`.  (#274)
+[src] Add sample_rate argument to all supported models. (#284)
+[src&tests] Automatic resampling in separate + CLI. (#283)
+[src & tests] :tada: TorchScript support :tada: (#237)
+[src & tests] Add Hungarian matcher to solve LSA in PITLossWrapper (#243)
+[src&tests] Add jitable_shape and use it in EncMaskDec forward (#288)
+[src&tests] Add shape checks to SDR and MSE losses (#299)
+[docs] Add loss plot in the FAQ (#314)
+[src] New asteroid.show_available_models (#313)
+[egs] DAMP-VSEP vocal separation using ConvTasNet (#298)
+[docs] DAMP-VSEP in the docs ! (#317)
+[src&test] Add Sinkhorn PIT loss (#302)
+[src] Add MixITWrapper loss (#320)
+[egs] Add MixIT example recipe (#328)
+[src] New Filterbank's hooks + add MelGram_FB (#334)
+[src] New phase features and transforms (#333)
+[src] Better names in asteroid.filterbanks.transforms (#342)
+[src] Add asteroid-versions script to print installed versions (#349)
+[install] Add conda environment.yml (#354)
+[src] Add ebased_vad and deltas (#355)
+
+### Changed
+[src&tests] Make `get_metrics` robust against metrics failures (#275)
+[egs] Don't override print() with pprint (#281)
+[src] Refactor BaseEncoderMaskerDecoder.forward (#307)
+[src&tests] Refactor DeMask for consistency (#304)
+[docs] Replace GettingStarted notebook (#319)
+[src] BaseModel takes sample_rate argument (#336)
+[src&egs] Transition to asteroid_filterbanks (#346)
+[src] Rename _separate to forward_wav (#337)
+[docs] Build docs with 3.8
+[docs] Links to GitHub code from the docs :tada: (#363)
+[CI&hub] TorchHub integration tests (#362)
+
+### Fixed
+[egs] Fix #277 DNS Challenge baseline's run.sh
+[docs] Fix Reference and Example blocks in docs (#297)
+[src] Fix #300: skip connection on good device (#301)
+[src] DCUNet: Replace old hooks by new ones (#308)
+[src] Fix schedulers serialization  (#326)
+[src] Improve Filterbank.forward error message (#327)
+[egs] Fix: replace DPRNNTasNet with DPTNet (#331)
+[src&jit] Fix DCCRN and DCUNet-Large (#276)
+[CI] Catch warnings we expect (#351)
+[src] Fix #279 OLA support for separate() and asteroid-infer (#305)
+[docs] Docs fixes and improvements (#340)
+[docs] Fix CLI output in docs (#357)
+[src&tests] Fix complex and add tests (#358)
+[docs] Fix docstrings (#365)
+[src] Fix #360 Correct DCCRN RNN (#364)
+
+
+## [0.3.5] - 2020-11-10
+Limit pytorch-lightning version to under 1.x for version 0.3.4 to keep working.
+
 ## [0.3.4] - 2020-10-07
 #### Added
 [hub] Add tmirzaev's model in the string-retrievable ones.
