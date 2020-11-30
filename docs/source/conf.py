@@ -277,7 +277,7 @@ todo_include_todos = True
 # sphinx-apidoc for me, since it's easy to forget to regen API docs
 # and commit them to my repo after making changes to my code.
 
-PACKAGES = []
+PACKAGES = ["asteroid"]
 
 
 def run_apidoc(_):
