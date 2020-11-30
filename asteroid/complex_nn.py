@@ -186,14 +186,12 @@ class ComplexSingleRNN(nn.Module):
         }
         first_rnn = ComplexMultiplicationWrapper(SingleRNN, input_size=input_size, **kwargs)
         self.rnns = torch.nn.ModuleList([first_rnn])
-        self.rnns.append(
-            *[
+        for _ in range(n_layers - 1):
+            self.rnns.append(
                 ComplexMultiplicationWrapper(
                     SingleRNN, input_size=first_rnn.re_module.output_size, **kwargs
                 )
-                for _ in range(n_layers - 1)
-            ]
-        )
+            )
 
     @property
     def output_size(self):
