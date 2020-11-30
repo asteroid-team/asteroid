@@ -117,7 +117,6 @@ class TDConvNet(nn.Module):
         conv_kernel_size=3,
         norm_type="gLN",
         mask_act="relu",
-        kernel_size=None,
     ):
         super(TDConvNet, self).__init__()
         self.in_chan = in_chan
@@ -129,15 +128,6 @@ class TDConvNet(nn.Module):
         self.bn_chan = bn_chan
         self.hid_chan = hid_chan
         self.skip_chan = skip_chan
-        if kernel_size is not None:
-            # warning
-            warnings.warn(
-                "`kernel_size` argument is deprecated since v0.2.1 "
-                "and will be remove in v0.3.0. Use argument "
-                "`conv_kernel_size` instead",
-                VisibleDeprecationWarning,
-            )
-            conv_kernel_size = kernel_size
         self.conv_kernel_size = conv_kernel_size
         self.norm_type = norm_type
         self.mask_act = mask_act
