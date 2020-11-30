@@ -71,8 +71,8 @@ be to help us see where to improve !
 If you have any question, [open an issue][issue] or [join the slack][slack],
 we'll be happy to help you.
 
-[asteroid]: https://github.com/mpariente/asteroid
-[issue]: https://github.com/mpariente/asteroid/issues/new
+[asteroid]: https://github.com/asteroid-team/asteroid
+[issue]: https://github.com/asteroid-team/asteroid/issues/new
 [slack]: https://join.slack.com/t/asteroid-dev/shared_invite/zt-cn9y85t3-QNHXKD1Et7qoyzu1Ji5bcA
 [pep8]: https://www.python.org/dev/peps/pep-0008/
 [docstrings]: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html

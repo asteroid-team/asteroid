@@ -1,4 +1,4 @@
-The docs built from master can be viewed [here](https://mpariente.github.io/asteroid/).
+The docs built from master can be viewed [here](https://asteroid-team.github.io/asteroid/).
 We need to work on it so, any contribution are welcome.
 Our (future) template can be found
 [here](https://github.com/mpariente/asteroid_sphinx_theme).

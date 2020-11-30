@@ -137,7 +137,7 @@ def linkcode_resolve(domain, info):
     if "asteroid_filterbanks" in filename:
         base_url = "https://github.com/asteroid-team/asteroid-filterbanks/blob/master/%s"
     else:
-        base_url = f"https://github.com/mpariente/asteroid/blob/{tag}/%s"
+        base_url = f"https://github.com/asteroid-team/asteroid/blob/{tag}/%s"
 
     try:
         file, start, end = find_source()
@@ -163,7 +163,7 @@ html_theme_path = [asteroid_sphinx_theme.get_html_theme_path()]
 
 html_theme_options = {
     "pytorch_project": "docs",
-    "canonical_url": "https://github.com/mpariente/asteroid",
+    "canonical_url": "https://github.com/asteroid-team/asteroid",
     "collapse_navigation": False,
     "display_version": True,
     "logo_only": False,
