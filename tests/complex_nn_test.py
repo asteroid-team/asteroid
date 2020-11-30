@@ -104,3 +104,17 @@ def test_bound_complex_mask(bound_type):
 def test_bound_complex_mask_raises():
     with pytest.raises(ValueError):
         cnn.bound_complex_mask(torch.randn(4, 2, 257, dtype=torch.complex64), bound_type="foo")
+
+
+@pytest.mark.parametrize("n_layers", [1, 2, 3])
+def test_complexsinglernn(n_layers):
+    crnn = cnn.ComplexSingleRNN("RNN", 10, 10, n_layers=n_layers, dropout=0, bidirectional=False)
+    inp = torch.randn(1, 5, 10, dtype=torch.complex64)
+    out = crnn(inp)
+    for layer in crnn.rnns:
+        rere = layer.re_module(inp.real)
+        imim = layer.im_module(inp.imag)
+        reim = layer.re_module(inp.imag)
+        imre = layer.im_module(inp.real)
+        inp = cnn.torch_complex_from_reim(rere - imim, reim + imre)
+    assert_allclose(out, inp)

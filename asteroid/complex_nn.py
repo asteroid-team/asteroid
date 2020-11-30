@@ -142,6 +142,63 @@ class ComplexMultiplicationWrapper(nn.Module):
         )
 
 
+class ComplexSingleRNN(nn.Module):
+    """Module for a complex RNN block.
+
+    This is similar to :cls:`asteroid.masknn.recurrent.SingleRNN` but uses complex
+    multiplication as described in [1]. Arguments are identical to those of `SingleRNN`,
+    except for `dropout`, which is not yet supported.
+
+    Args:
+        rnn_type (str): Select from ``'RNN'``, ``'LSTM'``, ``'GRU'``. Can
+            also be passed in lowercase letters.
+        input_size (int): Dimension of the input feature. The input should have
+            shape [batch, seq_len, input_size].
+        hidden_size (int): Dimension of the hidden state.
+        n_layers (int, optional): Number of layers used in RNN. Default is 1.
+        bidirectional (bool, optional): Whether the RNN layers are
+            bidirectional. Default is ``False``.
+        dropout: Not yet supported.
+
+    References
+        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        Yanxin Hu et al. https://arxiv.org/abs/2008.00264
+    """
+
+    def __init__(
+        self, rnn_type, input_size, hidden_size, n_layers=1, dropout=0, bidirectional=False
+    ):
+        assert not (dropout and n_layers > 1), "Dropout is not yet supported for complex RNN"
+        super().__init__()
+        from .masknn.recurrent import SingleRNN  # Avoid circual import
+
+        kwargs = {
+            "rnn_type": rnn_type,
+            "hidden_size": hidden_size,
+            "n_layers": 1,
+            "dropout": 0,
+            "bidirectional": bidirectional,
+        }
+        first_rnn = ComplexMultiplicationWrapper(SingleRNN, input_size=input_size, **kwargs)
+        self.rnns = torch.nn.ModuleList([first_rnn])
+        for _ in range(n_layers - 1):
+            self.rnns.append(
+                ComplexMultiplicationWrapper(
+                    SingleRNN, input_size=first_rnn.re_module.output_size, **kwargs
+                )
+            )
+
+    @property
+    def output_size(self):
+        return self.rnns[-1].re_module.output_size
+
+    def forward(self, x: ComplexTensor) -> ComplexTensor:
+        """Input shape [batch, seq, feats]"""
+        for rnn in self.rnns:
+            x = rnn(x)
+        return x
+
+
 ComplexConv2d = functools.partial(ComplexMultiplicationWrapper, nn.Conv2d)
 ComplexConvTranspose2d = functools.partial(ComplexMultiplicationWrapper, nn.ConvTranspose2d)
 

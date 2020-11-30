@@ -522,11 +522,11 @@ class DCCRMaskNetRNN(nn.Module):
     ):
         super().__init__()
 
-        self.rnn = complex_nn.ComplexMultiplicationWrapper(
-            SingleRNN, rnn_type, in_size, hid_size, n_layers=n_layers, **rnn_kwargs
+        self.rnn = complex_nn.ComplexSingleRNN(
+            rnn_type, in_size, hid_size, n_layers=n_layers, **rnn_kwargs
         )
         self.linear = complex_nn.ComplexMultiplicationWrapper(
-            nn.Linear, self.rnn.re_module.output_size, in_size
+            nn.Linear, self.rnn.output_size, in_size
         )
         self.norm = norms.get_complex(norm_type)
 
