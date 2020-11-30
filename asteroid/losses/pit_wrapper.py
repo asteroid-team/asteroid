@@ -176,9 +176,11 @@ class PITLossWrapper(nn.Module):
                 loss function.
 
         Returns:
-            torch.Tensor: The loss corresponding to the best permutation of size $(batch,)$.
+            - :class:`torch.Tensor`:
+                The loss corresponding to the best permutation of size $(batch,)$.
 
-            torch.Tensor: The indices of the best permutations.
+            - :class:`torch.Tensor`:
+                The indices of the best permutations.
         """
         n_src = targets.shape[1]
         perms = torch.tensor(list(permutations(range(n_src))), dtype=torch.long)
@@ -209,10 +211,11 @@ class PITLossWrapper(nn.Module):
                 permutation reduce function.
 
         Returns:
-            :class:`torch.Tensor`: The loss corresponding to the best
-            permutation of size $(batch,)$.
+            - :class:`torch.Tensor`:
+              The loss corresponding to the best permutation of size $(batch,)$.
 
-            :class:`torch.Tensor`: The indices of the best permutations.
+            - :class:`torch.Tensor`:
+              The indices of the best permutations.
         """
         n_src = pair_wise_losses.shape[-1]
         if perm_reduce is not None or n_src <= 3:
@@ -255,10 +258,11 @@ class PITLossWrapper(nn.Module):
                 permutation reduce function.
 
         Returns:
-            :class:`torch.Tensor`: The loss corresponding to the best
-            permutation of size $(batch,)$.
+            - :class:`torch.Tensor`:
+              The loss corresponding to the best permutation of size $(batch,)$.
 
-            :class:`torch.Tensor`: The indices of the best permutations.
+            - :class:`torch.Tensor`:
+              The indices of the best permutations.
 
         MIT Copyright (c) 2018 Kaituo XU.
         See `Original code
@@ -296,10 +300,11 @@ class PITLossWrapper(nn.Module):
         Find the best permutation given the pair-wise losses, using the Hungarian algorithm.
 
         Returns:
-            :class:`torch.Tensor`: The loss corresponding to the best
-            permutation of size (batch,).
+            - :class:`torch.Tensor`:
+              The loss corresponding to the best permutation of size (batch,).
 
-            :class:`torch.Tensor`: The indices of the best permutations.
+            - :class:`torch.Tensor`:
+              The indices of the best permutations.
         """
         # After transposition, dim 1 corresp. to sources and dim 2 to estimates
         pwl = pair_wise_losses.transpose(-1, -2)
