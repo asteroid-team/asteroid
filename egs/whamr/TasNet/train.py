@@ -102,7 +102,7 @@ def main(conf):
         default_root_dir=exp_dir,
         gpus=gpus,
         distributed_backend="dp",
-        train_percent_check=1.0,  # Useful for fast experiment
+        limit_train_batches=1.0,  # Useful for fast experiment
         gradient_clip_val=5.0,
     )
     trainer.fit(system)
