@@ -18,6 +18,6 @@ help:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-clean :$
+clean :
 	rm -rf $(BUILDDIR)/*
 	rm -rf $(SOURCEDIR)/apidoc/*

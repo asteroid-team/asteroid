@@ -277,7 +277,7 @@ todo_include_todos = True
 # sphinx-apidoc for me, since it's easy to forget to regen API docs
 # and commit them to my repo after making changes to my code.
 
-PACKAGES = ["asteroid"]
+PACKAGES = []
 
 
 def run_apidoc(_):
@@ -383,7 +383,7 @@ autodoc_mock_imports = MOCK_REQUIRE_PACKAGES + MOCK_MANUAL_PACKAGES
 
 # Autodoc config
 autodoc_inherit_docstring = False
-autodoc_default_flags = ["members", "show-inheritance"]
+autodoc_default_options = ["members", "show-inheritance"]
 # Order functions by appearance in source (default 'alphabetical')
 autodoc_member_order = "bysource"
 # autodoc_member_order = "groupwise"
