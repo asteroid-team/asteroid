@@ -14,7 +14,7 @@ PLEASE_PUBLISH = (
 HREF = '<a href="{}">{}</a>'
 CC_SA = "Attribution-ShareAlike 3.0 Unported"
 CC_SA_LINK = "https://creativecommons.org/licenses/by-sa/3.0/"
-ASTEROID_REF = HREF.format("https://github.com/mpariente/asteroid", "Asteroid")
+ASTEROID_REF = HREF.format("https://github.com/asteroid-team/asteroid", "Asteroid")
 
 
 def save_publishable(publish_dir, model_dict, metrics=None, train_conf=None, recipe=None):

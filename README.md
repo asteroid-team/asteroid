@@ -11,7 +11,7 @@
 [![Latest Docs Status](https://github.com/asteroid-team/asteroid/workflows/Latest%20docs/badge.svg)](https://asteroid-team.github.io/asteroid/)
 
 
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/mpariente/asteroid/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/asteroid-team/asteroid/pulls)
 [![Python Versions](https://img.shields.io/pypi/pyversions/asteroid.svg)](https://pypi.org/project/asteroid/)
 [![PyPI Status](https://pepy.tech/badge/asteroid)](https://pepy.tech/project/asteroid)
 [![Slack][slack-badge]][slack-invite]
@@ -200,7 +200,6 @@ If you loved using Asteroid and you want to cite us, use this :
 
 [comment]: <> (Badge)
 [miniconda]: https://conda.io/miniconda.html
-[travis-badge]: https://travis-ci.com/mpariente/asteroid.svg?branch=master
 [codecov-badge]: https://codecov.io/gh/asteroid-team/asteroid/branch/master/graph/badge.svg
 [codecov]: https://codecov.io/gh/asteroid-team/asteroid
 [slack-badge]: https://img.shields.io/badge/slack-chat-green.svg?logo=slack

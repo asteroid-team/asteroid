@@ -2,7 +2,7 @@
 ## Running the tests locally
 
 ```bash
-git clone https://github.com/mpariente/asteroid
+git clone https://github.com/asteroid-team/asteroid
 cd asteroid
 
 # install module locally

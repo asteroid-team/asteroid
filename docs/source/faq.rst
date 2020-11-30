@@ -8,10 +8,10 @@ There are few possibilities here:
 
 1. Your data is wrong. We had this examples with wsj0-mix, WHAM etc..
 where wv2 was used instead of wv1 to generate the data. This was fixed in
-`#166 <https://github.com/mpariente/asteroid/pull/166>`_. Chances are there is a pretrained model available for the given dataset,
+`#166 <https://github.com/asteroid-team/asteroid/pull/166>`_. Chances are there is a pretrained model available for the given dataset,
 run the evaluation with it. If your results are different, it's a data problem.
-Refs: `#164 <https://github.com/mpariente/asteroid/issues/164>`_,
-`#165 <https://github.com/mpariente/asteroid/issues/165>`_ and `#188 <https://github.com/mpariente/asteroid/issues/188>`_.
+Refs: `#164 <https://github.com/asteroid-team/asteroid/issues/164>`_,
+`#165 <https://github.com/asteroid-team/asteroid/issues/165>`_ and `#188 <https://github.com/asteroid-team/asteroid/issues/188>`_.
 
 2. You stopped training too early. We've seen this happen, specially with DPRNN.
 Be sure that your training/validation losses are completely flat at the end of training.
@@ -41,7 +41,7 @@ There are several possible cause to this, a common one is clipping.
 unbounded. However, waveform values should be normalized to [-1, 1] range before saving,
 otherwise they will be clipped.
 See `Clipping on Wikipedia <https://en.wikipedia.org/wiki/Clipping_(audio)>`_ and
-`issue #250 <https://github.com/mpariente/asteroid/issues/250>`_
+`issue #250 <https://github.com/asteroid-team/asteroid/issues/250>`_
 
 2. As all supervised learning approaches, source separation can suffer from
 generalization error when evaluated on unseen data. If your model works well

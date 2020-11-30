@@ -25,7 +25,7 @@ Development installation
 
 For development installation, you can fork/clone the GitHub repo and locally install it with pip::
 
-    git clone https://github.com/mpariente/asteroid
+    git clone https://github.com/asteroid-team/asteroid
     cd asteroid
     pip install -e .
 
