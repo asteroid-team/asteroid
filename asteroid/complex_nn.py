@@ -166,7 +166,7 @@ class ComplexSingleRNN(nn.Module):
         dropout: Not yet supported.
 
     References
-        - [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
         Yanxin Hu et al. https://arxiv.org/abs/2008.00264
     """
 
@@ -185,13 +185,15 @@ class ComplexSingleRNN(nn.Module):
             "bidirectional": bidirectional,
         }
         first_rnn = ComplexMultiplicationWrapper(SingleRNN, input_size=input_size, **kwargs)
-        more_rnns = [
-            ComplexMultiplicationWrapper(
-                SingleRNN, input_size=first_rnn.re_module.output_size, **kwargs
-            )
-            for idx in range(n_layers - 1)
-        ]
-        self.rnns = torch.nn.Sequential(first_rnn, *more_rnns)
+        self.rnns = torch.nn.ModuleList([first_rnn])
+        self.rnns.append(
+            *[
+                ComplexMultiplicationWrapper(
+                    SingleRNN, input_size=first_rnn.re_module.output_size, **kwargs
+                )
+                for _ in range(n_layers - 1)
+            ]
+        )
 
     @property
     def output_size(self):
@@ -199,7 +201,9 @@ class ComplexSingleRNN(nn.Module):
 
     def forward(self, x: ComplexTensor) -> ComplexTensor:
         """Input shape [batch, seq, feats]"""
-        return self.rnns(x)
+        for rnn in self.rnns:
+            x = rnn(x)
+        return x
 
 
 ComplexConv2d = functools.partial(ComplexMultiplicationWrapper, nn.Conv2d)
