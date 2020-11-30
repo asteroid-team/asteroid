@@ -4,7 +4,7 @@ from .models import ConvTasNet, DCCRNet, DCUNet, DPRNNTasNet, DPTNet, LSTMTasNet
 from .utils import deprecation_utils, torch_utils  # noqa
 
 project_root = str(pathlib.Path(__file__).expanduser().absolute().parent.parent)
-__version__ = "0.4.0rc2"
+__version__ = "0.4.0rc3"
 
 
 def show_available_models():
