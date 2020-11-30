@@ -18,8 +18,10 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
     Args:
         root_path (str): Root path to DAMP-VSEP dataset.
         task (str): one of ``'enh_vocal'``,``'separation'``.
+
             * ``'enh_vocal'`` for vocal enhanced.
             * ``'separation'`` for vocal and background separation.
+
         split (str):  one of ``'train_english'``, ``'train_singles'``,
             ``'valid'`` and ``'test'``.
             Default to ``'train_singles'``.
@@ -32,21 +34,25 @@ class DAMPVSEPSinglesDataset(torch.utils.data.Dataset):
         segment (float, optional): Duration of segments in seconds,
             Defaults to ``None`` which loads the full-length audio tracks.
         norm (Str, optional): Type of normalisation to use. Default to ``None``
+
             * ``'song_level'`` use mixture mean and std.
             * ```None``` no normalisation
+
         source_augmentations (Callable, optional): Augmentations applied to the sources (only).
             Default to ``None``.
         mixture (str, optional): Whether to use the original mixture with non-linear effects
             or remix sources. Default to original.
+
             * ``'remix'`` for use addition to remix the sources.
             * ``'original'`` for use the original mixture.
 
     .. note:: There are 2 train set available:
-        1- train_english: Uses all English spoken song.
-            Duets are converted into 2 singles.
-            Totalling 9243 performances and 77Hrs.
-        2- train_singles: Uses all singles performances, discarding all duets.
-            Totalling 20660 performances and 149 hrs.
+
+        * train_english: Uses all English spoken song. Duets are converted into 2 singles.
+          Totalling 9243 performances and 77Hrs.
+        * train_singles: Uses all singles performances, discarding all duets.
+          Totalling 20660 performances and 149 hrs.
+
     """
 
     dataset_name = "DAMP-VSEP"

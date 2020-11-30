@@ -5,11 +5,13 @@ import pytorch_lightning as pl
 from ..losses import SinkPITLossWrapper
 
 
-class _BaseScheduler(object):
+class BaseScheduler(object):
     """Base class for the step-wise scheduler logic.
 
     Args:
         optimizer (Optimize): Optimizer instance to apply lr schedule on.
+
+    Subclass this and overwrite ``_get_lr`` to write your own step-wise scheduler.
     """
 
     def __init__(self, optimizer):
@@ -38,14 +40,6 @@ class _BaseScheduler(object):
     def state_dict(self):
         return {key: value for key, value in self.__dict__.items() if key != "optimizer"}
 
-    def plot(self, start=0, stop=100_000):  # noqa
-        """Plot the scheduler values from start to stop."""
-        import matplotlib.pyplot as plt
-
-        all_lr = self.as_tensor(start=start, stop=stop)
-        plt.plot(all_lr.numpy())
-        plt.show()
-
     def as_tensor(self, start=0, stop=100_000):
         """Returns the scheduler values from start to stop."""
         lr_list = []
@@ -55,10 +49,18 @@ class _BaseScheduler(object):
         self.step_num = 0
         return torch.tensor(lr_list)
 
+    def plot(self, start=0, stop=100_000):  # noqa
+        """Plot the scheduler values from start to stop."""
+        import matplotlib.pyplot as plt
 
-class NoamScheduler(_BaseScheduler):
-    """The Noam learning rate scheduler, originally used in conjunction with
-        the Adam optimizer in [1].
+        all_lr = self.as_tensor(start=start, stop=stop)
+        plt.plot(all_lr.numpy())
+        plt.show()
+
+
+class NoamScheduler(BaseScheduler):
+    r"""The Noam learning rate scheduler, originally used in conjunction with
+    the Adam optimizer in [1].
 
     Args:
         optimizer (Optimizer): Optimizer instance to apply lr schedule on.
@@ -66,16 +68,16 @@ class NoamScheduler(_BaseScheduler):
         warmup_steps (int): The number of steps in the warmup stage of training.
         scale (float): A fixed coefficient for rescaling the final learning rate.
 
-    .. note::
+    Schedule:
         The Noam scheduler increases the learning rate linearly for the first
-        `warmup_steps` steps, and decreases it thereafter proportionally to the
-        inverse square root of the step number::
-            lr = scale_factor * ( (model_dim ** (-0.5)) * adj_step )
-            adj_step = min(step_num ** (-0.5), step_num * warmup_steps ** (-1.5))
+        ``warmup_steps`` steps, and decreases it thereafter proportionally to the
+        inverse square root of the step number:
+            :math:`lr = scale\_factor * ( model\_dim^{-0.5} * adj\_step )`
+            :math:`adj\_step = min(step\_num^{0.5}, step\_num * warmup\_steps^{-1.5})`
 
     References
-        - [1] Vaswani et al. (2017) "Attention is all you need". *31st
-           Conference on Neural Information Processing Systems*,
+        [1] Vaswani et al. (2017) "Attention is all you need". 31st
+        Conference on Neural Information Processing Systems
     """
 
     def __init__(self, optimizer, d_model, warmup_steps, scale=1.0):
@@ -93,7 +95,7 @@ class NoamScheduler(_BaseScheduler):
         return lr
 
 
-class DPTNetScheduler(_BaseScheduler):
+class DPTNetScheduler(BaseScheduler):
     """Dual Path Transformer Scheduler used in [1]
 
     Args:
@@ -105,13 +107,13 @@ class DPTNetScheduler(_BaseScheduler):
         exp_max (float): Max learning rate in second phase.
         exp_base (float): Exp learning rate base in second phase.
 
-    References
-        - [1]: Jingjing Chen et al. "Dual-Path Transformer Network: Direct Context-
-        Aware Modeling for End-to-End Monaural Speech Separation" Interspeech 2020.
-
-    .. note::
+    Schedule:
         This scheduler increases the learning rate linearly for the first
-        `warmup_steps`, and then decay it by 0.98 for every two epochs
+        ``warmup_steps``, and then decay it by 0.98 for every two epochs.
+
+    References
+        [1]: Jingjing Chen et al. "Dual-Path Transformer Network: Direct Context-
+        Aware Modeling for End-to-End Monaural Speech Separation" Interspeech 2020.
     """
 
     def __init__(
@@ -159,18 +161,16 @@ class SinkPITBetaScheduler(pl.callbacks.Callback):
     This module is used as a Callback function of `pytorch_lightning.Trainer`.
 
     Args:
-        cooling_schedule (callable) : A callable
-            that takes a parameter `epoch` (int)
+        cooling_schedule (callable) : A callable that takes a parameter `epoch` (int)
             and returns the value of `beta` (float).
 
-            The default function is `sinkpit_default_beta_schedule`.
-            :math: \beta = min(1.02^{epoch}, 10)
+    The default function is ``sinkpit_default_beta_schedule``: :math:`\beta = min(1.02^{epoch}, 10)`
 
     Example
         >>> from pytorch_lightning import Trainer
-        >>> from asteroid.engine.schedulers import SinkPITBetaScheduler
+        >>> from asteroid.losses import SinkPITBetaScheduler
         >>> # Default scheduling function
-        >>> sinkpit_beta_schedule = SinkPITBetaScheduler()
+        >>> sinkpit_beta_schedule = SinkPITBetaSchedule()
         >>> trainer = Trainer(callbacks=[sinkpit_beta_schedule])
         >>> # User-defined schedule
         >>> sinkpit_beta_schedule = SinkPITBetaScheduler(lambda ep: 1. if ep < 10 else 100.)
@@ -187,3 +187,7 @@ class SinkPITBetaScheduler(pl.callbacks.Callback):
         # step = pl_module.global_step
         beta = self.cooling_schedule(epoch)
         pl_module.loss_func.beta = beta
+
+
+# Backward compat
+_BaseScheduler = BaseScheduler

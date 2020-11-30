@@ -176,9 +176,6 @@ def _reorder_sources(
                                     both current and previous.
         hop_size (:class:`int`): hop_size between current and previous tensors.
 
-    Returns:
-        current:
-
     """
     batch, frames = current.size()
     current = current.reshape(-1, n_src, frames)
@@ -202,15 +199,16 @@ def _reorder_sources(
 
 
 class DualPathProcessing(nn.Module):
-    """Perform Dual-Path processing via overlap-add as in DPRNN [1].
+    """
+    Perform Dual-Path processing via overlap-add as in DPRNN [1].
 
-     Args:
+    Args:
         chunk_size (int): Size of segmenting window.
         hop_size (int): segmentation hop size.
 
     References
-        - [1] "Dual-path RNN: efficient long sequence modeling for time-domain
-        single-channel speech separation", Yi Luo, Zhuo Chen and Takuya Yoshioka.
+        [1] Yi Luo, Zhuo Chen and Takuya Yoshioka. "Dual-path RNN: efficient
+        long sequence modeling for time-domain single-channel speech separation"
         https://arxiv.org/abs/1910.06379
     """
 
@@ -221,16 +219,16 @@ class DualPathProcessing(nn.Module):
         self.n_orig_frames = None
 
     def unfold(self, x):
-        """Unfold the feature tensor from
-
-        (batch, channels, time) to (batch, channels, chunk_size, n_chunks).
+        r"""
+        Unfold the feature tensor from $(batch, channels, time)$ to
+        $(batch, channels, chunksize, nchunks)$.
 
         Args:
-            x: (:class:`torch.Tensor`): feature tensor of shape (batch, channels, time).
+            x (:class:`torch.Tensor`): feature tensor of shape $(batch, channels, time)$.
 
         Returns:
-            x: (:class:`torch.Tensor`): spliced feature tensor of shape
-                (batch, channels, chunk_size, n_chunks).
+            :class:`torch.Tensor`: spliced feature tensor of shape
+            $(batch, channels, chunksize, nchunks)$.
 
         """
         # x is (batch, chan, frames)
@@ -249,22 +247,22 @@ class DualPathProcessing(nn.Module):
         )  # (batch, chan, chunk_size, n_chunks)
 
     def fold(self, x, output_size=None):
-        """Folds back the spliced feature tensor.
-
-        Input shape (batch, channels, chunk_size, n_chunks) to original shape
-        (batch, channels, time) using overlap-add.
+        r"""
+        Folds back the spliced feature tensor.
+        Input shape $(batch, channels, chunksize, nchunks)$ to original shape
+        $(batch, channels, time)$ using overlap-add.
 
         Args:
-            x: (:class:`torch.Tensor`): spliced feature tensor of shape
-                (batch, channels, chunk_size, n_chunks).
-            output_size: (int, optional): sequence length of original feature tensor.
-                If None, the original length cached by the previous call of `unfold`
-                will be used.
+            x (:class:`torch.Tensor`): spliced feature tensor of shape
+                $(batch, channels, chunksize, nchunks)$.
+            output_size (int, optional): sequence length of original feature tensor.
+                If None, the original length cached by the previous call of
+                :meth:`unfold` will be used.
 
         Returns:
-            x: (:class:`torch.Tensor`):  feature tensor of shape (batch, channels, time).
+            :class:`torch.Tensor`:  feature tensor of shape $(batch, channels, time)$.
 
-        .. note:: `fold` caches the original length of the pr
+        .. note:: `fold` caches the original length of the input.
 
         """
         output_size = output_size if output_size is not None else self.n_orig_frames
@@ -286,7 +284,7 @@ class DualPathProcessing(nn.Module):
 
     @staticmethod
     def intra_process(x, module):
-        """Performs intra-chunk processing.
+        r"""Performs intra-chunk processing.
 
         Args:
             x (:class:`torch.Tensor`): spliced feature tensor of shape
@@ -294,13 +292,12 @@ class DualPathProcessing(nn.Module):
             module (:class:`torch.nn.Module`): module one wish to apply to each chunk
                 of the spliced feature tensor.
 
-
         Returns:
-            x (:class:`torch.Tensor`): processed spliced feature tensor of shape
-                (batch, channels, chunk_size, n_chunks).
+            :class:`torch.Tensor`: processed spliced feature tensor of shape
+            $(batch, channels, chunksize, nchunks)$.
 
         .. note:: the module should have the channel first convention and accept
-            a 3D tensor of shape (batch, channels, time).
+            a 3D tensor of shape $(batch, channels, time)$.
         """
 
         # x is (batch, channels, chunk_size, n_chunks)
@@ -313,21 +310,21 @@ class DualPathProcessing(nn.Module):
 
     @staticmethod
     def inter_process(x, module):
-        """Performs inter-chunk processing.
+        r"""Performs inter-chunk processing.
 
         Args:
             x (:class:`torch.Tensor`): spliced feature tensor of shape
-                (batch, channels, chunk_size, n_chunks).
+                $(batch, channels, chunksize, nchunks)$.
             module (:class:`torch.nn.Module`): module one wish to apply between
                 each chunk of the spliced feature tensor.
 
 
         Returns:
             x (:class:`torch.Tensor`): processed spliced feature tensor of shape
-                (batch, channels, chunk_size, n_chunks).
+            $(batch, channels, chunksize, nchunks)$.
 
         .. note:: the module should have the channel first convention and accept
-            a 3D tensor of shape (batch, channels, time).
+            a 3D tensor of shape $(batch, channels, time)$.
         """
 
         batch, channels, chunk_size, n_chunks = x.size()

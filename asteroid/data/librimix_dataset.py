@@ -15,24 +15,24 @@ MINI_URL = "https://zenodo.org/record/3871592/files/MiniLibriMix.zip?download=1"
 
 
 class LibriMix(Dataset):
-    """Dataset class for Librimix source separation tasks.
+    """Dataset class for LibriMix source separation tasks.
 
     Args:
-        csv_dir (str): The path to the metatdata file
+        csv_dir (str): The path to the metadata file.
         task (str): One of ``'enh_single'``, ``'enh_both'``, ``'sep_clean'`` or
-            ``'sep_noisy'``.
+            ``'sep_noisy'`` :
 
             * ``'enh_single'`` for single speaker speech enhancement.
             * ``'enh_both'`` for multi speaker speech enhancement.
             * ``'sep_clean'`` for two-speaker clean source separation.
             * ``'sep_noisy'`` for two-speaker noisy source separation.
 
-        sample_rate (int) : The sample rate of the sources and mixtures
-        n_src (int) : The number of sources in the mixture
-        segment (int) : The desired sources and mixtures length in s
+        sample_rate (int) : The sample rate of the sources and mixtures.
+        n_src (int) : The number of sources in the mixture.
+        segment (int) : The desired sources and mixtures length in s.
 
     References
-        - [1] "LibriMix: An Open-Source Dataset for Generalizable Speech Separation",
+        [1] "LibriMix: An Open-Source Dataset for Generalizable Speech Separation",
         Cosentino et al. 2020.
     """
 
@@ -122,11 +122,11 @@ class LibriMix(Dataset):
                 instantiate the DatalLoader.
             **kwargs: keyword arguments to pass the `LibriMix`, see `__init__`.
                 The kwargs will be fed to both the training set and validation
-                set
+                set.
 
         Returns:
             train_loader, val_loader: training and validation DataLoader out of
-                `LibriMix` Dataset.
+            `LibriMix` Dataset.
 
         Examples
             >>> from asteroid.data import LibriMix
@@ -152,7 +152,7 @@ class LibriMix(Dataset):
 
         Returns:
             train_set, val_set: training and validation instances of
-                `LibriMix` (data.Dataset).
+            `LibriMix` (data.Dataset).
 
         Examples
             >>> from asteroid.data import LibriMix

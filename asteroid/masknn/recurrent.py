@@ -184,7 +184,7 @@ class DPRNNBlock(nn.Module):
         dropout (float, optional): Dropout ratio. Must be in [0, 1].
 
     References
-        - [1] "Dual-path RNN: efficient long sequence modeling for
+        [1] "Dual-path RNN: efficient long sequence modeling for
         time-domain single-channel speech separation", Yi Luo, Zhuo Chen
         and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
@@ -265,7 +265,7 @@ class DPRNN(nn.Module):
         dropout (float, optional): Dropout ratio, must be in [0,1].
 
     References
-        - [1] "Dual-path RNN: efficient long sequence modeling for
+        [1] "Dual-path RNN: efficient long sequence modeling for
         time-domain single-channel speech separation", Yi Luo, Zhuo Chen
         and Takuya Yoshioka. https://arxiv.org/abs/1910.06379
     """
@@ -341,13 +341,13 @@ class DPRNN(nn.Module):
             self.output_act = mask_nl_class()
 
     def forward(self, mixture_w):
-        """
+        r"""Forward.
+
         Args:
-            mixture_w (:class:`torch.Tensor`): Tensor of shape
-                [batch, n_filters, n_frames]
+            mixture_w (:class:`torch.Tensor`): Tensor of shape $(batch, nfilters, nframes)$
+
         Returns:
-            :class:`torch.Tensor`
-                estimated mask of shape [batch, n_src, n_filters, n_frames]
+            :class:`torch.Tensor`: estimated mask of shape $(batch, nsrc, nfilters, nframes)$
         """
         batch, n_filters, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)  # [batch, bn_chan, n_frames]
@@ -420,7 +420,7 @@ class LSTMMasker(nn.Module):
         dropout (float, optional): Dropout ratio, must be in [0,1].
 
     References
-        - [1]: Yi Luo et al. "Real-time Single-channel Dereverberation and Separation
+        [1]: Yi Luo et al. "Real-time Single-channel Dereverberation and Separation
         with Time-domain Audio Separation Network", Interspeech 2018
     """
 
@@ -498,22 +498,22 @@ class LSTMMasker(nn.Module):
 
 
 class DCCRMaskNetRNN(nn.Module):
-    """RNN (LSTM) layer between encoders and decoders introduced in [1].
+    r"""RNN (LSTM) layer between encoders and decoders introduced in [1].
 
     Args:
         in_size (int): Number of inputs to the RNN. Must be the product of non-batch,
             non-time dimensions of output shape of last encoder, i.e. if the last
-            encoder output shape is [batch, n_chans, n_freqs, time], `in_size` must be
-            `n_chans * n_freqs`.
+            encoder output shape is $(batch, nchans, nfreqs, time)$, `in_size` must be
+            $nchans * nfreqs$.
         hid_size (int, optional): Number of units in RNN.
         rnn_type (str, optional): Type of RNN to use. See ``SingleRNN`` for valid values.
         n_layers (int, optional): Number of layers used in RNN.
         norm_type (Optional[str], optional): Norm to use after linear.
             See ``asteroid.masknn.norms`` for valid values. (Not used in [1]).
-        rnn_kwargs (optional): Passed to ``SingleRNN``.
+        rnn_kwargs (optional): Passed to :func:`~.recurrent.SingleRNN`.
 
     References
-        - [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
         Yanxin Hu et al. https://arxiv.org/abs/2008.00264
     """
 
@@ -544,25 +544,25 @@ class DCCRMaskNetRNN(nn.Module):
 
 
 class DCCRMaskNet(BaseDCUMaskNet):
-    """Masking part of DCCRNet, as proposed in [1].
+    r"""Masking part of DCCRNet, as proposed in [1].
 
     Valid `architecture` values for the ``default_architecture`` classmethod are:
-    "DCCRN".
+    "DCCRN" and "mini".
 
     Args:
         encoders (list of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding)):
             Arguments of encoders of the u-net
         decoders (list of length `N` of tuples of (in_chan, out_chan, kernel_size, stride, padding))
             Arguments of decoders of the u-net
-        n_freqs (int): Number of frequencies (dim 1) of input to ``.forward()`.
-            Must be divisible by `f_0 * f_1 * ... * f_N` where `f_k` are the frequency
+        n_freqs (int): Number of frequencies (dim 1) of input to ``.forward()``.
+            Must be divisible by $f_0 * f_1 * ... * f_N$ where $f_k$ are the frequency
             strides of the encoders.
 
-    Input shape is expected to be [batch, n_freqs, time], with `n_freqs` divisible
-    by `f_0 * f_1 * ... * f_N` where `f_k` are the frequency strides of the encoders.
+    Input shape is expected to be $(batch, nfreqs, time)$, with $nfreqs$ divisible
+    by $f_0 * f_1 * ... * f_N$ where $f_k$ are the frequency strides of the encoders.
 
     References
-        -[1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
+        [1] : "DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement",
         Yanxin Hu et al. https://arxiv.org/abs/2008.00264
     """
 

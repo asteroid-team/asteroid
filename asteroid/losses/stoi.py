@@ -6,10 +6,9 @@ with warnings.catch_warnings():
 
 
 class NegSTOILoss(_NegSTOILoss):
-    """Negated Short Term Objective Intelligibility (STOI) metric, to be used
-        as a loss function.
-        Inspired from [1, 2, 3] but not exactly the same : cannot be used as
-        the STOI metric directly (use pystoi instead). See Notes.
+    r"""Negated Short Term Objective Intelligibility (STOI) metric, to be used
+    as a loss function.
+    Inspired from [1, 2, 3] but not the same.
 
     Args:
         sample_rate (int): sample rate of the audio files
@@ -17,9 +16,9 @@ class NegSTOILoss(_NegSTOILoss):
         extended (bool): Whether to compute extended version [3].
 
     Shapes:
-        (time,) --> (1, )
-        (batch, time) --> (batch, )
-        (batch, n_src, time) --> (batch, n_src)
+        - :math:`(time,) -> (1, )`
+        - :math:`(batch, time) -> (batch, )`
+        - :math:`(batch, n\_src, time) -> (batch, n\_src)`
 
     Returns:
         torch.Tensor of shape (batch, *, ), only the time dimension has
@@ -48,15 +47,17 @@ class NegSTOILoss(_NegSTOILoss):
         >>> loss = loss_func(est_targets, targets)
 
     References
-        - [1] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'A Short-Time
-            Objective Intelligibility Measure for Time-Frequency Weighted Noisy
-            Speech', ICASSP 2010, Texas, Dallas.
-        - [2] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'An Algorithm for
-            Intelligibility Prediction of Time-Frequency Weighted Noisy Speech',
-            IEEE Transactions on Audio, Speech, and Language Processing, 2011.
-        - [3] Jesper Jensen and Cees H. Taal, 'An Algorithm for Predicting the
-            Intelligibility of Speech Masked by Modulated Noise Maskers',
-            IEEE Transactions on Audio, Speech and Language Processing, 2016.
+        [1] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'A Short-Time
+        Objective Intelligibility Measure for Time-Frequency Weighted Noisy
+        Speech', ICASSP 2010, Texas, Dallas.
+
+        [2] C.H.Taal, R.C.Hendriks, R.Heusdens, J.Jensen 'An Algorithm for
+        Intelligibility Prediction of Time-Frequency Weighted Noisy Speech',
+        IEEE Transactions on Audio, Speech, and Language Processing, 2011.
+
+        [3] Jesper Jensen and Cees H. Taal, 'An Algorithm for Predicting the
+        Intelligibility of Speech Masked by Modulated Noise Maskers',
+        IEEE Transactions on Audio, Speech and Language Processing, 2016.
     """
 
     def __init__(self, *args, **kwargs):

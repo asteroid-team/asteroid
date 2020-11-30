@@ -54,8 +54,6 @@ extensions = [
     # w argument 'titles_only'
     # We can either use viewcode, which shows source code in the doc page
     "sphinx.ext.linkcode",
-    # Or linkcode to find the corresponding code in github. Start with viewcode
-    # 'sphinx.ext.linkcode',
     # 'recommonmark',
     "sphinxcontrib.programoutput",
     "m2r2",
@@ -387,7 +385,8 @@ autodoc_mock_imports = MOCK_REQUIRE_PACKAGES + MOCK_MANUAL_PACKAGES
 autodoc_inherit_docstring = False
 autodoc_default_flags = ["members", "show-inheritance"]
 # Order functions by appearance in source (default 'alphabetical')
-autodoc_member_order = "groupwise"
+autodoc_member_order = "bysource"
+# autodoc_member_order = "groupwise"
 
 
 # autodoc_member_order = 'groupwise'

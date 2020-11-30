@@ -17,12 +17,12 @@ def get_metrics(
     ignore_metrics_errors=False,
     filename=None,
 ):
-    """Get speech separation/enhancement metrics from mix/clean/estimate.
+    r"""Get speech separation/enhancement metrics from mix/clean/estimate.
 
     Args:
-        mix (np.array): 'Shape(D, N)' or 'Shape(N, )'.
-        clean (np.array): 'Shape(K_source, N)' or 'Shape(N, )'.
-        estimate (np.array): 'Shape(K_target, N)' or 'Shape(N, )'.
+        mix (np.array): mixture array.
+        clean (np.array): reference array.
+        estimate (np.array): estimate array.
         sample_rate (int): sampling rate of the audio clips.
         metrics_list (Union [str, list]): List of metrics to compute.
             Defaults to 'all' (['si_sdr', 'sdr', 'sir', 'sar', 'stoi', 'pesq']).
@@ -34,10 +34,15 @@ def get_metrics(
         filename (str, optional): If computing a metric fails, print this
             filename along with the exception/warning message for debugging purposes.
 
+    Shape:
+        - mix: :math:`(D, N)` or `(N, )`.
+        - clean: :math:`(K\_source, N)` or `(N, )`.
+        - estimate: :math:`(K\_target, N)` or `(N, )`.
+
     Returns:
         dict: Dictionary with all requested metrics, with `'input_'` prefix
-            for metrics at the input (mixture against clean), no prefix at the
-            output (estimate against clean). Output format depends on average.
+        for metrics at the input (mixture against clean), no prefix at the
+        output (estimate against clean). Output format depends on average.
 
     Examples
         >>> import numpy as np
@@ -47,7 +52,7 @@ def get_metrics(
         >>> clean = np.random.randn(2, 16000)
         >>> est = np.random.randn(2, 16000)
         >>> metrics_dict = get_metrics(mix, clean, est, sample_rate=8000,
-        >>>                            metrics_list='all')
+        ...                            metrics_list='all')
         >>> pprint.pprint(metrics_dict)
         {'input_pesq': 1.924380898475647,
          'input_sar': -11.67667585294225,

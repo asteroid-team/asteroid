@@ -16,7 +16,7 @@ def ebased_vad(mag_spec, th_db: int = 40):
             silent.
 
     Returns:
-        torch.BoolTensor, the VAD mask.
+        :class:`torch.BoolTensor`, the VAD mask.
 
 
     Examples

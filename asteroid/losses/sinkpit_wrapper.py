@@ -14,15 +14,11 @@ class SinkPITLossWrapper(nn.Module):
         hungarian_validation (boolean) : Whether to use the Hungarian algorithm
             for the validation. (default = True)
 
-        `loss_func` computes pairwise
-        losses and returns a torch.Tensor of shape
-        :math:`(batch, n\_src, n\_src)`. Each element
-        :math:`[batch, i, j]` corresponds to the loss between
-        :math:`targets[:, i]` and :math:`est\_targets[:, j]`
-        It evaluates an approximate value of the PIT loss
-        using Sinkhorn's iterative algorithm.
-        See :meth:`~PITLossWrapper.best_softperm_sinkhorn`
-        and http://arxiv.org/abs/2010.11871
+    ``loss_func`` computes pairwise losses and returns a torch.Tensor of shape
+    :math:`(batch, n\_src, n\_src)`. Each element :math:`(batch, i, j)` corresponds to
+    the loss between :math:`targets[:, i]` and :math:`est\_targets[:, j]`
+    It evaluates an approximate value of the PIT loss using Sinkhorn's iterative algorithm.
+    See :meth:`~PITLossWrapper.best_softperm_sinkhorn` and http://arxiv.org/abs/2010.11871
 
     Examples
         >>> import torch
@@ -74,10 +70,11 @@ class SinkPITLossWrapper(nn.Module):
 
     def forward(self, est_targets, targets, return_est=False, **kwargs):
         """Evaluate the loss using Sinkhorn's algorithm.
+
         Args:
-            est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
+            est_targets: torch.Tensor. Expected shape :math:`(batch, nsrc, ...)`.
                 The batch of target estimates.
-            targets: torch.Tensor. Expected shape [batch, nsrc, *].
+            targets: torch.Tensor. Expected shape :math:`(batch, nsrc, ...)`.
                 The batch of training targets
             return_est: Boolean. Whether to return the reordered targets
                 estimates (To compute metrics or to save example).
@@ -88,7 +85,7 @@ class SinkPITLossWrapper(nn.Module):
             - Best permutation loss for each batch sample, average over
                 the batch. torch.Tensor(loss_value)
             - The reordered targets estimates if return_est is True.
-                torch.Tensor of shape [batch, nsrc, *].
+                torch.Tensor of shape :math:`(batch, nsrc, ...)`.
         """
         n_src = targets.shape[1]
         assert n_src < 100, f"Expected source axis along dim 1, found {n_src}"
@@ -123,18 +120,21 @@ class SinkPITLossWrapper(nn.Module):
 
     @staticmethod
     def best_softperm_sinkhorn(pair_wise_losses, beta=10, n_iter=200):
-        """Compute an approximate PIT loss using Sinkhorn's algorithm.
+        r"""Compute an approximate PIT loss using Sinkhorn's algorithm.
         See http://arxiv.org/abs/2010.11871
+
         Args:
             pair_wise_losses (:class:`torch.Tensor`):
-                Tensor of shape [batch, n_src, n_src]. Pairwise losses.
+                Tensor of shape :math:`(batch, n_src, n_src)`. Pairwise losses.
             beta (float) : Inverse temperature parameter. (default = 10)
             n_iter (int) : Number of iteration. Even number. (default = 200)
+
         Returns:
-            tuple:
-                :class:`torch.Tensor`: The loss corresponding to the best
-                permutation of size (batch,).
-                :class:`torch.Tensor`: A soft permutation matrix.
+            - :class:`torch.Tensor`:
+              The loss corresponding to the best permutation of size (batch,).
+
+            - :class:`torch.Tensor`:
+              A soft permutation matrix.
         """
         C = pair_wise_losses.transpose(-1, -2)
         n_src = C.shape[-1]

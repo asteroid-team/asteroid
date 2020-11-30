@@ -32,12 +32,13 @@ class Conv1DBlock(nn.Module):
         dilation (int): Dilation of the depth-wise convolution.
         norm_type (str, optional): Type of normalization to use. To choose from
 
-            -  ``'gLN'``: global Layernorm
-            -  ``'cLN'``: channelwise Layernorm
-            -  ``'cgLN'``: cumulative global Layernorm
+            -  ``'gLN'``: global Layernorm.
+            -  ``'cLN'``: channelwise Layernorm.
+            -  ``'cgLN'``: cumulative global Layernorm.
+            -  Any norm supported by :func:`~.norms.get`
 
     References
-        - [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
+        [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
         for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
         https://arxiv.org/abs/1809.07454
     """
@@ -65,7 +66,7 @@ class Conv1DBlock(nn.Module):
             self.skip_conv = nn.Conv1d(hid_chan, skip_out_chan, 1)
 
     def forward(self, x):
-        """ Input shape [batch, feats, seq]"""
+        r"""Input shape $(batch, feats, seq)$."""
         shared_out = self.shared_block(x)
         res_out = self.res_conv(shared_out)
         if not self.skip_out_chan:
@@ -98,7 +99,7 @@ class TDConvNet(nn.Module):
         mask_act (str, optional): Which non-linear function to generate mask.
 
     References
-        - [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
+        [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
         for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
         https://arxiv.org/abs/1809.07454
     """
@@ -172,15 +173,13 @@ class TDConvNet(nn.Module):
             self.output_act = mask_nl_class()
 
     def forward(self, mixture_w):
-        """
+        r"""Forward.
 
         Args:
-            mixture_w (:class:`torch.Tensor`): Tensor of shape
-                [batch, n_filters, n_frames]
+            mixture_w (:class:`torch.Tensor`): Tensor of shape $(batch, nfilters, nframes)$
 
         Returns:
-            :class:`torch.Tensor`:
-                estimated mask of shape [batch, n_src, n_filters, n_frames]
+            :class:`torch.Tensor`: estimated mask of shape $(batch, nsrc, nfilters, nframes)$
         """
         batch, _, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)
@@ -242,18 +241,20 @@ class TDConvNetpp(nn.Module):
         mask_act (str, optional): Which non-linear function to generate mask.
 
     References
-        - [1] : Kavalerov, Ilya et al. “Universal Sound Separation.” in WASPAA 2019
+        [1] : Kavalerov, Ilya et al. “Universal Sound Separation.” in WASPAA 2019
 
-    Notes:
-        The differences wrt to ConvTasnet's TCN are
+    .. note::
+        The differences wrt to ConvTasnet's TCN are:
+
         1. Channel wise layer norm instead of global
         2. Longer-range skip-residual connections from earlier repeat inputs
-            to later repeat inputs after passing them through dense layer.
+           to later repeat inputs after passing them through dense layer.
         3. Learnable scaling parameter after each dense layer. The scaling
-            parameter for the second dense  layer  in  each  convolutional
-            block (which  is  applied  rightbefore the residual connection) is
-            initialized to an exponentially decaying scalar equal to 0.9**L,
-            where L is the layer or block index.
+           parameter for the second dense  layer  in  each  convolutional
+           block (which  is  applied  rightbefore the residual connection) is
+           initialized to an exponentially decaying scalar equal to 0.9**L,
+           where L is the layer or block index.
+
     """
 
     def __init__(
@@ -327,15 +328,13 @@ class TDConvNetpp(nn.Module):
         self.consistency = nn.Linear(out_size, n_src)
 
     def forward(self, mixture_w):
-        """
+        r"""Forward.
 
         Args:
-            mixture_w (:class:`torch.Tensor`): Tensor of shape
-                [batch, n_filters, n_frames]
+            mixture_w (:class:`torch.Tensor`): Tensor of shape $(batch, nfilters, nframes)$
 
         Returns:
-            :class:`torch.Tensor`:
-                estimated mask of shape [batch, n_src, n_filters, n_frames]
+            :class:`torch.Tensor`: estimated mask of shape $(batch, nsrc, nfilters, nframes)$
         """
         batch, n_filters, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)
@@ -400,12 +399,12 @@ class DCUNetComplexEncoderBlock(nn.Module):
         stride (Tuple[int, int]): Convolution stride.
         padding (Tuple[int, int]): Convolution padding.
         norm_type (str, optional): Type of normalization to use.
-            See ``asteroid.masknn.norms`` for valid values.
+            See :mod:`~asteroid.masknn.norms` for valid values.
         activation (str, optional): Type of activation to use.
-            See ``asteroid.masknn.activations`` for valid values.
+            See :mod:`~asteroid.masknn.activations` for valid values.
 
     References
-        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
         Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
@@ -444,12 +443,12 @@ class DCUNetComplexDecoderBlock(nn.Module):
         stride (Tuple[int, int]): Convolution stride.
         padding (Tuple[int, int]): Convolution padding.
         norm_type (str, optional): Type of normalization to use.
-            See ``asteroid.masknn.norms`` for valid values.
+            See :mod:`~asteroid.masknn.norms` for valid values.
         activation (str, optional): Type of activation to use.
-            See ``asteroid.masknn.activations`` for valid values.
+            See :mod:`~asteroid.masknn.activations` for valid values.
 
     References
-        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
         Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
@@ -487,20 +486,20 @@ class DCUNetComplexDecoderBlock(nn.Module):
 
 
 class DCUMaskNet(BaseDCUMaskNet):
-    """Masking part of DCUNet, as proposed in [1].
+    r"""Masking part of DCUNet, as proposed in [1].
 
     Valid `architecture` values for the ``default_architecture`` classmethod are:
     "Large-DCUNet-20", "DCUNet-20", "DCUNet-16", "DCUNet-10" and "mini".
 
     Valid `fix_length_mode` values are [None, "pad", "trim"].
 
-    Input shape is expected to be [batch, n_freqs, time], with `n_freqs - 1` divisible
-    by `f_0 * f_1 * ... * f_N` where `f_k` are the frequency strides of the encoders,
-    and `time - 1` is divisible by `t_0 * t_1 * ... * t_N` where `t_N` are the time
+    Input shape is expected to be $(batch, nfreqs, time)$, with $nfreqs - 1$ divisible
+    by $f_0 * f_1 * ... * f_N$ where $f_k$ are the frequency strides of the encoders,
+    and $time - 1$ is divisible by $t_0 * t_1 * ... * t_N$ where $t_N$ are the time
     strides of the encoders.
 
     References
-        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+        [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
         Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
@@ -578,7 +577,7 @@ class SuDORMRF(nn.Module):
         mask_act (str): Name of output activation.
 
     References
-        - [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
         Tzinis et al. MLSP 2020.
     """
 
@@ -672,7 +671,7 @@ class SuDORMRFImproved(nn.Module):
 
 
     References
-        - [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
+        [1] : "Sudo rm -rf: Efficient Networks for Universal Audio Source Separation",
         Tzinis et al. MLSP 2020.
     """
 
@@ -789,8 +788,7 @@ class _BaseUBlock(nn.Module):
 class UBlock(_BaseUBlock):
     """Upsampling block.
 
-    Based on the following principle:
-        ``REDUCE ---> SPLIT ---> TRANSFORM --> MERGE``
+    Based on the following principle: ``REDUCE ---> SPLIT ---> TRANSFORM --> MERGE``
     """
 
     def __init__(self, out_chan=128, in_chan=512, upsampling_depth=4):

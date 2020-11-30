@@ -8,11 +8,11 @@ def has_arg(fn, name):
 
     Args:
         fn (callable): Callable to inspect.
-        name (str): Check if `fn` can be called with `name` as a keyword
+        name (str): Check if ``fn`` can be called with ``name`` as a keyword
             argument.
 
     Returns:
-        bool: whether `fn` accepts a `name` keyword argument.
+        bool: whether ``fn`` accepts a ``name`` keyword argument.
     """
     signature = inspect.signature(fn)
     parameter = signature.parameters.get(name)
@@ -26,8 +26,8 @@ def has_arg(fn, name):
 
 def flatten_dict(d, parent_key="", sep="_"):
     """Flattens a dictionary into a single-level dictionary while preserving
-    parent keys. Taken from https://stackoverflow.com/questions/6027558/
-    flatten-nested-dictionaries-compressing-keys?answertab=votes#tab-top
+    parent keys. Taken from
+    `SO <https://stackoverflow.com/questions/6027558/flatten-nested-dictionaries-compressing-keys>`_
 
     Args:
         d (MutableMapping): Dictionary to be flattened.

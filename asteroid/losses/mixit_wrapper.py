@@ -9,12 +9,12 @@ class MixITLossWrapper(nn.Module):
 
     Args:
         loss_func: function with signature (est_targets, targets, **kwargs).
-        generalized (bool): Determines how MixIT is applied. If False (default),
+        generalized (bool): Determines how MixIT is applied. If False ,
             apply MixIT for any number of mixtures as soon as they contain
             the same number of sources (:meth:`~MixITLossWrapper.best_part_mixit`.)
-            If True, apply MixIT for two mixtures, but those mixtures do not
+            If True (default), apply MixIT for two mixtures, but those mixtures do not
             necessarly have to contain the same number of sources.
-            See :meth:`~MixITLossWrapper.best_part_mixit_gen`.
+            See :meth:`~MixITLossWrapper.best_part_mixit_generalized`.
 
     For each of these modes, the best partition and reordering will be
     automatically computed.
@@ -30,7 +30,7 @@ class MixITLossWrapper(nn.Module):
 
     References
         [1] Scott Wisdom et al. "Unsupervised sound separation using
-            mixtures of mixtures." arXiv:2006.12701 (2020)
+        mixtures of mixtures." arXiv:2006.12701 (2020)
     """
 
     def __init__(self, loss_func, generalized=True):
@@ -39,12 +39,12 @@ class MixITLossWrapper(nn.Module):
         self.generalized = generalized
 
     def forward(self, est_targets, targets, return_est=False, **kwargs):
-        """Find the best partition and return the loss.
+        r"""Find the best partition and return the loss.
 
         Args:
-            est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
+            est_targets: torch.Tensor. Expected shape :math:`(batch, nsrc, *)`.
                 The batch of target estimates.
-            targets: torch.Tensor. Expected shape [batch, nmix, *].
+            targets: torch.Tensor. Expected shape :math:`(batch, nmix, ...)`.
                 The batch of training targets
             return_est: Boolean. Whether to return the estimated mixtures
                 estimates (To compute metrics or to save example).
@@ -53,10 +53,9 @@ class MixITLossWrapper(nn.Module):
 
         Returns:
             - Best partition loss for each batch sample, average over
-                the batch. torch.Tensor(loss_value)
-            - The estimated mixtures (estimated sources summed according
-                to the partition) if return_est is True.
-                torch.Tensor of shape [batch, nmix, *].
+              the batch. torch.Tensor(loss_value)
+            - The estimated mixtures (estimated sources summed according to the partition)
+              if return_est is True. torch.Tensor of shape :math:`(batch, nmix, ...)`.
         """
         # Check input dimensions
         assert est_targets.shape[0] == targets.shape[0]
@@ -80,28 +79,29 @@ class MixITLossWrapper(nn.Module):
 
     @staticmethod
     def best_part_mixit(loss_func, est_targets, targets, **kwargs):
-        """Find best partition of the estimated sources that gives the minimum
-         loss for the MixIT training paradigm in [1]. Valid for any number of
-         mixtures as soon as they contain the same number of sources.
+        r"""Find best partition of the estimated sources that gives the minimum
+        loss for the MixIT training paradigm in [1]. Valid for any number of
+        mixtures as soon as they contain the same number of sources.
 
         Args:
-            loss_func: function with signature (est_targets, targets, **kwargs)
+            loss_func: function with signature ``(est_targets, targets, **kwargs)``
                 The loss function to get batch losses from.
-            est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
+            est_targets: torch.Tensor. Expected shape :math:`(batch, nsrc, ...)`.
                 The batch of target estimates.
-            targets: torch.Tensor. Expected shape [batch, nmix, *].
+            targets: torch.Tensor. Expected shape :math:`(batch, nmix, ...)`.
                 The batch of training targets (mixtures).
             **kwargs: additional keyword argument that will be passed to the
                 loss function.
 
         Returns:
-            tuple:
-                :class:`torch.Tensor`: The loss corresponding to the best
-                permutation of size (batch,).
+            - :class:`torch.Tensor`:
+              The loss corresponding to the best permutation of size (batch,).
 
-                :class:`torch.LongTensor`: The indices of the best partition.
+            - :class:`torch.LongTensor`:
+              The indices of the best partition.
 
-                :class:`list`: list of the possible partitions of the sources.
+            - :class:`list`:
+              list of the possible partitions of the sources.
 
         """
         nmix = targets.shape[1]
@@ -135,29 +135,30 @@ class MixITLossWrapper(nn.Module):
 
     @staticmethod
     def best_part_mixit_generalized(loss_func, est_targets, targets, **kwargs):
-        """Find best partition of the estimated sources that gives the minimum
+        r"""Find best partition of the estimated sources that gives the minimum
         loss for the MixIT training paradigm in [1]. Valid only for two mixtures,
         but those mixtures do not necessarly have to contain the same number of
         sources e.g the case where one mixture is silent is allowed..
 
         Args:
-            loss_func: function with signature (est_targets, targets, **kwargs)
+            loss_func: function with signature ``(est_targets, targets, **kwargs)``
                 The loss function to get batch losses from.
-            est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
+            est_targets: torch.Tensor. Expected shape :math:`(batch, nsrc, ...)`.
                 The batch of target estimates.
-            targets: torch.Tensor. Expected shape [batch, nmix, *].
+            targets: torch.Tensor. Expected shape :math:`(batch, nmix, ...)`.
                 The batch of training targets (mixtures).
             **kwargs: additional keyword argument that will be passed to the
                 loss function.
 
         Returns:
-            tuple:
-                :class:`torch.Tensor`: The loss corresponding to the best
-                permutation of size (batch,).
+            - :class:`torch.Tensor`:
+              The loss corresponding to the best permutation of size (batch,).
 
-                :class:`torch.LongTensor`: The indexes of the best permutations.
+            - :class:`torch.LongTensor`:
+              The indexes of the best permutations.
 
-                :class:`list`: list of the possible partitions of the sources.
+            - :class:`list`:
+              list of the possible partitions of the sources.
         """
         nmix = targets.shape[1]  # number of mixtures
         nsrc = est_targets.shape[1]  # number of estimated sources
@@ -201,16 +202,15 @@ class MixITLossWrapper(nn.Module):
         """Reorder sources according to the best partition.
 
         Args:
-            est_targets: torch.Tensor. Expected shape [batch, nsrc, *].
+            est_targets: torch.Tensor. Expected shape :math:`(batch, nsrc, ...)`.
                 The batch of target estimates.
-            targets: torch.Tensor. Expected shape [batch, nmix, *].
+            targets: torch.Tensor. Expected shape :math:`(batch, nmix, ...)`.
                 The batch of training targets.
             min_loss_idx: torch.LongTensor. The indexes of the best permutations.
             parts: list of the possible partitions of the sources.
 
         Returns:
-            :class:`torch.Tensor`:
-                Reordered sources of shape [batch, nmix, time].
+            :class:`torch.Tensor`: Reordered sources of shape :math:`(batch, nmix, time)`.
 
         """
         # For each batch there is a different min_loss_idx

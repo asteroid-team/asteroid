@@ -25,3 +25,28 @@ from the `docs/` folder, that'll be easier.
 ```bash
 alias run_docs='make clean; make html; firefox build/html/index.html'
 ```
+
+
+### Writing good docstrings
+
+- Start with [RST and Sphinx CheatSheet](https://thomas-cokelaer.info/tutorials/sphinx/rest_syntax.html)
+- [Cross-referencing Python objects](https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#cross-referencing-python-objects)
+    - Linking to any method in the package `:func:~mymodule.myclass.myfunc`.
+    - Linking to a method in the class `:meth:mymethod`.
+- Writing `Returns` with multiple values
+```python
+def trial(pair_wise_losses):
+    r"""Trial docstring
+
+    Args:
+        pair_wise_losses: there is a dot in the beginning.
+
+    Returns
+        - :class:`torch.Tensor`:
+          The loss corresponding to the best permutation of size $(batch,)$. and
+          if I keep typing? It works?
+
+        - :class:`torch.Tensor`:
+          Notice that those two spaces, not a tab.
+    """
+```

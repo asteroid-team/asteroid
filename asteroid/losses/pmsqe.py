@@ -26,10 +26,11 @@ class SingleSrcPMSQE(nn.Module):
         sample_rate (int): Sample rate of the input audio.
 
     References
-        - [1] J.M.Martin, A.M.Gomez, J.A.Gonzalez, A.M.Peinado 'A Deep Learning
+        [1] J.M.Martin, A.M.Gomez, J.A.Gonzalez, A.M.Peinado 'A Deep Learning
         Loss Function based on the Perceptual Evaluation of the
         Speech Quality', IEEE Signal Processing Letters, 2018.
         Implemented by Juan M. Martin. Contact: mdjuamart@ugr.es
+
         Copyright 2019: University of Granada, Signal Processing, Multimedia
         Transmission and Speech/Audio Technologies (SigMAT) Group.
 

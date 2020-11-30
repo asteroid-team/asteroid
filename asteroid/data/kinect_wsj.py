@@ -41,7 +41,7 @@ class KinectWsjMixDataset(Wsj0mixDataset):
         n_src (int, optional): Number of sources in the training targets.
 
     References
-        - "Analyzing the impact of speaker localization errors on speech separation
+        "Analyzing the impact of speaker localization errors on speech separation
         for automatic speech recognition", Sunit Sivasankaran et al. 2020.
     """
 

@@ -6,7 +6,7 @@ from asteroid_filterbanks.transforms import mag
 
 
 class SingleSrcMultiScaleSpectral(_Loss):
-    """Measure multi-scale spectral loss as described in [1]
+    r"""Measure multi-scale spectral loss as described in [1]
 
     Args:
         n_filters (list): list containing the number of filter desired for
@@ -17,11 +17,8 @@ class SingleSrcMultiScaleSpectral(_Loss):
             each STFT
 
     Shape:
-        est_targets (:class:`torch.Tensor`): Expected shape [batch, time].
-            Batch of target estimates.
-        targets (:class:`torch.Tensor`): Expected shape [batch, time].
-            Batch of training targets.
-        alpha (float) : Weighting factor for the log term
+        - est_targets : :math:`(batch, time)`.
+        - targets: :math:`(batch, time)`.
 
     Returns:
         :class:`torch.Tensor`: with shape [batch]
@@ -44,7 +41,7 @@ class SingleSrcMultiScaleSpectral(_Loss):
         >>> loss = loss_func(est_targets, targets)
 
     References
-        - [1] Jesse Engel and Lamtharn (Hanoi) Hantrakul and Chenjie Gu and
+        [1] Jesse Engel and Lamtharn (Hanoi) Hantrakul and Chenjie Gu and
         Adam Roberts "DDSP: Differentiable Digital Signal Processing" ICLR 2020.
     """
 
