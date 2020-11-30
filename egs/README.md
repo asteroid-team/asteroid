@@ -98,5 +98,5 @@ to help you.
 
 [kaldi]: https://github.com/kaldi-asr/kaldi
 [espnet]: https://github.com/espnet/espnet
-[issue]: https://github.com/mpariente/asteroid/issues/new
+[issue]: https://github.com/asteroid-team/asteroid/issues/new
 [slack]: https://join.slack.com/t/asteroid-dev/shared_invite/zt-cn9y85t3-QNHXKD1Et7qoyzu1Ji5bcA
