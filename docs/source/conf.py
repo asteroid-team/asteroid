@@ -383,7 +383,7 @@ autodoc_mock_imports = MOCK_REQUIRE_PACKAGES + MOCK_MANUAL_PACKAGES
 
 # Autodoc config
 autodoc_inherit_docstring = False
-autodoc_default_options = ["members", "show-inheritance"]
+autodoc_default_flags = ["members", "show-inheritance"]
 # Order functions by appearance in source (default 'alphabetical')
 autodoc_member_order = "bysource"
 # autodoc_member_order = "groupwise"
