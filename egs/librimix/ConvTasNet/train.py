@@ -13,7 +13,7 @@ from asteroid.data import LibriMix
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-
+from asteroid.engine.dataloader import collate_fn
 # Keys which are not in the conf.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be
 # found at dic['main_args'][key]
@@ -22,6 +22,8 @@ from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 # will limit the number of available GPUs for train.py .
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best validation model")
+
+compute_metrics = ["si_sdr", "sdr", "sir", "sar", "stoi"]
 
 
 def main(conf):
@@ -56,6 +58,25 @@ def main(conf):
         num_workers=conf["training"]["num_workers"],
         drop_last=True,
     )
+
+    # Hard coded but should be in conf
+    test_dir = 'data/wav8k/max/test'
+
+    test_set = LibriMix(
+        csv_dir=test_dir,
+        task=conf["data"]["task"],
+        sample_rate=conf["data"]["sample_rate"],
+        n_src=conf["data"]["n_src"],
+        segment=None)
+
+    test_loarder = DataLoader(
+        test_set,
+        shuffle=False,
+        batch_size=conf["training"]["batch_size"],
+        num_workers=conf["training"]["num_workers"],
+        drop_last=False,
+        collate_fn=collate_fn)
+
     conf["masknet"].update({"n_src": conf["data"]["n_src"]})
 
     model = ConvTasNet(**conf["filterbank"], **conf["masknet"])
@@ -78,7 +99,10 @@ def main(conf):
         loss_func=loss_func,
         optimizer=optimizer,
         train_loader=train_loader,
+        sample_rate=conf["data"]["sample_rate"],
+        metrics_list=compute_metrics,
         val_loader=val_loader,
+        test_loader=test_loarder,
         scheduler=scheduler,
         config=conf,
     )
@@ -100,11 +124,12 @@ def main(conf):
         early_stop_callback=early_stopping,
         default_root_dir=exp_dir,
         gpus=gpus,
-        distributed_backend="dp",
+        distributed_backend=None,
         train_percent_check=1.0,  # Useful for fast experiment
         gradient_clip_val=5.0,
     )
     trainer.fit(system)
+    trainer.test(system)
 
     best_k = {k: v.item() for k, v in checkpoint.best_k_models.items()}
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:

@@ -3,7 +3,9 @@ import pytorch_lightning as pl
 from argparse import Namespace
 from typing import Callable, Optional
 from torch.optim.optimizer import Optimizer
-
+from asteroid.metrics import batch_metrics
+import pandas as pd
+from pprint import pprint
 from ..utils import flatten_dict
 
 
@@ -33,15 +35,17 @@ class System(pl.LightningModule):
     """
 
     def __init__(
-        self,
-        model,
-        optimizer,
-        loss_func,
-        train_loader,
-        val_loader=None,
-        test_loader=None,
-        scheduler=None,
-        config=None,
+            self,
+            model,
+            optimizer,
+            loss_func,
+            train_loader,
+            sample_rate,
+            val_loader=None,
+            test_loader=None,
+            metrics_list=[],
+            scheduler=None,
+            config=None,
     ):
         super().__init__()
         self.model = model
@@ -50,6 +54,8 @@ class System(pl.LightningModule):
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
+        self.metric_list = metrics_list
+        self.sample_rate = sample_rate
         self.scheduler = scheduler
         config = {} if config is None else config
         self.config = config
@@ -152,30 +158,41 @@ class System(pl.LightningModule):
         """
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         tensorboard_logs = {"val_loss": avg_loss}
-        return {"val_loss": avg_loss, "log": tensorboard_logs, "progress_bar": tensorboard_logs}
+        return {"val_loss": avg_loss, "log": tensorboard_logs,
+                "progress_bar": tensorboard_logs}
 
     def test_step(self, batch, batch_nb):
 
-        inputs, targets = batch
+        inputs, targets, sizes = batch
         est_targets = self(inputs)
-
-        # log 6 example images
-        # or generated text... or whatever
-        sample_imgs = x[:6]
-        grid = torchvision.utils.make_grid(sample_imgs)
-        self.logger.experiment.add_image('example_images', grid, 0)
-
-        # calculate acc
-        labels_hat = torch.argmax(out, dim=1)
-        test_acc = torch.sum(y == labels_hat).item() / (len(y) * 1.0)
-
-        # log the outputs!
-        result = pl.EvalResult(checkpoint_on=loss)
-        result.log_dict({'test_loss': loss, 'test_acc': test_acc})
-        return result
+        loss, reordered_sources = self.loss_func(est_targets, targets,
+                                                 return_est=True)
+        utt_metrics = batch_metrics(
+            inputs,
+            targets,
+            reordered_sources,
+            sizes,
+            sample_rate=self.sample_rate,
+            metrics_list=self.metric_list,
+        )
+        return utt_metrics
 
     def test_epoch_end(self, outputs):
-        pass
+        results = outputs[0]
+        for x in outputs[1:]:
+            for key in results:
+                results[key].extend(x[key])
+
+        all_metrics_df = pd.DataFrame.from_dict(results)
+        final_results = {}
+        for metric_name in self.metric_list:
+            input_metric_name = "input_" + metric_name
+            ldf = all_metrics_df[metric_name] - all_metrics_df[
+                input_metric_name]
+            final_results[metric_name] = all_metrics_df[metric_name].mean()
+            final_results[metric_name + "_imp"] = ldf.mean()
+
+        return final_results
 
     def configure_optimizers(self):
         """Initialize optimizers, batch-wise and epoch-wise schedulers."""

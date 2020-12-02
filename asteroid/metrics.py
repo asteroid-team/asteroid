@@ -101,3 +101,40 @@ def get_metrics(
         return average_arrays_in_dic(utt_metrics)
     else:
         return utt_metrics
+
+
+def batch_metrics(inputs, targets, estimates, sizes,
+                  sample_rate=16000, metrics_list="all",
+                  average=True, compute_permutation=False,
+                  ignore_metrics_errors=False, filename=None):
+
+    mix_np = inputs.cpu().data.numpy()
+    sources_np = targets.cpu().data.numpy()
+    est_sources_np = estimates.squeeze(0).cpu().data.numpy()
+    sizes = sizes.cpu().data.numpy()
+    batch_size = inputs.shape[0]
+
+    if metrics_list == "all":
+        metrics_list = ALL_METRICS
+
+    # Create a dictionary to store metrics
+    results = {}
+    for key in metrics_list:
+        results[key] = []
+        results[f'input_{key}'] = []
+
+    for i in range(batch_size):
+        # Compute individual metric on unpadded sources
+        metrics = get_metrics(mix_np[i, :sizes[i][0]],
+                              sources_np[i, :, :sizes[i][0]],
+                              est_sources_np[i, :, :sizes[i][0]],
+                              sample_rate=sample_rate,
+                              metrics_list=metrics_list,
+                              average=average,
+                              compute_permutation=compute_permutation,
+                              ignore_metrics_errors=ignore_metrics_errors,
+                              filename=filename
+                              )
+        results = {key: results[key] + [metrics[key]] for key in results}
+
+    return results
