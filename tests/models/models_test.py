@@ -22,6 +22,10 @@ from asteroid.models import (
 from asteroid.models.base_models import BaseModel
 
 
+HF_EXAMPLE_MODEL_IDENTIFER = "julien-c/DPRNNTasNet-ks16_WHAM_sepclean"
+# An actual model hosted on huggingface.co
+
+
 def test_set_sample_rate_raises_warning():
     model = BaseModel(sample_rate=8000.0)
     with pytest.warns(UserWarning):
@@ -88,6 +92,11 @@ def test_dprnntasnet_sep():
     wav = np.random.randn(1, 800).astype("float32")
     out = nnet.separate(wav)
     assert isinstance(out, np.ndarray)
+
+
+def test_dprnntasnet_sep_from_hf():
+    model = DPRNNTasNet.from_pretrained(HF_EXAMPLE_MODEL_IDENTIFER)
+    assert isinstance(model, DPRNNTasNet)
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
