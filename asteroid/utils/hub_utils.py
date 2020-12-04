@@ -72,6 +72,13 @@ def cached_download(filename_or_url):
             revision = None
         url = hf_bucket_url(model_id=model_id, filename=HF_WEIGHTS_NAME, revision=revision)
         return hf_get_from_cache(url, cache_dir=get_cache_dir())
+        # Note to maintainers:
+        # You can remove the `return hf_get_from_cache()` line above
+        # if you want to keep the exact same file downloading/caching behavior
+        # as the current one. In which case, you can remove all functions below
+        # except for `hf_bucket_url`.
+        # However the implementation adds some nice features
+        # (notably versioning-aware caching) so I'd suggest keeping it.
     cached_filename = url_to_filename(url)
     cached_dir = os.path.join(get_cache_dir(), cached_filename)
     cached_path = os.path.join(cached_dir, "model.pth")
