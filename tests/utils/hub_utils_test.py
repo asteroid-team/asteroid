@@ -31,3 +31,17 @@ def test_hf_download():
         f"{HF_EXAMPLE_MODEL_IDENTIFER}@{REVISION_ID_ONE_SPECIFIC_COMMIT}"
     )
     assert path3 != path1
+
+
+def test_http_user_agent():
+    ua1 = hub_utils.http_user_agent("foobar/1")
+    assert "foobar/1" in ua1
+    ua2 = hub_utils.http_user_agent({"foobar": 1})
+    assert ua1 == ua2
+
+
+def test_hf_bucket_url():
+    url = hub_utils.hf_bucket_url(
+        model_id="julien-c/foo", filename="model.bin", subfolder="folder", revision="v1.0.0"
+    )
+    assert isinstance(url, str)
