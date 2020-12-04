@@ -190,7 +190,7 @@ def hf_get_from_cache(
     resume_download=False,
     user_agent: Union[Dict, str, None] = None,
     local_files_only=False,
-) -> Optional[str]:
+) -> Optional[str]:  # pragma: no cover
     """
     Given a URL, look for the corresponding file in the local cache. If it's not there, download it. Then return the
     path to the cached file.
