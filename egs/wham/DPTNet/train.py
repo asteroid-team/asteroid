@@ -100,12 +100,13 @@ def main(conf):
 
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
+    distributed_backend = "ddp" if torch.cuda.is_available() else None
     trainer = pl.Trainer(
         max_epochs=conf["training"]["epochs"],
         callbacks=callbacks,
         default_root_dir=exp_dir,
         gpus=gpus,
-        distributed_backend="ddp",
+        distributed_backend=distributed_backend,
         gradient_clip_val=conf["training"]["gradient_clipping"],
     )
     trainer.fit(system)
