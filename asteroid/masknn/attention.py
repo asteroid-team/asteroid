@@ -53,17 +53,18 @@ class ImprovedTransformedLayer(nn.Module):
         self.norm_ff = norms.get(norm)(embed_dim)
 
     def forward(self, x):
-        x = x.transpose(1, -1)
-        # x is batch, seq_len, channels
+        tomha = x.permute(2, 0, 1)
+        # x is batch, channels, seq_len
+        # mha is seq_len, batch, channels
         # self-attention is applied
-        out = self.mha(x, x, x)[0]
-        x = self.dropout(out) + x
-        x = self.norm_mha(x.transpose(1, -1)).transpose(1, -1)
+        out = self.mha(tomha, tomha, tomha)[0]
+        x = self.dropout(out.permute(1, 2, 0)) + x
+        x = self.norm_mha(x)
 
         # lstm is applied
-        out = self.linear(self.dropout(self.activation(self.recurrent(x)[0])))
-        x = self.dropout(out) + x
-        return self.norm_ff(x.transpose(1, -1))
+        out = self.linear(self.dropout(self.activation(self.recurrent(x.transpose(1, -1))[0])))
+        x = self.dropout(out.transpose(1, -1)) + x
+        return self.norm_ff(x)
 
 
 class DPTransformer(nn.Module):
