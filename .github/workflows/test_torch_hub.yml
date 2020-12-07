@@ -23,7 +23,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip --quiet
         python -m pip install torch --quiet
-        python -m pip install numpy scipy asteroid-filterbanks --quiet
+        python -m pip install numpy scipy asteroid-filterbanks requests filelock --quiet
         python --version
         pip --version
         python -m pip list

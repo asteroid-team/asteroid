@@ -1,6 +1,6 @@
 from asteroid import models
 
-dependencies = ["torch", "numpy", "scipy", "asteroid_filterbanks"]
+dependencies = ["torch", "numpy", "scipy", "asteroid_filterbanks", "requests", "filelock"]
 
 
 def demask(name_url_or_file=None, **kwargs):
