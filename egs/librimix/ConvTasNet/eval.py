@@ -180,6 +180,32 @@ class WERTracker:
     def _df_to_dict(self, df):
         return {k: v for k, v in zip(df["utt_id"].to_list(), df["text"].to_list())}
 
+    def final_report(self):
+        """Generate a MarkDown table, as done by ESPNet."""
+        mix_n_word = sum(self.mix_counter[k] for k in ["hits", "substitutions", "deletions"])
+        est_n_word = sum(self.est_counter[k] for k in ["hits", "substitutions", "deletions"])
+        mix_wer = self.wer_from_hsdi(**dict(self.mix_counter))
+        est_wer = self.wer_from_hsdi(**dict(self.est_counter))
+
+        mix_hsdi = [
+            self.mix_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
+        ]
+        est_hsdi = [
+            self.est_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
+        ]
+        #                   Snt               Wrd         HSDI       Err     S.Err
+        for_mix = [len(self.mix_counter), mix_n_word] + mix_hsdi + [mix_wer, "-"]
+        for_est = [len(self.est_counter), est_n_word] + est_hsdi + [est_wer, "-"]
+
+        line_list = [
+            "| dataset | Snt | Wrd | Corr | Sub | Del | Ins | Err | S.Err |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"
+            f"| decode_asr_lm / test_clean / mixture   |" + " | ".join(map(str, for_mix)) + "|",
+            f"| decode_asr_lm / test_clean / separated |" + " | ".join(map(str, for_est)) + "|",
+        ]
+        result_card = "\n".join(line_list)
+        return result_card
+
 
 def main(conf):
     compute_metrics = update_compute_metrics(conf["compute_wer"], COMPUTE_METRICS)
@@ -262,13 +288,21 @@ def main(conf):
 
     # Print and save summary metrics
     final_results = {}
+    if conf["compute_wer"]:
+        compute_metrics.append("wer")  # Just for the final .json.
     for metric_name in compute_metrics:
         input_metric_name = "input_" + metric_name
         ldf = all_metrics_df[metric_name] - all_metrics_df[input_metric_name]
         final_results[metric_name] = all_metrics_df[metric_name].mean()
         final_results[metric_name + "_imp"] = ldf.mean()
+
     print("Overall metrics :")
     pprint(final_results)
+    if conf["compute_wer"]:
+        print("\nWER report")
+        wer_card = wer_tracker.final_report()
+        pprint(wer_card)
+
     with open(os.path.join(eval_save_dir, "final_metrics.json"), "w") as f:
         json.dump(final_results, f, indent=0)
 
