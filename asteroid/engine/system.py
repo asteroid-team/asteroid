@@ -56,8 +56,7 @@ class System(pl.LightningModule):
         self.scheduler = scheduler
         self.config = {} if config is None else config
         # hparams will be logged to Tensorboard as text variables.
-        # torch doesn't support None in the summary writer for now, convert
-        # None to strings temporarily.
+        # summary writer doesn't support None for now, convert to strings.
         # See https://github.com/pytorch/pytorch/issues/33140
         self.hparams = Namespace(**self.config_to_hparams(self.config))
 
@@ -68,6 +67,12 @@ class System(pl.LightningModule):
             :class:`torch.Tensor`
         """
         return self.model(*args, **kwargs)
+
+    def on_validation_epoch_end(self):
+        """Log hp_metric to tensorboard for hparams selection."""
+        hp_metric = self.trainer.callback_metrics.get("val_loss", None)
+        if hp_metric is not None:
+            self.trainer.logger.log_metrics({"hp_metric": hp_metric}, step=self.trainer.global_step)
 
     def common_step(self, batch, batch_nb, train=True):
         """Common forward step between training and validation.
