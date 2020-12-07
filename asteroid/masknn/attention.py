@@ -229,6 +229,3 @@ class DPTransformer(nn.Module):
         }
         return config
 
-a= torch.rand((2, 16, 160))
-dptnet = DPTransformer(16, 2)
-dptnet(a)
