@@ -56,7 +56,7 @@ class ImprovedTransformedLayer(nn.Module):
         tomha = x.permute(2, 0, 1)
         # x is batch, channels, seq_len
         # mha is seq_len, batch, channels
-        # self-attention is applied 
+        # self-attention is applied
         out = self.mha(tomha, tomha, tomha)[0]
         x = self.dropout(out.permute(1, 2, 0)) + x
         x = self.norm_mha(x)
@@ -228,4 +228,3 @@ class DPTransformer(nn.Module):
             "dropout": self.dropout,
         }
         return config
-
