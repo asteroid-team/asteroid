@@ -29,6 +29,8 @@ setup(
         "torch_stoi",
         "asteroid-filterbanks",
         "librosa",
+        "filelock",
+        "requests",
     ],
     extras_require={
         "tests": ["pytest"],
