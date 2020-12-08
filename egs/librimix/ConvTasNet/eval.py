@@ -25,18 +25,6 @@ def import_compute_measures():
     try:
         from jiwer import compute_measures
 
-        # FIXME
-        # Which returns
-        #  {
-        #     "wer": wer,
-        #     "mer": mer,
-        #     "wil": wil,
-        #     "wip": wip,
-        #     "hits": H,
-        #     "substitutions": S,
-        #     "deletions": D,
-        #     "insertions": I,
-        # }
     except ModuleNotFoundError:
         return None
     else:
