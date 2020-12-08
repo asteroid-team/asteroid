@@ -51,7 +51,7 @@ class ImprovedTransformedLayer(nn.Module):
             self.dropout,
             nn.Linear(dim_ff, embed_dim),
         )
-        self.recurrent = nn.LSTM(embed_dim, dim_ff, bidirectional=bidirectional)
+        self.recurrent = nn.LSTM(embed_dim, dim_ff, bidirectional=bidirectional, batch_first=True)
         ff_inner_dim = 2 * dim_ff if bidirectional else dim_ff
         self.linear = nn.Linear(ff_inner_dim, embed_dim)
         self.activation = activations.get(activation)()
