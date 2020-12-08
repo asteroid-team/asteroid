@@ -295,4 +295,4 @@ class FasNetTAC(BaseModel):
     @property
     def sample_rate(self):
         """Operating sample rate of the model (float)."""
-        raise self.samplerate
+        return self.samplerate
