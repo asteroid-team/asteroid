@@ -45,12 +45,6 @@ class ImprovedTransformedLayer(nn.Module):
 
         self.mha = MultiheadAttention(embed_dim, n_heads, dropout=dropout)
         self.dropout = nn.Dropout(dropout)
-        self.pos_wise_ff = nn.Sequential(
-            nn.Linear(embed_dim, dim_ff),
-            activations.get(activation)(),
-            self.dropout,
-            nn.Linear(dim_ff, embed_dim),
-        )
         self.recurrent = nn.LSTM(embed_dim, dim_ff, bidirectional=bidirectional, batch_first=True)
         ff_inner_dim = 2 * dim_ff if bidirectional else dim_ff
         self.linear = nn.Linear(ff_inner_dim, embed_dim)
@@ -64,8 +58,7 @@ class ImprovedTransformedLayer(nn.Module):
         # mha is seq_len, batch, channels
         # self-attention is applied
         out = self.mha(tomha, tomha, tomha)[0]
-        out = self.pos_wise_ff(out.permute(1, 0, 2)).transpose(1, -1)
-        x = self.dropout(out) + x
+        x = self.dropout(out.permute(1, 2, 0)) + x
         x = self.norm_mha(x)
 
         # lstm is applied
