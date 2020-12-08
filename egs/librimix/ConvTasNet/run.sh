@@ -119,8 +119,8 @@ if [[ $stage -le 2 ]]; then
 	    echo "Cannot compute WER without max mode. Start again with --stage 2 --compute_wer 1 --eval_mode max"
 	    exit 1
 	  fi
-    # Install espnet if not instaled
 
+    # Install espnet if not instaled
     if ! python -c "import espnet" &> /dev/null; then
         echo 'This recipe requires espnet. Installing requirements.'
         $python_path -m pip install espnet_model_zoo

@@ -89,6 +89,8 @@ class MockTracker:
 
 
 class WERTracker:
+    """To be refactored. Just a PoC."""
+
     def __init__(self, model_name, trans_df):
         from espnet2.bin.asr_inference import Speech2Text
         from espnet_model_zoo.downloader import ModelDownloader
@@ -97,24 +99,31 @@ class WERTracker:
         d = ModelDownloader()
         self.asr_model = Speech2Text(**d.download_and_unpack(model_name))
         self.input_txt_list = []
+        self.clean_txt_list = []
         self.output_txt_list = []
         self.sample_rate = int(d.data_frame[d.data_frame["name"] == model_name]["fs"])
         self.trans_df = trans_df
         self.trans_dic = self._df_to_dict(trans_df)
-        # FIXME, set jiwer transform here for text preprocessing.
         self.mix_counter = Counter()
+        self.clean_counter = Counter()
         self.est_counter = Counter()
 
     def __call__(
-        self, *, mix: np.ndarray, est_sources: np.ndarray, sample_rate: int, wav_id: List[str]
+        self,
+        *,
+        mix: np.ndarray,
+        clean: np.ndarray,
+        estimate: np.ndarray,
+        sample_rate: int,
+        wav_id: List[str],
     ):
         """Compute and store best hypothesis for the mixture and the estimates"""
         if sample_rate != self.sample_rate:
-            mix, est_sources = self.resample(
-                mix, est_sources, fs_from=sample_rate, fs_to=self.sample_rate
+            mix, clean, estimate = self.resample(
+                mix, clean, estimate, fs_from=sample_rate, fs_to=self.sample_rate
             )
-        # FIXME: compute metrics on the references signals as well?
         local_mix_counter = Counter()
+        local_clean_counter = Counter()
         local_est_counter = Counter()
         # Count the mixture output for each speaker
         txt = self.predict_hypothesis(mix)
@@ -123,8 +132,15 @@ class WERTracker:
             self.mix_counter += out_count
             local_mix_counter += out_count
             self.input_txt_list.append(dict(utt_id=tmp_id, text=txt))
+        # Average WER for the clean pair
+        for wav, tmp_id in zip(clean, wav_id):
+            txt = self.predict_hypothesis(wav)
+            out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
+            self.clean_counter += out_count
+            local_clean_counter += out_count
+            self.clean_txt_list.append(dict(utt_id=tmp_id, text=txt))
         # Average WER for the estimate pair
-        for est, tmp_id in zip(est_sources, wav_id):
+        for est, tmp_id in zip(estimate, wav_id):
             txt = self.predict_hypothesis(est)
             out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
             self.est_counter += out_count
@@ -132,6 +148,7 @@ class WERTracker:
             self.output_txt_list.append(dict(utt_id=tmp_id, text=txt))
         return dict(
             input_wer=self.wer_from_hsdi(**dict(local_mix_counter)),
+            clean_wer=self.wer_from_hsdi(**dict(local_clean_counter)),
             wer=self.wer_from_hsdi(**dict(local_est_counter)),
         )
 
@@ -156,10 +173,6 @@ class WERTracker:
         text, *_ = nbests[0]
         return text
 
-    def to_df(self):
-        # Should we have that?
-        return
-
     @staticmethod
     def resample(*wavs: np.ndarray, fs_from=None, fs_to=None):
         from resampy import resample as _resample
@@ -172,24 +185,31 @@ class WERTracker:
     def final_report(self):
         """Generate a MarkDown table, as done by ESPNet."""
         mix_n_word = sum(self.mix_counter[k] for k in ["hits", "substitutions", "deletions"])
+        clean_n_word = sum(self.clean_counter[k] for k in ["hits", "substitutions", "deletions"])
         est_n_word = sum(self.est_counter[k] for k in ["hits", "substitutions", "deletions"])
         mix_wer = self.wer_from_hsdi(**dict(self.mix_counter))
+        clean_wer = self.wer_from_hsdi(**dict(self.clean_counter))
         est_wer = self.wer_from_hsdi(**dict(self.est_counter))
 
         mix_hsdi = [
             self.mix_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
+        ]
+        clean_hsdi = [
+            self.clean_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
         ]
         est_hsdi = [
             self.est_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
         ]
         #                   Snt               Wrd         HSDI       Err     S.Err
         for_mix = [len(self.mix_counter), mix_n_word] + mix_hsdi + [mix_wer, "-"]
+        for_clean = [len(self.clean_counter), clean_n_word] + clean_hsdi + [clean_wer, "-"]
         for_est = [len(self.est_counter), est_n_word] + est_hsdi + [est_wer, "-"]
 
         line_list = [
             "| dataset | Snt | Wrd | Corr | Sub | Del | Ins | Err | S.Err |",
             "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"
             f"| decode_asr_lm / test_clean / mixture   |" + " | ".join(map(str, for_mix)) + "|",
+            f"| decode_asr_lm / test_clean / clean     |" + " | ".join(map(str, for_clean)) + "|",
             f"| decode_asr_lm / test_clean / separated |" + " | ".join(map(str, for_est)) + "|",
         ]
         result_card = "\n".join(line_list)
@@ -213,7 +233,6 @@ def main(conf):
         n_src=conf["train_conf"]["data"]["n_src"],
         segment=None,
         return_id=True,
-        # FIXME: ensure max mode for eval.
     )  # Uses all segment length
     # Used to reorder sources only
     loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx")
@@ -247,7 +266,11 @@ def main(conf):
         utt_metrics["mix_path"] = test_set.mixture_path
         utt_metrics.update(
             **wer_tracker(
-                mix=mix_np, est_sources=sources_np, wav_id=ids, sample_rate=conf["sample_rate"]
+                mix=mix_np,
+                clean=sources_np,
+                est_sources=est_sources_np,
+                wav_id=ids,
+                sample_rate=conf["sample_rate"],
             )
         )
         series_list.append(pd.Series(utt_metrics))
