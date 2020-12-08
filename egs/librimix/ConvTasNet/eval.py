@@ -86,6 +86,7 @@ def update_compute_metrics(compute_wer, metric_list):
         from espnet_model_zoo.downloader import ModelDownloader
     except ModuleNotFoundError:
         import warnings
+
         warnings.warn("Couldn't find espnet installation. Continuing without.")
         return metric_list
     return metric_list + ["wer"]
@@ -288,8 +289,6 @@ def main(conf):
 
     # Print and save summary metrics
     final_results = {}
-    if conf["compute_wer"]:
-        compute_metrics.append("wer")  # Just for the final .json.
     for metric_name in compute_metrics:
         input_metric_name = "input_" + metric_name
         ldf = all_metrics_df[metric_name] - all_metrics_df[input_metric_name]
