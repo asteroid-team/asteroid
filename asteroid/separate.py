@@ -189,16 +189,22 @@ def _resample(wav, orig_sr, target_sr, _resamplers={}):
 
 def _load_audio(filename):
     try:
-        import librosa
-    except ModuleNotFoundError:
-        librosa = None
+        return sf.read(filename, dtype="float32", always_2d=True)
+    except Exception as sf_err:
+        # If soundfile fails to load the file, try with librosa next, which uses
+        # the 'audioread' library to support a wide range of audio formats.
+        # We try with soundfile first because librosa takes a long time to import.
+        try:
+            import librosa
+        except ModuleNotFoundError:
+            raise RuntimeError(
+                f"Could not load file {filename!r} with soundfile. "
+                "Install 'librosa' to be able to load more file types."
+            ) from sf_err
 
-    if librosa:
-        wav, sr = librosa.load(filename, dtype="float32", sr=None, duration=10)
+        wav, sr = librosa.load(filename, dtype="float32", sr=None)
         # Always return wav of shape [time, n_chan]
         if wav.ndim == 1:
             return wav[:, None], sr
         else:
             return wav.T, sr
-    else:
-        return sf.read(filename, dtype="float32", always_2d=True)
