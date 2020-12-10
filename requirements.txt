@@ -12,3 +12,4 @@ SoundFile>=0.10.2
 pre-commit
 black==20.8b1
 asteroid-filterbanks>=0.2.4
+julius
