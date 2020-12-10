@@ -22,8 +22,7 @@ jobs:
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip --quiet
-        python -m pip install torch --quiet
-        python -m pip install numpy scipy asteroid-filterbanks requests filelock --quiet
+        python -m pip install -r requirements_torchhub.txt --quiet
         python --version
         pip --version
         python -m pip list
