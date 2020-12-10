@@ -1,4 +1,5 @@
 # Models
+from .base_models import BaseModel
 from .conv_tasnet import ConvTasNet
 from .dccrnet import DCCRNet
 from .dcunet import DCUNet
