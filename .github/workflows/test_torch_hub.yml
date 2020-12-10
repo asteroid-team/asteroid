@@ -36,6 +36,7 @@ jobs:
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip --quiet
+        python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
         python -m pip install -r requirements_torchhub.txt --quiet
         python --version
         pip --version
