@@ -47,7 +47,6 @@ setup(
         "pb_bss_eval",
         "torch_stoi",
         "asteroid-filterbanks",
-        "librosa",
         "filelock",
         "requests",
     ],
