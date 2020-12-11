@@ -315,11 +315,10 @@ def hf_get_from_cache(
 @lru_cache()
 def model_list(endpoint=ENDPOINT, name_only=False) -> List[Dict]:
     """Get the public list of all the models on huggingface with an 'asteroid' tag."""
-    path = "{}/api/models?full=true".format(endpoint)
+    path = "{}/api/models?full=true&filter=asteroid".format(endpoint)
     r = requests.get(path)
     r.raise_for_status()
-    d = r.json()
-    all_models = [x for x in d if "asteroid" in x.get("tags", [])]
+    all_models = r.json()
     if name_only:
         return [x["modelId"] for x in all_models]
     return all_models
