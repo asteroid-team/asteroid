@@ -45,3 +45,8 @@ def test_hf_bucket_url():
         model_id="julien-c/foo", filename="model.bin", subfolder="folder", revision="v1.0.0"
     )
     assert isinstance(url, str)
+
+
+def test_model_list():
+    hub_utils.model_list()
+    hub_utils.model_list(name_only=True)
