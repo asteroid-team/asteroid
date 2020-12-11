@@ -5,6 +5,105 @@ import torch
 import tqdm
 import soundfile as sf
 
+class AlignedDataset(torch.utils.data.Dataset):
+    def __init__(
+        self,
+        root,
+        split='train',
+        input_file='mixture.wav',
+        output_file='vocals.wav',
+        seq_duration=None,
+        random_chunks=False,
+        sample_rate=44100,
+        mono=True
+    ):
+        """A dataset of that assumes multiple track folders
+        where each track includes and input and an output file
+        which directly corresponds to the the input and the
+        output of the model. This dataset is the most basic of
+        all datasets provided here, due to the least amount of
+        preprocessing, it is also the fastest option, however,
+        it lacks any kind of source augmentations or custum mixing.
+
+        Typical use cases:
+
+        * Source Separation (Mixture -> Target)
+        * Denoising (Noisy -> Clean)
+        * Bandwidth Extension (Low Bandwidth -> High Bandwidth)
+
+        Example
+        =======
+        data/train/01/mixture.wav --> input
+        data/train/01/vocals.wav ---> output
+
+        """
+        self.mono=mono
+
+        self.root = Path(root).expanduser()
+        self.split = split
+        self.sample_rate = sample_rate
+        self.seq_duration = seq_duration
+        self.random_chunks = random_chunks
+        # set the input and output files (accept glob)
+        self.input_file = input_file
+        self.output_file = output_file
+        self.tuple_paths = list(self._get_paths())
+        if not self.tuple_paths:
+            raise RuntimeError("Dataset is empty, please check parameters")
+
+    def __getitem__(self, index):
+        input_path, output_path = self.tuple_paths[index]
+
+        if self.random_chunks:
+            input_info = load_info(input_path)
+            output_info = load_info(output_path)
+            duration = min(input_info['duration'], output_info['duration'])
+            start = random.uniform(0, duration - self.seq_duration)
+        else:
+            start = 0
+        if self.mono:
+            # load actual audio
+            X_audio, _ = sf.read(input_path, start=int(start * self.sample_rate), stop = int((self.seq_duration + start) * self.sample_rate))
+            # convert to torch tensor
+            X_audio = torch.tensor(X_audio.T, dtype=torch.float)
+
+            # load actual audio
+            Y_audio, _ = sf.read(input_path, start=int(start * self.sample_rate), stop = int((self.seq_duration + start) * self.sample_rate))
+            # convert to torch tensor
+            Y_audio = torch.tensor(Y_audio.T, dtype=torch.float)
+
+        else:
+            X_audio = load_audio(input_path, start=start, dur=self.seq_duration)
+            Y_audio = load_audio(output_path, start=start, dur=self.seq_duration)
+        # return torch tensors
+        return X_audio, Y_audio
+
+    def __len__(self):
+        return len(self.tuple_paths)
+
+    def _get_paths(self):
+        """Loads input and output tracks"""
+        p = Path(self.root, self.split)
+        print(p)
+        for track_path in tqdm.tqdm(p.iterdir()):
+
+            if track_path.is_dir():
+
+                input_path = list(track_path.glob(self.input_file))
+                output_path = list(track_path.glob(self.output_file))
+                if input_path and output_path:
+                    if self.seq_duration is not None:
+
+                        input_info = load_info(input_path[0])
+                        output_info = load_info(output_path[0])
+                        min_duration = min(
+                            input_info['duration'], output_info['duration']
+                        )
+                        # check if both targets are available in the subfolder
+                        if min_duration > self.seq_duration:
+                            yield input_path[0], output_path[0]
+                    else:
+                        yield input_path[0], output_path[0]
 
 class MUSDB18Dataset(torch.utils.data.Dataset):
     """MUSDB18 music separation dataset
@@ -105,7 +204,9 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         random_track_mix=False,
         source_augmentations=lambda audio: audio,
         sample_rate=44100,
+        mono= True
     ):
+        self.mono = mono
 
         self.root = Path(root).expanduser()
         self.split = split
@@ -159,14 +260,19 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                 always_2d=True,
                 start=start_sample,
                 stop=stop_sample,
-            )
+            ) #shape(samples, 2) because stereo input
             # convert to torch tensor
-            audio = torch.tensor(audio.T, dtype=torch.float)
+            if self.mono:
+                audio = audio[:, 0]
+                audio = torch.tensor(audio, dtype=torch.float)
+            else:
+                audio = torch.tensor(audio.T, dtype=torch.float)
             # apply source-wise augmentations
             audio = self.source_augmentations(audio)
             audio_sources[source] = audio
 
         # apply linear mix over source index=0
+
         audio_mix = torch.stack(list(audio_sources.values())).sum(0)
         if self.targets:
             audio_sources = torch.stack(
