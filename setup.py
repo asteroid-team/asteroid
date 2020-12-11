@@ -61,7 +61,7 @@ setup(
             "asteroid-infer=asteroid.scripts.asteroid_cli:infer",
             "asteroid-register-sr=asteroid.scripts.asteroid_cli:register_sample_rate",
             "asteroid-versions=asteroid.scripts.asteroid_versions:print_versions",
-        ],
+        ]
     },
     packages=find_packages(),
     include_package_data=True,
