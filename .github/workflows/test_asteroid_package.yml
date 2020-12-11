@@ -41,7 +41,7 @@ jobs:
           INSTALL="--pre torch torchaudio -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html"
         fi
         python -m pip install $INSTALL
-        python -m pip install -r requirements_dev.txt Cython --upgrade-strategy only-if-needed --quiet
+        python -m pip install -r requirements/dev.txt --upgrade-strategy only-if-needed --quiet
         python --version
         pip --version
         python -m pip list
