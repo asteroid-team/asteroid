@@ -204,7 +204,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         random_track_mix=False,
         source_augmentations=lambda audio: audio,
         sample_rate=44100,
-        mono= True
+        mono= False
     ):
         self.mono = mono
 

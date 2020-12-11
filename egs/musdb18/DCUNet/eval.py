@@ -38,17 +38,20 @@ def main(conf):
     # Handle device placement
 
     if conf["use_gpu"]:
+        print('using gpu :')
         model = LambdaOverlapAdd(
             nnet=model,  # function to apply to each segment.
             n_src=4,  # number of sources in the output of nnet
-            window_size=150*44100,  # Size of segmenting window
+            window_size=64000,  # Size of segmenting window
             hop_size=None,  # segmentation hop size
             window="hanning",  # Type of the window (see scipy.signal.get_window
             reorder_chunks=True,  # Whether to reorder each consecutive segment.
             enable_grad=False,  # Set gradient calculation on of off (see torch.set_grad_enabled)
         )
-        model_device = next(model.parameters()).device
-        #model.cuda()
+        model.cuda()
+    model_device = next(model.parameters()).device
+    print(model_device)
+
 
     test_set = MUSDB18Dataset(
         root=conf["root"],
@@ -73,7 +76,7 @@ def main(conf):
 
         # Forward the network on the mixture.
         mix, sources = tensors_to_device(test_set[idx], device=model_device)
-        est_sources = model(mix[None, None])
+        est_sources = model(mix[None, None].cuda())
         loss, reordered_sources = loss_func(est_sources, sources[None], return_est=True)
         loss.detach()
         mix_np = mix[None].cpu().data.numpy()
