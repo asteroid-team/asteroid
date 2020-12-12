@@ -1,13 +1,32 @@
+import codecs
+import os
+import re
 from setuptools import setup, find_packages
 
-asteroid_version = "0.4.0"
 
 with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+
+def read(*parts):
+    with codecs.open(os.path.join(here, *parts), "r") as fp:
+        return fp.read()
+
+
+def find_version(*file_paths):
+    version_file = read(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
+
 setup(
     name="asteroid",
-    version=asteroid_version,
+    version=find_version("asteroid", "__init__.py"),
     author="Manuel Pariente",
     author_email="manuel.pariente@loria.fr",
     url="https://github.com/asteroid-team/asteroid",
@@ -41,7 +60,7 @@ setup(
             "asteroid-infer=asteroid.scripts.asteroid_cli:infer",
             "asteroid-register-sr=asteroid.scripts.asteroid_cli:register_sample_rate",
             "asteroid-versions=asteroid.scripts.asteroid_versions:print_versions",
-        ],
+        ]
     },
     packages=find_packages(),
     include_package_data=True,
