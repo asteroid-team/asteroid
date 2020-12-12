@@ -68,12 +68,6 @@ class System(pl.LightningModule):
         """
         return self.model(*args, **kwargs)
 
-    def on_validation_epoch_end(self):
-        """Log hp_metric to tensorboard for hparams selection."""
-        hp_metric = self.trainer.callback_metrics.get("val_loss", None)
-        if hp_metric is not None:
-            self.trainer.logger.log_metrics({"hp_metric": hp_metric}, step=self.trainer.global_step)
-
     def common_step(self, batch, batch_nb, train=True):
         """Common forward step between training and validation.
 
@@ -132,6 +126,12 @@ class System(pl.LightningModule):
         """
         loss = self.common_step(batch, batch_nb, train=False)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True)
+
+    def on_validation_epoch_end(self):
+        """Log hp_metric to tensorboard for hparams selection."""
+        hp_metric = self.trainer.callback_metrics.get("val_loss", None)
+        if hp_metric is not None:
+            self.trainer.logger.log_metrics({"hp_metric": hp_metric}, step=self.trainer.global_step)
 
     def configure_optimizers(self):
         """Initialize optimizers, batch-wise and epoch-wise schedulers."""
