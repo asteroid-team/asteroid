@@ -39,7 +39,7 @@ jobs:
         elif [ $TORCH_INSTALL == "1.7.0" ]; then
           INSTALL="torch==1.7.0+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html"
         else
-          INSTALL="--pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html"
+          INSTALL="--pre torch torchaudio -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html"
         fi
         python -m pip install $INSTALL
         python -m pip install -r requirements.txt --quiet
