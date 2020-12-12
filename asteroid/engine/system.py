@@ -1,8 +1,7 @@
 import torch
 import pytorch_lightning as pl
 from argparse import Namespace
-from typing import Callable, Optional
-from torch.optim.optimizer import Optimizer
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from ..utils import flatten_dict
 
@@ -31,7 +30,12 @@ class System(pl.LightningModule):
         share ``common_step``. If you want different behavior for the training
         loop and the validation loop, overwrite both ``training_step`` and
         ``validation_step`` instead.
+
+    For more info on its methods, properties and hooks, have a look at lightning's docs:
+    https://pytorch-lightning.readthedocs.io/en/stable/lightning_module.html#lightningmodule-api
     """
+
+    default_monitor: str = "val_loss"
 
     def __init__(
         self,
@@ -50,13 +54,11 @@ class System(pl.LightningModule):
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.scheduler = scheduler
-        config = {} if config is None else config
-        self.config = config
+        self.config = {} if config is None else config
         # hparams will be logged to Tensorboard as text variables.
-        # torch doesn't support None in the summary writer for now, convert
-        # None to strings temporarily.
+        # summary writer doesn't support None for now, convert to strings.
         # See https://github.com/pytorch/pytorch/issues/33140
-        self.hparams = Namespace(**self.config_to_hparams(config))
+        self.hparams = Namespace(**self.config_to_hparams(self.config))
 
     def forward(self, *args, **kwargs):
         """Applies forward pass of the model.
@@ -107,16 +109,12 @@ class System(pl.LightningModule):
             batch_nb (int): The number of the batch in the epoch.
 
         Returns:
-            dict:
-
-            ``'loss'``: loss
-
-            ``'log'``: dict with tensorboard logs
-
+            torch.Tensor, the value of the loss.
         """
+        super().training_step()
         loss = self.common_step(batch, batch_nb, train=True)
-        tensorboard_logs = {"train_loss": loss}
-        return {"loss": loss, "log": tensorboard_logs}
+        self.log("loss", loss, logger=True)
+        return loss
 
     def validation_step(self, batch, batch_nb):
         """Need to overwrite PL validation_step to do validation.
@@ -125,34 +123,15 @@ class System(pl.LightningModule):
             batch: the object returned by the loader (a list of torch.Tensor
                 in most cases) but can be something else.
             batch_nb (int): The number of the batch in the epoch.
-
-        Returns:
-            dict:
-
-            ``'val_loss'``: loss
         """
         loss = self.common_step(batch, batch_nb, train=False)
-        return {"val_loss": loss}
+        self.log("val_loss", loss, on_epoch=True, prog_bar=True)
 
-    def validation_epoch_end(self, outputs):
-        """How to aggregate outputs of `validation_step` for logging.
-
-        Args:
-           outputs (list[dict]): List of validation losses, each with a
-           ``'val_loss'`` key
-
-        Returns:
-            dict: Average loss
-
-            ``'val_loss'``: Average loss on `outputs`
-
-            ``'log'``: Tensorboard logs
-
-            ``'progress_bar'``: Tensorboard logs
-        """
-        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        tensorboard_logs = {"val_loss": avg_loss}
-        return {"val_loss": avg_loss, "log": tensorboard_logs, "progress_bar": tensorboard_logs}
+    def on_validation_epoch_end(self):
+        """Log hp_metric to tensorboard for hparams selection."""
+        hp_metric = self.trainer.callback_metrics.get("val_loss", None)
+        if hp_metric is not None:
+            self.trainer.logger.log_metrics({"hp_metric": hp_metric}, step=self.trainer.global_step)
 
     def configure_optimizers(self):
         """Initialize optimizers, batch-wise and epoch-wise schedulers."""
@@ -165,8 +144,12 @@ class System(pl.LightningModule):
         epoch_schedulers = []
         for sched in self.scheduler:
             if not isinstance(sched, dict):
+                if isinstance(sched, ReduceLROnPlateau):
+                    sched = {"scheduler": sched, "monitor": self.default_monitor}
                 epoch_schedulers.append(sched)
             else:
+                sched.setdefault("monitor", self.default_monitor)
+                sched.setdefault("frequency", 1)
                 # Backward compat
                 if sched["interval"] == "batch":
                     sched["interval"] = "step"

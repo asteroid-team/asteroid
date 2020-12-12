@@ -41,7 +41,7 @@ setup(
         "scipy",
         "pandas",
         "torch",
-        "pytorch-lightning>=0.8,<0.10.0",
+        "pytorch-lightning",
         "torch_optimizer",
         "soundfile",
         "pb_bss_eval",
