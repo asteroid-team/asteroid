@@ -5,17 +5,18 @@ import torch
 import tqdm
 import soundfile as sf
 
+
 class AlignedDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         root,
-        split='train',
-        input_file='mixture.wav',
-        output_file='vocals.wav',
+        split="train",
+        input_file="mixture.wav",
+        output_file="vocals.wav",
         seq_duration=None,
         random_chunks=False,
         sample_rate=44100,
-        mono=True
+        mono=True,
     ):
         """A dataset of that assumes multiple track folders
         where each track includes and input and an output file
@@ -37,7 +38,7 @@ class AlignedDataset(torch.utils.data.Dataset):
         data/train/01/vocals.wav ---> output
 
         """
-        self.mono=mono
+        self.mono = mono
 
         self.root = Path(root).expanduser()
         self.split = split
@@ -57,18 +58,26 @@ class AlignedDataset(torch.utils.data.Dataset):
         if self.random_chunks:
             input_info = load_info(input_path)
             output_info = load_info(output_path)
-            duration = min(input_info['duration'], output_info['duration'])
+            duration = min(input_info["duration"], output_info["duration"])
             start = random.uniform(0, duration - self.seq_duration)
         else:
             start = 0
         if self.mono:
             # load actual audio
-            X_audio, _ = sf.read(input_path, start=int(start * self.sample_rate), stop = int((self.seq_duration + start) * self.sample_rate))
+            X_audio, _ = sf.read(
+                input_path,
+                start=int(start * self.sample_rate),
+                stop=int((self.seq_duration + start) * self.sample_rate),
+            )
             # convert to torch tensor
             X_audio = torch.tensor(X_audio.T, dtype=torch.float)
 
             # load actual audio
-            Y_audio, _ = sf.read(input_path, start=int(start * self.sample_rate), stop = int((self.seq_duration + start) * self.sample_rate))
+            Y_audio, _ = sf.read(
+                input_path,
+                start=int(start * self.sample_rate),
+                stop=int((self.seq_duration + start) * self.sample_rate),
+            )
             # convert to torch tensor
             Y_audio = torch.tensor(Y_audio.T, dtype=torch.float)
 
@@ -96,14 +105,13 @@ class AlignedDataset(torch.utils.data.Dataset):
 
                         input_info = load_info(input_path[0])
                         output_info = load_info(output_path[0])
-                        min_duration = min(
-                            input_info['duration'], output_info['duration']
-                        )
+                        min_duration = min(input_info["duration"], output_info["duration"])
                         # check if both targets are available in the subfolder
                         if min_duration > self.seq_duration:
                             yield input_path[0], output_path[0]
                     else:
                         yield input_path[0], output_path[0]
+
 
 class MUSDB18Dataset(torch.utils.data.Dataset):
     """MUSDB18 music separation dataset
@@ -204,7 +212,7 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
         random_track_mix=False,
         source_augmentations=lambda audio: audio,
         sample_rate=44100,
-        mono= False
+        mono=False,
     ):
         self.mono = mono
 
@@ -260,11 +268,11 @@ class MUSDB18Dataset(torch.utils.data.Dataset):
                 always_2d=True,
                 start=start_sample,
                 stop=stop_sample,
-            ) #shape(samples, 2) because stereo input
+            )  # shape(samples, 2) because stereo input
             # convert to torch tensor
             if self.mono:
-                audio = audio[:, 0]
                 audio = torch.tensor(audio, dtype=torch.float)
+                audio = torch.mean(audio, 1)
             else:
                 audio = torch.tensor(audio.T, dtype=torch.float)
             # apply source-wise augmentations

@@ -18,7 +18,6 @@ from asteroid.utils import tensors_to_device
 from asteroid.dsp.overlap_add import LambdaOverlapAdd
 
 
-
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
@@ -35,10 +34,9 @@ compute_metrics = ["si_sdr", "sdr", "sir", "sar", "stoi"]
 def main(conf):
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
     model = DCUNet.from_pretrained(model_path)
-    # Handle device placement
 
     if conf["use_gpu"]:
-        print('using gpu :')
+        print("using gpu :")
         model = LambdaOverlapAdd(
             nnet=model,  # function to apply to each segment.
             n_src=4,  # number of sources in the output of nnet
@@ -52,14 +50,14 @@ def main(conf):
     model_device = next(model.parameters()).device
     print(model_device)
 
-
     test_set = MUSDB18Dataset(
         root=conf["root"],
-        split='test',
-        targets=conf['targets'],
+        split="test",
+        targets=conf["targets"],
         sample_rate=44100,
         segment=None,
-        random_segments=False
+        random_segments=False,
+        mono=True,
     )
     # Uses all segment length
     # Used to reorder sources only
@@ -70,6 +68,8 @@ def main(conf):
     if conf["n_save_ex"] == -1:
         conf["n_save_ex"] = len(test_set)
     save_idx = random.sample(range(len(test_set)), conf["n_save_ex"])
+    print("items saved:")
+    print(save_idx)
     series_list = []
     torch.no_grad().__enter__()
     for idx in tqdm(range(len(test_set))):
@@ -94,17 +94,23 @@ def main(conf):
 
         # Save some examples in a folder. Wav files and metrics as text.
         if idx in save_idx:
-            print('saving:')
-            print(os.path.basename(os.path.normpath(test_set.tracks[idx]['path'])))
-            local_save_dir = os.path.join(ex_save_dir, os.path.basename(os.path.normpath(test_set.tracks[idx]['path']))) #we want original file name instead.
+            print("saving:")
+            print(os.path.basename(os.path.normpath(test_set.tracks[idx]["path"])))
+            local_save_dir = os.path.join(
+                ex_save_dir, os.path.basename(os.path.normpath(test_set.tracks[idx]["path"]))
+            )  # we want original file name instead.
             os.makedirs(local_save_dir, exist_ok=True)
             sf.write(local_save_dir + "/mixture.wav", mix_np[0], conf["sample_rate"])
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):
-                sf.write(local_save_dir + "/true_{}.wav".format(conf['targets'][src_idx]), src, conf["sample_rate"])
+                sf.write(
+                    local_save_dir + "/true_{}.wav".format(conf["targets"][src_idx]),
+                    src,
+                    conf["sample_rate"],
+                )
             for src_idx, est_src in enumerate(est_sources_np):
                 sf.write(
-                    local_save_dir + "/{}.wav".format(conf['targets'][src_idx]),
+                    local_save_dir + "/{}.wav".format(conf["targets"][src_idx]),
                     est_src,
                     conf["sample_rate"],
                 )

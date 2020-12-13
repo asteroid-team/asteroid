@@ -23,27 +23,36 @@ from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best validation model")
 
+
 def main(conf):
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
-    print('cuda available: ')
+    print("cuda available: ")
     print(torch.cuda.is_available())
-    dataloader_kwargs = {'num_workers': conf["training"]["num_workers"], 'pin_memory': True} if torch.cuda.is_available() else {}
+    dataloader_kwargs = (
+        {"num_workers": conf["training"]["num_workers"], "pin_memory": True}
+        if torch.cuda.is_available()
+        else {}
+    )
+
     train_set = MUSDB18Dataset(
         root=conf["data"]["root"],
-        split='train',
-        targets= ["vocals", "bass", "drums", "other"],
+        split="train",
+        targets=["vocals", "bass", "drums", "other"],
         sample_rate=44100,
-        segment = conf["data"]["segment"], #we need segments to be all of the same size.
-        random_segments = True
+        segment=conf["data"]["segment"],  # we need segments to be all of the same size.
+        random_segments=True,
+        suffix=".mp4",
+        mono=True,
     )
     val_set = MUSDB18Dataset(
         root=conf["data"]["root"],
-        split='valid',
+        split="valid",
         targets=["vocals", "bass", "drums", "other"],
         sample_rate=44100,
-        segment = conf["data"]["segment"],
-        random_segments = False
+        segment=conf["data"]["segment"],
+        random_segments=False,
+        mono=True,
     )
 
     train_loader = DataLoader(
@@ -51,14 +60,14 @@ def main(conf):
         shuffle=True,
         batch_size=conf["training"]["batch_size"],
         drop_last=True,
-        **dataloader_kwargs
+        **dataloader_kwargs,
     )
     val_loader = DataLoader(
         val_set,
         shuffle=False,
         batch_size=conf["training"]["batch_size"],
         drop_last=True,
-        **dataloader_kwargs
+        **dataloader_kwargs,
     )
 
     # Update number of source values (It depends on the task)
@@ -95,7 +104,6 @@ def main(conf):
     early_stopping = False
     if conf["training"]["early_stop"]:
         early_stopping = EarlyStopping(monitor="val_loss", patience=30, verbose=True)
-
 
     trainer = pl.Trainer(
         max_epochs=conf["training"]["epochs"],
