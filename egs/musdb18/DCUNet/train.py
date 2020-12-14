@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from asteroid import DCUNet
-from asteroid.data.musdb18_dataset import AlignedDataset, MUSDB18Dataset
+from asteroid.data.musdb18_dataset import MUSDB18Dataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
@@ -42,7 +42,7 @@ def main(conf):
         sample_rate=44100,
         segment=conf["data"]["segment"],  # we need segments to be all of the same size.
         random_segments=True,
-        suffix=".mp4",
+        suffix=".wav",
         mono=True,
     )
     val_set = MUSDB18Dataset(

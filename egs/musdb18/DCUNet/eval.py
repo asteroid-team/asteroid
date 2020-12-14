@@ -23,6 +23,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--use_gpu", type=int, default=0, help="Whether to use the GPU for model execution"
 )
+parser.add_argument("--root", default="", help="test dataset root")
 parser.add_argument("--exp_dir", default="exp/tmp", help="Experiment root")
 parser.add_argument(
     "--n_save_ex", type=int, default=-1, help="Number of audio examples to save, -1 means all"
@@ -66,10 +67,10 @@ def main(conf):
     # Randomly choose the indexes of sentences to save.
     ex_save_dir = os.path.join(conf["exp_dir"], "examples/")
     if conf["n_save_ex"] == -1:
+        print("saving all examples")
         conf["n_save_ex"] = len(test_set)
     save_idx = random.sample(range(len(test_set)), conf["n_save_ex"])
-    print("items saved:")
-    print(save_idx)
+
     series_list = []
     torch.no_grad().__enter__()
     for idx in tqdm(range(len(test_set))):
@@ -152,7 +153,7 @@ if __name__ == "__main__":
     with open(conf_path) as f:
         train_conf = yaml.safe_load(f)
     arg_dic["sample_rate"] = train_conf["data"]["sample_rate"]
-    arg_dic["root"] = train_conf["data"]["root"]
+    arg_dic["root"] = root
     arg_dic["segment"] = train_conf["data"]["segment"]
     arg_dic["train_conf"] = train_conf
     arg_dic["targets"] = ["vocals", "bass", "drums", "other"]

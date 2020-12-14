@@ -20,7 +20,7 @@ stage=1  # Controls from which stage to start: 1 to start with training, 2 to ev
 #choose your MUSDB dataset here. MUSDB full dataset can be requested from https://zenodo.org/record/1117372#.X9OXs-lKjOQ
 #if you would like to download a preview to test the model instead, put stage=0 to download MUSDB to the root directory.
 
-root=../../../../data_extractednaive4_wmasks/
+root=../../../../data_exte_4_44100/
 
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
@@ -56,8 +56,7 @@ if [[ -z ${tag} ]]; then
 	tag=${task}_${sr_string}k${mode}_${uuid}
 fi
 
-#expdir=exp/train_DCUNET_${tag}
-expdir=exp/train_DCUNET__k_9a0f7bd2
+expdir=exp/train_DCUNET_${tag}
 
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
@@ -95,6 +94,7 @@ fi
 if [[ $stage -le 2 ]]; then
 	echo "Stage 2 : Evaluation"
 	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
+	  --root data_extractednaive4_wmasks\
 		--use_gpu $eval_use_gpu \
 		--exp_dir ${expdir} | tee logs/eval_${tag}.log
 	cp logs/eval_${tag}.log $expdir/eval.log
