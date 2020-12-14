@@ -15,12 +15,12 @@ python_path=python3
 
 # General
 
-stage=2  # Controls from which stage to start: 0 to download a sample dataset, 1 to start with training, 2 to evaluate.
+stage=1  # Controls from which stage to start: 1 to start with training, 2 to evaluate.
 
 #choose your MUSDB dataset here. MUSDB full dataset can be requested from https://zenodo.org/record/1117372#.X9OXs-lKjOQ
 #if you would like to download a preview to test the model instead, put stage=0 to download MUSDB to the root directory.
-root=../../../MUSDBextract
-#root=../../../../data_extractednaive4_wmasks/
+
+root=../../../../data_extractednaive4_wmasks/
 
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
