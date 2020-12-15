@@ -149,9 +149,7 @@ class MetricTracker:
             ignore_metrics_errors=self.ignore_metrics_errors,
             filename=filename,
         )
-
-        # Handle kwargs: unique value or list.
-        # utt_metrics["mix_path"] = test_set.mix[idx][0]
+        utt_metrics.update(kwargs)
         self.series_list.append(pd.Series(utt_metrics))
 
     def to_csv(self, path_or_buf):
