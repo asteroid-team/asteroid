@@ -1,14 +1,16 @@
+import json
 import warnings
 import traceback
-from dataclasses import dataclass
+from pprint import pprint
 
 from .utils import average_arrays_in_dic
 from pb_bss_eval import InputMetrics, OutputMetrics
 
 
-from typing import List
+from typing import List, Union
 import numpy as np
 import pandas as pd
+from dataclasses import dataclass, asdict
 
 ALL_METRICS = ["si_sdr", "sdr", "sir", "sar", "stoi", "pesq"]
 
@@ -31,7 +33,7 @@ def get_metrics(
         clean (np.array): reference array.
         estimate (np.array): estimate array.
         sample_rate (int): sampling rate of the audio clips.
-        metrics_list (Union [str, list]): List of metrics to compute.
+        metrics_list (Union[List[str], str): List of metrics to compute.
             Defaults to 'all' (['si_sdr', 'sdr', 'sir', 'sar', 'stoi', 'pesq']).
         average (bool): Return dict([float]) if True, else dict([array]).
         compute_permutation (bool): Whether to compute the permutation on
@@ -119,12 +121,13 @@ class MetricTracker:
     def __init__(
         self,
         sample_rate,
-        metrics_list="all",
+        metrics_list=tuple(ALL_METRICS),
         average=True,
         compute_permutation=False,
         ignore_metrics_errors=False,
     ):
         self.sample_rate = sample_rate
+        # TODO: support WER in metrics_list when merged.
         self.metrics_list = metrics_list
         self.average = average
         self.compute_permutation = compute_permutation
@@ -142,6 +145,9 @@ class MetricTracker:
             sample_rate=self.sample_rate,
             metrics_list=self.metrics_list,
             average=self.average,
+            compute_permutation=self.compute_permutation,
+            ignore_metrics_errors=self.ignore_metrics_errors,
+            filename=filename,
         )
 
         # Handle kwargs: unique value or list.
@@ -149,11 +155,22 @@ class MetricTracker:
         self.series_list.append(pd.Series(utt_metrics))
 
     def to_csv(self, path_or_buf):
+        """Dump to metrics to csv"""
         all_metrics_df = pd.DataFrame(self.series_list)
         all_metrics_df.to_csv(path_or_buf)
 
-    def final_metrics(self):
-        return
-
-    def final_report(self):
-        return
+    def final_report(self, dump_path: str = None):
+        """Should we make a markdown table? Or JSON. Anyway go through pandas."""
+        all_metrics_df = pd.DataFrame(self.series_list)
+        # Print and save summary metrics
+        final_results = {}
+        for metric_name in self.metrics_list:
+            input_metric_name = "input_" + metric_name
+            ldf = all_metrics_df[metric_name] - all_metrics_df[input_metric_name]
+            final_results[metric_name] = all_metrics_df[metric_name].mean()
+            final_results[metric_name + "_imp"] = ldf.mean()
+        if dump_path is not None:
+            dump_path = dump_path + ".json" if not dump_path.endswith(".json") else dump_path
+            with open(dump_path, "w") as f:
+                json.dump(final_results, f, indent=0)
+        return final_results
