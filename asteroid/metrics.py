@@ -137,6 +137,8 @@ class MetricTracker:
         self.ignore_metrics_errors = ignore_metrics_errors
 
         self.series_list = []
+        self._len_last_saved = 0
+        self._all_metrics = pd.DataFrame()
 
     def __call__(
         self, *, mix: np.ndarray, clean: np.ndarray, estimate: np.ndarray, filename=None, **kwargs
@@ -157,18 +159,24 @@ class MetricTracker:
 
     def to_csv(self, path_or_buf):
         """Dump to metrics to csv"""
-        all_metrics_df = pd.DataFrame(self.series_list)
-        all_metrics_df.to_csv(path_or_buf)
+        self.all_metrics.to_csv(path_or_buf)
+
+    @property
+    def all_metrics(self):
+        """Dataframe containing the results (cached)."""
+        if self._len_last_saved == len(self.series_list):
+            return self._all_metrics
+        self._len_last_saved = len(self.series_list)
+        self._all_metrics = pd.DataFrame(self.series_list)
+        return pd.DataFrame(self.series_list)
 
     def final_report(self, dump_path: str = None):
         """Should we make a markdown table? Or JSON. Anyway go through pandas."""
-        all_metrics_df = pd.DataFrame(self.series_list)
-        # Print and save summary metrics
         final_results = {}
         for metric_name in self.metrics_list:
             input_metric_name = "input_" + metric_name
-            ldf = all_metrics_df[metric_name] - all_metrics_df[input_metric_name]
-            final_results[metric_name] = all_metrics_df[metric_name].mean()
+            ldf = self.all_metrics[metric_name] - self.all_metrics[input_metric_name]
+            final_results[metric_name] = self.all_metrics[metric_name].mean()
             final_results[metric_name + "_imp"] = ldf.mean()
         if dump_path is not None:
             dump_path = dump_path + ".json" if not dump_path.endswith(".json") else dump_path
