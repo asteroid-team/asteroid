@@ -126,9 +126,16 @@ class MockWERTracker:
 
 
 class WERTracker:
-    """To be refactored. Just a PoC."""
+    """Word Error Rate Tracker. Subject to change.
+
+    Args:
+        model_name (str): Name of the petrained model to use.
+        trans_df (dataframe): Containing field `utt_id` and `text`.
+            See librimix/ConvTasNet recipe.
+    """
 
     def __init__(self, model_name, trans_df):
+
         from espnet2.bin.asr_inference import Speech2Text
         from espnet_model_zoo.downloader import ModelDownloader
 
