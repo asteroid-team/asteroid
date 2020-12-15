@@ -1,7 +1,14 @@
 import warnings
 import traceback
+from dataclasses import dataclass
+
 from .utils import average_arrays_in_dic
 from pb_bss_eval import InputMetrics, OutputMetrics
+
+
+from typing import List
+import numpy as np
+import pandas as pd
 
 ALL_METRICS = ["si_sdr", "sdr", "sir", "sar", "stoi", "pesq"]
 
@@ -106,3 +113,47 @@ def get_metrics(
         return average_arrays_in_dic(utt_metrics)
     else:
         return utt_metrics
+
+
+class MetricTracker:
+    def __init__(
+        self,
+        sample_rate,
+        metrics_list="all",
+        average=True,
+        compute_permutation=False,
+        ignore_metrics_errors=False,
+    ):
+        self.sample_rate = sample_rate
+        self.metrics_list = metrics_list
+        self.average = average
+        self.compute_permutation = compute_permutation
+        self.ignore_metrics_errors = ignore_metrics_errors
+
+        self.series_list = []
+
+    def __call__(
+        self, *, mix: np.ndarray, clean: np.ndarray, estimate: np.ndarray, filename=None, **kwargs
+    ):
+        utt_metrics = get_metrics(
+            mix,
+            clean,
+            estimate,
+            sample_rate=self.sample_rate,
+            metrics_list=self.metrics_list,
+            average=self.average,
+        )
+
+        # Handle kwargs: unique value or list.
+        # utt_metrics["mix_path"] = test_set.mix[idx][0]
+        self.series_list.append(pd.Series(utt_metrics))
+
+    def to_csv(self, path_or_buf):
+        all_metrics_df = pd.DataFrame(self.series_list)
+        all_metrics_df.to_csv(path_or_buf)
+
+    def final_metrics(self):
+        return
+
+    def final_report(self):
+        return
