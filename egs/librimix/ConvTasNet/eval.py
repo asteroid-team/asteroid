@@ -1,6 +1,5 @@
 import os
 import random
-from typing import List
 import soundfile as sf
 import torch
 import yaml
@@ -10,7 +9,6 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
-from collections import Counter
 from pathlib import Path
 
 from asteroid.metrics import get_metrics
@@ -19,19 +17,8 @@ from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid import ConvTasNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
+from asteroid.metrics import WERTracker, MockWERTracker
 
-
-def import_compute_measures():
-    try:
-        from jiwer import compute_measures
-
-    except ModuleNotFoundError:
-        return None
-    else:
-        return compute_measures
-
-
-compute_measures = import_compute_measures()
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -80,146 +67,12 @@ def update_compute_metrics(compute_wer, metric_list):
     return metric_list + ["wer"]
 
 
-class MockTracker:
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def __call__(self, *args, **kwargs):
-        return dict()
-
-
-class WERTracker:
-    """To be refactored. Just a PoC."""
-
-    def __init__(self, model_name, trans_df):
-        from espnet2.bin.asr_inference import Speech2Text
-        from espnet_model_zoo.downloader import ModelDownloader
-
-        self.model_name = model_name
-        d = ModelDownloader()
-        self.asr_model = Speech2Text(**d.download_and_unpack(model_name))
-        self.input_txt_list = []
-        self.clean_txt_list = []
-        self.output_txt_list = []
-        self.sample_rate = int(d.data_frame[d.data_frame["name"] == model_name]["fs"])
-        self.trans_df = trans_df
-        self.trans_dic = self._df_to_dict(trans_df)
-        self.mix_counter = Counter()
-        self.clean_counter = Counter()
-        self.est_counter = Counter()
-
-    def __call__(
-        self,
-        *,
-        mix: np.ndarray,
-        clean: np.ndarray,
-        estimate: np.ndarray,
-        sample_rate: int,
-        wav_id: List[str],
-    ):
-        """Compute and store best hypothesis for the mixture and the estimates"""
-        if sample_rate != self.sample_rate:
-            mix, clean, estimate = self.resample(
-                mix, clean, estimate, fs_from=sample_rate, fs_to=self.sample_rate
-            )
-        local_mix_counter = Counter()
-        local_clean_counter = Counter()
-        local_est_counter = Counter()
-        # Count the mixture output for each speaker
-        txt = self.predict_hypothesis(mix)
-        for tmp_id in wav_id:
-            out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
-            self.mix_counter += out_count
-            local_mix_counter += out_count
-            self.input_txt_list.append(dict(utt_id=tmp_id, text=txt))
-        # Average WER for the clean pair
-        for wav, tmp_id in zip(clean, wav_id):
-            txt = self.predict_hypothesis(wav)
-            out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
-            self.clean_counter += out_count
-            local_clean_counter += out_count
-            self.clean_txt_list.append(dict(utt_id=tmp_id, text=txt))
-        # Average WER for the estimate pair
-        for est, tmp_id in zip(estimate, wav_id):
-            txt = self.predict_hypothesis(est)
-            out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
-            self.est_counter += out_count
-            local_est_counter += out_count
-            self.output_txt_list.append(dict(utt_id=tmp_id, text=txt))
-        return dict(
-            input_wer=self.wer_from_hsdi(**dict(local_mix_counter)),
-            clean_wer=self.wer_from_hsdi(**dict(local_clean_counter)),
-            wer=self.wer_from_hsdi(**dict(local_est_counter)),
-        )
-
-    @staticmethod
-    def wer_from_hsdi(hits=0, substitutions=0, deletions=0, insertions=0):
-        wer = (substitutions + deletions + insertions) / (hits + substitutions + deletions)
-        return wer
-
-    @staticmethod
-    def hsdi(truth, hypothesis):
-        keep = ["hits", "substitutions", "deletions", "insertions"]
-        out = compute_measures(truth=truth, hypothesis=hypothesis).items()
-        return {k: v for k, v in out if k in keep}
-
-    @staticmethod
-    def dict_add(d, **kwargs):
-        assert d.keys() == kwargs.keys()
-        return {k: d[k] + kwargs[k] for k in d.keys()}
-
-    def predict_hypothesis(self, wav):
-        nbests = self.asr_model(wav)
-        text, *_ = nbests[0]
-        return text
-
-    @staticmethod
-    def resample(*wavs: np.ndarray, fs_from=None, fs_to=None):
-        from resampy import resample as _resample
-
-        return [_resample(w, sr_orig=fs_from, sr_new=fs_to) for w in wavs]
-
-    def _df_to_dict(self, df):
-        return {k: v for k, v in zip(df["utt_id"].to_list(), df["text"].to_list())}
-
-    def final_report(self):
-        """Generate a MarkDown table, as done by ESPNet."""
-        mix_n_word = sum(self.mix_counter[k] for k in ["hits", "substitutions", "deletions"])
-        clean_n_word = sum(self.clean_counter[k] for k in ["hits", "substitutions", "deletions"])
-        est_n_word = sum(self.est_counter[k] for k in ["hits", "substitutions", "deletions"])
-        mix_wer = self.wer_from_hsdi(**dict(self.mix_counter))
-        clean_wer = self.wer_from_hsdi(**dict(self.clean_counter))
-        est_wer = self.wer_from_hsdi(**dict(self.est_counter))
-
-        mix_hsdi = [
-            self.mix_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
-        ]
-        clean_hsdi = [
-            self.clean_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
-        ]
-        est_hsdi = [
-            self.est_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
-        ]
-        #                   Snt               Wrd         HSDI       Err     S.Err
-        for_mix = [len(self.mix_counter), mix_n_word] + mix_hsdi + [mix_wer, "-"]
-        for_clean = [len(self.clean_counter), clean_n_word] + clean_hsdi + [clean_wer, "-"]
-        for_est = [len(self.est_counter), est_n_word] + est_hsdi + [est_wer, "-"]
-
-        line_list = [
-            "| dataset | Snt | Wrd | Corr | Sub | Del | Ins | Err | S.Err |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"
-            f"| decode_asr_lm / test_clean / mixture   |" + " | ".join(map(str, for_mix)) + "|",
-            f"| decode_asr_lm / test_clean / clean     |" + " | ".join(map(str, for_clean)) + "|",
-            f"| decode_asr_lm / test_clean / separated |" + " | ".join(map(str, for_est)) + "|",
-        ]
-        result_card = "\n".join(line_list)
-        return result_card
-
-
 def main(conf):
     compute_metrics = update_compute_metrics(conf["compute_wer"], COMPUTE_METRICS)
     anno_df = pd.read_csv(Path(conf["test_dir"]).parent.parent.parent / "test_annotations.csv")
-    wer_tracker = MockTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, anno_df)
+    wer_tracker = (
+        MockWERTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, anno_df)
+    )
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
     model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
