@@ -54,9 +54,6 @@ setup(
         "torch_optimizer>=0.0.1a12",
         "julius",
     ],
-    extras_require={
-        "tests": ["pytest"],
-    },
     entry_points={
         "console_scripts": [
             "asteroid-upload=asteroid.scripts.asteroid_cli:upload",
