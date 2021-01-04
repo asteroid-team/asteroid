@@ -111,7 +111,6 @@ class System(pl.LightningModule):
         Returns:
             torch.Tensor, the value of the loss.
         """
-        super().training_step()
         loss = self.common_step(batch, batch_nb, train=True)
         self.log("loss", loss, logger=True)
         return loss
