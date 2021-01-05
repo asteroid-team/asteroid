@@ -70,7 +70,7 @@ class DCUNet(BaseDCUNet):
         architecture (str): The architecture to use, any of
             "DCUNet-10", "DCUNet-16", "DCUNet-20", "Large-DCUNet-20".
         stft_n_filters (int) Number of filters for the STFT.
-        stft_kernel_size (int): STFT frame length to use
+        stft_kernel_size (int): STFT frame length to use.
         stft_stride (int, optional): STFT hop length to use.
         sample_rate (float): Sampling rate of the model.
         masknet_kwargs (optional): Passed to :class:`DCUMaskNet`
