@@ -158,6 +158,9 @@ def test_dcunet():
     _, istft = make_enc_dec("stft", 512, 512)
     input_samples = istft(torch.zeros((514, 17))).shape[0]
     _default_test_model(DCUNet("DCUNet-10"), input_samples=input_samples)
+    _default_test_model(DCUNet("DCUNet-16"), input_samples=input_samples)
+    _default_test_model(DCUNet("DCUNet-20"), input_samples=input_samples)
+    _default_test_model(DCUNet("Large-DCUNet-20"), input_samples=input_samples)
     _default_test_model(DCUNet("DCUNet-10", n_src=2), input_samples=input_samples)
 
     # DCUMaskNet should fail with wrong freqency dimensions
