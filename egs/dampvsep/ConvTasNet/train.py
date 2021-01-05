@@ -57,7 +57,9 @@ def main(conf):
         val_set, shuffle=False, batch_size=1, num_workers=conf["training"]["num_workers"]
     )
 
-    model = ConvTasNet(**conf["filterbank"], **conf["masknet"])
+    model = ConvTasNet(
+        **conf["filterbank"], **conf["masknet"], sample_rate=conf["data"]["sample_rate"]
+    )
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
 
     # Define scheduler

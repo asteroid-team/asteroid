@@ -95,7 +95,9 @@ def main(conf):
         drop_last=True,
     )
 
-    model = DPRNNTasNet(**conf["filterbank"], **conf["masknet"])
+    model = DPRNNTasNet(
+        **conf["filterbank"], **conf["masknet"], sample_rate=conf["data"]["sample_rate"]
+    )
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     # Define scheduler
     scheduler = None
