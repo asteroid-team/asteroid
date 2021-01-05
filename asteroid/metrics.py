@@ -122,7 +122,7 @@ class MockWERTracker:
     def __call__(self, *args, **kwargs):
         return dict()
 
-    def final_report(self):
+    def final_report_as_markdown(self):
         return ""
 
 
@@ -225,7 +225,7 @@ class WERTracker:
     def _df_to_dict(df):
         return {k: v for k, v in zip(df["utt_id"].to_list(), df["text"].to_list())}
 
-    def final_report(self):
+    def final_df(self):
         """Generate a MarkDown table, as done by ESPNet."""
         mix_n_word = sum(self.mix_counter[k] for k in ["hits", "substitutions", "deletions"])
         clean_n_word = sum(self.clean_counter[k] for k in ["hits", "substitutions", "deletions"])
@@ -248,6 +248,15 @@ class WERTracker:
         for_clean = [len(self.clean_counter), clean_n_word] + clean_hsdi + [clean_wer, "-"]
         for_est = [len(self.est_counter), est_n_word] + est_hsdi + [est_wer, "-"]
 
-        table = [["mixture"]+for_mix, ["clean"]+for_clean,["estimates"]+for_est]
-        df = pd.DataFrame(table, columns=['dataset','Snt','Wrd','Corr','Sub','Del','Ins','Err','S.Err'])
+        table = [
+            ["test_clean / mixture"] + for_mix,
+            ["test_clean / clean"] + for_clean,
+            ["test_clean / separated"] + for_est,
+        ]
+        df = pd.DataFrame(
+            table, columns=["dataset", "Snt", "Wrd", "Corr", "Sub", "Del", "Ins", "Err", "S.Err"]
+        )
         return df
+
+    def final_report_as_markdown(self):
+        return self.final_df().to_markdown(index=False, tablefmt="github")

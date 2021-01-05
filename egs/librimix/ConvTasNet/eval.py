@@ -162,14 +162,11 @@ def main(conf):
     print("Overall metrics :")
     pprint(final_results)
     if conf["compute_wer"]:
-        # Print WER report
         print("\nWER report")
-        wer_card = wer_tracker.final_report().to_markdown(index=False,
-                                                          tablefmt='github')
+        wer_card = wer_tracker.final_report_as_markdown()
         print(wer_card)
-
         # Save the report
-        with open(os.path.join(eval_save_dir, "final_wer.md"), "w") as f :
+        with open(os.path.join(eval_save_dir, "final_wer.md"), "w") as f:
             f.write(wer_card)
 
     with open(os.path.join(eval_save_dir, "final_metrics.json"), "w") as f:
