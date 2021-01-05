@@ -58,7 +58,7 @@ def main(conf):
     # Update number of source values (It depends on the task)
     conf["masknet"].update({"n_src": train_set.n_src})
 
-    model = DPTNet(**conf["filterbank"], **conf["masknet"])
+    model = DPTNet(**conf["filterbank"], **conf["masknet"], sample_rate=conf["data"]["sample_rate"])
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     from asteroid.engine.schedulers import DPTNetScheduler
 
