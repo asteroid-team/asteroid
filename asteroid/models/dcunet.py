@@ -9,7 +9,8 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
 
     Args:
         architecture (str): The architecture to use. Overriden by subclasses.
-        stft_kernel_size (int): STFT frame length to use
+        stft_n_filters (int) Number of filters for the STFT.
+        stft_kernel_size (int): STFT frame length to use.
         stft_stride (int, optional): STFT hop length to use.
         sample_rate (float): Sampling rate of the model.
         masknet_kwargs (optional): Passed to the masknet constructor.
@@ -20,12 +21,14 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
     def __init__(
         self,
         architecture,
-        stft_kernel_size=512,
-        stft_stride=None,
+        stft_n_filters=1024,
+        stft_kernel_size=1024,
+        stft_stride=256,
         sample_rate=16000.0,
         **masknet_kwargs,
     ):
         self.architecture = architecture
+        self.stft_n_filters = stft_n_filters
         self.stft_kernel_size = stft_kernel_size
         self.stft_stride = stft_stride
         self.masknet_kwargs = masknet_kwargs
@@ -33,7 +36,7 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
         encoder, decoder = make_enc_dec(
             "stft",
             kernel_size=stft_kernel_size,
-            n_filters=stft_kernel_size,
+            n_filters=stft_n_filters,
             stride=stft_stride,
             sample_rate=sample_rate,
         )
@@ -66,6 +69,7 @@ class DCUNet(BaseDCUNet):
     Args:
         architecture (str): The architecture to use, any of
             "DCUNet-10", "DCUNet-16", "DCUNet-20", "Large-DCUNet-20".
+        stft_n_filters (int) Number of filters for the STFT.
         stft_kernel_size (int): STFT frame length to use
         stft_stride (int, optional): STFT hop length to use.
         sample_rate (float): Sampling rate of the model.
