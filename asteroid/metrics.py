@@ -3,6 +3,7 @@ import traceback
 from collections import Counter
 from typing import List
 
+import pandas as pd
 import numpy as np
 from pb_bss_eval import InputMetrics, OutputMetrics
 
@@ -247,12 +248,6 @@ class WERTracker:
         for_clean = [len(self.clean_counter), clean_n_word] + clean_hsdi + [clean_wer, "-"]
         for_est = [len(self.est_counter), est_n_word] + est_hsdi + [est_wer, "-"]
 
-        line_list = [
-            "| dataset | Snt | Wrd | Corr | Sub | Del | Ins | Err | S.Err |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"
-            f"| decode_asr_lm / test_clean / mixture   |" + " | ".join(map(str, for_mix)) + "|",
-            f"| decode_asr_lm / test_clean / clean     |" + " | ".join(map(str, for_clean)) + "|",
-            f"| decode_asr_lm / test_clean / separated |" + " | ".join(map(str, for_est)) + "|",
-        ]
-        result_card = "\n".join(line_list)
-        return result_card
+        table = [["mixture"]+for_mix, ["clean"]+for_clean,["estimates"]+for_est]
+        df = pd.DataFrame(table, columns=['dataset','Snt','Wrd','Corr','Sub','Del','Ins','Err','S.Err'])
+        return df

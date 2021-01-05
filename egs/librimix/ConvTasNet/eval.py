@@ -121,7 +121,7 @@ def main(conf):
             **wer_tracker(
                 mix=mix_np,
                 clean=sources_np,
-                est_sources=est_sources_np,
+                estimate=est_sources_np,
                 wav_id=ids,
                 sample_rate=conf["sample_rate"],
             )
@@ -162,9 +162,15 @@ def main(conf):
     print("Overall metrics :")
     pprint(final_results)
     if conf["compute_wer"]:
+        # Print WER report
         print("\nWER report")
-        wer_card = wer_tracker.final_report()
-        pprint(wer_card)
+        wer_card = wer_tracker.final_report().to_markdown(index=False,
+                                                          tablefmt='github')
+        print(wer_card)
+
+        # Save the report
+        with open(os.path.join(eval_save_dir, "final_wer.md"), "w") as f :
+            f.write(wer_card)
 
     with open(os.path.join(eval_save_dir, "final_metrics.json"), "w") as f:
         json.dump(final_results, f, indent=0)

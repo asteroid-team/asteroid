@@ -125,6 +125,7 @@ if [[ $stage -le 2 ]]; then
         echo 'This recipe requires espnet. Installing requirements.'
         $python_path -m pip install espnet_model_zoo
         $python_path -m pip install jiwer
+        $python_path -m pip install tabulate
     fi
   fi
 
