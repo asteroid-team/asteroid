@@ -175,6 +175,16 @@ def test_dcunet():
         DCUNet("mini").masker(torch.zeros((1, 9, 16), dtype=torch.complex64))
 
 
+def test_masker_working_size():
+    dcu_mini_trim = DCUNet("mini", fix_length_mode="trim")
+    dcu_mini_pad = DCUNet("mini", fix_length_mode="pad")
+    dccrn_mini = DCCRNet("mini")
+    inp_size = 3 * 16000
+    assert dcu_mini_trim.get_masker_working_size(inp_size) == 47616
+    assert dcu_mini_pad.get_masker_working_size(inp_size) == 49664
+    assert dccrn_mini.get_masker_working_size(inp_size) == 47872
+
+
 def test_dccrnet():
     _, istft = make_enc_dec("stft", 512, 512)
     input_samples = istft(torch.zeros((514, 16))).shape[0]
