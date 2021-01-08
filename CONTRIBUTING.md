@@ -15,7 +15,7 @@ To do that, install asteroid in develop mode either with pip
 
 To avoid formatting roundtrips in PRs, Asteroid relies on [`black`](https://github.com/psf/black)
 and [`pre-commit-hooks`](https://github.com/pre-commit/pre-commit-hooks) to handle formatting
-for us. You'll need to install `requirements.txt` and install git hooks with
+for us. You'll need to install `requirements/dev.txt` and install git hooks with
 `pre-commit install`.
 
 Here is a summary:
@@ -24,7 +24,7 @@ Here is a summary:
 ### Install
 git clone your_fork_url
 cd asteroid
-pip install -r requirements.txt
+pip install -r requirements/dev.txt
 pip install -e .
 pre-commit install  # To run black before commit
 
