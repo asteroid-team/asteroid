@@ -21,7 +21,8 @@ def test_download():
 
 
 @pytest.mark.parametrize(
-    "model_id", [HF_EXAMPLE_MODEL_IDENTIFER, HF_EXAMPLE_MODEL_IDENTIFER_URL],
+    "model_id",
+    [HF_EXAMPLE_MODEL_IDENTIFER, HF_EXAMPLE_MODEL_IDENTIFER_URL],
 )
 def test_hf_download(model_id):
     # We download
