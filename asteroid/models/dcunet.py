@@ -35,8 +35,8 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
 
         encoder, decoder = make_enc_dec(
             "stft",
-            kernel_size=stft_kernel_size,
             n_filters=stft_n_filters,
+            kernel_size=stft_kernel_size,
             stride=stft_stride,
             sample_rate=sample_rate,
         )
@@ -55,6 +55,7 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
         """Arguments needed to re-instantiate the model."""
         model_args = {
             "architecture": self.architecture,
+            "stft_n_filters": self.stft_n_filters,
             "stft_kernel_size": self.stft_kernel_size,
             "stft_stride": self.stft_stride,
             "sample_rate": self.sample_rate,
