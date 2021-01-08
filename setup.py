@@ -42,7 +42,7 @@ setup(
         "torch>=1.3.0",
         "asteroid-filterbanks>=0.2.4",
         "SoundFile>=0.10.2",
-        "git+https://github.com/jonashaag/huggingface_hub@main",
+        "huggingface_hub @ git+https://github.com/jonashaag/huggingface_hub@main",
         # From requirements/install.txt
         "PyYAML>=5.0",
         "pandas>=0.23.4",
