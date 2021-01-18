@@ -9,6 +9,8 @@ set -o pipefail
 # and LibriMix. This is about 500 Gb
 storage_dir=
 
+# Directory containing the pretrained model
+expdir=
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
 # Path to the python you'll use for the experiment. Defaults to the current python
@@ -23,38 +25,28 @@ stage=0  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 
-eval_use_gpu=1
+eval_use_gpu=0
 # Need to --compute_wer 1 --eval_mode max to be sure the user knows all the metrics
 # are for the all mode.
-compute_wer=0
-eval_mode=
+compute_wer=1
+
+test_dir=data/test
 
 . utils/parse_options.sh
 
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating CHiME-4 dataset"
-  . local/create_metadata.py --chime3_dir $storage_dir/CHiME3
+  $python_path local/create_metadata.py --chime3_dir $storage_dir/CHiME3/
 fi
 
-# Generate a random ID for the run if no tag is specified
-uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
-if [[ -z ${tag} ]]; then
-	tag=${uuid}
-fi
-
-expdir=exp/train_convtasnet_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
-if [[ $stage -le 2 ]]; then
+if [[ $stage -le 1 ]]; then
 	echo "Stage 2 : Evaluation"
 
 	if [[ $compute_wer -eq 1 ]]; then
-	  if [[ $eval_mode != "max" ]]; then
-	    echo "Cannot compute WER without max mode. Start again with --stage 2 --compute_wer 1 --eval_mode max"
-	    exit 1
-	  fi
 
     # Install espnet if not instaled
     if ! python -c "import espnet" &> /dev/null; then
@@ -69,7 +61,5 @@ if [[ $stage -le 2 ]]; then
     --exp_dir $expdir \
     --test_dir $test_dir \
   	--use_gpu $eval_use_gpu \
-  	--compute_wer $compute_wer | tee logs/eval_${tag}.log
-
-	cp logs/eval_${tag}.log $expdir/eval.log
+  	--compute_wer $compute_wer
 fi

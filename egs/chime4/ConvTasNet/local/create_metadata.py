@@ -1,5 +1,4 @@
 import os
-import shutil
 import argparse
 from glob import glob
 import pandas as pd
@@ -29,8 +28,6 @@ def create_local_metadata(chime3_dir):
     # Get CHiME-4 annotation files
     c4_annot_files = [f for f in glob(
         os.path.join(chime3_dir, "data", "annotations", "*real*.list"))]
-    print(c3_annot_files)
-    print(c4_annot_files)
     for c3_annot_file_path in c3_annot_files:
         # Read CHiME-3 annotation file
         c3_annot_file = pd.read_json(c3_annot_file_path)
@@ -47,14 +44,14 @@ def create_local_metadata(chime3_dir):
                 header=None, names=['path'])
         else:
             c4_annot_file = None
-        df = create_dataframe(chime3_dir, c3_annot_file, c4_annot_file, subset, origin)
-        write_dataframe(df, subset, origin)
+        df, df_2 = create_dataframe(chime3_dir, c3_annot_file, c4_annot_file, subset, origin)
+        write_dataframe(df, df_2, subset, origin)
 
 
 def create_dataframe(chime3_dir, c3_annot_file, c4_annot_file, subset, origin):
-
     # Empty list for DataFrame creation
     row_list = []
+    row_list_2 = []
     for row in c3_annot_file.itertuples():
         speaker = row.speaker
         ID = row.wsj_name
@@ -76,19 +73,21 @@ def create_dataframe(chime3_dir, c3_annot_file, c4_annot_file, subset, origin):
                                         subset + '_' + env.lower() + '_' + origin,
                                         speaker + '_' + ID + '_' + f'.CH{channel}'
                                                                    '.wav')
-
+        dot = row.dot
         duration = row.end - row.start
         temp_dict = {'ID': ID, 'subset': subset, 'origin': origin,
                      'env': env,
-                     'mixture_ path': mixture_path,
+                     'mixture_path': mixture_path,
                      'duration': duration}
+        trans_dict = {'utt_id': ID, 'text':dot}
         row_list.append(temp_dict)
-
+        row_list_2.append(trans_dict)
     df = pd.DataFrame(row_list)
-    return df
+    df_2 = pd.DataFrame(row_list_2)
+    return df, df_2
 
 
-def write_dataframe(df, subset, origin):
+def write_dataframe(df, df2, subset, origin):
     if 'et' in subset:
         subdir = 'test'
     elif 'dt' in subset:
@@ -99,6 +98,8 @@ def write_dataframe(df, subset, origin):
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, origin + '_1_ch_track.csv')
     df.to_csv(save_path, index=False)
+    save_path2 = os.path.join(save_dir, origin + '_1_ch_track_annotations.csv')
+    df2.to_csv(save_path2, index=False)
 
 
 if __name__ == "__main__":

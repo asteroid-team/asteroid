@@ -23,14 +23,15 @@ class CHiME4(Dataset):
 
     dataset_name = "CHiME4"
 
-    def __init__(self, csv_dir, sample_rate=16000, segment=3):
+    def __init__(self, csv_dir, sample_rate=16000, segment=3, return_id=False):
         self.csv_dir = csv_dir
         # Get the csv corresponding to origin
         self.segment = segment
         self.sample_rate = sample_rate
-        self.csv_path = [f for f in os.listdir(csv_dir)]
+        self.return_id = return_id
+        self.csv_path = [f for f in os.listdir(csv_dir) if 'annotations' not in f][0]
         # Open csv file and concatenate them
-        self.df = pd.read_csv(self.csv_path)
+        self.df = pd.read_csv(os.path.join(csv_dir,self.csv_path))
         # Get rid of the utterances too short
         if self.segment is not None:
             max_len = len(self.df)
@@ -65,6 +66,9 @@ class CHiME4(Dataset):
                              start=start, stop=stop)
         # Convert to torch tensor
         mixture = torch.from_numpy(mixture)
-
-        return mixture
+        fake_source = torch.vstack([mixture])
+        if self.return_id:
+            id1 = row.ID
+            return mixture, fake_source, [id1]
+        return mixture, fake_source
 
