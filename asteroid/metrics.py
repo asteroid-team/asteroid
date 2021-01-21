@@ -175,12 +175,11 @@ class WERTracker:
         # Count the mixture output for each speaker
         txt = self.predict_hypothesis(mix)
 
-        # Gather true transcription and IDs
+        # Dict to gather transcriptions and IDs
         trans_dict = dict(mixture_txt={},clean={},estimates={},truth={})
-
-        # Mixture
+        # Get mixture transcription
         trans_dict["mixture_txt"] = txt
-        # Truth
+        #  Get ground truth transcription and IDs
         for i,tmp_id in enumerate(wav_id):
             trans_dict["truth"][f"ID_{i}"] = tmp_id
             trans_dict["truth"][f"Txt_{i}"] = self.trans_dic[tmp_id]
