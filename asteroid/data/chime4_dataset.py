@@ -66,9 +66,9 @@ class CHiME4(Dataset):
                              start=start, stop=stop)
         # Convert to torch tensor
         mixture = torch.from_numpy(mixture)
-        fake_source = torch.vstack([mixture])
+        mock_source = torch.vstack([mixture])
         if self.return_id:
             id1 = row.ID
-            return mixture, fake_source, [id1]
-        return mixture, fake_source
+            return mixture, mock_source, [id1]
+        return mixture, mock_source
 
