@@ -146,6 +146,8 @@ class WERTracker:
         self.input_txt_list = []
         self.clean_txt_list = []
         self.output_txt_list = []
+        self.transcription = []
+        self.true_txt_list = []
         self.sample_rate = int(d.data_frame[d.data_frame["name"] == model_name]["fs"])
         self.trans_df = trans_df
         self.trans_dic = self._df_to_dict(trans_df)
@@ -172,25 +174,42 @@ class WERTracker:
         local_est_counter = Counter()
         # Count the mixture output for each speaker
         txt = self.predict_hypothesis(mix)
+
+        # Gather true transcription and IDs
+        trans_dict = dict(mixture_txt={},clean={},estimates={},truth={})
+
+        # Mixture
+        trans_dict["mixture_txt"] = txt
+        # Truth
+        for i,tmp_id in enumerate(wav_id):
+            trans_dict["truth"][f"ID_{i}"] = tmp_id
+            trans_dict["truth"][f"Txt_{i}"] = self.trans_dic[tmp_id]
+            self.true_txt_list.append(dict(utt_id=tmp_id, text=self.trans_dic[tmp_id]))
+        # Mixture
         for tmp_id in wav_id:
             out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
             self.mix_counter += out_count
             local_mix_counter += out_count
             self.input_txt_list.append(dict(utt_id=tmp_id, text=txt))
         # Average WER for the clean pair
-        for wav, tmp_id in zip(clean, wav_id):
+        for i, (wav, tmp_id) in enumerate(zip(clean, wav_id)):
             txt = self.predict_hypothesis(wav)
             out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
             self.clean_counter += out_count
             local_clean_counter += out_count
             self.clean_txt_list.append(dict(utt_id=tmp_id, text=txt))
+            trans_dict["clean"][f"ID_{i}"] = tmp_id
+            trans_dict["clean"][f"Txt_{i}"] = txt
         # Average WER for the estimate pair
-        for est, tmp_id in zip(estimate, wav_id):
+        for i, (est, tmp_id) in enumerate(zip(estimate, wav_id)):
             txt = self.predict_hypothesis(est)
             out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
             self.est_counter += out_count
             local_est_counter += out_count
             self.output_txt_list.append(dict(utt_id=tmp_id, text=txt))
+            trans_dict["estimates"][f"ID_{i}"] = tmp_id
+            trans_dict["estimates"][f"Txt_{i}"] = txt
+        self.transcription.append(trans_dict)
         return dict(
             input_wer=self.wer_from_hsdi(**dict(local_mix_counter)),
             clean_wer=self.wer_from_hsdi(**dict(local_clean_counter)),
@@ -204,10 +223,16 @@ class WERTracker:
 
     @staticmethod
     def hsdi(truth, hypothesis):
+        import jiwer
         from jiwer import compute_measures
-
+        transformation = jiwer.Compose([
+            jiwer.ToLowerCase(),
+            jiwer.RemovePunctuation()
+        ])
         keep = ["hits", "substitutions", "deletions", "insertions"]
-        out = compute_measures(truth=truth, hypothesis=hypothesis).items()
+        out = compute_measures(truth=truth, hypothesis=hypothesis,
+                               truth_transform=transformation,
+                               hypothesis_transform=transformation).items()
         return {k: v for k, v in out if k in keep}
 
     def predict_hypothesis(self, wav):
@@ -257,6 +282,9 @@ class WERTracker:
             table, columns=["dataset", "Snt", "Wrd", "Corr", "Sub", "Del", "Ins", "Err", "S.Err"]
         )
         return df
+
+    def all_transcriptions(self):
+        return dict(transcriptions=self.transcription)
 
     def final_report_as_markdown(self):
         return self.final_df().to_markdown(index=False, tablefmt="github")
