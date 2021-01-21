@@ -176,11 +176,11 @@ class WERTracker:
         txt = self.predict_hypothesis(mix)
 
         # Dict to gather transcriptions and IDs
-        trans_dict = dict(mixture_txt={},clean={},estimates={},truth={})
+        trans_dict = dict(mixture_txt={}, clean={}, estimates={}, truth={})
         # Get mixture transcription
         trans_dict["mixture_txt"] = txt
         #  Get ground truth transcription and IDs
-        for i,tmp_id in enumerate(wav_id):
+        for i, tmp_id in enumerate(wav_id):
             trans_dict["truth"][f"ID_{i}"] = tmp_id
             trans_dict["truth"][f"Txt_{i}"] = self.trans_dic[tmp_id]
             self.true_txt_list.append(dict(utt_id=tmp_id, text=self.trans_dic[tmp_id]))
@@ -224,14 +224,15 @@ class WERTracker:
     def hsdi(truth, hypothesis):
         import jiwer
         from jiwer import compute_measures
-        transformation = jiwer.Compose([
-            jiwer.ToLowerCase(),
-            jiwer.RemovePunctuation()
-        ])
+
+        transformation = jiwer.Compose([jiwer.ToLowerCase(), jiwer.RemovePunctuation()])
         keep = ["hits", "substitutions", "deletions", "insertions"]
-        out = compute_measures(truth=truth, hypothesis=hypothesis,
-                               truth_transform=transformation,
-                               hypothesis_transform=transformation).items()
+        out = compute_measures(
+            truth=truth,
+            hypothesis=hypothesis,
+            truth_transform=transformation,
+            hypothesis_transform=transformation,
+        ).items()
         return {k: v for k, v in out if k in keep}
 
     def predict_hypothesis(self, wav):
