@@ -19,7 +19,7 @@ def test_dprnn(mask_act, out_chan, hop_size, use_mulcat):
         hid_size=11,
         out_chan=out_chan,
         hop_size=hop_size,
-        use_mulcat=use_mulcat
+        use_mulcat=use_mulcat,
     )
     batch, n_frames = 2, 78
     inp = torch.randn(batch, in_chan, n_frames)

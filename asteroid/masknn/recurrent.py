@@ -61,6 +61,7 @@ class SingleRNN(nn.Module):
         rnn_output, _ = self.rnn(output)
         return rnn_output
 
+
 class DoubleRNN(nn.Module):
     """Module for a RNN block.
 
@@ -120,8 +121,6 @@ class DoubleRNN(nn.Module):
         rnn_output1, _ = self.rnn1(output)
         rnn_output2, _ = self.rnn2(output)
         return torch.cat((rnn_output1 * rnn_output2, output), -1)
-
-
 
 
 class StackedResidualRNN(nn.Module):
@@ -268,14 +267,24 @@ class DPRNNBlock(nn.Module):
                 rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True
             )
             self.inter_RNN = DoubleRNN(
-            rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=bidirectional
+                rnn_type,
+                in_chan,
+                hid_size,
+                num_layers,
+                dropout=dropout,
+                bidirectional=bidirectional,
             )
         else:
             self.intra_RNN = SingleRNN(
                 rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True
             )
             self.inter_RNN = SingleRNN(
-            rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=bidirectional
+                rnn_type,
+                in_chan,
+                hid_size,
+                num_layers,
+                dropout=dropout,
+                bidirectional=bidirectional,
             )
         # IntraRNN and linear projection layer (always bi-directional)
         self.intra_linear = nn.Linear(self.intra_RNN.output_size, in_chan)
