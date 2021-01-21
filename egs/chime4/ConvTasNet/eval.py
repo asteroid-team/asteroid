@@ -33,7 +33,7 @@ parser.add_argument(
 )
 
 COMPUTE_METRICS = []
-ASR_MODEL_PATH = ("kamo-naoyuki/wsj"
+ASR_MODEL_PATH = ("kamo-naoyuki/chime4_asr_train_asr_transformer3_raw_en_char_sp_valid.acc.ave"
 )
 
 
@@ -144,6 +144,9 @@ def main(conf):
         # Save the report
         with open(os.path.join(eval_save_dir, "final_wer.md"), "w") as f:
             f.write(wer_card)
+        all_transcriptions = wer_tracker.all_transcriptions()
+        with open(os.path.join(eval_save_dir, "all_transcriptions.json"), "w") as f:
+            json.dump(all_transcriptions, f, indent=4)
 
     with open(os.path.join(eval_save_dir, "final_metrics.json"), "w") as f:
         json.dump(final_results, f, indent=0)
