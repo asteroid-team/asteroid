@@ -33,8 +33,10 @@ parser.add_argument(
 )
 
 COMPUTE_METRICS = []
-ASR_MODEL_PATH = ("kamo-naoyuki/chime4_asr_train_asr_transformer3_raw_en_char_sp_valid.acc.ave"
-)
+ASR_MODEL_PATH = ("kamo-naoyuki/chime4_asr_train_asr_transformer3_raw_en_char_sp_valid.acc.ave")
+# ASR_MODEL_PATH = ("kamo-naoyuki/wsj")
+# ASR_MODEL_PATH = ("kamo-naoyuki/wsj_transformer2")
+# ASR_MODEL_PATH = ("kamo-naoyuki/dirha_wsj_asr_train_asr_transformer_cmvn_raw_char_rir_scpdatadirha_irwav.scp_noise_db_range10_17_noise_scpdatadirha_noisewav.scp_speech_volume_normalize1.0_num_workers2_rir_apply_prob1._sp_valid.acc.ave")
 
 
 def update_compute_metrics(compute_wer, metric_list):
@@ -88,6 +90,7 @@ def main(conf):
         mix_np = mix.cpu().data.numpy()
         sources_np = sources.cpu().data.numpy()
         est_sources_np = est_sources.squeeze(0).cpu().data.numpy()
+        est_sources_np *= np.max(np.abs(mix_np)) / np.max(np.abs(est_sources_np))
         # For each utterance, we get a dictionary with the mixture path,
         # the input and output metrics
         utt_metrics = {"mix_path": test_set.mixture_path}
@@ -113,7 +116,7 @@ def main(conf):
                 sf.write(local_save_dir + "s{}.wav".format(src_idx), src,
                          conf["sample_rate"])
             for src_idx, est_src in enumerate(est_sources_np):
-                est_src *= np.max(np.abs(mix_np)) / np.max(np.abs(est_src))
+                # est_src *= np.max(np.abs(mix_np)) / np.max(np.abs(est_src))
                 sf.write(
                     local_save_dir + "s{}_estimate.wav".format(src_idx),
                     est_src,
