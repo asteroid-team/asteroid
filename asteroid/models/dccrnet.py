@@ -21,8 +21,9 @@ class DCCRNet(BaseDCUNet):
 
     masknet_class = DCCRMaskNet
 
-    def __init__(self, *args, stft_n_filters=512, stft_kernel_size=400,
-                 stft_stride=100, **masknet_kwargs):
+    def __init__(
+        self, *args, stft_n_filters=512, stft_kernel_size=400, stft_stride=100, **masknet_kwargs
+    ):
         masknet_kwargs.setdefault("n_freqs", stft_n_filters // 2)
         super().__init__(
             *args,
