@@ -173,7 +173,7 @@ def test_dcunet():
 
 
 def test_dccrnet():
-    _, istft = make_enc_dec("stft", 512, 400, 100,16000)
+    _, istft = make_enc_dec("stft", 512, 400, 100, 16000)
     input_samples = istft(torch.zeros((514, 16))).shape[0]
     _default_test_model(DCCRNet("DCCRN-CL"), input_samples=input_samples)
     _default_test_model(DCCRNet("DCCRN-CL", n_src=2), input_samples=input_samples)

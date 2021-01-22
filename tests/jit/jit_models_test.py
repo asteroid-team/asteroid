@@ -58,7 +58,9 @@ def small_model_params():
             "stride": 16,
         },
         DCCRNet.__name__: {
+            "stft_n_filters": 512,
             "stft_kernel_size": 256,
+            "stft_stride": 100,
             "architecture": "mini",
         },
         DeMask.__name__: {
@@ -123,7 +125,6 @@ def test_enhancement_model(small_model_params, model_def, test_data):
     # Random input uniformly distributed in [-1, 1]
     inputs = ((torch.rand(1, 2500, device=device) - 0.5) * 2,)
     traced = torch.jit.trace(model, inputs)
-
     assert_consistency(model=model, traced=traced, tensor=test_data.to(device))
 
 
