@@ -7,12 +7,17 @@ assignees: ''
 
 ---
 
+### Before reporting a bug:
+First, please search [previous issues](https://github.com/asteroid-team/asteroid/issues)
+and [the FAQ](https://asteroid-team.github.io/asteroid/faq.html) and be sure this hasn't
+been answered elsewhere.
+
 ## 🐛 Bug
 
 <!-- A clear and concise description of what the bug is. -->
 
 ### To Reproduce
-<!-- Ideally attach a minimal code sample to reproduce the bug. 
+<!-- Ideally attach a minimal code sample to reproduce the bug.
 Minimal means having the shortest code but still preserving the bug. -->
 
 Steps to reproduce the behavior (code sample and stack trace):
@@ -23,8 +28,21 @@ Steps to reproduce the behavior (code sample and stack trace):
 
 ### Environment
 
- - Asteroid Version or commit tag
- - PyTorch Version (e.g., 1.0)
- - PyTorchLightning Version
- - Additional info
+#### Package versions
 
+Run `asteroid-versions` and paste the output here:
+
+```
+Paste here
+```
+
+Alternatively, if you cannot install Asteroid or have an old version that doesn't have the `asteroid-versions` script,
+please output the output of:
+
+```
+pip freeze | egrep -i 'pytorch|torch|asteroid'
+```
+
+#### Additional info
+
+Additional info (environment, custom script, etc...)

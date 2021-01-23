@@ -10,7 +10,7 @@ from asteroid.filterbanks import make_enc_dec
 
 
 def fb_config_list():
-    keys = ['n_filters', 'kernel_size', 'stride']
+    keys = ["n_filters", "kernel_size", "stride"]
     param_list = [
         [256, 256, 128],
         [256, 256, 64],
@@ -41,7 +41,7 @@ def test_fb_def_and_forward_lowdim(fb_class, fb_config):
     # Assert for 4D inputs
     tf_out_4d = tf_out.repeat(1, 2, 1, 1)
     out_4d = dec(tf_out_4d)
-    assert_allclose(out, out_4d[:, 0])
+    assert_allclose(out, out_4d[:, :1])
     # Asser for 2D inputs
     assert_allclose(out[0, 0], dec(tf_out[0]))
     assert tf_out.shape[1] == enc.filterbank.n_feats_out
@@ -75,8 +75,7 @@ def test_fb_forward_multichannel(fb_class, fb_config, ndim):
     tensor_shape = tuple([random.randint(2, 4) for _ in range(ndim)]) + (4000,)
     inp = torch.randn(tensor_shape)
     tf_out = enc(inp)
-    assert tf_out.shape[:ndim+1] == (tensor_shape[:-1] +
-                                     (enc.filterbank.n_feats_out,))
+    assert tf_out.shape[: ndim + 1] == (tensor_shape[:-1] + (enc.filterbank.n_feats_out,))
     out = dec(tf_out)
     assert out.shape[:-1] == inp.shape[:-1]  # Time axis can differ
 
@@ -86,14 +85,14 @@ def test_fb_forward_multichannel(fb_class, fb_config, ndim):
 @pytest.mark.parametrize("kernel_size", [256, 257])
 def test_complexfb_shapes(fb_class, n_filters, kernel_size):
     fb = fb_class(n_filters, kernel_size)
-    assert fb.filters.shape[0] == 2 * (n_filters // 2)
+    assert fb.filters().shape[0] == 2 * (n_filters // 2)
 
 
 @pytest.mark.parametrize("kernel_size", [256, 257, 128, 129])
 def test_paramsinc_shape(kernel_size):
     """ ParamSincFB has odd length filters """
     fb = ParamSincFB(n_filters=200, kernel_size=kernel_size)
-    assert fb.filters.shape[-1] == 2 * (kernel_size // 2) + 1
+    assert fb.filters().shape[-1] == 2 * (kernel_size // 2) + 1
 
 
 @pytest.mark.parametrize("fb_class", [FreeFB, AnalyticFreeFB, ParamSincFB, MultiphaseGammatoneFB])
@@ -103,7 +102,7 @@ def test_pinv_of(fb_class):
     # Pseudo inverse can be taken from an Encoder/Decoder class or Filterbank.
     decoder_e = Decoder.pinv_of(encoder)
     decoder_f = Decoder.pinv_of(fb)
-    assert_allclose(decoder_e.filters, decoder_f.filters)
+    assert_allclose(decoder_e.filters(), decoder_f.filters())
 
     # Check filter computing
     inp = torch.randn(1, 1, 32000)
@@ -113,14 +112,12 @@ def test_pinv_of(fb_class):
     # Pseudo inverse can be taken from an Encoder/Decoder class or Filterbank.
     encoder_e = Encoder.pinv_of(decoder)
     encoder_f = Encoder.pinv_of(fb)
-    assert_allclose(encoder_e.filters, encoder_f.filters)
+    assert_allclose(encoder_e.filters(), encoder_f.filters())
 
 
 @pytest.mark.parametrize("who", ["enc", "dec"])
 def test_make_enc_dec(who):
-    fb_config = {"n_filters": 500,
-                 "kernel_size": 16,
-                 "stride": 8}
+    fb_config = {"n_filters": 500, "kernel_size": 16, "stride": 8}
     enc, dec = make_enc_dec("free", who_is_pinv=who, **fb_config)
     enc, dec = make_enc_dec(FreeFB, who_is_pinv=who, **fb_config)
     assert enc.filterbank == filterbanks.get(enc.filterbank)
@@ -135,3 +132,16 @@ def test_get_errors(wrong):
 
 def test_get_none():
     assert filterbanks.get(None) is None
+
+
+def test_register():
+    class Custom(filterbanks.Filterbank):
+        def filters(self):
+            return None
+
+    filterbanks.register_filterbank(Custom)
+    cls = filterbanks.get("Custom")
+    assert cls == Custom
+
+    with pytest.raises(ValueError):
+        filterbanks.register_filterbank(filterbanks.STFTFB)

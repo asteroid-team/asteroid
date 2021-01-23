@@ -22,7 +22,7 @@ from constants import (
 
 def sample_audio_set():
     """
-        sample random audio files as a noise from audio set dataset
+    sample random audio files as a noise from audio set dataset
     """
     audio_files = glob.glob(os.path.join(AUDIO_SET_DIR, "*"))
     total_files = len(audio_files)
@@ -63,15 +63,15 @@ def audio_mixer(
     remove_random_chance=0.9,
 ) -> None:
     """
-        generate the combination dataframe used in data_loader.py
+    generate the combination dataframe used in data_loader.py
 
-        Args:
-            dataset_size: restrict total possible combinations
-            n_src: input size
-            video_ext: extension of video
-            audio_ext: extension of audio
-            file_name: file name of combination dataframe to save
-            audio_set: use audio set dataset
+    Args:
+        dataset_size: restrict total possible combinations
+        n_src: input size
+        video_ext: extension of video
+        audio_ext: extension of audio
+        file_name: file name of combination dataframe to save
+        audio_set: use audio set dataset
     """
     audio_mix_command_suffix = "-filter_complex amix=inputs={}:duration=longest "
     audio_files = glob.glob(os.path.join(AUDIO_DIR, "*"))
@@ -83,27 +83,28 @@ def audio_mixer(
     train_files = audio_files[:total_train_files]
     val_files = audio_files[-total_val_files:]
 
+    storage_space_train, excess_storage = requires_excess_storage_space(len(train_files), n_src)
+
+    storage_space_val, _ = requires_excess_storage_space(len(val_files), n_src)
+
+    storage_space = storage_space_train + storage_space_val
+    if excess_storage:
+        storage_space = (1 - remove_random_chance) * storage_space
+        print(f"Removing {remove_random_chance * 100} percent of combinations")
+        print(
+            f"Saving total space: {storage_space - storage_space * remove_random_chance:,} Kbytes"
+        )
+
+    print(f"Occupying space: {storage_space:,} Kbytes")
+
     def retrieve_name(f):
         f = os.path.splitext(os.path.basename(f))[0]
         return re.sub(r"_part\d", "", f)
 
-    def mix(audio_filtered_files, file_name_df, offset):
+    def mix(audio_filtered_files, file_name_df, offset, excess_storage):
         # Generate all combinations and trim total possibilities
         audio_combinations = itertools.combinations(audio_filtered_files, n_src)
         audio_combinations = itertools.islice(audio_combinations, dataset_size)
-
-        storage_space, excess_storage = requires_excess_storage_space(
-            len(audio_filtered_files), n_src
-        )
-
-        if excess_storage:
-            storage_space = (1 - remove_random_chance) * storage_space
-            print(f"Removing {REMOVE_RANDOM_CHANCE * 100} percent of combinations")
-            print(
-                f"Saving total space: {storage_space - storage_space * REMOVE_RANDOM_CHANCE:,} Kbytes"
-            )
-
-        print(f"Occupying space: {storage_space:,} Kbytes")
 
         # Store list of tuples, consisting of `n_src`
         # Audio and their corresponding video path
@@ -113,9 +114,7 @@ def audio_mixer(
         noises = []
 
         total_comb_size = nCr(len(audio_filtered_files), n_src)
-        for indx, audio_comb in tqdm(
-            enumerate(audio_combinations), total=total_comb_size
-        ):
+        for indx, audio_comb in tqdm(enumerate(audio_combinations), total=total_comb_size):
             # skip few combinations if required storage is very high
             try:
                 if excess_storage and random.random() < remove_random_chance:
@@ -133,19 +132,14 @@ def audio_mixer(
                 audio_inputs.append(audio_comb)
                 # Convert audio file path to corresponding video path
                 video_inputs.append(
-                    tuple(
-                        os.path.join(VIDEO_DIR, retrieve_name(f) + video_ext)
-                        for f in audio_comb
-                    )
+                    tuple(os.path.join(VIDEO_DIR, retrieve_name(f) + video_ext) for f in audio_comb)
                 )
 
                 audio_mix_input = ""
                 for audio in audio_comb:
                     audio_mix_input += f"-i {audio} "
 
-                mixed_audio_name = os.path.join(
-                    MIXED_AUDIO_DIR, f"{indx+offset}{audio_ext}"
-                )
+                mixed_audio_name = os.path.join(MIXED_AUDIO_DIR, f"{indx+offset}{audio_ext}")
                 audio_command = (
                     AUDIO_MIX_COMMAND_PREFIX
                     + audio_mix_input
@@ -200,13 +194,11 @@ def audio_mixer(
         df.to_csv(file_name_df, index=False)
 
         if audio_set:
-            pd.Series(noises).to_csv(
-                "../../data/noise_only.csv", index=False, header=False
-            )
+            pd.Series(noises).to_csv("../../data/noise_only.csv", index=False, header=False)
         return df.shape[0]
 
-    offset = mix(train_files, "../../data/train.csv", 0)
-    mix(val_files, "../../data/val.csv", offset)
+    offset = mix(train_files, "../../data/train.csv", 0, excess_storage)
+    mix(val_files, "../../data/val.csv", offset, excess_storage)
 
 
 if __name__ == "__main__":
@@ -219,9 +211,7 @@ if __name__ == "__main__":
         type=float,
         help="ratio of combination to remove",
     )
-    parser.add_argument(
-        "--use-audio-set", "-u", dest="use_audio_set", action="store_true"
-    )
+    parser.add_argument("--use-audio-set", "-u", dest="use_audio_set", action="store_true")
     parser.add_argument(
         "--file-limit",
         "-l",

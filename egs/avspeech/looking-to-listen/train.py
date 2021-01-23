@@ -27,9 +27,7 @@ class DiscriminativeLoss(torch.nn.Module):
             sum_mtr += (target[:, i, ...] - input[:, i, ...]) ** 2
             for j in range(self.n_src):
                 if i != j:
-                    sum_mtr -= self.gamma * (
-                        (target[:, i, ...] - input[:, j, ...]) ** 2
-                    )
+                    sum_mtr -= self.gamma * ((target[:, i, ...] - input[:, j, ...]) ** 2)
         sum_mtr = torch.mean(sum_mtr.view(-1))
 
         return sum_mtr
@@ -45,17 +43,11 @@ def main(conf):
         learning_rate=conf["optim"]["lr"],
     )
 
-    dataset = AVSpeechDataset(
-        Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"]
-    )
-    val_dataset = AVSpeechDataset(
-        Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"]
-    )
+    dataset = AVSpeechDataset(Path("data/train.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"])
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"])
 
     model, optimizer = make_model_and_optimizer(conf)
-    print(
-        f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters"
-    )
+    print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
 
     criterion = DiscriminativeLoss()
 
@@ -65,6 +57,15 @@ def main(conf):
         resume = model_path.as_posix()
     else:
         resume = None
+
+    if torch.cuda.device_count() > 1:
+        print(f"Multiple GPUs available")
+        device_ids = (
+            list(map(int, conf["main_args"]["gpus"].split(",")))
+            if conf["main_args"]["gpus"] != "-1"
+            else None
+        )
+        model = torch.nn.DataParallel(model, device_ids=device_ids)
 
     train(
         model,

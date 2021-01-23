@@ -35,27 +35,30 @@ def test_wrapper(batch_size, n_src, time):
         with pytest.raises(AssertionError):
             loss(est_targets, targets)
     # wo_src loss function / With and without return estimates
-    loss = PITLossWrapper(good_batch_loss_func, pit_from='pw_pt')
-    loss_value_no_return = loss(est_targets, targets)
+    loss = PITLossWrapper(good_batch_loss_func, pit_from="pw_pt")
+    loss(est_targets, targets)
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape
 
     # pairwise loss function / With and without return estimates
-    loss = PITLossWrapper(good_pairwise_loss_func, pit_from='pw_mtx')
-    loss_value_no_return = loss(est_targets, targets)
+    loss = PITLossWrapper(good_pairwise_loss_func, pit_from="pw_mtx")
+    loss(est_targets, targets)
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape
 
     # w_src loss function / With and without return estimates
-    loss = PITLossWrapper(good_batch_loss_func, pit_from='perm_avg')
-    loss_value_no_return = loss(est_targets, targets)
+    loss = PITLossWrapper(good_batch_loss_func, pit_from="perm_avg")
+    loss(est_targets, targets)
     loss_value, reordered_est = loss(est_targets, targets, return_est=True)
     assert reordered_est.shape == est_targets.shape
 
 
-@pytest.mark.parametrize("perm", list(itertools.permutations([0, 1, 2])) +
-                                 list(itertools.permutations([0, 1, 2, 3])) +
-                                 list(itertools.permutations([0, 1, 2, 3, 4])))
+@pytest.mark.parametrize(
+    "perm",
+    list(itertools.permutations([0, 1, 2]))
+    + list(itertools.permutations([0, 1, 2, 3]))
+    + list(itertools.permutations([0, 1, 2, 3, 4])),
+)
 def test_permutation(perm):
     """ Construct fake target/estimates pair. Check the value and reordering."""
     n_src = len(perm)
@@ -73,22 +76,27 @@ def test_permutation(perm):
 
 def test_permreduce():
     from functools import partial
+
     n_src = 3
     sources = torch.randn(10, n_src, 8000)
     est_sources = torch.randn(10, n_src, 8000)
-    wo_reduce = PITLossWrapper(pairwise_mse, pit_from='pw_mtx')
-    w_mean_reduce = PITLossWrapper(pairwise_mse, pit_from='pw_mtx',
-                                   # perm_reduce=partial(torch.mean, dim=-1))
-                                   perm_reduce=lambda x: torch.mean(x, dim=-1))
-    w_sum_reduce = PITLossWrapper(pairwise_mse, pit_from='pw_mtx',
-                                  perm_reduce=partial(torch.sum, dim=-1))
+    wo_reduce = PITLossWrapper(pairwise_mse, pit_from="pw_mtx")
+    w_mean_reduce = PITLossWrapper(
+        pairwise_mse,
+        pit_from="pw_mtx",
+        # perm_reduce=partial(torch.mean, dim=-1))
+        perm_reduce=lambda x: torch.mean(x, dim=-1),
+    )
+    w_sum_reduce = PITLossWrapper(
+        pairwise_mse, pit_from="pw_mtx", perm_reduce=partial(torch.sum, dim=-1)
+    )
 
     wo = wo_reduce(est_sources, sources)
     w_mean = w_mean_reduce(est_sources, sources)
     w_sum = w_sum_reduce(est_sources, sources)
 
     assert_allclose(wo, w_mean)
-    assert_allclose(wo, w_sum/n_src)
+    assert_allclose(wo, w_sum / n_src)
 
 
 def test_permreduce_args():
@@ -103,8 +111,22 @@ def test_permreduce_args():
     n_src = 3
     sources = torch.randn(10, n_src, 8000)
     est_sources = torch.randn(10, n_src, 8000)
-    loss_func = PITLossWrapper(pairwise_mse, pit_from='pw_mtx',
-                               perm_reduce=reduce_func)
+    loss_func = PITLossWrapper(pairwise_mse, pit_from="pw_mtx", perm_reduce=reduce_func)
     weights = torch.softmax(torch.randn(10, n_src), dim=-1)
-    loss = loss_func(est_sources, sources,
-                     reduce_kwargs={'class_weights': weights})
+    loss_func(est_sources, sources, reduce_kwargs={"class_weights": weights})
+
+
+@pytest.mark.parametrize("n_src", [2, 4, 5, 6, 8])
+def test_best_perm_match(n_src):
+    pwl = torch.randn(2, n_src, n_src)
+
+    min_loss, min_idx = PITLossWrapper.find_best_perm_factorial(pwl)
+    min_loss_hun, min_idx_hun = PITLossWrapper.find_best_perm_hungarian(pwl)
+
+    assert_allclose(min_loss, min_loss_hun)
+    assert_allclose(min_idx, min_idx_hun)
+
+
+def test_raises_wrong_pit_from():
+    with pytest.raises(ValueError):
+        PITLossWrapper(lambda x: x, pit_from="unknown_mode")

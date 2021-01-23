@@ -1,0 +1,15 @@
+-r ./dev.txt
+sphinx-rtd-theme==0.4.3
+sphinxcontrib-jsmath==1.0.1
+sphinxcontrib-programoutput>=0.16
+sphinx>=1.8.3, <3.0
+recommonmark  # fails with badges
+nbsphinx
+m2r2
+-e git+https://github.com/asteroid-team/asteroid_sphinx_theme#egg=asteroid_sphinx_theme
+# asteroid_sphinx_theme>=0.0.3
+# pandoc
+# docutils
+# sphinxcontrib-fulltoc
+# sphinxcontrib-mockautodoc
+# pip_shims

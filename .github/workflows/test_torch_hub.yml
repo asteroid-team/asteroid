@@ -1,0 +1,51 @@
+name: TorchHub integration
+
+on: push
+
+jobs:
+  src-test:
+    name: TorchHub integration
+    runs-on: ubuntu-latest
+
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: True
+    steps:
+    - name: Extract branch name
+      run: echo "::set-env name=BRANCH::${GITHUB_REF#refs/heads/}"
+    - name: Check branch name
+      run: echo $BRANCH
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install libnsdfile
+      run: |
+        sudo apt update
+        sudo apt install libsndfile1-dev libsndfile1
+
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade pip --quiet
+        python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
+        python -m pip install -r requirements/torchhub.txt --quiet
+        python --version
+        pip --version
+        python -m pip list
+
+    - name: TorchHub list
+      run: |
+        python -c "import torch; print(torch.hub.list('mpariente/asteroid:$BRANCH'))"
+
+    - name: TorchHub help
+      run: |
+        python -c "import torch; print(torch.hub.help('mpariente/asteroid:$BRANCH', 'conv_tasnet'))"

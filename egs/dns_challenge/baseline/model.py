@@ -5,17 +5,17 @@ import torch
 from torch import nn
 
 from asteroid.engine.system import System
-from asteroid.filterbanks import make_enc_dec
-from asteroid.filterbanks.transforms import take_cat, take_mag
-from asteroid.filterbanks.transforms import apply_real_mask
-from asteroid.filterbanks.transforms import apply_mag_mask
-from asteroid.masknn import blocks
+from asteroid_filterbanks import make_enc_dec
+from asteroid_filterbanks.transforms import magreim, mag
+from asteroid_filterbanks.transforms import apply_real_mask
+from asteroid_filterbanks.transforms import apply_mag_mask
+from asteroid.masknn.recurrent import StackedResidualRNN
 from asteroid.engine.optimizers import make_optimizer
 from asteroid import torch_utils
 
 
 def make_model_and_optimizer(conf):
-    """ Function to define the model and optimizer for a config dictionary.
+    """Function to define the model and optimizer for a config dictionary.
     Args:
         conf: Dictionary containing the output of hierachical argparse.
     Returns:
@@ -24,27 +24,25 @@ def make_model_and_optimizer(conf):
     and evaluation very simple.
     """
     # Define building blocks for local model
-    stft, istft = make_enc_dec('stft', **conf['filterbank'])
+    stft, istft = make_enc_dec("stft", **conf["filterbank"])
     # Because we concatenate (re, im, mag) as input and compute a complex mask.
-    if conf['main_args']['is_complex']:
+    if conf["main_args"]["is_complex"]:
         inp_size = int(stft.n_feats_out * 3 / 2)
         output_size = stft.n_feats_out
     else:
         inp_size = output_size = int(stft.n_feats_out / 2)
     # Add these fields to the mask model dict
-    conf['masknet'].update(dict(input_size=inp_size,
-                                output_size=output_size))
-    masker = SimpleModel(**conf['masknet'])
+    conf["masknet"].update(dict(input_size=inp_size, output_size=output_size))
+    masker = SimpleModel(**conf["masknet"])
     # Make the complete model
-    model = Model(stft, masker, istft,
-                  is_complex=conf['main_args']['is_complex'])
+    model = Model(stft, masker, istft, is_complex=conf["main_args"]["is_complex"])
     # Define optimizer of this model
-    optimizer = make_optimizer(model.parameters(), **conf['optim'])
+    optimizer = make_optimizer(model.parameters(), **conf["optim"])
     return model, optimizer
 
 
 class Model(nn.Module):
-    """ Speech enhancement model.
+    """Speech enhancement model.
 
     Args:
         encoder (~.Encoder): instance of a complex filterbank encoder
@@ -60,6 +58,7 @@ class Model(nn.Module):
     and the returns a **complex** speech estimate.
     The loss function needs to be adapted to complex representations.
     """
+
     def __init__(self, encoder, masker, decoder, is_complex=True):
         super().__init__()
         self.encoder = encoder
@@ -76,9 +75,9 @@ class Model(nn.Module):
         tf_rep = self.encoder(x)
         # Estimate TF mask from STFT features : cat([re, im, mag])
         if self.is_complex:
-            to_masker = take_cat(tf_rep)
+            to_masker = magreim(tf_rep)
         else:
-            to_masker = take_mag(tf_rep)
+            to_masker = mag(tf_rep)
         # LSTM masker expects a feature dimension last (not like 1D conv)
         est_masks = self.masker(to_masker.transpose(1, 2)).transpose(1, 2)
         # Apply TF mask
@@ -95,7 +94,7 @@ class Model(nn.Module):
 
 
 class SimpleModel(nn.Module):
-    """ Simple recurrent model for the DNS challenge.
+    """Simple recurrent model for the DNS challenge.
 
     Args:
         input_size (int): input size along the features dimension
@@ -106,17 +105,19 @@ class SimpleModel(nn.Module):
         n_layers (int): Number of recurrent layers.
         dropout (float): dropout value between recurrent layers.
     """
-    def __init__(self, input_size, hidden_size, output_size=None,
-                 rnn_type='gru', n_layers=3, dropout=0.3):
+
+    def __init__(
+        self, input_size, hidden_size, output_size=None, rnn_type="gru", n_layers=3, dropout=0.3
+    ):
         super(SimpleModel, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         output_size = input_size if output_size is None else output_size
         self.output_size = output_size
         self.in_proj_layer = nn.Linear(input_size, hidden_size)
-        self.residual_rec = blocks.StackedResidualRNN(rnn_type, hidden_size,
-                                                      n_layers=n_layers,
-                                                      dropout=dropout)
+        self.residual_rec = StackedResidualRNN(
+            rnn_type, hidden_size, n_layers=n_layers, dropout=dropout
+        )
         self.out_proj_layer = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
@@ -139,7 +140,7 @@ class SimpleSystem(System):
 
 
 def distance(estimate, target, is_complex=True):
-    """ Compute the average distance in the complex plane. Makes more sense
+    """Compute the average distance in the complex plane. Makes more sense
     when the network computes a complex mask.
 
     Args:
@@ -154,14 +155,14 @@ def distance(estimate, target, is_complex=True):
     if is_complex:
         # Take the difference in the complex plane and compute the squared norm
         # of the remaining vector.
-        return take_mag(estimate - target).pow(2).mean()
+        return mag(estimate - target).pow(2).mean()
     else:
         # Compute the mean difference between magnitudes.
-        return (take_mag(estimate) - take_mag(target)).pow(2).mean()
+        return (mag(estimate) - mag(target)).pow(2).mean()
 
 
 def load_best_model(train_conf, exp_dir):
-    """ Load best model after training.
+    """Load best model after training.
 
     Args:
         train_conf (dict): dictionary as expected by `make_model_and_optimizer`
@@ -174,13 +175,12 @@ def load_best_model(train_conf, exp_dir):
     # Create the model from recipe-local function
     model, _ = make_model_and_optimizer(train_conf)
     # Last best model summary
-    with open(os.path.join(exp_dir, 'best_k_models.json'), "r") as f:
+    with open(os.path.join(exp_dir, "best_k_models.json"), "r") as f:
         best_k = json.load(f)
     best_model_path = min(best_k, key=best_k.get)
     # Load checkpoint
-    checkpoint = torch.load(best_model_path, map_location='cpu')
+    checkpoint = torch.load(best_model_path, map_location="cpu")
     # Load state_dict into model.
-    model = torch_utils.load_state_dict_in(checkpoint['state_dict'],
-                                           model)
+    model = torch_utils.load_state_dict_in(checkpoint["state_dict"], model)
     model.eval()
     return model

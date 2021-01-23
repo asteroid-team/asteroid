@@ -1,0 +1,9 @@
+# Requirements for development on Asteroid and running tests
+-r ./install.txt
+pre-commit
+black==20.8b1
+pytest
+coverage
+codecov
+
+librosa

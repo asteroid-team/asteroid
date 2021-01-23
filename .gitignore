@@ -1,6 +1,8 @@
 # Project specific
 uploader_info.yml
 egs/**/exp
+# Where we'll save pretrained models git folders.
+pretrained_models
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

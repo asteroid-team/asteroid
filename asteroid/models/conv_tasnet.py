@@ -1,10 +1,10 @@
-from ..filterbanks import make_enc_dec
+from asteroid_filterbanks import make_enc_dec
 from ..masknn import TDConvNet
-from .base_models import BaseTasNet
+from .base_models import BaseEncoderMaskerDecoder
 
 
-class ConvTasNet(BaseTasNet):
-    """ ConvTasNet separation model, as described in [1].
+class ConvTasNet(BaseEncoderMaskerDecoder):
+    """ConvTasNet separation model, as described in [1].
 
     Args:
         n_src (int): Number of sources in the input mixtures.
@@ -33,33 +33,65 @@ class ConvTasNet(BaseTasNet):
         kernel_size (int): Length of the filters.
         stride (int, optional): Stride of the convolution.
             If None (default), set to ``kernel_size // 2``.
+        sample_rate (float): Sampling rate of the model.
         **fb_kwargs (dict): Additional kwards to pass to the filterbank
             creation.
 
-    References:
-        [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
-        for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
-        https://arxiv.org/abs/1809.07454
+    References
+        - [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
+          for speech separation" TASLP 2019 Yi Luo, Nima Mesgarani
+          https://arxiv.org/abs/1809.07454
     """
-    def __init__(self, n_src, out_chan=None, n_blocks=8, n_repeats=3,
-                 bn_chan=128, hid_chan=512, skip_chan=128, conv_kernel_size=3,
-                 norm_type="gLN", mask_act='relu', in_chan=None, fb_name='free',
-                 kernel_size=16, n_filters=512, stride=8, **fb_kwargs):
+
+    def __init__(
+        self,
+        n_src,
+        out_chan=None,
+        n_blocks=8,
+        n_repeats=3,
+        bn_chan=128,
+        hid_chan=512,
+        skip_chan=128,
+        conv_kernel_size=3,
+        norm_type="gLN",
+        mask_act="sigmoid",
+        in_chan=None,
+        fb_name="free",
+        kernel_size=16,
+        n_filters=512,
+        stride=8,
+        encoder_activation=None,
+        sample_rate=8000,
+        **fb_kwargs,
+    ):
         encoder, decoder = make_enc_dec(
-            fb_name, kernel_size=kernel_size, n_filters=n_filters,
-            stride=stride, **fb_kwargs
+            fb_name,
+            kernel_size=kernel_size,
+            n_filters=n_filters,
+            stride=stride,
+            sample_rate=sample_rate,
+            **fb_kwargs,
         )
         n_feats = encoder.n_feats_out
         if in_chan is not None:
-            assert in_chan == n_feats, ('Number of filterbank output channels'
-                                        ' and number of input channels should '
-                                        'be the same. Received '
-                                        f'{n_feats} and {in_chan}')
+            assert in_chan == n_feats, (
+                "Number of filterbank output channels"
+                " and number of input channels should "
+                "be the same. Received "
+                f"{n_feats} and {in_chan}"
+            )
         # Update in_chan
         masker = TDConvNet(
-            n_feats, n_src, out_chan=out_chan, n_blocks=n_blocks,
-            n_repeats=n_repeats, bn_chan=bn_chan, hid_chan=hid_chan,
-            skip_chan=skip_chan, conv_kernel_size=conv_kernel_size,
-            norm_type=norm_type, mask_act=mask_act
+            n_feats,
+            n_src,
+            out_chan=out_chan,
+            n_blocks=n_blocks,
+            n_repeats=n_repeats,
+            bn_chan=bn_chan,
+            hid_chan=hid_chan,
+            skip_chan=skip_chan,
+            conv_kernel_size=conv_kernel_size,
+            norm_type=norm_type,
+            mask_act=mask_act,
         )
-        super().__init__(encoder, masker, decoder)
+        super().__init__(encoder, masker, decoder, encoder_activation=encoder_activation)

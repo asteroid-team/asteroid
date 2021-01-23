@@ -25,5 +25,5 @@ def main(out_dir, original_sr, target_sr, extension):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    copy_tree(args.source_dir, args.out_dir) # first we copy then we resample
+    copy_tree(args.source_dir, args.out_dir)  # first we copy then we resample
     main(args.out_dir, args.original_sr, args.target_sr, args.extension)

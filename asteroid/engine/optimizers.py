@@ -1,14 +1,54 @@
 from torch.optim.optimizer import Optimizer
-from torch.optim import (
-    Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, AdamW, ASGD
-)
+from torch.optim import Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, AdamW, ASGD
 from torch_optimizer import (
-    AccSGD, AdaBound, AdaMod, DiffGrad, Lamb, NovoGrad, PID, QHAdam,
-    QHM, RAdam, SGDW, Yogi, Ranger, RangerQH, RangerVA
+    AccSGD,
+    AdaBound,
+    AdaMod,
+    DiffGrad,
+    Lamb,
+    NovoGrad,
+    PID,
+    QHAdam,
+    QHM,
+    RAdam,
+    SGDW,
+    Yogi,
+    Ranger,
+    RangerQH,
+    RangerVA,
 )
 
 
-def make_optimizer(params, optimizer='adam', **kwargs):
+__all__ = [
+    "AccSGD",
+    "AdaBound",
+    "AdaMod",
+    "DiffGrad",
+    "Lamb",
+    "NovoGrad",
+    "PID",
+    "QHAdam",
+    "QHM",
+    "RAdam",
+    "SGDW",
+    "Yogi",
+    "Ranger",
+    "RangerQH",
+    "RangerVA",
+    "Adam",
+    "RMSprop",
+    "SGD",
+    "Adadelta",
+    "Adagrad",
+    "Adamax",
+    "AdamW",
+    "ASGD",
+    "make_optimizer",
+    "get",
+]
+
+
+def make_optimizer(params, optimizer="adam", **kwargs):
     """
 
     Args:
@@ -19,7 +59,7 @@ def make_optimizer(params, optimizer='adam', **kwargs):
 
     Returns:
         torch.optim.Optimizer
-    Examples:
+    Examples
         >>> from torch import nn
         >>> model = nn.Sequential(nn.Linear(10, 10))
         >>> optimizer = make_optimizer(model.parameters(), optimizer='sgd',
@@ -28,8 +68,20 @@ def make_optimizer(params, optimizer='adam', **kwargs):
     return get(optimizer)(params, **kwargs)
 
 
+def register_optimizer(custom_opt):
+    """Register a custom opt, gettable with `optimzers.get`.
+
+    Args:
+        custom_opt: Custom optimizer to register.
+
+    """
+    if custom_opt.__name__ in globals().keys() or custom_opt.__name__.lower() in globals().keys():
+        raise ValueError(f"Activation {custom_opt.__name__} already exists. Choose another name.")
+    globals().update({custom_opt.__name__: custom_opt})
+
+
 def get(identifier):
-    """ Returns an optimizer function from a string. Returns its input if it
+    """Returns an optimizer function from a string. Returns its input if it
     is callable (already a :class:`torch.optim.Optimizer` for example).
 
     Args:
@@ -44,6 +96,6 @@ def get(identifier):
         to_get = {k.lower(): v for k, v in globals().items()}
         cls = to_get.get(identifier.lower())
         if cls is None:
-            raise ValueError(f'Could not interpret optimizer : {str(identifier)}')
+            raise ValueError(f"Could not interpret optimizer : {str(identifier)}")
         return cls
-    raise ValueError(f'Could not interpret optimizer : {str(identifier)}')
+    raise ValueError(f"Could not interpret optimizer : {str(identifier)}")

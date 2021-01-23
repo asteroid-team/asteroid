@@ -1,4 +1,4 @@
-### About the FUSS dataset
+### FUSS dataset
 
 The Free Universal Sound Separation (FUSS) dataset comprises audio mixtures of arbitrary sounds with source references for use in experiments on arbitrary sound separation.
 
@@ -6,7 +6,7 @@ All the information related to this dataset can be found in [this repo](https://
 
 
 
-### References
+**References**
 If you use this dataset, please cite the corresponding paper as follows:
 ```BibTex
 @Article{Wisdom2020,

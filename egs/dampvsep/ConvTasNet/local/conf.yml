@@ -1,0 +1,40 @@
+# filterbank config
+filterbank:
+  n_filters: 256      # N
+  kernel_size: 20     # L
+  stride: 10          # L/2  
+# Network config
+masknet:
+  n_blocks: 8         # X
+  n_repeats: 4        # R
+  mask_act: relu      # mask_nonlinear
+  conv_kernel_size: 3 # P  
+  bn_chan: 256        # B
+  skip_chan: 256      # Sc    
+  hid_chan: 512       # H
+  norm_type: gLN
+  n_src: 2
+# Training config
+training:
+  epochs: 200
+  batch_size: 16
+  num_workers: 4
+  half_lr: yes
+  early_stop: yes
+  loss_alpha: 0.3     # Alpha for loss function
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.
+# Data config
+data:
+  task: enh_both
+  train_set: english
+  root_path:
+  mixture: remix
+  sample_rate: 16000
+  segment: 8.
+  ex_per_track: 16
+  channels: 1
+

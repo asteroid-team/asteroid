@@ -1,0 +1,78 @@
+name: CI
+
+# see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
+# Trigger the workflow on push or pull request
+on: [push, pull_request]
+
+jobs:
+  src-test:
+    name: unit-tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6]  #, 3.7, 3.8]
+        pytorch-version: ["1.6.0", "1.7.0", "nightly"]
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install libnsdfile
+      run: |
+        sudo apt update
+        sudo apt install libsndfile1-dev libsndfile1
+
+    - name: Install python dependencies
+      env:
+        TORCH_INSTALL: ${{ matrix.pytorch-version }}
+      run: |
+        python -m pip install --upgrade --user pip --quiet
+        python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
+        if [ $TORCH_INSTALL == "1.6.0" ]; then
+          INSTALL="torch==1.6.0 torchaudio==0.6.0"
+        elif [ $TORCH_INSTALL == "1.7.0" ]; then
+          INSTALL="torch==1.7.0+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html"
+        else
+          INSTALL="--pre torch torchaudio -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html"
+        fi
+        python -m pip install $INSTALL
+        python -m pip install -r requirements/dev.txt --upgrade-strategy only-if-needed --quiet
+        python --version
+        pip --version
+        python -m pip list
+      shell: bash
+
+    - name: Source code tests
+      run: |
+        coverage run -a -m py.test tests  --ignore tests/models/publish_test.py
+        chmod +x ./tests/cli_test.sh
+        ./tests/cli_test.sh
+
+    # This tends to fail despite the code works, when Zenodo is slow.
+    - name: Model-sharing tests
+      run: |
+        coverage run -a -m py.test tests/models/publish_test.py
+      env:
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+    - name: CLI tests
+      run: |
+        chmod +x ./tests/cli_test.sh
+        ./tests/cli_test.sh
+      env:
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+    - name: Coverage report
+      run: |
+        coverage report -m
+        coverage xml -o coverage.xml
+
+    - name: Codecov upload
+      uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage.xml

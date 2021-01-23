@@ -1,0 +1,79 @@
+name: Latest docs
+
+# Trigger the workflow on push or pull request, but only for the master branch
+# https://help.github.com/en/actions/reference/events-that-trigger-workflows
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  docs-test:
+    name: docs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8]  #, 3.7, 3.8]
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install git
+      run: |
+        sudo apt update
+        sudo apt install git-core
+        sudo apt install libsndfile1-dev libsndfile1  # Needed for sndfile import
+
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade --user pip --quiet
+        python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
+        python -m pip install -r requirements/docs.txt
+        python --version
+        pip --version
+        python -m pip list
+      shell: bash
+
+    - name: Build the docs
+      run: |
+        pip install -e .  # Install asteroid-* scripts
+        cd docs
+        make html
+        touch build/html/.nojekyll  # prevents use jekyll to build doc
+        grep -qHrn "System Message" build/html && exit 1 || true # Check for "System Message" errors
+
+    # Create an artifact of the html output.
+    - uses: actions/upload-artifact@v1
+      with:
+        name: DocumentationHTML
+        path: docs/build/html/
+
+    # Publish built docs to gh-pages branch.
+    - name: Commit documentation changes
+      run: |
+        git clone https://github.com/ammaraskar/sphinx-action-test.git --branch gh-pages --single-branch gh-pages
+        cp -r docs/build/html/* gh-pages/
+        cd gh-pages
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Update documentation" -a || true
+        # The above command will fail if no changes were present, so we ignore that.
+    - name: Push changes
+      if: github.ref == 'refs/heads/master'
+      uses: ad-m/github-push-action@master
+      with:
+        branch: gh-pages
+        directory: gh-pages
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        force: true

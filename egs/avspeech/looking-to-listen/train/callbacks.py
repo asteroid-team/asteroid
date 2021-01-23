@@ -23,15 +23,10 @@ class SNRCallback(MetricCallback):
         input_key: str = "targets",
         output_key: str = "logits",
         prefix: str = "snr",
-        mixed_audio_key: str="input_audio"
+        mixed_audio_key: str = "input_audio",
     ):
         self.mixed_audio_key = mixed_audio_key
-        super().__init__(
-            prefix=prefix,
-            metric_fn=snr,
-            input_key=input_key,
-            output_key=output_key
-        )
+        super().__init__(prefix=prefix, metric_fn=snr, input_key=input_key, output_key=output_key)
 
     def on_batch_end(self, state):
         output_audios = state.output[self.output_key]
@@ -70,23 +65,21 @@ class SDRCallback(MetricCallback):
         input_key: str = "targets",
         output_key: str = "logits",
         prefix: str = "sdr",
-        mixed_audio_key: str="input_audio"
+        mixed_audio_key: str = "input_audio",
     ):
         self.mixed_audio_key = mixed_audio_key
-        super().__init__(
-            prefix=prefix,
-            metric_fn=snr,
-            input_key=input_key,
-            output_key=output_key
-        )
+        super().__init__(prefix=prefix, metric_fn=snr, input_key=input_key, output_key=output_key)
 
     def on_batch_end(self, state):
         output_audios = state.output[self.output_key]
         true_audios = state.input[self.input_key]
 
-        num_person = state.model.num_person
-        batch = output_audios.shape[0]
+        if hasattr(state.model, "module"):
+            num_person = state.model.module.num_person
+        else:
+            num_person = state.model.num_person
 
+        batch = output_audios.shape[0]
         avg_sdr = 0
         for n in range(batch):
             output_audio = output_audios[n, ...]

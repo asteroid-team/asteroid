@@ -17,3 +17,8 @@ cd LibriMix
 cd $current_dir
 $python_path local/create_local_metadata.py --librimix_dir $storage_dir/Libri$n_src"Mix"
 
+
+$python_path local/get_text.py \
+  --libridir $storage_dir/LibriSpeech \
+  --split test-clean \
+  --outfile data/test_annotations.csv
