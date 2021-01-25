@@ -14,7 +14,7 @@ from pathlib import Path
 from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid import ConvTasNet
+from asteroid import DCCRNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
 from asteroid.dsp.declipp import declipp
@@ -42,7 +42,7 @@ parser.add_argument(
 )
 parser.add_argument("--exp_dir", default="exp/tmp", help="Experiment root")
 parser.add_argument(
-    "--n_save_ex", type=int, default=10, help="Number of audio examples to save, -1 means all"
+    "--n_save_ex", type=int, default=1, help="Number of audio examples to save, -1 means all"
 )
 parser.add_argument(
     "--compute_wer", type=int, default=0, help="Compute WER using ESPNet's pretrained model"
@@ -75,7 +75,7 @@ def main(conf):
         MockWERTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, anno_df)
     )
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
-    model = ConvTasNet.from_pretrained(model_path)
+    model = DCCRNet.from_pretrained(model_path)
     # Handle device placement
     if conf["use_gpu"]:
         model.cuda()
