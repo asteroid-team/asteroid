@@ -155,8 +155,11 @@ def test_dptnet(fb):
 
 
 def test_dcunet():
-    _, istft = make_enc_dec("stft", 512, 512)
-    input_samples = istft(torch.zeros((514, 17))).shape[0]
+    n_fft = 1024
+    _, istft = make_enc_dec(
+        "stft", n_filters=n_fft, kernel_size=1024, stride=256, sample_rate=16000
+    )
+    input_samples = istft(torch.zeros((n_fft + 2, 17))).shape[0]
     _default_test_model(DCUNet("DCUNet-10"), input_samples=input_samples)
     _default_test_model(DCUNet("DCUNet-16"), input_samples=input_samples)
     _default_test_model(DCUNet("DCUNet-20"), input_samples=input_samples)
@@ -176,8 +179,9 @@ def test_dcunet():
 
 
 def test_dccrnet():
-    _, istft = make_enc_dec("stft", 512, 512)
-    input_samples = istft(torch.zeros((514, 16))).shape[0]
+    n_fft = 512
+    _, istft = make_enc_dec("stft", n_filters=n_fft, kernel_size=400, stride=100, sample_rate=16000)
+    input_samples = istft(torch.zeros((n_fft + 2, 16))).shape[0]
     _default_test_model(DCCRNet("DCCRN-CL"), input_samples=input_samples)
     _default_test_model(DCCRNet("DCCRN-CL", n_src=2), input_samples=input_samples)
 
