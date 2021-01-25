@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from asteroid.models import SuDORMRFNet
+from asteroid.models import SuDORMRFImprovedNet
 from asteroid.data import LibriMix
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
@@ -59,7 +59,7 @@ def main(conf):
     conf["masknet"].update({"n_src": conf["data"]["n_src"]})
 
 
-    model = SuDORMRFNet(
+    model = SuDORMRFImprovedNet(
         **conf["filterbank"], **conf["masknet"], sample_rate=conf["data"]["sample_rate"]
     )
     optimizer = make_optimizer(model.parameters(), **conf["optim"])

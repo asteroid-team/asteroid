@@ -74,7 +74,7 @@ def main(conf):
         MockWERTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, anno_df)
     )
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
-    model = DCUNet.from_pretrained(model_path)
+    model = DPTNet.from_pretrained(model_path)
     # Handle device placement
     if conf["use_gpu"]:
         model.cuda()

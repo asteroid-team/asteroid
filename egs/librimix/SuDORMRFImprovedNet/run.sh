@@ -22,14 +22,13 @@ python_path=python
 stage=0  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=$CUDA_VISIBLE_DEVICES
+id=0,1,2,3
 out_dir=librimix # Controls the directory name associated to the evaluation results inside the experiment directory
 
 # Network config
-
 # Training config
-epochs=1
-batch_size=1
+epochs=200
+batch_size=2
 num_workers=4
 half_lr=yes
 early_stop=yes
@@ -39,7 +38,7 @@ lr=0.001
 weight_decay=0.
 # Data config
 sample_rate=16000
-mode=min
+mode=max
 n_src=1
 segment=3
 task=enh_single  # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
@@ -80,7 +79,7 @@ if [[ -z ${tag} ]]; then
 	tag=${uuid}
 fi
 
-expdir=exp/train_dccrnet_${tag}
+expdir=exp/train_sudormrfimproved_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
@@ -107,11 +106,11 @@ if [[ $stage -le 2 ]]; then
 
 	# Get ready to publish
 	mkdir -p $expdir/publish_dir
-	echo "librimix/DCCRNet" > $expdir/publish_dir/recipe_name.txt
+	echo "librimix/SuDORMRF" > $expdir/publish_dir/recipe_name.txt
 fi
 
 
-if [[ $stage -le 3 ]]; then
+if [[ $stage -le 2 ]]; then
 	echo "Stage 2 : Evaluation"
 
 	if [[ $compute_wer -eq 1 ]]; then
