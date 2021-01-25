@@ -1,5 +1,6 @@
 # Filterbank config
 filterbank:
+  stft_n_filters: 1024
   stft_kernel_size: 1024
   stft_stride: 256
 masknet:
