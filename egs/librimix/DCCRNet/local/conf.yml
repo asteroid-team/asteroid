@@ -13,8 +13,8 @@ data:
   n_src: 1
   segment: 4
 training:
-  epochs: 1
-  batch_size: 4
+  epochs: 200
+  batch_size: 12
   num_workers: 4
   half_lr: yes
   early_stop: yes

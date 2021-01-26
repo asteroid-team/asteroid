@@ -28,8 +28,8 @@ out_dir=librimix # Controls the directory name associated to the evaluation resu
 # Network config
 
 # Training config
-epochs=1
-batch_size=1
+epochs=200
+batch_size=12
 num_workers=4
 half_lr=yes
 early_stop=yes

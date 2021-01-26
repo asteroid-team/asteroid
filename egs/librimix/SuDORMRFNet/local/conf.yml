@@ -9,7 +9,7 @@ masknet:
   bn_chan: 128
   num_blocks: 16
   upsampling_depth: 4
-  mask_act: "relu"
+  mask_act: "softmax"
   in_chan: 512
 # Training config
 training:
