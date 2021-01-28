@@ -183,8 +183,8 @@ class WERTracker:
         trans_dict["mixture_txt"] = txt
         #  Get ground truth transcription and IDs
         for i, tmp_id in enumerate(wav_id):
-            trans_dict["truth"][f"ID_{i}"] = tmp_id
-            trans_dict["truth"][f"Txt_{i}"] = self.trans_dic[tmp_id]
+            trans_dict["truth"][f"utt_id_{i}"] = tmp_id
+            trans_dict["truth"][f"txt_{i}"] = self.trans_dic[tmp_id]
             self.true_txt_list.append(dict(utt_id=tmp_id, text=self.trans_dic[tmp_id]))
         # Mixture
         for tmp_id in wav_id:
@@ -207,8 +207,8 @@ class WERTracker:
             self.clean_counter += out_count
             local_clean_counter += out_count
             self.clean_txt_list.append(dict(utt_id=tmp_id, text=txt))
-            trans_dict["clean"][f"ID_{i}"] = tmp_id
-            trans_dict["clean"][f"Txt_{i}"] = txt
+            trans_dict["clean"][f"utt_id_{i}"] = tmp_id
+            trans_dict["clean"][f"txt_{i}"] = txt
         # Average WER for the estimate pair
         for i, (est, tmp_id) in enumerate(zip(estimate, wav_id)):
             txt = self.predict_hypothesis(est)
@@ -220,8 +220,8 @@ class WERTracker:
             self.est_counter += out_count
             local_est_counter += out_count
             self.output_txt_list.append(dict(utt_id=tmp_id, text=txt))
-            trans_dict["estimates"][f"ID_{i}"] = tmp_id
-            trans_dict["estimates"][f"Txt_{i}"] = txt
+            trans_dict["estimates"][f"utt_id_{i}"] = tmp_id
+            trans_dict["estimates"][f"txt_{i}"] = txt
         self.transcriptions.append(trans_dict)
         return dict(
             input_wer=self.wer_from_hsdi(**dict(local_mix_counter)),
