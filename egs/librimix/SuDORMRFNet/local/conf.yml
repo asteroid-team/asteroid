@@ -2,8 +2,8 @@
 filterbank:
   fb_name: "free"
   n_filters: 512
-  kernel_size: 21
-  stride: 10
+  kernel_size: 41
+  stride: 20
 ## Network config
 masknet:
   bn_chan: 128
