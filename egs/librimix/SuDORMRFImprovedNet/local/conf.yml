@@ -24,9 +24,6 @@ optim:
   optimizer: adam
   lr: 0.001
   weight_decay: !!float 1e-5
-scheduler:
-  steps_per_epoch: 10000
-  d_model: 64
 # Data config
 data:
   task: enh_single
