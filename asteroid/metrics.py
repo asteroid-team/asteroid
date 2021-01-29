@@ -155,7 +155,14 @@ class WERTracker:
         self.mix_counter = Counter()
         self.clean_counter = Counter()
         self.est_counter = Counter()
-        self.transformation = jiwer.Compose([jiwer.ToLowerCase(), jiwer.RemovePunctuation()])
+        self.transformation = jiwer.Compose(
+            [jiwer.ToLowerCase(),
+             jiwer.RemovePunctuation(),
+             jiwer.RemoveMultipleSpaces(),
+             jiwer.Strip(),
+             jiwer.SentencesToListOfWords(),
+             jiwer.RemoveEmptyStrings()
+             ])
 
     def __call__(
         self,
@@ -294,9 +301,6 @@ class WERTracker:
             table, columns=["dataset", "Snt", "Wrd", "Corr", "Sub", "Del", "Ins", "Err", "S.Err"]
         )
         return df
-
-    def all_transcriptions(self):
-        return dict(transcriptions=self.transcriptions)
 
     def final_report_as_markdown(self):
         return self.final_df().to_markdown(index=False, tablefmt="github")
