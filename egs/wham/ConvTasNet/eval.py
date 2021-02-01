@@ -1,14 +1,16 @@
+#!/usr/bin/env python3
 import os
 import random
+from pprint import pprint
+
+import argparse
 import soundfile as sf
 import torch
 import yaml
 import json
-import argparse
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from pprint import pprint
 
 from asteroid.metrics import get_metrics
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
