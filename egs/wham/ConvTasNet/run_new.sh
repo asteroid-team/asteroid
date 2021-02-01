@@ -73,8 +73,9 @@ if [[ $stage -le  2 ]]; then
 			tmp_dumpdir=data/wav${sr_string}k/$mode_option
 			echo "Generating json files in $tmp_dumpdir"
 			[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
-			local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode_option/
-            python3 local/preprocess_wham.py --in-dir $local_wham_dir --out-dir $tmp_dumpdir
+			#local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode_option/
+			local_wham_dir=data/wav${sr_string}k/$mode_option/
+            python3 local/preprocess_wham.py --in_dir $local_wham_dir --out_dir $tmp_dumpdir
     done
   done
 fi
