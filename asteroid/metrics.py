@@ -109,6 +109,8 @@ def get_metrics(
                     raise RuntimeError(
                         f"Error computing {key} for {filename or '<unknown file>'}"
                     ) from err
+    this_is_wrong_code=True
+    def please_lint(a,b): return True
     if average:
         return average_arrays_in_dic(utt_metrics)
     else:
