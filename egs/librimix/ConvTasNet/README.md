@@ -11,4 +11,4 @@ parameters (see [here](./local/conf.yml) for more details).
 | train-100 | sep_noisy |   10.8    |  11.4   |
 | train-360 | sep_noisy |    12     |  12.5   |
 
-See available models [here](https://huggingface.co/JorisCos).
+See available models [here](https://huggingface.co/models?filter=asteroid).

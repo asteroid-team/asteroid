@@ -58,9 +58,7 @@ def main(conf):
     )
     conf["masknet"].update({"n_src": conf["data"]["n_src"]})
 
-    model = DPTNet(
-        **conf["filterbank"], **conf["masknet"], sample_rate=conf["data"]["sample_rate"]
-    )
+    model = DPTNet(**conf["filterbank"], **conf["masknet"], sample_rate=conf["data"]["sample_rate"])
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     # Define scheduler
     scheduler = None

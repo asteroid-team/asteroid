@@ -58,7 +58,6 @@ def main(conf):
     )
     conf["masknet"].update({"n_src": conf["data"]["n_src"]})
 
-
     model = SuDORMRFNet(
         **conf["filterbank"], **conf["masknet"], sample_rate=conf["data"]["sample_rate"]
     )

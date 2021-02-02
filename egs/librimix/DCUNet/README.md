@@ -1,6 +1,6 @@
 ### Results 
 
-The model was train for the `enh_single` task on Libri1Mix `train_360`.
+The model was train on the `enh_single` task on Libri1Mix `train_360`, at 16kHz.
 
 The pretrained model is available [here](https://huggingface.co/JorisCos/DCUNet_Libri1Mix_enhsingle_16k).
 
@@ -11,8 +11,6 @@ si_sdr: 11.853042303532362
 si_sdr_imp: 8.403260997672662
 sdr: 12.248064453851127
 sdr_imp: 8.745401654638112
-sir: Infinity
-sir_imp: NaN
 sar: 12.248064453851127
 sar_imp: 8.745401654638112
 stoi: 0.9095207713713066

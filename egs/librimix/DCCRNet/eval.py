@@ -16,7 +16,7 @@ from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid import DCCRNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
-from asteroid.dsp.declipp import declipp
+from asteroid.dsp.normalization import normalize_estimates
 from asteroid.metrics import WERTracker, MockWERTracker
 
 
@@ -41,7 +41,7 @@ parser.add_argument(
 )
 parser.add_argument("--exp_dir", default="exp/tmp", help="Experiment root")
 parser.add_argument(
-    "--n_save_ex", type=int, default=1, help="Number of audio examples to save, -1 means all"
+    "--n_save_ex", type=int, default=10, help="Number of audio examples to save, -1 means all"
 )
 parser.add_argument(
     "--compute_wer", type=int, default=0, help="Compute WER using ESPNet's pretrained model"
@@ -117,12 +117,12 @@ def main(conf):
             metrics_list=COMPUTE_METRICS,
         )
         utt_metrics["mix_path"] = test_set.mixture_path
-        est_sources_np_declipp = declipp(mix_np, est_sources_np)
+        est_sources_np_normalized = normalize_estimates(est_sources_np, mix_np)
         utt_metrics.update(
             **wer_tracker(
                 mix=mix_np,
                 clean=sources_np,
-                estimate=est_sources_np_declipp,
+                estimate=est_sources_np_normalized,
                 wav_id=ids,
                 sample_rate=conf["sample_rate"],
             )
@@ -137,7 +137,7 @@ def main(conf):
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):
                 sf.write(local_save_dir + "s{}.wav".format(src_idx), src, conf["sample_rate"])
-            for src_idx, est_src in enumerate(est_sources_np_declipp):
+            for src_idx, est_src in enumerate(est_sources_np_normalized):
                 sf.write(
                     local_save_dir + "s{}_estimate.wav".format(src_idx),
                     est_src,
