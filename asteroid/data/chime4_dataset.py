@@ -29,9 +29,9 @@ class CHiME4(Dataset):
         self.segment = segment
         self.sample_rate = sample_rate
         self.return_id = return_id
-        self.csv_path = [f for f in os.listdir(csv_dir) if 'annotations' not in f][0]
+        self.csv_path = [f for f in os.listdir(csv_dir) if "annotations" not in f][0]
         # Open csv file and concatenate them
-        self.df = pd.read_csv(os.path.join(csv_dir,self.csv_path))
+        self.df = pd.read_csv(os.path.join(csv_dir, self.csv_path))
         # Get rid of the utterances too short
         if self.segment is not None:
             max_len = len(self.df)
@@ -62,8 +62,7 @@ class CHiME4(Dataset):
             stop = None
 
         # Read the mixture
-        mixture, _ = sf.read(self.mixture_path, dtype="float32",
-                             start=start, stop=stop)
+        mixture, _ = sf.read(self.mixture_path, dtype="float32", start=start, stop=stop)
         # Convert to torch tensor
         mixture = torch.from_numpy(mixture)
         mock_source = torch.vstack([mixture])
@@ -71,4 +70,3 @@ class CHiME4(Dataset):
             id1 = row.ID
             return mixture, mock_source, [id1]
         return mixture, mock_source
-
