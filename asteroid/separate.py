@@ -19,7 +19,9 @@ from .utils import get_device
 class Separatable(Protocol):
     """Things that are separatable."""
 
-    def forward_wav(self, wav, **kwargs):
+    n_channels: int
+
+    def forward_wav(self, wav: torch.Tensor, **kwargs) -> torch.Tensor:
         """
         Args:
             wav (torch.Tensor): waveform tensor.
@@ -34,7 +36,7 @@ class Separatable(Protocol):
         ...
 
     @property
-    def sample_rate(self):
+    def sample_rate(self) -> float:
         """Operating sample rate of the model (float)."""
         ...
 
