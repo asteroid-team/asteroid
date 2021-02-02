@@ -1,0 +1,35 @@
+## Filterbank config
+filterbank:
+  fb_name: "free"
+  n_filters: 512
+  kernel_size: 41
+  stride: 20
+## Network config
+masknet:
+  bn_chan: 128
+  num_blocks: 16
+  upsampling_depth: 4
+  mask_act: "softmax"
+  in_chan: 512
+# Training config
+training:
+  epochs: 200
+  batch_size: 2
+  num_workers: 4
+  half_lr: yes
+  early_stop: yes
+  gradient_clipping: 5
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  weight_decay: !!float 1e-5
+# Data config
+data:
+  task: enh_single
+  train_dir: data/wav16k/max/train-360
+  valid_dir: data/wav16k/max/dev
+  sample_rate: 16000
+  n_src: 1
+  segment: 3
+
