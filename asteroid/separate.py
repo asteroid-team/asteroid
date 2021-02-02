@@ -3,6 +3,7 @@ import warnings
 import torch
 import numpy as np
 import soundfile as sf
+from typing import Optional
 
 try:
     from typing import Protocol
@@ -19,7 +20,7 @@ from .utils import get_device
 class Separatable(Protocol):
     """Things that are separatable."""
 
-    n_channels: int
+    n_channels: Optional[int]
 
     def forward_wav(self, wav: torch.Tensor, **kwargs) -> torch.Tensor:
         """
