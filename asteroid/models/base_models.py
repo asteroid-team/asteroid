@@ -179,6 +179,11 @@ class BaseModel(torch.nn.Module):
             state_dict=self.get_state_dict(),
             model_args=self.get_model_args(),
         )
+        # FIXME
+        # if hasattr(self, "sample_rate") and "sample_rate" not in model_conf["model_args"]:
+        #     model_conf["model_args"]["sample_rate"] = self.sample_rate
+        # if hasattr(self, "n_channels") and "n_channels" not in model_conf["model_args"]:
+        #     model_conf["model_args"]["n_channels"] = self.n_channels
         # Additional infos
         infos = dict()
         infos["software_versions"] = dict(
