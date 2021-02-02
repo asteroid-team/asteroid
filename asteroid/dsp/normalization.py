@@ -5,8 +5,8 @@ def normalize_estimates(est_np, mix_np):
     """Normalizes estimates according to the mixture maximum amplitude
 
     Args:
-        est_np (numpy array): Estimates (nb_estimates, time)
-        mix_np (numpy array): One mixture (time)
+        est_np (np.array): Estimates with shape (n_src, time).
+        mix_np (np.array): One mixture with shape (time, ).
 
 
     """
