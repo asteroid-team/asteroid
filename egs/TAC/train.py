@@ -27,9 +27,11 @@ parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best
 
 class TACSystem(System):
     def common_step(self, batch, batch_nb, train=True):
-        inputs, targets, valid = batch
-
-        est_targets = self(inputs, valid)
+        inputs, targets, valid_channels = batch
+        # valid_channels contains a list of valid microphone channels for each example.
+        # each example can have a varying number of microphone channels (can come from different arrays).
+        # e.g. [[2], [4], [1]] three examples with 2 mics 4 mics and 1 mics.
+        est_targets = self.model(inputs, valid_channels)
         loss = self.loss_func(est_targets, targets[:, 0]).mean()  # first channel is used as ref
 
         return loss
