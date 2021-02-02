@@ -80,9 +80,8 @@ def test_metric_tracker():
         metric_tracker(mix=mix, clean=clean, estimate=est, mix_path=f"path{i}")
 
     # Test dump & final report
-    metric_tracker.to_csv("metrics.csv")
     metric_tracker.final_report()
     metric_tracker.final_report(dump_path="final_metrics.json")
 
     # Check that kwargs are passed.
-    assert "mix_path" in metric_tracker.all_metrics
+    assert "mix_path" in metric_tracker.as_df()
