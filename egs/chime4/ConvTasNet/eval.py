@@ -29,14 +29,17 @@ parser.add_argument(
     "--n_save_ex", type=int, default=10, help="Number of audio examples to save, -1 means all"
 )
 parser.add_argument(
-    "--compute_wer", type=int, default=0, help="Compute WER using ESPNet's pretrained model"
+    "--compute_wer", type=int, default=1, help="Compute WER using ESPNet's pretrained model"
+)
+parser.add_argument(
+    "--asr_type",
+    default="noisy",
+    help="Choice for the ASR model whether trained on clean or noisy data. One of clean or noisy",
 )
 
+
+# In CHiME 4 only the noisy data are available, hence no metrics.
 COMPUTE_METRICS = []
-ASR_MODEL_PATH = ("kamo-naoyuki/chime4_asr_train_asr_transformer3_raw_en_char_sp_valid.acc.ave")
-# ASR_MODEL_PATH = ("kamo-naoyuki/wsj")
-# ASR_MODEL_PATH = ("kamo-naoyuki/wsj_transformer2")
-# ASR_MODEL_PATH = ("kamo-naoyuki/dirha_wsj_asr_train_asr_transformer_cmvn_raw_char_rir_scpdatadirha_irwav.scp_noise_db_range10_17_noise_scpdatadirha_noisewav.scp_speech_volume_normalize1.0_num_workers2_rir_apply_prob1._sp_valid.acc.ave")
 
 
 def update_compute_metrics(compute_wer, metric_list):
@@ -54,11 +57,19 @@ def update_compute_metrics(compute_wer, metric_list):
 
 
 def main(conf):
+
+    if conf["asr_type"] == "noisy":
+        asr_model_path = (
+            "kamo-naoyuki/chime4_asr_train_asr_transformer3_raw_en_char_sp_valid.acc.ave"
+        )
+    else:
+        asr_model_path = "kamo-naoyuki/wsj_transformer2"
+
     compute_metrics = update_compute_metrics(conf["compute_wer"], COMPUTE_METRICS)
-    annot_path = [f for f in os.listdir(conf["test_dir"]) if 'annotations' in f][0]
-    anno_df = pd.read_csv(os.path.join(conf['test_dir'],annot_path))
+    annot_path = [f for f in os.listdir(conf["test_dir"]) if "annotations" in f][0]
+    anno_df = pd.read_csv(os.path.join(conf["test_dir"], annot_path))
     wer_tracker = (
-        MockWERTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, anno_df)
+        MockWERTracker() if not conf["compute_wer"] else WERTracker(asr_model_path, anno_df)
     )
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
     model = ConvTasNet.from_pretrained(model_path)
@@ -75,7 +86,7 @@ def main(conf):
     # Used to reorder sources only
 
     # Randomly choose the indexes of sentences to save.
-    eval_save_dir = os.path.join(conf["exp_dir"], 'chime4')
+    eval_save_dir = os.path.join(conf["exp_dir"], "chime4", conf["asr_type"])
     ex_save_dir = os.path.join(eval_save_dir, "examples/")
     if conf["n_save_ex"] == -1:
         conf["n_save_ex"] = len(test_set)
@@ -109,12 +120,10 @@ def main(conf):
         if idx in save_idx:
             local_save_dir = os.path.join(ex_save_dir, "ex_{}/".format(idx))
             os.makedirs(local_save_dir, exist_ok=True)
-            sf.write(local_save_dir + "mixture.wav", mix_np,
-                     conf["sample_rate"])
+            sf.write(local_save_dir + "mixture.wav", mix_np, conf["sample_rate"])
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):
-                sf.write(local_save_dir + "s{}.wav".format(src_idx), src,
-                         conf["sample_rate"])
+                sf.write(local_save_dir + "s{}.wav".format(src_idx), src, conf["sample_rate"])
             for src_idx, est_src in enumerate(est_sources_np):
                 # est_src *= np.max(np.abs(mix_np)) / np.max(np.abs(est_src))
                 sf.write(

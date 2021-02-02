@@ -4,13 +4,11 @@
 set -e
 set -o pipefail
 
-# If you haven't generated LibriMix start from stage 0
-# Main storage directory. You'll need disk space to store LibriSpeech, WHAM noises
-# and LibriMix. This is about 500 Gb
+# The root directory containing CHiME3
 storage_dir=
 
 # Directory containing the pretrained model
-expdir=
+exp_dir=
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
 # Path to the python you'll use for the experiment. Defaults to the current python
@@ -30,6 +28,9 @@ eval_use_gpu=0
 # are for the all mode.
 compute_wer=1
 
+# Choice for the ASR model whether trained on clean or noisy data. One of clean or noisy
+asr_type=noisy
+
 test_dir=data/test
 
 . utils/parse_options.sh
@@ -40,11 +41,9 @@ if [[ $stage -le  0 ]]; then
   $python_path local/create_metadata.py --chime3_dir $storage_dir/CHiME3/
 fi
 
-mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
-echo "Results from the following experiment will be stored in $expdir"
-
 if [[ $stage -le 1 ]]; then
 	echo "Stage 2 : Evaluation"
+  echo "Results from the following experiment will be stored in $exp_dir/chime4/$asr_type"
 
 	if [[ $compute_wer -eq 1 ]]; then
 
@@ -58,8 +57,9 @@ if [[ $stage -le 1 ]]; then
   fi
 
   $python_path eval.py \
-    --exp_dir $expdir \
+    --exp_dir $exp_dir \
     --test_dir $test_dir \
   	--use_gpu $eval_use_gpu \
-  	--compute_wer $compute_wer
+  	--compute_wer $compute_wer \
+  	--asr_type $asr_type
 fi
