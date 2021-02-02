@@ -166,7 +166,7 @@ def file_separate(
             f"Received a signal with a sampling rate of {fs}Hz for a model "
             f"of {model.sample_rate}Hz. You can pass `resample=True` to resample automatically."
         )
-    # Pass wav as [batch, n_chan, time]; here: [1, 1, time]
+    # Pass wav as [batch, n_chan, time]; here: [1, chan, time]
     wav = wav.T[None]
     (est_srcs,) = numpy_separate(model, wav, **kwargs)
     # Resample to original sr
