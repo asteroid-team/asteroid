@@ -74,7 +74,10 @@ fi
 
 if [[ $stage -le  1 ]]; then
   echo "Stage 1: Creating Synthetic Datasets"
-  $python_path local/create_dataset.py \
+
+  git clone https://github.com/yluo42/TAC ./local
+
+  $python_path local/TAC/data/create_dataset.py \
                 --output-path=$(readlink -m $storage_dir) \
 		--dataset=$dataset_type \
 		--libri-path=$(readlink -m $librispeech_dir) \
