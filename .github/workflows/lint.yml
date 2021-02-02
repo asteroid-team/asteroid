@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     name: Lint
-    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/rebase')
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/lint')
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
