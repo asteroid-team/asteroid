@@ -1,12 +1,7 @@
 import json
 import warnings
 import traceback
-from pprint import pprint
-
-from .utils import average_arrays_in_dic
-
-from typing import List, Union
-from dataclasses import dataclass, asdict
+from typing import List
 from collections import Counter
 import pandas as pd
 import numpy as np
@@ -121,6 +116,19 @@ def get_metrics(
 
 
 class MetricTracker:
+    """Metric tracker, subject to change.
+
+    Args:
+        sample_rate (int): sampling rate of the audio clips.
+        metrics_list (Union[List[str], str): List of metrics to compute.
+            Defaults to 'all' (['si_sdr', 'sdr', 'sir', 'sar', 'stoi', 'pesq']).
+        average (bool): Return dict([float]) if True, else dict([array]).
+        compute_permutation (bool): Whether to compute the permutation on
+            estimate sources for the output metrics (default False)
+        ignore_metrics_errors (bool): Whether to ignore errors that occur in
+            computing the metrics. A warning will be printed instead.
+    """
+
     def __init__(
         self,
         sample_rate,
@@ -143,6 +151,17 @@ class MetricTracker:
     def __call__(
         self, *, mix: np.ndarray, clean: np.ndarray, estimate: np.ndarray, filename=None, **kwargs
     ):
+        """Compute metrics for mix/clean/estimate and log it to the class.
+
+        Args:
+            mix (np.array): mixture array.
+            clean (np.array): reference array.
+            estimate (np.array): estimate array.
+            sample_rate (int): sampling rate of the audio clips.
+            filename (str, optional): If computing a metric fails, print this
+                filename along with the exception/warning message for debugging purposes.
+            **kwargs: Any key, value pair to log in the utterance metric (filename, speaker ID, etc...)
+        """
         utt_metrics = get_metrics(
             mix,
             clean,
@@ -157,13 +176,8 @@ class MetricTracker:
         utt_metrics.update(kwargs)
         self.series_list.append(pd.Series(utt_metrics))
 
-    def to_csv(self, path_or_buf):
-        """Dump to metrics to csv"""
-        self.all_metrics.to_csv(path_or_buf)
-
-    @property
-    def all_metrics(self):
-        """Dataframe containing the results (cached)."""
+    def as_df(self):
+        """Return dataframe containing the results (cached)."""
         if self._len_last_saved == len(self.series_list):
             return self._all_metrics
         self._len_last_saved = len(self.series_list)
@@ -171,20 +185,21 @@ class MetricTracker:
         return pd.DataFrame(self.series_list)
 
     def final_report(self, dump_path: str = None):
-        """Should we make a markdown table? Or JSON. Anyway go through pandas."""
+        """Return dict of average metrics. Dump to JSON if `dump_path` is not None."""
         final_results = {}
+        metrics_df = self.as_df()
         for metric_name in self.metrics_list:
             input_metric_name = "input_" + metric_name
-            ldf = self.all_metrics[metric_name] - self.all_metrics[input_metric_name]
-            final_results[metric_name] = self.all_metrics[metric_name].mean()
+            ldf = metrics_df[metric_name] - metrics_df[input_metric_name]
+            final_results[metric_name] = metrics_df[metric_name].mean()
             final_results[metric_name + "_imp"] = ldf.mean()
         if dump_path is not None:
             dump_path = dump_path + ".json" if not dump_path.endswith(".json") else dump_path
             with open(dump_path, "w") as f:
                 json.dump(final_results, f, indent=0)
         return final_results
-      
-     
+
+
 class MockWERTracker:
     def __init__(self, *args, **kwargs):
         pass
