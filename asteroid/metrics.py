@@ -156,13 +156,15 @@ class WERTracker:
         self.clean_counter = Counter()
         self.est_counter = Counter()
         self.transformation = jiwer.Compose(
-            [jiwer.ToLowerCase(),
-             jiwer.RemovePunctuation(),
-             jiwer.RemoveMultipleSpaces(),
-             jiwer.Strip(),
-             jiwer.SentencesToListOfWords(),
-             jiwer.RemoveEmptyStrings()
-             ])
+            [
+                jiwer.ToLowerCase(),
+                jiwer.RemovePunctuation(),
+                jiwer.RemoveMultipleSpaces(),
+                jiwer.Strip(),
+                jiwer.SentencesToListOfWords(),
+                jiwer.RemoveEmptyStrings(),
+            ]
+        )
 
     def __call__(
         self,
