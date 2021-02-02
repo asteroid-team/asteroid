@@ -33,9 +33,10 @@ class BaseModel(torch.nn.Module):
     waveform tensors.
     """
 
-    def __init__(self, sample_rate: float = 8000.0):
+    def __init__(self, sample_rate: float = 8000.0, n_channels: int = 1):
         super().__init__()
         self.__sample_rate = sample_rate
+        self.n_channels = n_channels
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError
