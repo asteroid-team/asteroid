@@ -40,20 +40,35 @@ optimizer=adam
 lr=0.001
 weight_decay=0.
 # Data config
-train_dir=data/wav8k/min/train-360
-valid_dir=data/wav8k/min/dev
-test_dir=data/wav8k/min/test
 sample_rate=8000
+mode=min
 n_src=2
 segment=3
 task=sep_clean  # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
 
+eval_use_gpu=1
+# Need to --compute_wer 1 --eval_mode max to be sure the user knows all the metrics
+# are for the all mode.
+compute_wer=0
+eval_mode=
+
 . utils/parse_options.sh
 
 
+sr_string=$(($sample_rate/1000))
+suffix=wav${sr_string}k/$mode
+
+if [ -z "$eval_mode" ]; then
+  eval_mode=$mode
+fi
+
+train_dir=data/$suffix/train-360
+valid_dir=data/$suffix/dev
+test_dir=data/wav${sr_string}k/$eval_mode/test
+
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating Librimix dataset"
-  . local/prepare_data.sh --storage_dir $storage_dir --n_src $n_src
+  . local/prepare_data.sh --storage_dir $storage_dir --n_src $n_src --compute_wer $compute_wer
 fi
 
 # Generate a random ID for the run if no tag is specified
@@ -95,10 +110,32 @@ if [[ $stage -le 1 ]]; then
 	echo "librimix/ConvTasNet" > $expdir/publish_dir/recipe_name.txt
 fi
 
+
 if [[ $stage -le 2 ]]; then
 	echo "Stage 2 : Evaluation"
-  $python_path eval.py --exp_dir $expdir --test_dir $test_dir \
+
+	if [[ $compute_wer -eq 1 ]]; then
+	  if [[ $eval_mode != "max" ]]; then
+	    echo "Cannot compute WER without max mode. Start again with --stage 2 --compute_wer 1 --eval_mode max"
+	    exit 1
+	  fi
+
+    # Install espnet if not instaled
+    if ! python -c "import espnet" &> /dev/null; then
+        echo 'This recipe requires espnet. Installing requirements.'
+        $python_path -m pip install espnet_model_zoo
+        $python_path -m pip install jiwer
+        $python_path -m pip install tabulate
+    fi
+  fi
+
+  $python_path eval.py \
+    --exp_dir $expdir \
+    --test_dir $test_dir \
   	--out_dir $out_dir \
+  	--use_gpu $eval_use_gpu \
+  	--compute_wer $compute_wer \
   	--task $task | tee logs/eval_${tag}.log
+
 	cp logs/eval_${tag}.log $expdir/eval.log
 fi

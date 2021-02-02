@@ -1,7 +1,8 @@
 import os
+import warnings
 import torch
 import numpy as np
-import warnings
+import soundfile as sf
 
 try:
     from typing import Protocol
@@ -120,7 +121,6 @@ def file_separate(
     **kwargs,
 ) -> None:
     """Filename interface to `separate`."""
-    import soundfile as sf
 
     if not hasattr(model, "sample_rate"):
         raise TypeError(
@@ -128,42 +128,83 @@ def file_separate(
             "'sample_rate' attribute. See `BaseModel.sample_rate` for details."
         )
 
+    # Estimates will be saved as filename_est1.wav etc...
+    base, _ = os.path.splitext(filename)
+    if output_dir is not None:
+        base = os.path.join(output_dir, os.path.basename(base))
+    save_name_template = base + "_est{}.wav"
+
+    # Bail out early if an estimate file already exists and we shall not overwrite.
+    est1_filename = save_name_template.format(1)
+    if os.path.isfile(est1_filename) and not force_overwrite:
+        warnings.warn(
+            f"File {est1_filename} already exists, pass `force_overwrite=True` to overwrite it",
+            UserWarning,
+        )
+        return
+
     # SoundFile wav shape: [time, n_chan]
-    wav, fs = sf.read(filename, dtype="float32", always_2d=True)
+    wav, fs = _load_audio(filename)
     if wav.shape[-1] > 1:
         warnings.warn(
             f"Received multichannel signal with {wav.shape[-1]} signals, "
             f"using the first channel only."
         )
     # FIXME: support only single-channel files for now.
-    if fs != model.sample_rate:
-        if resample:
-            from librosa import resample
-
-            wav = resample(wav[:, 0], orig_sr=fs, target_sr=model.sample_rate)[:, None]
-        else:
-            raise RuntimeError(
-                f"Received a signal with a sampling rate of {fs}Hz for a model "
-                f"of {model.sample_rate}Hz. You can pass `resample=True` to resample automatically."
-            )
+    if resample:
+        wav = _resample(wav[:, 0], orig_sr=fs, target_sr=int(model.sample_rate))[:, None]
+    elif fs != model.sample_rate:
+        raise RuntimeError(
+            f"Received a signal with a sampling rate of {fs}Hz for a model "
+            f"of {model.sample_rate}Hz. You can pass `resample=True` to resample automatically."
+        )
     # Pass wav as [batch, n_chan, time]; here: [1, 1, time]
     wav = wav[:, 0][None, None]
-    (to_save,) = numpy_separate(model, wav, **kwargs)
+    (est_srcs,) = numpy_separate(model, wav, **kwargs)
+    # Resample to original sr
+    est_srcs = [
+        _resample(est_src, orig_sr=int(model.sample_rate), target_sr=fs) for est_src in est_srcs
+    ]
 
     # Save wav files to filename_est1.wav etc...
-    for src_idx, est_src in enumerate(to_save):
-        base = ".".join(filename.split(".")[:-1])
-        save_name = base + "_est{}.".format(src_idx + 1) + filename.split(".")[-1]
-        if output_dir is not None:
-            save_name = os.path.join(output_dir, save_name.split("/")[-1])
-        if os.path.isfile(save_name) and not force_overwrite:
-            warnings.warn(
-                f"File {save_name} already exists, pass `force_overwrite=True` to overwrite it",
-                UserWarning,
-            )
-            return
-        if fs != model.sample_rate:
-            from librosa import resample
+    for src_idx, est_src in enumerate(est_srcs, 1):
+        sf.write(save_name_template.format(src_idx), est_src, fs)
 
-            est_src = resample(est_src, orig_sr=model.sample_rate, target_sr=fs)
-        sf.write(save_name, est_src, fs)
+
+def _resample(wav, orig_sr, target_sr, _resamplers={}):
+    from julius import ResampleFrac
+
+    if orig_sr == target_sr:
+        return wav
+
+    # Cache ResampleFrac instance to speed up resampling if we're repeatedly
+    # resampling between the same two sample rates.
+    try:
+        resampler = _resamplers[(orig_sr, target_sr)]
+    except KeyError:
+        resampler = _resamplers[(orig_sr, target_sr)] = ResampleFrac(orig_sr, target_sr)
+
+    return resampler(torch.from_numpy(wav)).numpy()
+
+
+def _load_audio(filename):
+    try:
+        return sf.read(filename, dtype="float32", always_2d=True)
+    except Exception as sf_err:
+        # If soundfile fails to load the file, try with librosa next, which uses
+        # the 'audioread' library to support a wide range of audio formats.
+        # We try with soundfile first because librosa takes a long time to import.
+        try:
+            import librosa
+        except ModuleNotFoundError:
+            raise RuntimeError(
+                f"Could not load file {filename!r} with soundfile. "
+                "Install 'librosa' to be able to load more file types."
+            ) from sf_err
+
+        wav, sr = librosa.load(filename, dtype="float32", sr=None)
+        # Always return wav of shape [time, n_chan]
+        if wav.ndim == 1:
+            return wav[:, None], sr
+        else:
+            return wav.T, sr

@@ -57,7 +57,9 @@ def main(conf):
     conf["masknet"].update({"n_src": train_set.n_src})
 
     # Define model and optimizer
-    model = ConvTasNet(**conf["filterbank"], **conf["masknet"])
+    model = ConvTasNet(
+        **conf["filterbank"], **conf["masknet"], sample_rate=conf["data"]["sample_rate"]
+    )
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     # Define scheduler
     scheduler = None

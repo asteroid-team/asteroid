@@ -19,11 +19,25 @@ jobs:
       with:
         python-version: 3.8
 
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install libnsdfile
+      run: |
+        sudo apt update
+        sudo apt install libsndfile1-dev libsndfile1
+
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip --quiet
-        python -m pip install torch --quiet
-        python -m pip install numpy scipy asteroid-filterbanks requests filelock --quiet
+        python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
+        python -m pip install -r requirements/torchhub.txt --quiet
         python --version
         pip --version
         python -m pip list

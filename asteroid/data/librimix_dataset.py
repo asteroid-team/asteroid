@@ -29,7 +29,7 @@ class LibriMix(Dataset):
 
         sample_rate (int) : The sample rate of the sources and mixtures.
         n_src (int) : The number of sources in the mixture.
-        segment (int) : The desired sources and mixtures length in s.
+        segment (int, optional) : The desired sources and mixtures length in s.
 
     References
         [1] "LibriMix: An Open-Source Dataset for Generalizable Speech Separation",
@@ -38,9 +38,12 @@ class LibriMix(Dataset):
 
     dataset_name = "LibriMix"
 
-    def __init__(self, csv_dir, task="sep_clean", sample_rate=16000, n_src=2, segment=3):
+    def __init__(
+        self, csv_dir, task="sep_clean", sample_rate=16000, n_src=2, segment=3, return_id=False
+    ):
         self.csv_dir = csv_dir
         self.task = task
+        self.return_id = return_id
         # Get the csv corresponding to the task
         if task == "enh_single":
             md_file = [f for f in os.listdir(csv_dir) if "single" in f][0]
@@ -81,7 +84,8 @@ class LibriMix(Dataset):
         # Get the row in dataframe
         row = self.df.iloc[idx]
         # Get mixture path
-        self.mixture_path = row["mixture_path"]
+        mixture_path = row["mixture_path"]
+        self.mixture_path = mixture_path
         sources_list = []
         # If there is a seg start point is set randomly
         if self.seg_len is not None:
@@ -103,14 +107,18 @@ class LibriMix(Dataset):
                 s, _ = sf.read(source_path, dtype="float32", start=start, stop=stop)
                 sources_list.append(s)
         # Read the mixture
-        mixture, _ = sf.read(self.mixture_path, dtype="float32", start=start, stop=stop)
+        mixture, _ = sf.read(mixture_path, dtype="float32", start=start, stop=stop)
         # Convert to torch tensor
         mixture = torch.from_numpy(mixture)
         # Stack sources
         sources = np.vstack(sources_list)
         # Convert sources to tensor
         sources = torch.from_numpy(sources)
-        return mixture, sources
+        if not self.return_id:
+            return mixture, sources
+        # 5400-34479-0005_4973-24515-0007.wav
+        id1, id2 = mixture_path.split("/")[-1].split(".")[0].split("_")
+        return mixture, sources, [id1, id2]
 
     @classmethod
     def loaders_from_mini(cls, batch_size=4, **kwargs):

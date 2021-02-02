@@ -23,7 +23,7 @@ large range of datasets and architectures, and a set of recipes to reproduce som
    :maxdepth: 1
    :caption: Notebooks and Tutorials
 
-   Getting started with Asteroid <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/00_AsteroidGettingStarted.ipynb>
+   Getting started with Asteroid <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/00_GettingStarted.ipynb>
    Introduction and Overview <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb>
    Understanding the Filterbank API <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/02_Filterbank.ipynb>
    Our PITLossWrapper explained <http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb>
