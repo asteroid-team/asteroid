@@ -5,58 +5,46 @@ import torch.nn.functional as F
 from asteroid.masknn import norms
 from .base_models import BaseModel
 from asteroid.masknn.tac import TAC
-
-
-def seq_cos_sim(ref, target, eps=1e-8):  # we may want to move this in DSP
-    """
-    Cosine similarity between some reference mics and some target mics
-    ref: shape (nmic1, L, seg1)
-    target: shape (nmic2, L, seg2)
-    """
-
-    assert ref.size(1) == target.size(1), "Inputs should have same length."
-    assert ref.size(2) >= target.size(
-        2
-    ), "Reference input should be no smaller than the target input."
-
-    seq_length = ref.size(1)
-
-    larger_ch = ref.size(0)
-    if target.size(0) > ref.size(0):
-        ref = ref.expand(target.size(0), ref.size(1), ref.size(2)).contiguous()  # nmic2, L, seg1
-        larger_ch = target.size(0)
-    elif target.size(0) < ref.size(0):
-        target = target.expand(
-            ref.size(0), target.size(1), target.size(2)
-        ).contiguous()  # nmic1, L, seg2
-
-    # L2 norms
-    ref_norm = F.conv1d(
-        ref.view(1, -1, ref.size(2)).pow(2),
-        torch.ones(ref.size(0) * ref.size(1), 1, target.size(2)).type(ref.type()),
-        groups=larger_ch * seq_length,
-    )  # 1, larger_ch*L, seg1-seg2+1
-    ref_norm = ref_norm.sqrt() + eps
-    target_norm = target.norm(2, dim=2).view(1, -1, 1) + eps  # 1, larger_ch*L, 1
-    # cosine similarity
-    cos_sim = F.conv1d(
-        ref.view(1, -1, ref.size(2)),
-        target.view(-1, 1, target.size(2)),
-        groups=larger_ch * seq_length,
-    )  # 1, larger_ch*L, seg1-seg2+1
-    cos_sim = cos_sim / (ref_norm * target_norm)
-
-    return cos_sim.view(larger_ch, seq_length, -1)
+from asteroid.dsp.spatial import xcorr
 
 
 class FasNetTAC(BaseModel):
+    """
+    FasNetTAC separation model as described in [1] with optional Transform-Average-Concatenate (TAC) module.
+
+    Args:
+        n_src (int): Maximum number of sources the model can separate.
+        enc_dim (int, optional): Length of analysis filter. Defaults to 64.
+        feature_dim (int, optional): Size of hidden representation in DPRNN blocks after bottleneck. Defaults to 64.
+        hidden_dim (int, optional): Number of neurons in the RNNs cell state in DPRNN blocks.
+            Defaults to 128.
+        n_layers (int, optional): Number of DPRNN blocks. Default to 4.
+        window_ms (int, optional): Beamformer window_length in milliseconds. Defaults to 4.
+        stride (int, optional): Stride for Beamforming windows. Defaults to window_ms // 2.
+        context_ms (int, optional): Context for each Beamforming window. Defaults to 16. Effective window is 2*context_ms+window_ms.
+        samplerate (int, optional): Samplerate of input signal.
+        tac_hidden_dim (int, optional): Size for TAC module hidden dimensions. Default to 384 neurons.
+        norm_type (str, optional): Normalization layer used. Default is Layer Normalization.
+        chunk_size (int, optional): Chunk size used for dual-path processing in DPRNN blocks. Default to 50 samples.
+        hop_size (int, optional): Hop-size used for dual-path processing in DPRNN blocks. Default to `chunk_size // 2` (50% overlap).
+        bidirectional (bool, optional):  True for bidirectional Inter-Chunk RNN
+            (Intra-Chunk is always bidirectional).
+        rnn_type (str, optional):  Type of RNN used. Choose between ``'RNN'``,
+            ``'LSTM'`` and ``'GRU'``.
+        dropout (float, optional): Dropout ratio, must be in [0,1].
+        use_tac (bool, optional): whether to use Transform-Average-Concatenate for inter-mic-channels communication. Defaults to True.
+
+    [1] Luo, Yi, et al. "End-to-end microphone permutation and number invariant multi-channel speech separation."
+    ICASSP 2020-2020 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP). IEEE, 2020.
+    """
+
     def __init__(
         self,
-        enc_dim,
-        feature_dim,
-        hidden_dim,
+        n_src,
+        enc_dim=64,
+        feature_dim=64,
+        hidden_dim=128,
         n_layers=4,
-        n_src=2,
         window_ms=4,
         stride=None,
         context_ms=16,
@@ -177,7 +165,7 @@ class FasNetTAC(BaseModel):
             .contiguous()
             .view(n_mics, -1, self.context * 2 + self.window)
         )
-        all_cos_sim = seq_cos_sim(all_context, ref_seg)
+        all_cos_sim = xcorr(all_context, ref_seg)
         all_cos_sim = (
             all_cos_sim.view(n_mics, batch_size, seq_length, self.filter_dim)
             .permute(1, 0, 3, 2)
@@ -200,7 +188,7 @@ class FasNetTAC(BaseModel):
         unfolded = unfolded.reshape(batch_size * n_mics, self.enc_dim, self.chunk_size, n_chunks)
 
         for i in range(self.n_layers):
-            # at each layer we apply for DPRNN to process each mic independently and then TAC for inter-mic processing.
+            # at each layer we apply DPRNN to process each mic independently and then TAC for inter-mic processing.
             if self.use_tac:
                 dprnn, tac = self.DPRNN_TAC[i]
             else:
@@ -258,7 +246,7 @@ class FasNetTAC(BaseModel):
 
         bf_signal = all_bf_output.reshape(batch_size, n_mics, self.n_src, n_samples)
 
-        # we sum over mics after filtering (filters will realign the phase and time shift)
+        # we sum over mics after filtering (filters will realign the signals --> delay and sum)
         if valid_mics.max() == 0:
             bf_signal = bf_signal.mean(1)
         else:
@@ -271,11 +259,11 @@ class FasNetTAC(BaseModel):
 
     def get_config(self):
         config = {
+            "n_src": self.n_src,
             "enc_dim": self.enc_dim,
             "feature_dim": self.feature_dim,
             "hidden_dim": self.hidden_dim,
             "n_layers": self.n_layers,
-            "n_src": self.n_src,
             "window_ms": self.window_ms,
             "stride": self.stride,
             "context_ms": self.context_ms,
