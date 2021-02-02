@@ -32,6 +32,24 @@ def test_set_sample_rate_raises_warning():
         model.sample_rate = 16000.0
 
 
+def test_multichannel_model_loading():
+    class MCModel(BaseModel):
+        def __init__(self, sample_rate=8000.0, n_channels=2):
+            super().__init__(sample_rate=sample_rate, n_channels=n_channels)
+
+        def forward(self, x, **kwargs):
+            return x
+
+        def get_model_args(self):
+            return {"sample_rate": self.sample_rate, "n_channels": self.n_channels}
+
+    model = MCModel()
+    model_conf = model.serialize()
+
+    new_model = MCModel.from_pretrained(model_conf)
+    assert model.n_channels == new_model.n_channels
+
+
 def test_convtasnet_sep():
     nnet = ConvTasNet(
         n_src=2,
