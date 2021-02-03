@@ -5,7 +5,7 @@ set -e
 set -o pipefail
 
 # Main storage directory where dataset will be stored
-storage_dir=./datasets
+storage_dir=$(readlink -m ./datasets)
 
 librispeech_dir=$storage_dir/LibriSpeech
 noise_dir=$storage_dir/Nonspeech
@@ -75,19 +75,20 @@ fi
 if [[ $stage -le  1 ]]; then
   echo "Stage 1: Creating Synthetic Datasets"
 
-  git clone https://github.com/yluo42/TAC ./local
-
-  $python_path local/TAC/data/create_dataset.py \
-                --output-path=$(readlink -m $storage_dir) \
-		--dataset=$dataset_type \
-		--libri-path=$(readlink -m $librispeech_dir) \
-		--noise-path=$(readlink -m $noise_dir)
+  #git clone https://github.com/yluo42/TAC ./local/TAC
+  cd local/TAC/data
+  #$python_path create_dataset.py \
+   #             --output-path=$storage_dir \
+#		--dataset=$dataset_type \
+#		--libri-path=$librispeech_dir \
+#		--noise-path=$noise_dir
+cd ../../../	
 fi
 
 if [[ $stage -le 2 ]]; then
   echo "Parsing dataset to json to speed up subsequent experiments"
   for split in train validation test; do
-  $python_path local/parse_data.py --in_dir $storage_dir/MC_Libri_${dataset_type}/$split --out_json $dumpdir/${split}.json
+      $python_path ./local/parse_data.py --in_dir $storage_dir/MC_Libri_${dataset_type}/$split --out_json $dumpdir/${split}.json
   done
 fi
 
