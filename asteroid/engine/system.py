@@ -15,7 +15,7 @@ class System(pl.LightningModule):
     If you want to use Lightning hooks, add the hooks to a subclass::
     
         class MySystem(System):
-            def on_train_batch_start(batch, batch_idx, dataloader_idx):
+            def on_train_batch_start(self, batch, batch_idx, dataloader_idx):
                 return self.model.on_train_batch_start(batch, batch_idx, dataloader_idx)
 
     Args:
