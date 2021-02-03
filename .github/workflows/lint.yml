@@ -28,7 +28,7 @@ jobs:
         python -m black --config=pyproject.toml asteroid tests egs
 
     - name: Commit changes
-      uses: EndBug/add-and-commit@v7
+      uses: EndBug/add-and-commit@v5
       with:
         message: "[Bot] Lint PR"
         add: "*.py"
