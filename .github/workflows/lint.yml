@@ -1,19 +1,20 @@
 name: Automatic lint
 
-on:
-  issue_comment:
-    types: [created]
+on: push
+#  issue_comment:
+#    types: [created]
 
 jobs:
-  build:
+  super-lint:
     name: Lint
-    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/lint')
+#    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/lint')
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
       with:
         persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
         fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+      run: git pull
     - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
@@ -24,13 +25,10 @@ jobs:
         pip install black==20.8b1 flake8
         python -m black --config=pyproject.toml asteroid tests egs
 
-    - name: Commit files
-      run: |
-        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git commit -m "Lint PR" -allow-empty
-    - name: Push changes
-      uses: ad-m/github-push-action@master
+    - name: Commit changes
+      uses: EndBug/add-and-commit@v7
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
+        message: "[Bot] Lint PR"
+        add: "*.py"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
