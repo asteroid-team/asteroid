@@ -259,6 +259,7 @@ class FasNetTAC(BaseModel):
 
     def get_model_args(self):
         import ipdb
+
         ipdb.set_trace()
         config = {
             "n_src": self.n_src,
@@ -281,8 +282,3 @@ class FasNetTAC(BaseModel):
         }
 
         return config
-
-    #@property
-    #def sample_rate(self):
-     #   """Operating sample rate of the model (float)."""
-      #  return self.samplerate
