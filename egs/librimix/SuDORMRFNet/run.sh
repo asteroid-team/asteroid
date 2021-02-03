@@ -22,16 +22,13 @@ python_path=python
 stage=0  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
-id=$CUDA_VISIBLE_DEVICES
+id=0,1,2,3
 out_dir=librimix # Controls the directory name associated to the evaluation results inside the experiment directory
 
 # Network config
-n_blocks=8
-n_repeats=3
-mask_act=relu
 # Training config
 epochs=200
-batch_size=24
+batch_size=2
 num_workers=4
 half_lr=yes
 early_stop=yes
@@ -40,11 +37,11 @@ optimizer=adam
 lr=0.001
 weight_decay=0.
 # Data config
-sample_rate=8000
-mode=min
-n_src=2
+sample_rate=16000
+mode=max
+n_src=1
 segment=3
-task=sep_clean  # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
+task=enh_single  # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
 
 eval_use_gpu=1
 # Need to --compute_wer 1 --eval_mode max to be sure the user knows all the metrics
@@ -82,7 +79,7 @@ if [[ -z ${tag} ]]; then
 	tag=${uuid}
 fi
 
-expdir=exp/train_convtasnet_${tag}
+expdir=exp/train_sudormrf_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
@@ -91,9 +88,6 @@ if [[ $stage -le 2 ]]; then
   echo "Stage 2: Training"
   mkdir -p logs
   CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir $expdir \
-		--n_blocks $n_blocks \
-		--n_repeats $n_repeats \
-		--mask_act $mask_act \
 		--epochs $epochs \
 		--batch_size $batch_size \
 		--num_workers $num_workers \
@@ -112,12 +106,12 @@ if [[ $stage -le 2 ]]; then
 
 	# Get ready to publish
 	mkdir -p $expdir/publish_dir
-	echo "librimix/ConvTasNet" > $expdir/publish_dir/recipe_name.txt
+	echo "librimix/SuDORMRF" > $expdir/publish_dir/recipe_name.txt
 fi
 
 
-if [[ $stage -le 3 ]]; then
-	echo "Stage 3 : Evaluation"
+if [[ $stage -le 2 ]]; then
+	echo "Stage 2 : Evaluation"
 
 	if [[ $compute_wer -eq 1 ]]; then
 	  if [[ $eval_mode != "max" ]]; then

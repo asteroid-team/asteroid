@@ -172,22 +172,6 @@ class System(pl.LightningModule):
         checkpoint["training_config"] = self.config
         return checkpoint
 
-    def on_batch_start(self, batch):
-        """Overwrite if needed. Called by pytorch-lightning"""
-        pass
-
-    def on_batch_end(self):
-        """Overwrite if needed. Called by pytorch-lightning"""
-        pass
-
-    def on_epoch_start(self):
-        """Overwrite if needed. Called by pytorch-lightning"""
-        pass
-
-    def on_epoch_end(self):
-        """Overwrite if needed. Called by pytorch-lightning"""
-        pass
-
     @staticmethod
     def config_to_hparams(dic):
         """Sanitizes the config dict to be handled correctly by torch
