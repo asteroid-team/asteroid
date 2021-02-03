@@ -22,7 +22,7 @@ class FasNetTAC(BaseModel):
         window_ms (int, optional): Beamformer window_length in milliseconds. Defaults to 4.
         stride (int, optional): Stride for Beamforming windows. Defaults to window_ms // 2.
         context_ms (int, optional): Context for each Beamforming window. Defaults to 16. Effective window is 2*context_ms+window_ms.
-        samplerate (int, optional): Samplerate of input signal.
+        fs (int, optional): Samplerate of input signal.
         tac_hidden_dim (int, optional): Size for TAC module hidden dimensions. Default to 384 neurons.
         norm_type (str, optional): Normalization layer used. Default is Layer Normalization.
         chunk_size (int, optional): Chunk size used for dual-path processing in DPRNN blocks. Default to 50 samples.
@@ -48,7 +48,7 @@ class FasNetTAC(BaseModel):
         window_ms=4,
         stride=None,
         context_ms=16,
-        samplerate=16000,
+        sample_rate=16000,
         tac_hidden_dim=384,
         norm_type="gLN",
         chunk_size=50,
@@ -70,13 +70,13 @@ class FasNetTAC(BaseModel):
         # parameters
         self.window_ms = window_ms
         self.context_ms = context_ms
-        self.samplerate = samplerate
-        self.window = int(samplerate * window_ms / 1000)
-        self.context = int(samplerate * context_ms / 1000)
+        self.sample_rate = sample_rate
+        self.window = int(self.sample_rate * window_ms / 1000)
+        self.context = int(self.sample_rate * context_ms / 1000)
         if not stride:
             self.stride = self.window // 2
         else:
-            self.stride = int(samplerate * stride / 1000)
+            self.stride = int(self.sample_rate * stride / 1000)
         self.filter_dim = self.context * 2 + 1
         self.output_dim = self.context * 2 + 1
         self.tac_hidden_dim = tac_hidden_dim
@@ -257,7 +257,9 @@ class FasNetTAC(BaseModel):
 
         return bf_signal
 
-    def get_config(self):
+    def get_model_args(self):
+        import ipdb
+        ipdb.set_trace()
         config = {
             "n_src": self.n_src,
             "enc_dim": self.enc_dim,
@@ -267,7 +269,7 @@ class FasNetTAC(BaseModel):
             "window_ms": self.window_ms,
             "stride": self.stride,
             "context_ms": self.context_ms,
-            "samplerate": self.samplerate,
+            "sample_rate": self.sample_rate,
             "tac_hidden_dim": self.tac_hidden_dim,
             "norm_type": self.norm_type,
             "chunk_size": self.chunk_size,
@@ -280,7 +282,7 @@ class FasNetTAC(BaseModel):
 
         return config
 
-    @property
-    def sample_rate(self):
-        """Operating sample rate of the model (float)."""
-        return self.samplerate
+    #@property
+    #def sample_rate(self):
+     #   """Operating sample rate of the model (float)."""
+      #  return self.samplerate
