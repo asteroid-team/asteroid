@@ -106,11 +106,11 @@ def main(conf):
     trainer = pl.Trainer(
         max_epochs=conf["training"]["epochs"],
         checkpoint_callback=checkpoint,
-        early_stop_callback=early_stopping,
+        callbacks=[early_stopping],
         default_root_dir=exp_dir,
         gpus=gpus,
         distributed_backend="ddp",
-        gradient_clip_val=conf["training"]["gradient_clipping"],
+        gradient_clip_val=conf["training"]["gradient_clipping"], limit_train_batches=1, limit_val_batches=1
     )
     trainer.fit(system)
 

@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 
 
-def xcorr(input, ref, normalized=True, eps=1e-8):
+def xcorr(ref, input, normalized=True, eps=1e-8):
     """
     Efficient cross-correlation computation between multi-channel signals.
     Input tensors must be of shape: mic_channels, batch, seq_len.
