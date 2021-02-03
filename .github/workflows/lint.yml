@@ -1,13 +1,13 @@
 name: Automatic lint
 
-on: push
-#  issue_comment:
-#    types: [created]
+on:
+  issue_comment:
+    types: [created]
 
 jobs:
   build:
     name: Lint code base
-    #    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/lint')
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/lint')
     runs-on: ubuntu-latest
 
     steps:
