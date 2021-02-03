@@ -50,9 +50,9 @@ def main(conf):
     series_list = []
     torch.no_grad().__enter__()
     for idx in tqdm(range(len(test_set))):
-        import ipdb
+        #import ipdb
 
-        ipdb.set_trace()
+        #ipdb.set_trace()
         # Forward the network on the mixture.
         mix, sources, valid_mics = tensors_to_device(test_set[idx], device=model_device)
         valid_mics = torch.tensor([valid_mics]).to(sources.device)
