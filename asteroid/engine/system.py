@@ -10,6 +10,13 @@ class System(pl.LightningModule):
     """Base class for deep learning systems.
     Contains a model, an optimizer, a loss function, training and validation
     dataloaders and learning rate scheduler.
+    
+    Note that by default, any PyTorch-Lightning hooks are *not* passed to the model.
+    If you want to use Lightning hooks, add the hooks to a subclass::
+    
+        class MySystem(System):
+            def on_train_batch_start(batch, batch_idx, dataloader_idx):
+                return self.model.on_train_batch_start(batch, batch_idx, dataloader_idx)
 
     Args:
         model (torch.nn.Module): Instance of model.
