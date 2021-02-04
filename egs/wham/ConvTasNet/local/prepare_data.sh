@@ -25,6 +25,7 @@ wait
 echo "Run python scripts to create the WHAM mixtures"
 # Requires : Numpy, Scipy, Pandas, and Pysoundfile
 cd $out_dir/wham_scripts
+ln -sf ../../../corpus .
 python3 create_wham_from_scratch.py \
 	--wsj0-root $wav_dir \
 	--wham-noise-root $out_dir/wham_noise\

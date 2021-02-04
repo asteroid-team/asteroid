@@ -17,11 +17,11 @@ mode=min
 nondefault_src=  # If you want to train a network with 3 output streams for example.
 
 # Training
-batch_size=8
+batch_size=4
 num_workers=8
 optimizer=adam
 lr=0.001
-epochs=200
+epochs=20
 
 # Architecture
 n_blocks=8
@@ -38,9 +38,10 @@ storage_dir=corpus
 . utils/parse_options.sh
 
 # If you start from the sphere files, specify the path to the directory and start from stage 0
-sphere_dir=$storage_dir/sph_files
+#sphere_dir=$storage_dir/sph_files
 # If you already have wsj0 wav files, specify the path to the directory here and start from stage 1
-wsj0_wav_dir=$storage_dir/wsj0_wavs
+#wsj0_wav_dir=$storage_dir/wsj0_wavs
+wsj0_wav_dir=/srv/storage/talc3@talc-data.nancy/multispeech/calcul/users/mpariente/DATA/wsj0_wav
 # If you already have the WHAM mixtures, specify the path to the directory here and start from stage 2
 wham_wav_dir=$storage_dir/wham_wavs
 
@@ -58,6 +59,7 @@ test_dir=$dumpdir/tt
 if [ $stage -le 0 ]; then
     echo "Stage 0: Converting sphere files to wav files"
     local/convert_sphere2wav.sh --sphere_dir $sphere_dir --wav_dir $wsj0_wav_dir
+    exit 0
 fi
 
 if [ $stage -le 1 ]; then
@@ -73,8 +75,7 @@ if [[ $stage -le  2 ]]; then
 			tmp_dumpdir=data/wav${sr_string}k/$mode_option
 			echo "Generating json files in $tmp_dumpdir"
 			[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
-			#local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode_option/
-			local_wham_dir=data/wav${sr_string}k/$mode_option/
+			local_wham_dir=$wham_wav_dir/wav${sr_string}k/$mode_option/
             python3 local/preprocess_wham.py --in_dir $local_wham_dir --out_dir $tmp_dumpdir
     done
   done
