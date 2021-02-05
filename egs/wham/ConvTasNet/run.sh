@@ -20,14 +20,11 @@ mode=min
 nondefault_src=  # If you want to train a network with 3 output streams for example.
 
 # Training
-# note: for batch_size=8 this needs more than 1 regular GPU (around 12-15G RAM)
-#   so id="0,1" should be specified. But of course when users try various
-#   network arch setting below this can change.
-batch_size=8
+batch_size=4
 num_workers=8
 optimizer=adam
 lr=0.001
-epochs=20
+epochs=200
 
 # Architecture
 n_blocks=8
@@ -40,15 +37,14 @@ eval_use_gpu=1
 # Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
 # files if you start from sphere files.
 storage_dir=corpus
-
-. utils/parse_options.sh
-
 # If you start from the sphere files, specify the path to the directory and start from stage 0
 sphere_dir=$storage_dir/sph_files
 # If you already have wsj0 wav files, specify the path to the directory here and start from stage 1
 wsj0_wav_dir=$storage_dir/wsj0_wavs
 # If you already have the WHAM mixtures, specify the path to the directory here and start from stage 2
 wham_wav_dir=$storage_dir/wham_wavs
+
+. utils/parse_options.sh
 
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 mkdir -p $sphere_dir $wsj0_wav_dir $wham_wav_dir
@@ -127,7 +123,3 @@ if [ $stage -le 4 ]; then
 		--exp_dir ${expdir} | tee logs/eval_${tag}.log
 	cp logs/eval_${tag}.log $expdir/eval.log
 fi
-
-wait
-echo done
-exit 0
