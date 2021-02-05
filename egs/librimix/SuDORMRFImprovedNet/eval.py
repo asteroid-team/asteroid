@@ -13,7 +13,7 @@ from pathlib import Path
 from asteroid.metrics import get_metrics
 from asteroid.data.librimix_dataset import LibriMix
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
-from asteroid import ConvTasNet
+from asteroid.models import SuDORMRFImprovedNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
 from asteroid.dsp.normalization import normalize_estimates
@@ -74,7 +74,7 @@ def main(conf):
         MockWERTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, anno_df)
     )
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
-    model = ConvTasNet.from_pretrained(model_path)
+    model = SuDORMRFImprovedNet.from_pretrained(model_path)
     # Handle device placement
     if conf["use_gpu"]:
         model.cuda()

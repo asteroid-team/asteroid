@@ -1,7 +1,7 @@
 from unittest import mock
 import numpy as np
 import pytest
-from asteroid.metrics import get_metrics
+from asteroid.metrics import get_metrics, MetricTracker
 
 
 @pytest.mark.parametrize("fs", [8000, 16000])
@@ -69,3 +69,19 @@ def test_ignore_errors(filename, average):
         )
     assert metrics_dict["si_sdr"] is None
     assert metrics_dict["pesq"] is not None
+
+
+def test_metric_tracker():
+    metric_tracker = MetricTracker(sample_rate=8000, metrics_list=["si_sdr", "stoi"])
+    for i in range(5):
+        mix = np.random.randn(1, 4000)
+        clean = np.random.randn(1, 4000)
+        est = np.random.randn(1, 4000)
+        metric_tracker(mix=mix, clean=clean, estimate=est, mix_path=f"path{i}")
+
+    # Test dump & final report
+    metric_tracker.final_report()
+    metric_tracker.final_report(dump_path="final_metrics.json")
+
+    # Check that kwargs are passed.
+    assert "mix_path" in metric_tracker.as_df()
