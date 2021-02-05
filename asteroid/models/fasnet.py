@@ -159,12 +159,11 @@ class FasNetTAC(BaseModel):
 
         # for each context window cosine similarity is computed
         # the first channel is chosen as a reference
-        ref_seg = all_seg[:, 0].contiguous().view(1, -1, self.window)
-        all_context = (
-            all_mic_context.transpose(0, 1)
-            .contiguous()
-            .view(n_mics, -1, self.context * 2 + self.window)
+        ref_seg = all_seg[:, 0].reshape(batch_size * seq_length, self.enc_dim).unsqueeze(1)
+        all_context = all_mic_context.transpose(1, 2).reshape(
+            batch_size * seq_length, n_mics, self.context * 2 + self.window
         )
+
         all_cos_sim = xcorr(all_context, ref_seg)
         all_cos_sim = (
             all_cos_sim.view(n_mics, batch_size, seq_length, self.filter_dim)
@@ -224,7 +223,7 @@ class FasNetTAC(BaseModel):
 
         # beamforming
         # convolving with all mic context --> Filter and Sum
-        all_mic_context = all_mic_context.unsqueeze(2).repeat(1, 1, 2, 1, 1)
+        all_mic_context = all_mic_context.unsqueeze(2).repeat(1, 1, self.n_src, 1, 1)
 
         all_bf_output = F.conv1d(
             all_mic_context.view(1, -1, self.context * 2 + self.window),
@@ -258,9 +257,7 @@ class FasNetTAC(BaseModel):
         return bf_signal
 
     def get_model_args(self):
-        import ipdb
 
-        ipdb.set_trace()
         config = {
             "n_src": self.n_src,
             "enc_dim": self.enc_dim,
