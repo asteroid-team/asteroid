@@ -9,7 +9,7 @@ storage_dir=$(readlink -m ./datasets)
 
 librispeech_dir=$storage_dir/LibriSpeech
 noise_dir=$storage_dir/Nonspeech
-CONF_FILE=./local/conf.yml
+conf_file=./local/conf.yml
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
 # Path to the python you'll use for the experiment. Defaults to the current python
@@ -57,7 +57,7 @@ if [[ $stage -le  0 ]]; then
 	fi
 
   if ! test -e $librispeech_dir/test-clean; then
-    echo "Downloading LibriSpeech/dev-clean into $storage_dir"
+    echo "Downloading LibriSpeech/test-clean into $storage_dir"
 	  wget -c --tries=0 --read-timeout=20 http://www.openslr.org/resources/12/test-clean.tar.gz -P $storage_dir
 	  tar -xzf $storage_dir/test-clean.tar.gz -C $storage_dir
 	  rm -rf $storage_dir/test-clean.tar.gz
@@ -74,15 +74,14 @@ fi
 
 if [[ $stage -le  1 ]]; then
   echo "Stage 1: Creating Synthetic Datasets"
-
-  #git clone https://github.com/yluo42/TAC ./local/TAC
+  git clone https://github.com/yluo42/TAC ./local/TAC
   cd local/TAC/data
-  #$python_path create_dataset.py \
-   #             --output-path=$storage_dir \
-#		--dataset=$dataset_type \
-#		--libri-path=$librispeech_dir \
-#		--noise-path=$noise_dir
-cd ../../../	
+  $python_path create_dataset.py \
+                --output-path=$storage_dir \
+		            --dataset=$dataset_type \
+		            --libri-path=$librispeech_dir \
+		            --noise-path=$noise_dir
+cd ../../../
 fi
 
 if [[ $stage -le 2 ]]; then
@@ -104,14 +103,14 @@ echo "Results from the following experiment will be stored in $expdir"
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-		--exp_dir ${expdir} | tee logs/train_${tag}.log
+		--exp_dir ${expdir} | tee logs/train_${tag}.log \
+		--conf_file ${conf_file} \
 	cp logs/train_${tag}.log $expdir/train.log
 
 	# Get ready to publish
 	mkdir -p $expdir/publish_dir
 	echo "wham/ConvTasNet" > $expdir/publish_dir/recipe_name.txt
 fi
-
 
 
 if [[ $stage -le 4 ]]; then
