@@ -61,6 +61,16 @@ train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
 test_dir=$dumpdir/tt
 
+# Generate a random ID for the run if no tag is specified
+uuid=$(python3 -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
+if [[ -z ${tag} ]]; then
+	tag=${task}_${uuid}
+fi
+expdir=exp/train_convtasnet_${tag}
+mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
+echo "Results from the following experiment will be stored in $expdir"
+
+
 if [ $stage -le 0 ]; then
     echo "Stage 0: Converting sphere files to wav files"
     local/convert_sphere2wav.sh --sphere_dir $sphere_dir --wav_dir $wsj0_wav_dir
@@ -84,15 +94,6 @@ if [ $stage -le 2 ]; then
         done
     done
 fi
-
-# Generate a random ID for the run if no tag is specified
-uuid=$(python3 -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
-if [[ -z ${tag} ]]; then
-	tag=${task}_${sr_string}k${mode}_${uuid}
-fi
-expdir=exp/train_convtasnet_${tag}
-mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
-echo "Results from the following experiment will be stored in $expdir"
 
 if [ $stage -le 3 ]; then
     echo "Stage 3: Training"
