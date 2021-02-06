@@ -11,6 +11,13 @@ class System(pl.LightningModule):
     Contains a model, an optimizer, a loss function, training and validation
     dataloaders and learning rate scheduler.
 
+    Note that by default, any PyTorch-Lightning hooks are *not* passed to the model.
+    If you want to use Lightning hooks, add the hooks to a subclass::
+
+        class MySystem(System):
+            def on_train_batch_start(self, batch, batch_idx, dataloader_idx):
+                return self.model.on_train_batch_start(batch, batch_idx, dataloader_idx)
+
     Args:
         model (torch.nn.Module): Instance of model.
         optimizer (torch.optim.Optimizer): Instance or list of optimizers.
@@ -130,7 +137,9 @@ class System(pl.LightningModule):
         """Log hp_metric to tensorboard for hparams selection."""
         hp_metric = self.trainer.callback_metrics.get("val_loss", None)
         if hp_metric is not None:
-            self.trainer.logger.log_metrics({"hp_metric": hp_metric}, step=self.trainer.global_step)
+            self.trainer.logger.log_metrics(
+                {"hp_metric": hp_metric}, step=self.trainer.global_step
+            )
 
     def configure_optimizers(self):
         """Initialize optimizers, batch-wise and epoch-wise schedulers."""
