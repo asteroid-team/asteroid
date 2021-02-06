@@ -38,6 +38,19 @@ class TAC(nn.Module):
         self.norm = norms.get(norm_type)(input_dim)
 
     def forward(self, x, valid_mics):
+        """
+        Args:
+            x: (:class:`torch.Tensor`): Input multi-channel DPRNN features.
+                                        Must be a tensor of shape (batch, mic_channels, features, chunk_size, n_chunks).
+            valid_mics: (:class:`torch.Tensor`): tensor containing effective number of microphones on each batch.
+                                                 In fact batches can be composed of examples coming from arrays with a different
+                                                 number of microphones and thus the mic_channels dimension is padded.
+                                                 E.g. torch.tensor([4, 3]) means first example has 4 channels and the second 3.
+                                                 Must be a tensor of shape (batch).
+        Returns:
+            output (:class:`torch.Tensor`): features for each mic_channel after TAC inter-channel processing.
+                                            Tensor of shape (batch, mic_channels, features, chunk_size, n_chunks)
+        """
         # input is 5D because it is multi-channel DPRNN.
         # DPRNN single channel is 4D.
 
@@ -77,4 +90,5 @@ class TAC(nn.Module):
             output.permute(0, 3, 4, 1, 2).reshape(batch_size * nmics, -1, chunk_size, n_chunks)
         ).reshape(batch_size, nmics, -1, chunk_size, n_chunks)
 
-        return output + x
+        output += x
+        return output
