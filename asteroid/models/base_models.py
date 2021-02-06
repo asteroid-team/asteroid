@@ -1,5 +1,6 @@
 import torch
 import warnings
+from typing import Optional
 
 from .. import separate
 from ..masknn import activations
@@ -22,20 +23,24 @@ def _unsqueeze_to_3d(x):
 class BaseModel(torch.nn.Module):
     """Base class for serializable models.
 
-    Defines saving/loading procedures as well as separation methods from
-    file, torch tensors and numpy arrays.
-    Need to overwrite the `forward` method, the `sample_rate` property and
-    the `get_model_args` method.
+    Defines saving/loading procedures, and separation interface to `separate`.
+    Need to overwrite the `forward` and `get_model_args` methods.
 
     Models inheriting from `BaseModel` can be used by :mod:`asteroid.separate`
     and by the `asteroid-infer` CLI. For models whose `forward` doesn't go from
     waveform to waveform tensors, overwrite `forward_wav` to return
     waveform tensors.
+
+    Args:
+        sample_rate (float): Operating sample rate of the model.
+        n_channels: Supported number of channels of the model.
+            If None, no checks will be performed.
     """
 
-    def __init__(self, sample_rate: float = 8000.0):
+    def __init__(self, sample_rate: float = 8000.0, n_channels: Optional[int] = 1):
         super().__init__()
         self.__sample_rate = sample_rate
+        self.n_channels = n_channels
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError

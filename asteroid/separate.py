@@ -3,6 +3,7 @@ import warnings
 import torch
 import numpy as np
 import soundfile as sf
+from typing import Optional
 
 try:
     from typing import Protocol
@@ -19,7 +20,9 @@ from .utils import get_device
 class Separatable(Protocol):
     """Things that are separatable."""
 
-    def forward_wav(self, wav, **kwargs):
+    n_channels: Optional[int]
+
+    def forward_wav(self, wav: torch.Tensor, **kwargs) -> torch.Tensor:
         """
         Args:
             wav (torch.Tensor): waveform tensor.
@@ -34,7 +37,7 @@ class Separatable(Protocol):
         ...
 
     @property
-    def sample_rate(self):
+    def sample_rate(self) -> float:
         """Operating sample rate of the model (float)."""
         ...
 
@@ -88,6 +91,11 @@ def separate(
 @torch.no_grad()
 def torch_separate(model: Separatable, wav: torch.Tensor, **kwargs) -> torch.Tensor:
     """Core logic of `separate`."""
+    if model.n_channels is not None and wav.shape[-2] != model.n_channels:
+        raise RuntimeError(
+            f"Model supports {model.n_channels}-channel inputs but found audio with {wav.shape[-2]} channels."
+            f"Please match the number of channels."
+        )
     # Handle device placement
     input_device = get_device(wav, default="cpu")
     model_device = get_device(model, default="cpu")
@@ -158,8 +166,8 @@ def file_separate(
             f"Received a signal with a sampling rate of {fs}Hz for a model "
             f"of {model.sample_rate}Hz. You can pass `resample=True` to resample automatically."
         )
-    # Pass wav as [batch, n_chan, time]; here: [1, 1, time]
-    wav = wav[:, 0][None, None]
+    # Pass wav as [batch, n_chan, time]; here: [1, chan, time]
+    wav = wav.T[None]
     (est_srcs,) = numpy_separate(model, wav, **kwargs)
     # Resample to original sr
     est_srcs = [
