@@ -8,8 +8,18 @@ from asteroid.data.librimix_dataset import librispeech_license
 
 
 class TACDataset(Dataset):
+    """
+    Multi-channel Librispeech-derived dataset used in Transform Average Concatenate.
+    Args:
+        json_file (str): Path to json file resulting from the data prep script which contains parsed examples.
+        segment (float, optional): Length of the segments used for training,
+                                 in seconds. If None, use full utterances (e.g. for test).
+        samplerate (int, optional): The sampling rate of the wav files.
+        max_mics (int, optional): Maximum number of microphones for an array in the dataset.
+        train (bool, optional): If True randomly permutes the microphones on each example.
+    """
 
-    dataset_name = "Multi-channel Librispeech-derived dataset used in Transform Average Concatenate"
+    dataset_name = "TACDataset"
 
     def __init__(self, json_file, segment=None, samplerate=16000, max_mics=6, train=True):
 
