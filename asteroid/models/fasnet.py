@@ -141,14 +141,13 @@ class FasNetTAC(BaseModel):
 
     def forward(self, x, valid_mics):
         """
-
         Args:
             x: (:class:`torch.Tensor`): multi-channel input signal. Must be a tensor of shape (batch, mic_channels, samples).
             valid_mics: (:class:`torch.Tensor`): tensor containing effective number of microphones on each batch.
-                                                     In fact batches can be composed of examples coming from arrays with a different
-                                                     number of microphones and thus the mic_channels dimension is padded.
-                                                     E.g. torch.tensor([4, 3]) means first example has 4 channels and the second 3.
-                                                     Must be a tensor of shape (batch).
+                                                 In fact batches can be composed of examples coming from arrays with a different
+                                                 number of microphones and thus the mic_channels dimension is padded.
+                                                 E.g. torch.tensor([4, 3]) means first example has 4 channels and the second 3.
+                                                 Must be a tensor of shape (batch).
 
         Returns:
             bf_signal (:class:`torch.Tensor`): beamformed signal with shape (batch, n_src, samples).
