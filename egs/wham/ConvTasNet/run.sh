@@ -3,6 +3,17 @@
 # Exit on error
 set -eo pipefail
 
+# Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
+# files if you start from sphere files.
+storage_dir=corpus
+# If you start from the sphere files, specify the path to the directory and start from stage 0
+sphere_dir=$storage_dir/sph_files
+# If you already have wsj0 wav files, specify the path to the directory here and start from stage 1
+wsj0_wav_dir=$storage_dir/wsj0_wavs
+# If you already have the WHAM mixtures, specify the path to the directory here and start from stage 2
+wham_wav_dir=$storage_dir/wham_wavs
+
+
 # General
 stage=0  # Controls from which stage to start
 tag=1a_wham  # Controls the directory name associated to the experiment
@@ -30,16 +41,6 @@ mask_nonlinear=relu
 
 # Evaluation
 eval_use_gpu=1
-
-# Main storage directory. You'll need disk space to dump the WHAM mixtures and the wsj0 wav
-# files if you start from sphere files.
-storage_dir=corpus
-# If you start from the sphere files, specify the path to the directory and start from stage 0
-sphere_dir=$storage_dir/sph_files
-# If you already have wsj0 wav files, specify the path to the directory here and start from stage 1
-wsj0_wav_dir=$storage_dir/wsj0_wavs
-# If you already have the WHAM mixtures, specify the path to the directory here and start from stage 2
-wham_wav_dir=$storage_dir/wham_wavs
 
 . utils/parse_options.sh
 
