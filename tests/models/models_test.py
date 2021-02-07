@@ -85,7 +85,8 @@ def test_convtasnet_sep():
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
-def test_save_and_load_convtasnet(fb):
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_save_and_load_convtasnet(fb, sample_rate):
     _default_test_model(
         ConvTasNet(
             n_src=2,
@@ -96,6 +97,7 @@ def test_save_and_load_convtasnet(fb):
             skip_chan=8,
             n_filters=32,
             fb_name=fb,
+            sample_rate=sample_rate,
         )
     )
 
@@ -118,16 +120,25 @@ def test_dprnntasnet_sep_from_hf():
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
-def test_save_and_load_dprnn(fb):
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_save_and_load_dprnn(fb, sample_rate):
     _default_test_model(
         DPRNNTasNet(
-            n_src=2, n_repeats=2, bn_chan=16, hid_size=4, chunk_size=20, n_filters=32, fb_name=fb
+            n_src=2,
+            n_repeats=2,
+            bn_chan=16,
+            hid_size=4,
+            chunk_size=20,
+            n_filters=32,
+            fb_name=fb,
+            sample_rate=sample_rate,
         )
     )
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
-def test_save_and_load_tasnet(fb):
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_save_and_load_tasnet(fb, sample_rate):
     _default_test_model(
         LSTMTasNet(
             n_src=2,
@@ -136,11 +147,13 @@ def test_save_and_load_tasnet(fb):
             n_filters=32,
             dropout=0.0,
             fb_name=fb,
+            sample_rate=sample_rate,
         )
     )
 
 
-def test_sudormrf():
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_sudormrf(sample_rate):
     _default_test_model(
         SuDORMRFNet(
             2,
@@ -149,11 +162,13 @@ def test_sudormrf():
             upsampling_depth=2,
             kernel_size=21,
             n_filters=12,
+            sample_rate=sample_rate,
         )
     )
 
 
-def test_sudormrf_imp():
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_sudormrf_imp(sample_rate):
     _default_test_model(
         SuDORMRFImprovedNet(
             2,
@@ -162,14 +177,16 @@ def test_sudormrf_imp():
             upsampling_depth=2,
             kernel_size=21,
             n_filters=12,
+            sample_rate=sample_rate,
         )
     )
 
 
 @pytest.mark.filterwarnings("ignore: DPTransformer input dim")
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
-def test_dptnet(fb):
-    _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, fb_name=fb))
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_dptnet(fb, sample_rate):
+    _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, sample_rate=sample_rate))
 
 
 def test_dcunet():
@@ -221,6 +238,8 @@ def _default_test_model(model, input_samples=801):
     with pytest.raises(RuntimeError):
         reconstructed_model = model.__class__.from_pretrained(model_conf)
     reconstructed_model = model.__class__.from_pretrained(model_conf, sample_rate=sr)
+
+    assert reconstructed_model.sample_rate == model.sample_rate
 
 
 @pytest.mark.parametrize(
