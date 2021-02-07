@@ -33,14 +33,14 @@ class BaseModel(torch.nn.Module):
 
     Args:
         sample_rate (float): Operating sample rate of the model.
-        n_channels: Supported number of channels of the model.
+        in_channels: Number of input channels in the signal.
             If None, no checks will be performed.
     """
 
-    def __init__(self, sample_rate: float = 8000.0, n_channels: Optional[int] = 1):
+    def __init__(self, sample_rate: float = 8000.0, in_channels: Optional[int] = 1):
         super().__init__()
         self.__sample_rate = sample_rate
-        self.n_channels = n_channels
+        self.in_channels = in_channels
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError
