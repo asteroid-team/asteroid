@@ -5,7 +5,7 @@ from typing import Optional
 from .. import separate
 from ..masknn import activations
 from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
-from ..utils.hub_utils import cached_download
+from ..utils.hub_utils import cached_download, SR_HASHTABLE
 from ..utils.deprecation_utils import is_overridden, mark_deprecated, VisibleDeprecationWarning
 
 
@@ -37,8 +37,16 @@ class BaseModel(torch.nn.Module):
             If None, no checks will be performed.
     """
 
-    def __init__(self, sample_rate: float = 8000.0, n_channels: Optional[int] = 1):
+    def __init__(self, sample_rate: float = None, n_channels: Optional[int] = 1):
         super().__init__()
+        if sample_rate is None:
+            sample_rate = 8000.0
+            warnings.warn(
+                "The argument `sample_rate` of `BaseModel` will be required in the future. "
+                "It is no longer a keyword argument. This will raise an error in future release. "
+                "Defaults to 8000.0",
+                VisibleDeprecationWarning,
+            )
         self.__sample_rate = sample_rate
         self.n_channels = n_channels
 
@@ -144,20 +152,12 @@ class BaseModel(torch.nn.Module):
                 "model_args`. Found only: {}".format(conf.keys())
             )
         conf["model_args"].update(kwargs)  # kwargs overwrite config.
-        if "sample_rate" not in conf["model_args"]:
-            # Try retrieving from pretrained models
-            from ..utils.hub_utils import SR_HASHTABLE
-
-            sr = None
-            if isinstance(pretrained_model_conf_or_path, str):
-                sr = SR_HASHTABLE.get(pretrained_model_conf_or_path, None)
-            if sr is None:
-                raise RuntimeError(
-                    "Couldn't load pretrained model without sampling rate. You can either pass "
-                    "`sample_rate` to the `from_pretrained` method or edit your model to include "
-                    "the `sample_rate` key, or use `asteroid-register-sr model sample_rate` CLI."
-                )
-            conf["model_args"]["sample_rate"] = sr
+        if "sample_rate" not in conf["model_args"] and isinstance(
+            pretrained_model_conf_or_path, str
+        ):
+            conf["model_args"]["sample_rate"] = SR_HASHTABLE.get(
+                pretrained_model_conf_or_path, None
+            )
         # Attempt to find the model and instantiate it.
         try:
             model_class = get(conf["model_name"])
