@@ -100,6 +100,7 @@ class _GatedEncoder(nn.Module):
         super().__init__()
         # For config
         self.filterbank = encoder.filterbank
+        self.sample_rate = getattr(encoder.filterbank, "sample_rate", None)
         # Gated encoder.
         self.encoder_relu = encoder
         self.encoder_sig = deepcopy(encoder)
