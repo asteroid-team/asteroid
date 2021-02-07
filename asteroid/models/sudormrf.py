@@ -172,6 +172,7 @@ class _Padder(nn.Module):
 
         # For serialize
         self.filterbank = self.encoder.filterbank
+        self.sample_rate = getattr(self.encoder.filterbank, "sample_rate", None)
 
     def forward(self, x):
         x = pad(x, self.lcm)
