@@ -20,7 +20,7 @@ from asteroid.models import (
     SuDORMRFNet,
 )
 from asteroid.models.base_models import BaseModel
-
+from asteroid.utils.deprecation_utils import VisibleDeprecationWarning
 
 HF_EXAMPLE_MODEL_IDENTIFER = "julien-c/DPRNNTasNet-ks16_WHAM_sepclean"
 # An actual model hosted on huggingface.co
@@ -30,6 +30,11 @@ def test_set_sample_rate_raises_warning():
     model = BaseModel(sample_rate=8000.0)
     with pytest.warns(UserWarning):
         model.sample_rate = 16000.0
+
+
+def test_no_sample_rate_raises_warning():
+    with pytest.warns(VisibleDeprecationWarning):
+        BaseModel()
 
 
 def test_multichannel_model_loading():
@@ -216,10 +221,9 @@ def _default_test_model(model, input_samples=801):
     reconstructed_model = model.__class__.from_pretrained(model_conf)
     assert_allclose(model(test_input), reconstructed_model(test_input))
 
-    # Make
+    # Load with and without SR
     sr = model_conf["model_args"].pop("sample_rate")
-    with pytest.raises(RuntimeError):
-        reconstructed_model = model.__class__.from_pretrained(model_conf)
+    reconstructed_model_nosr = model.__class__.from_pretrained(model_conf)
     reconstructed_model = model.__class__.from_pretrained(model_conf, sample_rate=sr)
 
 
