@@ -42,7 +42,7 @@ class BaseModel(torch.nn.Module):
         if sample_rate is None:
             sample_rate = 8000.0
             warnings.warn(
-                "The argument `sample_rate` of `BaseModel` will be made positional. "
+                "The argument `sample_rate` of `BaseModel` will be required in the future. "
                 "It is no longer a keyword argument. This will raise an error in future release. "
                 "Defaults to 8000.0",
                 VisibleDeprecationWarning,
