@@ -6,10 +6,8 @@ set -o pipefail
 
 # Main storage directory where dataset will be stored
 storage_dir=$(readlink -m ./datasets)
-
 librispeech_dir=$storage_dir/LibriSpeech
 noise_dir=$storage_dir/Nonspeech
-conf_file=./local/conf.yml
 # After running the recipe a first time, you can run it from stage 3 directly to train new models.
 
 # Path to the python you'll use for the experiment. Defaults to the current python
@@ -103,8 +101,7 @@ echo "Results from the following experiment will be stored in $expdir"
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-		--exp_dir ${expdir} | tee logs/train_${tag}.log \
-		--conf_file ${conf_file} \
+		--exp_dir ${expdir} | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
 
 	# Get ready to publish
