@@ -60,7 +60,6 @@ def main(conf):
     model = FasNetTAC(**conf["net"])
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     # Define scheduler
-
     if conf["training"]["half_lr"]:
         scheduler = ReduceLROnPlateau(
             optimizer=optimizer, factor=0.5, patience=conf["training"]["patience"]
@@ -87,6 +86,8 @@ def main(conf):
     )
 
     # Define callbacks
+    # Define callbacks
+    callbacks = []
     checkpoint_dir = os.path.join(exp_dir, "checkpoints/")
     checkpoint = ModelCheckpoint(
         checkpoint_dir,
@@ -95,18 +96,19 @@ def main(conf):
         save_top_k=conf["training"]["save_top_k"],
         verbose=True,
     )
-    early_stopping = False
+    callbacks.append(checkpoint)
     if conf["training"]["early_stop"]:
-        early_stopping = EarlyStopping(
-            monitor="val_loss", patience=conf["training"]["patience"], verbose=True
+        callbacks.append(
+            EarlyStopping(
+                monitor="val_loss", mode="min", patience=conf["training"]["patience"], verbose=True
+            )
         )
 
     # Don't ask GPU if they are not available.
     gpus = -1 if torch.cuda.is_available() else None
     trainer = pl.Trainer(
         max_epochs=conf["training"]["epochs"],
-        checkpoint_callback=checkpoint,
-        callbacks=[early_stopping],
+        callbacks=callbacks,
         default_root_dir=exp_dir,
         gpus=gpus,
         distributed_backend="ddp",
