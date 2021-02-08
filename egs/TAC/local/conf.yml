@@ -1,5 +1,5 @@
 data:
-  samplerate: 16000
+  sample_rate: 16000
   segment:
   train_json: ./data/train.json
   dev_json: ./data/validation.json

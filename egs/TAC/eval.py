@@ -120,7 +120,7 @@ if __name__ == "__main__":
     conf_path = os.path.join(args.exp_dir, "conf.yml")
     with open(conf_path) as f:
         train_conf = yaml.safe_load(f)
-    arg_dic["sample_rate"] = train_conf["data"]["samplerate"]
+    arg_dic["sample_rate"] = train_conf["data"]["sample_rate"]
     arg_dic["train_conf"] = train_conf
 
     main(arg_dic)
