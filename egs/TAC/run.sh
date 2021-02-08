@@ -15,7 +15,7 @@ noise_dir=$storage_dir/Nonspeech
 python_path=python
 
 # Example usage
-# ./run.sh --stage 3 --tag my_tag --task sep_noisy --id 0,1
+# ./run.sh --stage 3 --tag my_tag --id 0,1
 
 # General
 stage=0  # Controls from which stage to start
@@ -79,7 +79,7 @@ if [[ $stage -le  1 ]]; then
 		            --dataset=$dataset_type \
 		            --libri-path=$librispeech_dir \
 		            --noise-path=$noise_dir
-cd ../../../
+  cd ../../../
 fi
 
 if [[ $stage -le 2 ]]; then
@@ -101,13 +101,12 @@ echo "Results from the following experiment will be stored in $expdir"
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   mkdir -p logs
-  CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-		--exp_dir ${expdir} | tee logs/train_${tag}.log
+  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir ${expdir} | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
 
 	# Get ready to publish
 	mkdir -p $expdir/publish_dir
-	echo "wham/ConvTasNet" > $expdir/publish_dir/recipe_name.txt
+	echo "TAC/TAC" > $expdir/publish_dir/recipe_name.txt
 fi
 
 
