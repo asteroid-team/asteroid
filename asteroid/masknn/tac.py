@@ -1,15 +1,14 @@
 import torch
 import torch.nn as nn
-from asteroid.masknn import activations, norms
+from . import activations, norms
 
 
 class TAC(nn.Module):
-    """
-    Transform-Average-Concatenate inter-microphone-channel permutation invariant communication block.
-    From [1].
-    Note: supports inputs of shape (batch, mic_channels, features, chunk_size, n_chunks) as in FasNet-TAC.
-    The operations are applied for each element in chunk_size and n_chunks.
-    Output is of same shape as input.
+    """Transform-Average-Concatenate inter-microphone-channel permutation invariant communication block [1]
+
+    .. note:: Supports inputs of shape :math:`(batch, mic\_channels, features, chunk\_size, n\_chunks)`
+        as in FasNet-TAC. The operations are applied for each element in ``chunk_size`` and ``n_chunks``.
+        Output is of same shape as input.
 
     Args:
         input_dim (int): Number of features of input representation.
@@ -17,14 +16,13 @@ class TAC(nn.Module):
         activation (str, optional): type of activation used. See asteroid.masknn.activations.
         norm_type (str, optional): type of normalization layer used. See asteroid.masknn.norms.
 
-
-    [1] Luo, Yi, et al. "End-to-end microphone permutation and number invariant multi-channel speech separation."
-    ICASSP 2020-2020 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP). IEEE, 2020.
+    References
+        [1] : Luo, Yi, et al. "End-to-end microphone permutation and number invariant multi-channel
+        speech separation." ICASSP 2020.
     """
 
     def __init__(self, input_dim, hidden_dim=384, activation="prelu", norm_type="gLN"):
         super().__init__()
-
         self.hidden_dim = hidden_dim
         self.input_tf = nn.Sequential(
             nn.Linear(input_dim, hidden_dim), activations.get(activation)()
@@ -41,19 +39,18 @@ class TAC(nn.Module):
         """
         Args:
             x: (:class:`torch.Tensor`): Input multi-channel DPRNN features.
-                                        Must be a tensor of shape (batch, mic_channels, features, chunk_size, n_chunks).
+                Shape: :math:`(batch, mic\_channels, features, chunk\_size, n\_chunks)`.
             valid_mics: (:class:`torch.Tensor`): tensor containing effective number of microphones on each batch.
-                                                 In fact batches can be composed of examples coming from arrays with a different
-                                                 number of microphones and thus the mic_channels dimension is padded.
-                                                 E.g. torch.tensor([4, 3]) means first example has 4 channels and the second 3.
-                                                 Must be a tensor of shape (batch).
+                Batches can be composed of examples coming from arrays with a different
+                number of microphones and thus the ``mic_channels`` dimension is padded.
+                E.g. torch.tensor([4, 3]) means first example has 4 channels and the second 3.
+                Shape:  :math`(batch)`.
+
         Returns:
             output (:class:`torch.Tensor`): features for each mic_channel after TAC inter-channel processing.
-                                            Tensor of shape (batch, mic_channels, features, chunk_size, n_chunks)
+                Shape :math:`(batch, mic\_channels, features, chunk\_size, n\_chunks)`.
         """
-        # input is 5D because it is multi-channel DPRNN.
-        # DPRNN single channel is 4D.
-
+        # input is 5D because it is multi-channel DPRNN. DPRNN single channel is 4D.
         batch_size, nmics, channels, chunk_size, n_chunks = x.size()
         # first operation: transform the input for each frame and independently on each mic channel.
         output = self.input_tf(
