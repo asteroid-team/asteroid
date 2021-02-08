@@ -20,7 +20,7 @@ from .utils import get_device
 class Separatable(Protocol):
     """Things that are separatable."""
 
-    n_channels: Optional[int]
+    in_channels: Optional[int]
 
     def forward_wav(self, wav: torch.Tensor, **kwargs) -> torch.Tensor:
         """
@@ -91,9 +91,9 @@ def separate(
 @torch.no_grad()
 def torch_separate(model: Separatable, wav: torch.Tensor, **kwargs) -> torch.Tensor:
     """Core logic of `separate`."""
-    if model.n_channels is not None and wav.shape[-2] != model.n_channels:
+    if model.in_channels is not None and wav.shape[-2] != model.in_channels:
         raise RuntimeError(
-            f"Model supports {model.n_channels}-channel inputs but found audio with {wav.shape[-2]} channels."
+            f"Model supports {model.in_channels}-channel inputs but found audio with {wav.shape[-2]} channels."
             f"Please match the number of channels."
         )
     # Handle device placement

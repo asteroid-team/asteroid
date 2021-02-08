@@ -39,20 +39,20 @@ def test_no_sample_rate_raises_warning():
 
 def test_multichannel_model_loading():
     class MCModel(BaseModel):
-        def __init__(self, sample_rate=8000.0, n_channels=2):
-            super().__init__(sample_rate=sample_rate, n_channels=n_channels)
+        def __init__(self, sample_rate=8000.0, in_channels=2):
+            super().__init__(sample_rate=sample_rate, in_channels=in_channels)
 
         def forward(self, x, **kwargs):
             return x
 
         def get_model_args(self):
-            return {"sample_rate": self.sample_rate, "n_channels": self.n_channels}
+            return {"sample_rate": self.sample_rate, "in_channels": self.in_channels}
 
     model = MCModel()
     model_conf = model.serialize()
 
     new_model = MCModel.from_pretrained(model_conf)
-    assert model.n_channels == new_model.n_channels
+    assert model.in_channels == new_model.in_channels
 
 
 def test_convtasnet_sep():
