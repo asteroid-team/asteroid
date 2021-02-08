@@ -12,5 +12,5 @@ from asteroid.models.fasnet import FasNetTAC
 def test_fasnet(batch_size, n_mics, samples, n_src, use_tac):
     mixture = torch.rand((batch_size, n_mics, samples))
     valid_mics = torch.tensor([n_mics for x in range(batch_size)])
-    fasnet = FasNetTAC(n_src, use_tac=use_tac, feature_dim=8)
+    fasnet = FasNetTAC(n_src, use_tac=use_tac, enc_dim=8)
     fasnet(mixture, valid_mics)
