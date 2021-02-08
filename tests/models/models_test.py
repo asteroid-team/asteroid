@@ -231,8 +231,9 @@ def test_dccrnet():
         DCCRNet("mini").masker(torch.zeros((1, 42, 3), dtype=torch.complex64))
 
 
-def _default_test_model(model, input_samples=801):
-    test_input = torch.randn(1, input_samples)
+def _default_test_model(model, input_samples=801, test_input=None):
+    if test_input is None:
+        test_input = torch.randn(1, input_samples)
 
     model_conf = model.serialize()
     reconstructed_model = model.__class__.from_pretrained(model_conf)
