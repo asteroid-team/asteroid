@@ -7,6 +7,7 @@ import asteroid
 from asteroid import models
 from asteroid.filterbanks import make_enc_dec
 from asteroid.dsp import LambdaOverlapAdd
+from asteroid.models.fasnet import FasNetTAC
 from asteroid.separate import separate
 from asteroid.models import (
     ConvTasNet,
@@ -192,6 +193,14 @@ def test_sudormrf_imp(sample_rate):
 @pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
 def test_dptnet(fb, sample_rate):
     _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, sample_rate=sample_rate))
+
+
+@pytest.mark.parametrize("use_tac", [True, False])
+def test_fasnet(use_tac):
+    _default_test_model(
+        FasNetTAC(n_src=2, feature_dim=8, hidden_dim=10, n_layers=2, use_tac=use_tac),
+        test_input=torch.randn(3, 2, 8372),
+    )
 
 
 def test_dcunet():
