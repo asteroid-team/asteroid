@@ -9,33 +9,37 @@ from asteroid.dsp.spatial import xcorr
 
 
 class FasNetTAC(BaseModel):
-    """
-    FasNetTAC separation model as described in [1] with optional Transform-Average-Concatenate (TAC) module.
+    """FasNetTAC separation model with optional Transform-Average-Concatenate (TAC) module[1].
 
     Args:
         n_src (int): Maximum number of sources the model can separate.
         enc_dim (int, optional): Length of analysis filter. Defaults to 64.
-        feature_dim (int, optional): Size of hidden representation in DPRNN blocks after bottleneck. Defaults to 64.
+        feature_dim (int, optional): Size of hidden representation in DPRNN blocks after bottleneck.
+            Defaults to 64.
         hidden_dim (int, optional): Number of neurons in the RNNs cell state in DPRNN blocks.
             Defaults to 128.
         n_layers (int, optional): Number of DPRNN blocks. Default to 4.
         window_ms (int, optional): Beamformer window_length in milliseconds. Defaults to 4.
         stride (int, optional): Stride for Beamforming windows. Defaults to window_ms // 2.
-        context_ms (int, optional): Context for each Beamforming window. Defaults to 16. Effective window is 2*context_ms+window_ms.
-        fs (int, optional): Samplerate of input signal.
+        context_ms (int, optional): Context for each Beamforming window. Defaults to 16.
+            Effective window is 2*context_ms+window_ms.
+        sample_rate (int, optional): Samplerate of input signal.
         tac_hidden_dim (int, optional): Size for TAC module hidden dimensions. Default to 384 neurons.
         norm_type (str, optional): Normalization layer used. Default is Layer Normalization.
-        chunk_size (int, optional): Chunk size used for dual-path processing in DPRNN blocks. Default to 50 samples.
-        hop_size (int, optional): Hop-size used for dual-path processing in DPRNN blocks. Default to `chunk_size // 2` (50% overlap).
+        chunk_size (int, optional): Chunk size used for dual-path processing in DPRNN blocks.
+            Default to 50 samples.
+        hop_size (int, optional): Hop-size used for dual-path processing in DPRNN blocks.
+            Default to `chunk_size // 2` (50% overlap).
         bidirectional (bool, optional):  True for bidirectional Inter-Chunk RNN
             (Intra-Chunk is always bidirectional).
-        rnn_type (str, optional):  Type of RNN used. Choose between ``'RNN'``,
-            ``'LSTM'`` and ``'GRU'``.
+        rnn_type (str, optional):  Type of RNN used. Choose between ``'RNN'``, ``'LSTM'`` and ``'GRU'``.
         dropout (float, optional): Dropout ratio, must be in [0,1].
-        use_tac (bool, optional): whether to use Transform-Average-Concatenate for inter-mic-channels communication. Defaults to True.
+        use_tac (bool, optional): whether to use Transform-Average-Concatenate for inter-mic-channels
+            communication. Defaults to True.
 
-    [1] Luo, Yi, et al. "End-to-end microphone permutation and number invariant multi-channel speech separation."
-    ICASSP 2020-2020 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP). IEEE, 2020.
+    References
+        [1] Luo, Yi, et al. "End-to-end microphone permutation and number invariant multi-channel
+        speech separation." ICASSP 2020.
     """
 
     def __init__(
@@ -65,9 +69,8 @@ class FasNetTAC(BaseModel):
         self.hidden_dim = hidden_dim
         self.n_layers = n_layers
         self.n_src = n_src
-
         assert window_ms % 2 == 0, "Window length should be even"
-        # parameters
+        # Parameters
         self.window_ms = window_ms
         self.context_ms = context_ms
         self.sample_rate = sample_rate
@@ -106,7 +109,7 @@ class FasNetTAC(BaseModel):
                         bidirectional,
                         rnn_type,
                         dropout=dropout,
-                    ),
+                    )
                 ]
             )
             if self.use_tac:
@@ -123,7 +126,6 @@ class FasNetTAC(BaseModel):
     @staticmethod
     def windowing_with_context(x, window, context):
         batch_size, nmic, nsample = x.shape
-
         unfolded = F.unfold(
             x.unsqueeze(-1),
             kernel_size=(window + 2 * context, 1),
@@ -133,7 +135,6 @@ class FasNetTAC(BaseModel):
 
         n_chunks = unfolded.size(-1)
         unfolded = unfolded.reshape(batch_size, nmic, window + 2 * context, n_chunks)
-
         return (
             unfolded[:, :, context : context + window].transpose(2, -1),
             unfolded.transpose(2, -1),
@@ -142,23 +143,22 @@ class FasNetTAC(BaseModel):
     def forward(self, x, valid_mics):
         """
         Args:
-            x: (:class:`torch.Tensor`): multi-channel input signal. Must be a tensor of shape (batch, mic_channels, samples).
+            x: (:class:`torch.Tensor`): multi-channel input signal. Shape: :math:`(batch, mic\_channels, samples)`.
             valid_mics: (:class:`torch.Tensor`): tensor containing effective number of microphones on each batch.
-                                                 In fact batches can be composed of examples coming from arrays with a different
-                                                 number of microphones and thus the mic_channels dimension is padded.
-                                                 E.g. torch.tensor([4, 3]) means first example has 4 channels and the second 3.
-                                                 Must be a tensor of shape (batch).
+                Batches can be composed of examples coming from arrays with a different
+                number of microphones and thus the ``mic_channels`` dimension is padded.
+                E.g. torch.tensor([4, 3]) means first example has 4 channels and the second 3.
+                Shape: :math`(batch)`.
 
         Returns:
-            bf_signal (:class:`torch.Tensor`): beamformed signal with shape (batch, n_src, samples).
+            bf_signal (:class:`torch.Tensor`): beamformed signal with shape :math:`(batch, n\_src, samples)`.
         """
-
-        n_samples = x.size(-1)  # original number of samples of multichannel audio
+        n_samples = x.size(-1)  # Original number of samples of multichannel audio
         all_seg, all_mic_context = self.windowing_with_context(x, self.window, self.context)
         batch_size, n_mics, seq_length, feats = all_mic_context.size()
-        # all_seg contains only the central window, all_mic_context contains also the right and left context
+        # All_seg contains only the central window, all_mic_context contains also the right and left context
 
-        # encoder applies a filter on each all_mic_context feats
+        # Encoder applies a filter on each all_mic_context feats
         enc_output = (
             self.encoder(all_mic_context.reshape(batch_size * n_mics * seq_length, 1, feats))
             .reshape(batch_size * n_mics, seq_length, self.enc_dim)
@@ -169,8 +169,7 @@ class FasNetTAC(BaseModel):
             batch_size, n_mics, self.enc_dim, seq_length
         )  # apply norm
 
-        # for each context window cosine similarity is computed
-        # the first channel is chosen as a reference
+        # For each context window cosine similarity is computed. The first channel is chosen as a reference
         ref_seg = all_seg[:, 0].reshape(batch_size * seq_length, self.enc_dim).unsqueeze(1)
         all_context = all_mic_context.transpose(1, 2).reshape(
             batch_size * seq_length, n_mics, self.context * 2 + self.window
@@ -183,12 +182,11 @@ class FasNetTAC(BaseModel):
             .contiguous()
         )  # B, nmic, 2*context + 1, seq_len
 
-        # encoder features and cosine similarity features are concatenated
+        # Encoder features and cosine similarity features are concatenated
         input_feature = torch.cat([enc_output, all_cos_sim], 2)
-        # apply bottleneck to reduce parameters and feed to DPRNN
+        # Apply bottleneck to reduce parameters and feed to DPRNN
         input_feature = self.bottleneck(input_feature.reshape(batch_size * n_mics, -1, seq_length))
-
-        # we unfold the features for dual path processing
+        # We unfold the features for dual path processing
         unfolded = F.unfold(
             input_feature.unsqueeze(-1),
             kernel_size=(self.chunk_size, 1),
@@ -199,25 +197,21 @@ class FasNetTAC(BaseModel):
         unfolded = unfolded.reshape(batch_size * n_mics, self.enc_dim, self.chunk_size, n_chunks)
 
         for i in range(self.n_layers):
-            # at each layer we apply DPRNN to process each mic independently and then TAC for inter-mic processing.
-            if self.use_tac:
-                dprnn, tac = self.DPRNN_TAC[i]
-            else:
-                dprnn = self.DPRNN_TAC[i][0]
+            # At each layer we apply DPRNN to process each mic independently and then TAC for inter-mic processing.
+            dprnn = self.DPRNN_TAC[i][0]
             unfolded = dprnn(unfolded)
             if self.use_tac:
                 b, ch, chunk_size, n_chunks = unfolded.size()
+                tac = self.DPRNN_TAC[i][1]
                 unfolded = unfolded.reshape(-1, n_mics, ch, chunk_size, n_chunks)
                 unfolded = tac(unfolded, valid_mics).reshape(
                     batch_size * n_mics, self.enc_dim, self.chunk_size, n_chunks
                 )
-
-        # output, 2D conv to get different feats for each source
+        # Output, 2D conv to get different feats for each source
         unfolded = self.conv_2D(unfolded).reshape(
             batch_size * n_mics * self.n_src, self.enc_dim * self.chunk_size, n_chunks
         )
-
-        # dual path processing is done we fold back
+        # Dual path processing is done we fold back
         folded = F.fold(
             unfolded,
             (seq_length, 1),
@@ -225,18 +219,15 @@ class FasNetTAC(BaseModel):
             padding=(self.chunk_size, 0),
             stride=(self.hop_size, 1),
         )
-
-        # dividing to assure perfect reconstruction
+        # Dividing to assure perfect reconstruction
         folded = folded.squeeze(-1) / (self.chunk_size / self.hop_size)
-
-        # apply gating to output and scaling to -1 and 1)
+        # apply gating to output and scaling to -1 and 1
         folded = self.tanh(folded) * self.gate(folded)
         folded = folded.view(batch_size, n_mics, self.n_src, -1, seq_length)
 
-        # beamforming
-        # convolving with all mic context --> Filter and Sum
+        # Beamforming
+        # Convolving with all mic context --> Filter and Sum
         all_mic_context = all_mic_context.unsqueeze(2).repeat(1, 1, self.n_src, 1, 1)
-
         all_bf_output = F.conv1d(
             all_mic_context.view(1, -1, self.context * 2 + self.window),
             folded.transpose(3, -1).contiguous().view(-1, 1, self.filter_dim),
@@ -244,7 +235,7 @@ class FasNetTAC(BaseModel):
         )
         all_bf_output = all_bf_output.view(batch_size, n_mics, self.n_src, seq_length, self.window)
 
-        # fold back to obtain signal
+        # Fold back to obtain signal
         all_bf_output = F.fold(
             all_bf_output.reshape(
                 batch_size * n_mics * self.n_src, seq_length, self.window
@@ -254,10 +245,9 @@ class FasNetTAC(BaseModel):
             padding=(self.window, 0),
             stride=(self.window // 2, 1),
         )
-
         bf_signal = all_bf_output.reshape(batch_size, n_mics, self.n_src, n_samples)
 
-        # we sum over mics after filtering (filters will realign the signals --> delay and sum)
+        # We sum over mics after filtering (filters will realign the signals --> delay and sum)
         if valid_mics.max() == 0:
             bf_signal = bf_signal.mean(1)
         else:
@@ -269,7 +259,6 @@ class FasNetTAC(BaseModel):
         return bf_signal
 
     def get_model_args(self):
-
         config = {
             "n_src": self.n_src,
             "enc_dim": self.enc_dim,
@@ -289,5 +278,4 @@ class FasNetTAC(BaseModel):
             "dropout": self.dropout,
             "use_tac": self.use_tac,
         }
-
         return config
