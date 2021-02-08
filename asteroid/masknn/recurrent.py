@@ -65,9 +65,6 @@ class SingleRNN(nn.Module):
 class DoubleRNN(nn.Module):
     """Module for a RNN block.
 
-    Inspired from https://github.com/yluo42/TAC/blob/master/utility/models.py
-    Licensed under CC BY-NC-SA 3.0 US.
-
     Args:
         rnn_type (str): Select from ``'RNN'``, ``'LSTM'``, ``'GRU'``. Can
             also be passed in lowercase letters.
