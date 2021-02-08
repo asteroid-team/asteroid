@@ -62,7 +62,7 @@ class FasNetTAC(BaseModel):
         dropout=0.0,
         use_tac=True,
     ):
-        super().__init__()
+        super().__init__(sample_rate=sample_rate, in_channels=None)
 
         self.enc_dim = enc_dim
         self.feature_dim = feature_dim
@@ -73,7 +73,6 @@ class FasNetTAC(BaseModel):
         # Parameters
         self.window_ms = window_ms
         self.context_ms = context_ms
-        self.sample_rate = sample_rate
         self.window = int(self.sample_rate * window_ms / 1000)
         self.context = int(self.sample_rate * context_ms / 1000)
         if not stride:
