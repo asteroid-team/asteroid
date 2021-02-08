@@ -1,15 +1,16 @@
-from torch import nn
 import torch
-from asteroid.masknn.recurrent import DPRNNBlock
+from torch import nn
 import torch.nn.functional as F
-from asteroid.masknn import norms
+
 from .base_models import BaseModel
-from asteroid.masknn.tac import TAC
-from asteroid.dsp.spatial import xcorr
+from ..masknn.recurrent import DPRNNBlock
+from ..masknn import norms
+from ..masknn.tac import TAC
+from ..dsp.spatial import xcorr
 
 
 class FasNetTAC(BaseModel):
-    """FasNetTAC separation model with optional Transform-Average-Concatenate (TAC) module[1].
+    r"""FasNetTAC separation model with optional Transform-Average-Concatenate (TAC) module[1].
 
     Args:
         n_src (int): Maximum number of sources the model can separate.
@@ -140,7 +141,7 @@ class FasNetTAC(BaseModel):
         )
 
     def forward(self, x, valid_mics=None):
-        """
+        r"""
         Args:
             x: (:class:`torch.Tensor`): multi-channel input signal. Shape: :math:`(batch, mic\_channels, samples)`.
             valid_mics: (:class:`torch.LongTensor`): tensor containing effective number of microphones on each batch.
