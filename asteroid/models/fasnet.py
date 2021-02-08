@@ -102,7 +102,7 @@ class FasNetTAC(BaseModel):
             tmp = nn.ModuleList(
                 [
                     DPRNNBlock(
-                        self.enc_dim,
+                        self.feature_dim,
                         self.hidden_dim,
                         norm_type,
                         bidirectional,
@@ -112,12 +112,12 @@ class FasNetTAC(BaseModel):
                 ]
             )
             if self.use_tac:
-                tmp.append(TAC(self.enc_dim, tac_hidden_dim, norm_type=norm_type))
+                tmp.append(TAC(self.feature_dim, tac_hidden_dim, norm_type=norm_type))
             self.DPRNN_TAC.append(tmp)
 
         # DPRNN output layers
         self.conv_2D = nn.Sequential(
-            nn.PReLU(), nn.Conv2d(self.enc_dim, self.n_src * self.enc_dim, 1)
+            nn.PReLU(), nn.Conv2d(self.feature_dim, self.n_src * self.feature_dim, 1)
         )
         self.tanh = nn.Sequential(nn.Conv1d(self.feature_dim, self.output_dim, 1), nn.Tanh())
         self.gate = nn.Sequential(nn.Conv1d(self.feature_dim, self.output_dim, 1), nn.Sigmoid())
@@ -195,7 +195,9 @@ class FasNetTAC(BaseModel):
             stride=(self.hop_size, 1),
         )
         n_chunks = unfolded.size(-1)
-        unfolded = unfolded.reshape(batch_size * n_mics, self.enc_dim, self.chunk_size, n_chunks)
+        unfolded = unfolded.reshape(
+            batch_size * n_mics, self.feature_dim, self.chunk_size, n_chunks
+        )
 
         for i in range(self.n_layers):
             # At each layer we apply DPRNN to process each mic independently and then TAC for inter-mic processing.
@@ -206,11 +208,11 @@ class FasNetTAC(BaseModel):
                 tac = self.DPRNN_TAC[i][1]
                 unfolded = unfolded.reshape(-1, n_mics, ch, chunk_size, n_chunks)
                 unfolded = tac(unfolded, valid_mics).reshape(
-                    batch_size * n_mics, self.enc_dim, self.chunk_size, n_chunks
+                    batch_size * n_mics, self.feature_dim, self.chunk_size, n_chunks
                 )
         # Output, 2D conv to get different feats for each source
         unfolded = self.conv_2D(unfolded).reshape(
-            batch_size * n_mics * self.n_src, self.enc_dim * self.chunk_size, n_chunks
+            batch_size * n_mics * self.n_src, self.feature_dim * self.chunk_size, n_chunks
         )
         # Dual path processing is done we fold back
         folded = F.fold(
