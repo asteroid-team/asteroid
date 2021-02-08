@@ -114,10 +114,9 @@ class DoubleRNN(nn.Module):
         """ Input shape [batch, seq, feats] """
         self.rnn1.flatten_parameters()  # Enables faster multi-GPU training.
         self.rnn2.flatten_parameters()  # Enables faster multi-GPU training.
-        output = inp
-        rnn_output1, _ = self.rnn1(output)
-        rnn_output2, _ = self.rnn2(output)
-        return torch.cat((rnn_output1 * rnn_output2, output), -1)
+        rnn_output1, _ = self.rnn1(inp)
+        rnn_output2, _ = self.rnn2(inp)
+        return torch.cat((rnn_output1 * rnn_output2, inp), -1)
 
 
 class StackedResidualRNN(nn.Module):
