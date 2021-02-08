@@ -172,7 +172,7 @@ class FasNetTAC(BaseModel):
         )  # apply norm
 
         # For each context window cosine similarity is computed. The first channel is chosen as a reference
-        ref_seg = all_seg[:, 0].reshape(batch_size * seq_length, self.enc_dim).unsqueeze(1)
+        ref_seg = all_seg[:, 0].reshape(batch_size * seq_length, self.window).unsqueeze(1)
         all_context = all_mic_context.transpose(1, 2).reshape(
             batch_size * seq_length, n_mics, self.context * 2 + self.window
         )
