@@ -80,7 +80,7 @@ def main(conf):
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
         json.dump(best_k, f, indent=0)
     # Save last model for convenience
-    torch.save(system.model.state_dict(), os.path.join(exp_dir, "checkpoints/final.pth"))
+    torch.save(system.model.state_dict(), os.path.join(exp_dir, "final_model.pth"))
 
 
 class ChimeraSystem(System):

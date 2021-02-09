@@ -322,7 +322,7 @@ def setup(app):
 # https://stackoverflow.com/questions/15889621/sphinx-how-to-exclude-imports-in-automodule
 
 MOCK_REQUIRE_PACKAGES = []
-with open(os.path.join(PATH_ROOT, "requirements.txt"), "r") as fp:
+with open(os.path.join(PATH_ROOT, "requirements", "docs.txt"), "r") as fp:
     for ln in fp.readlines():
         found = [ln.index(ch) for ch in list(",=<>#") if ch in ln]
         pkg = ln[: min(found)] if found else ln

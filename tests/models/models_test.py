@@ -7,6 +7,7 @@ import asteroid
 from asteroid import models
 from asteroid.filterbanks import make_enc_dec
 from asteroid.dsp import LambdaOverlapAdd
+from asteroid.models.fasnet import FasNetTAC
 from asteroid.separate import separate
 from asteroid.models import (
     ConvTasNet,
@@ -20,7 +21,7 @@ from asteroid.models import (
     SuDORMRFNet,
 )
 from asteroid.models.base_models import BaseModel
-
+from asteroid.utils.deprecation_utils import VisibleDeprecationWarning
 
 HF_EXAMPLE_MODEL_IDENTIFER = "julien-c/DPRNNTasNet-ks16_WHAM_sepclean"
 # An actual model hosted on huggingface.co
@@ -30,6 +31,29 @@ def test_set_sample_rate_raises_warning():
     model = BaseModel(sample_rate=8000.0)
     with pytest.warns(UserWarning):
         model.sample_rate = 16000.0
+
+
+def test_no_sample_rate_raises_warning():
+    with pytest.warns(VisibleDeprecationWarning):
+        BaseModel()
+
+
+def test_multichannel_model_loading():
+    class MCModel(BaseModel):
+        def __init__(self, sample_rate=8000.0, in_channels=2):
+            super().__init__(sample_rate=sample_rate, in_channels=in_channels)
+
+        def forward(self, x, **kwargs):
+            return x
+
+        def get_model_args(self):
+            return {"sample_rate": self.sample_rate, "in_channels": self.in_channels}
+
+    model = MCModel()
+    model_conf = model.serialize()
+
+    new_model = MCModel.from_pretrained(model_conf)
+    assert model.in_channels == new_model.in_channels
 
 
 def test_convtasnet_sep():
@@ -67,7 +91,8 @@ def test_convtasnet_sep():
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
-def test_save_and_load_convtasnet(fb):
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_save_and_load_convtasnet(fb, sample_rate):
     _default_test_model(
         ConvTasNet(
             n_src=2,
@@ -78,6 +103,7 @@ def test_save_and_load_convtasnet(fb):
             skip_chan=8,
             n_filters=32,
             fb_name=fb,
+            sample_rate=sample_rate,
         )
     )
 
@@ -100,16 +126,25 @@ def test_dprnntasnet_sep_from_hf():
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
-def test_save_and_load_dprnn(fb):
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_save_and_load_dprnn(fb, sample_rate):
     _default_test_model(
         DPRNNTasNet(
-            n_src=2, n_repeats=2, bn_chan=16, hid_size=4, chunk_size=20, n_filters=32, fb_name=fb
+            n_src=2,
+            n_repeats=2,
+            bn_chan=16,
+            hid_size=4,
+            chunk_size=20,
+            n_filters=32,
+            fb_name=fb,
+            sample_rate=sample_rate,
         )
     )
 
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
-def test_save_and_load_tasnet(fb):
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_save_and_load_tasnet(fb, sample_rate):
     _default_test_model(
         LSTMTasNet(
             n_src=2,
@@ -118,11 +153,13 @@ def test_save_and_load_tasnet(fb):
             n_filters=32,
             dropout=0.0,
             fb_name=fb,
+            sample_rate=sample_rate,
         )
     )
 
 
-def test_sudormrf():
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_sudormrf(sample_rate):
     _default_test_model(
         SuDORMRFNet(
             2,
@@ -131,11 +168,13 @@ def test_sudormrf():
             upsampling_depth=2,
             kernel_size=21,
             n_filters=12,
+            sample_rate=sample_rate,
         )
     )
 
 
-def test_sudormrf_imp():
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_sudormrf_imp(sample_rate):
     _default_test_model(
         SuDORMRFImprovedNet(
             2,
@@ -144,19 +183,32 @@ def test_sudormrf_imp():
             upsampling_depth=2,
             kernel_size=21,
             n_filters=12,
+            sample_rate=sample_rate,
         )
     )
 
 
 @pytest.mark.filterwarnings("ignore: DPTransformer input dim")
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
-def test_dptnet(fb):
-    _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, fb_name=fb))
+@pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
+def test_dptnet(fb, sample_rate):
+    _default_test_model(DPTNet(2, ff_hid=10, chunk_size=4, n_repeats=2, sample_rate=sample_rate))
+
+
+@pytest.mark.parametrize("use_tac", [True, False])
+def test_fasnet(use_tac):
+    _default_test_model(
+        FasNetTAC(n_src=2, feature_dim=8, hidden_dim=10, n_layers=2, use_tac=use_tac),
+        test_input=torch.randn(3, 2, 8372),
+    )
 
 
 def test_dcunet():
-    _, istft = make_enc_dec("stft", 512, 512)
-    input_samples = istft(torch.zeros((514, 17))).shape[0]
+    n_fft = 1024
+    _, istft = make_enc_dec(
+        "stft", n_filters=n_fft, kernel_size=1024, stride=256, sample_rate=16000
+    )
+    input_samples = istft(torch.zeros((n_fft + 2, 17))).shape[0]
     _default_test_model(DCUNet("DCUNet-10"), input_samples=input_samples)
     _default_test_model(DCUNet("DCUNet-16"), input_samples=input_samples)
     _default_test_model(DCUNet("DCUNet-20"), input_samples=input_samples)
@@ -176,8 +228,9 @@ def test_dcunet():
 
 
 def test_dccrnet():
-    _, istft = make_enc_dec("stft", 512, 512)
-    input_samples = istft(torch.zeros((514, 16))).shape[0]
+    n_fft = 512
+    _, istft = make_enc_dec("stft", n_filters=n_fft, kernel_size=400, stride=100, sample_rate=16000)
+    input_samples = istft(torch.zeros((n_fft + 2, 16))).shape[0]
     _default_test_model(DCCRNet("DCCRN-CL"), input_samples=input_samples)
     _default_test_model(DCCRNet("DCCRN-CL", n_src=2), input_samples=input_samples)
 
@@ -187,18 +240,20 @@ def test_dccrnet():
         DCCRNet("mini").masker(torch.zeros((1, 42, 3), dtype=torch.complex64))
 
 
-def _default_test_model(model, input_samples=801):
-    test_input = torch.randn(1, input_samples)
+def _default_test_model(model, input_samples=801, test_input=None):
+    if test_input is None:
+        test_input = torch.randn(1, input_samples)
 
     model_conf = model.serialize()
     reconstructed_model = model.__class__.from_pretrained(model_conf)
     assert_allclose(model(test_input), reconstructed_model(test_input))
 
-    # Make
+    # Load with and without SR
     sr = model_conf["model_args"].pop("sample_rate")
-    with pytest.raises(RuntimeError):
-        reconstructed_model = model.__class__.from_pretrained(model_conf)
+    reconstructed_model_nosr = model.__class__.from_pretrained(model_conf)
     reconstructed_model = model.__class__.from_pretrained(model_conf, sample_rate=sr)
+
+    assert reconstructed_model.sample_rate == model.sample_rate
 
 
 @pytest.mark.parametrize(
