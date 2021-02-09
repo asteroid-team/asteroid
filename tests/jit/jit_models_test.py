@@ -107,7 +107,7 @@ def small_model_params():
     return params
 
 
-@pytest.mark.parametrize("model_def", [DPRNNTasNet])
+@pytest.mark.parametrize("model_def", [DPRNNTasNet, DCCRNet, DeMask])
 @pytest.mark.parametrize(
     "test_data",
     (

@@ -64,7 +64,7 @@ class SingleRNN(nn.Module):
 
 class MulCatRNN(nn.Module):
     """MulCat RNN block from [1].
-    
+
     Composed of two RNNs, returns ``cat([RNN_1(x) * RNN_2(x), x])``.
 
     Args:
