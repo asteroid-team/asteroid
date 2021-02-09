@@ -10,7 +10,7 @@ import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
 
-from asteroid.data.chime4_dataset import CHiME4
+from asteroid.data.chime4_dataset import CHiME4Dataset
 from asteroid import ConvTasNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
@@ -26,7 +26,7 @@ parser.add_argument(
 )
 parser.add_argument("--exp_dir", default="exp/tmp", help="Experiment root")
 parser.add_argument(
-    "--n_save_ex", type=int, default=10, help="Number of audio examples to save, -1 means all"
+    "--n_save_ex", type=int, default=1, help="Number of audio examples to save, -1 means all"
 )
 parser.add_argument(
     "--compute_wer", type=int, default=1, help="Compute WER using ESPNet's pretrained model"
@@ -77,7 +77,7 @@ def main(conf):
     if conf["use_gpu"]:
         model.cuda()
     model_device = next(model.parameters()).device
-    test_set = CHiME4(
+    test_set = CHiME4Dataset(
         csv_dir=conf["test_dir"],
         sample_rate=conf["sample_rate"],
         segment=None,
@@ -95,11 +95,10 @@ def main(conf):
     torch.no_grad().__enter__()
     for idx in tqdm(range(len(test_set))):
         # Forward the network on the mixture.
-        mix, sources, ids = test_set[idx]
-        mix, sources = tensors_to_device([mix, sources], device=model_device)
+        mix, ids = test_set[idx]
+        mix = tensors_to_device(mix, device=model_device)
         est_sources = model(mix.unsqueeze(0))
         mix_np = mix.cpu().data.numpy()
-        sources_np = sources.cpu().data.numpy()
         est_sources_np = est_sources.squeeze(0).cpu().data.numpy()
         est_sources_np *= np.max(np.abs(mix_np)) / np.max(np.abs(est_sources_np))
         # For each utterance, we get a dictionary with the mixture path,
@@ -108,7 +107,7 @@ def main(conf):
         utt_metrics.update(
             **wer_tracker(
                 mix=mix_np,
-                clean=sources_np,
+                clean=None,
                 estimate=est_sources_np,
                 wav_id=ids,
                 sample_rate=conf["sample_rate"],
@@ -122,8 +121,6 @@ def main(conf):
             os.makedirs(local_save_dir, exist_ok=True)
             sf.write(local_save_dir + "mixture.wav", mix_np, conf["sample_rate"])
             # Loop over the sources and estimates
-            for src_idx, src in enumerate(sources_np):
-                sf.write(local_save_dir + "s{}.wav".format(src_idx), src, conf["sample_rate"])
             for src_idx, est_src in enumerate(est_sources_np):
                 # est_src *= np.max(np.abs(mix_np)) / np.max(np.abs(est_src))
                 sf.write(
@@ -156,7 +153,7 @@ def main(conf):
         # Save the report
         with open(os.path.join(eval_save_dir, "final_wer.md"), "w") as f:
             f.write(wer_card)
-        all_transcriptions = wer_tracker.all_transcriptions()
+        all_transcriptions = wer_tracker.trans_dic
         with open(os.path.join(eval_save_dir, "all_transcriptions.json"), "w") as f:
             json.dump(all_transcriptions, f, indent=4)
 

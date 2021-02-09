@@ -31,10 +31,9 @@ compute_wer=1
 # Choice for the ASR model whether trained on clean or noisy data. One of clean or noisy
 asr_type=noisy
 
-test_dir=data/test
-
 . utils/parse_options.sh
 
+test_dir=data/test
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating CHiME-4 dataset"
@@ -42,7 +41,7 @@ if [[ $stage -le  0 ]]; then
 fi
 
 if [[ $stage -le 1 ]]; then
-	echo "Stage 2 : Evaluation"
+  echo "Stage 2 : Evaluation"
   echo "Results from the following experiment will be stored in $exp_dir/chime4/$asr_type"
 
 	if [[ $compute_wer -eq 1 ]]; then

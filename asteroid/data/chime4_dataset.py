@@ -6,7 +6,7 @@ import random as random
 import os
 
 
-class CHiME4(Dataset):
+class CHiME4Dataset(Dataset):
     """Dataset class for CHiME4 source separation tasks. Only supports 'real'
     data
 
@@ -65,8 +65,7 @@ class CHiME4(Dataset):
         mixture, _ = sf.read(self.mixture_path, dtype="float32", start=start, stop=stop)
         # Convert to torch tensor
         mixture = torch.from_numpy(mixture)
-        mock_source = torch.vstack([mixture])
         if self.return_id:
-            id1 = row.ID
-            return mixture, mock_source, [id1]
-        return mixture, mock_source
+            id1 = row.wsj_id
+            return mixture, [id1]
+        return mixture

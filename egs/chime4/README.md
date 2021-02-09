@@ -10,9 +10,9 @@ For now, this recipe only deals with the `real_1_ch_track` part of the dataset.
 As the channel to use for the training set wasn't defined by 
 the challenge's rules, we will set it randomly.
 
-NOTE : 
+**Note :**
 This dataset uses real noisy data. This means the clean speech from the noisy
-utterances is not available. This makes it not suitable for the usual training 
+utterances is not available. This makes it unsuitable for the usual training 
 procedure.
 
 

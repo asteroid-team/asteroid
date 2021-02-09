@@ -28,35 +28,44 @@ def create_local_metadata(chime3_dir):
         f for f in glob(os.path.join(chime3_dir, "data", "annotations", "*real*.list"))
     ]
     for c3_annot_file_path in c3_annot_files:
-        # Read CHiME-3 annotation file
-        c3_annot_file = pd.read_json(c3_annot_file_path)
-        # subsets : "tr" "dt" "et" origin "real" or "simu"
-        subset, origin = os.path.split(c3_annot_file_path)[1].replace(".json", "").split("_")
-        # Look for associated CHiME-4 file
-        if c3_annot_file_path.replace(".json", "_1ch_track.list") in c4_annot_files:
-            # Read CHiME-4 annotation file
-            c4_annot_file = pd.read_csv(
-                c3_annot_file_path.replace(".json", "_1ch_track.list"), header=None, names=["path"]
-            )
-        else:
-            c4_annot_file = None
-        df, df_2 = create_dataframe(chime3_dir, c3_annot_file, c4_annot_file, subset, origin)
-        write_dataframe(df, df_2, subset, origin)
+        c3_annot_file, c4_annot_file, subset, origin = match_annotation_files(
+            c3_annot_file_path, c4_annot_files
+        )
+        df_audio_path, df_annot = create_dataframe(
+            chime3_dir, c3_annot_file, c4_annot_file, subset, origin
+        )
+        write_dataframe(df_audio_path, df_annot, subset, origin)
 
 
-def create_dataframe(chime3_dir, c3_annot_file, c4_annot_file, subset, origin):
+def match_annotation_files(c3_anno_path, c4_anno):
+    # Read CHiME-3 annotation file
+    c3_annot_file = pd.read_json(c3_anno_path)
+    # Extract subset and origin from /foo/bar/<subset>_<origin>.json
+    subset, origin = os.path.split(c3_anno_path)[1].replace(".json", "").split("_")
+    # Look for associated CHiME-4 file
+    if c3_anno_path.replace(".json", "_1ch_track.list") in c4_anno:
+        # Read CHiME-4 annotation file
+        c4_annot_file = pd.read_csv(
+            c3_anno_path.replace(".json", "_1ch_track.list"), header=None, names=["path"]
+        )
+    else:
+        c4_annot_file = None
+    return c3_annot_file, c4_annot_file, subset, origin
+
+
+def create_dataframe(chime3_dir, c3_anno, c4_anno, subset, origin):
     # Empty list for DataFrame creation
-    row_list = []
-    row_list_2 = []
-    for row in c3_annot_file.itertuples():
+    row_path_list = []
+    row_annot_list = []
+    for row in c3_anno.itertuples():
         speaker = row.speaker
-        ID = row.wsj_name
+        wsj_id = row.wsj_name
         env = row.environment
-        # if we are not dealing with tr subset
-        if "tr" not in subset:
-            mixture_path = c4_annot_file[c4_annot_file["path"].str.contains(ID + "_" + env)].values[
-                0
-            ][0]
+        # if we are dealing with et or dt subset
+        if c4_anno is not None:
+            # Find current c3_annot_file wsj_id in c4_annot_file path list
+            # Path are stored like <subset>_<env>_real/<wsj_id>_<env>.<channel>.wav
+            mixture_path = c4_anno[c4_anno["path"].str.contains(wsj_id + "_" + env)].values[0][0]
             mixture_path = os.path.join(chime3_dir, "data/audio/16kHz/isolated/", mixture_path)
 
         # if we are dealing with the tr subset
@@ -66,24 +75,24 @@ def create_dataframe(chime3_dir, c3_annot_file, c4_annot_file, subset, origin):
                 chime3_dir,
                 "data/audio/16kHz/isolated/",
                 subset + "_" + env.lower() + "_" + origin,
-                speaker + "_" + ID + "_" + f".CH{channel}" ".wav",
+                speaker + "_" + wsj_id + "_" + f".CH{channel}" ".wav",
             )
         dot = row.dot
         duration = row.end - row.start
         temp_dict = {
-            "ID": ID,
+            "wsj_id": wsj_id,
             "subset": subset,
             "origin": origin,
             "env": env,
             "mixture_path": mixture_path,
             "duration": duration,
         }
-        trans_dict = {"utt_id": ID, "text": dot}
-        row_list.append(temp_dict)
-        row_list_2.append(trans_dict)
-    df = pd.DataFrame(row_list)
-    df_2 = pd.DataFrame(row_list_2)
-    return df, df_2
+        trans_dict = {"utt_id": wsj_id, "text": dot}
+        row_path_list.append(temp_dict)
+        row_annot_list.append(trans_dict)
+    df_audio_path = pd.DataFrame(row_path_list)
+    df_annot = pd.DataFrame(row_annot_list)
+    return df_audio_path, df_annot
 
 
 def write_dataframe(df, df2, subset, origin):

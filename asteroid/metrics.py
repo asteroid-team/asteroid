@@ -177,13 +177,16 @@ class WERTracker:
             self.mix_counter += out_count
             local_mix_counter += out_count
             self.input_txt_list.append(dict(utt_id=tmp_id, text=txt))
-        # Average WER for the clean pair
-        for wav, tmp_id in zip(clean, wav_id):
-            txt = self.predict_hypothesis(wav)
-            out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
-            self.clean_counter += out_count
-            local_clean_counter += out_count
-            self.clean_txt_list.append(dict(utt_id=tmp_id, text=txt))
+        if clean is not None:
+            # Average WER for the clean pair
+            for wav, tmp_id in zip(clean, wav_id):
+                txt = self.predict_hypothesis(wav)
+                out_count = Counter(self.hsdi(truth=self.trans_dic[tmp_id], hypothesis=txt))
+                self.clean_counter += out_count
+                local_clean_counter += out_count
+                self.clean_txt_list.append(dict(utt_id=tmp_id, text=txt))
+        else:
+            self.clean_counter = None
         # Average WER for the estimate pair
         for est, tmp_id in zip(estimate, wav_id):
             txt = self.predict_hypothesis(est)
@@ -191,11 +194,15 @@ class WERTracker:
             self.est_counter += out_count
             local_est_counter += out_count
             self.output_txt_list.append(dict(utt_id=tmp_id, text=txt))
-        return dict(
+
+        wer_dict = dict(
             input_wer=self.wer_from_hsdi(**dict(local_mix_counter)),
-            clean_wer=self.wer_from_hsdi(**dict(local_clean_counter)),
             wer=self.wer_from_hsdi(**dict(local_est_counter)),
         )
+        if clean is not None:
+            wer_dict["clean_wer"] = self.wer_from_hsdi(**dict(local_clean_counter))
+
+        return wer_dict
 
     @staticmethod
     def wer_from_hsdi(hits=0, substitutions=0, deletions=0, insertions=0):
@@ -228,31 +235,35 @@ class WERTracker:
     def final_df(self):
         """Generate a MarkDown table, as done by ESPNet."""
         mix_n_word = sum(self.mix_counter[k] for k in ["hits", "substitutions", "deletions"])
-        clean_n_word = sum(self.clean_counter[k] for k in ["hits", "substitutions", "deletions"])
         est_n_word = sum(self.est_counter[k] for k in ["hits", "substitutions", "deletions"])
         mix_wer = self.wer_from_hsdi(**dict(self.mix_counter))
-        clean_wer = self.wer_from_hsdi(**dict(self.clean_counter))
         est_wer = self.wer_from_hsdi(**dict(self.est_counter))
 
         mix_hsdi = [
             self.mix_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
-        ]
-        clean_hsdi = [
-            self.clean_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
         ]
         est_hsdi = [
             self.est_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
         ]
         #                   Snt               Wrd         HSDI       Err     S.Err
         for_mix = [len(self.mix_counter), mix_n_word] + mix_hsdi + [mix_wer, "-"]
-        for_clean = [len(self.clean_counter), clean_n_word] + clean_hsdi + [clean_wer, "-"]
         for_est = [len(self.est_counter), est_n_word] + est_hsdi + [est_wer, "-"]
-
         table = [
-            ["test_clean / mixture"] + for_mix,
-            ["test_clean / clean"] + for_clean,
-            ["test_clean / separated"] + for_est,
+            ["ground_truth / mixture"] + for_mix,
+            ["ground_truth / separated"] + for_est,
         ]
+
+        if self.clean_counter is not None:
+            clean_n_word = sum(
+                self.clean_counter[k] for k in ["hits", "substitutions", "deletions"]
+            )
+            clean_wer = self.wer_from_hsdi(**dict(self.clean_counter))
+            clean_hsdi = [
+                self.clean_counter[k] for k in ["hits", "substitutions", "deletions", "insertions"]
+            ]
+            for_clean = [len(self.clean_counter), clean_n_word] + clean_hsdi + [clean_wer, "-"]
+            table.insert(1, ["ground_truth / clean"] + for_mix)
+
         df = pd.DataFrame(
             table, columns=["dataset", "Snt", "Wrd", "Corr", "Sub", "Del", "Ins", "Err", "S.Err"]
         )

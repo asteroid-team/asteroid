@@ -9,7 +9,7 @@ from .sms_wsj_dataset import SmsWsjDataset
 from .kinect_wsj import KinectWsjMixDataset
 from .fuss_dataset import FUSSDataset
 from .dampvsep_dataset import DAMPVSEPSinglesDataset
-from .chime4_dataset import CHiME4
+from .chime4_dataset import CHiME4Dataset
 
 __all__ = [
     "AVSpeechDataset",
@@ -23,5 +23,5 @@ __all__ = [
     "KinectWsjMixDataset",
     "FUSSDataset",
     "DAMPVSEPSinglesDataset",
-    "CHiME4",
+    "CHiME4Dataset",
 ]
