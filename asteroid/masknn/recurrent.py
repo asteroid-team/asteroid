@@ -80,7 +80,7 @@ class MulCatRNN(nn.Module):
     def __init__(
         self, rnn_type, input_size, hidden_size, n_layers=1, dropout=0, bidirectional=False
     ):
-        super(DoubleRNN, self).__init__()
+        super(MulCatRNN, self).__init__()
         assert rnn_type.upper() in ["RNN", "LSTM", "GRU"]
         rnn_type = rnn_type.upper()
         self.rnn_type = rnn_type
@@ -116,7 +116,7 @@ class MulCatRNN(nn.Module):
         self.rnn2.flatten_parameters()  # Enables faster multi-GPU training.
         rnn_output1, _ = self.rnn1(inp)
         rnn_output2, _ = self.rnn2(inp)
-        return torch.cat((rnn_output1 * rnn_output2, inp), -1)
+        return torch.cat((rnn_output1 * rnn_output2, inp), 2)
 
 
 class StackedResidualRNN(nn.Module):
@@ -261,7 +261,12 @@ class DPRNNBlock(nn.Module):
         if use_mulcat:
             # IntraRNN block and linear projection layer (always bi-directional)
             self.intra_RNN = MulCatRNN(
-                rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True
+                rnn_type,
+                in_chan,
+                hid_size,
+                num_layers,
+                dropout=dropout,
+                bidirectional=bidirectional,
             )
             # InterRNN block and linear projection layer (uni or bi-directional)
             self.inter_RNN = MulCatRNN(
@@ -274,7 +279,12 @@ class DPRNNBlock(nn.Module):
             )
         else:
             self.intra_RNN = SingleRNN(
-                rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True
+                rnn_type,
+                in_chan,
+                hid_size,
+                num_layers,
+                dropout=dropout,
+                bidirectional=bidirectional,
             )
             self.inter_RNN = SingleRNN(
                 rnn_type,
