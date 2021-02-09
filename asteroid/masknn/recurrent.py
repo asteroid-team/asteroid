@@ -63,7 +63,9 @@ class SingleRNN(nn.Module):
 
 
 class MulCatRNN(nn.Module):
-    """Module for a MulCat RNN block.
+    """MulCat RNN block from [1].
+    
+    Composed of two RNNs, returns ``cat([RNN_1(x) * RNN_2(x), x])``.
 
     Args:
         rnn_type (str): Select from ``'RNN'``, ``'LSTM'``, ``'GRU'``. Can
