@@ -46,6 +46,7 @@ def small_model_params():
             "n_filters": 32,
             "kernel_size": 32,
             "stride": 16,
+            "use_mulcat": True,
         },
         DPTNet.__name__: {
             "n_src": 2,

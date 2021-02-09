@@ -62,11 +62,8 @@ class SingleRNN(nn.Module):
         return rnn_output
 
 
-class DoubleRNN(nn.Module):
-    """Module for a RNN block.
-
-    Inspired from https://github.com/yluo42/TAC/blob/master/utility/models.py
-    Licensed under CC BY-NC-SA 3.0 US.
+class MulCatRNN(nn.Module):
+    """Module for a MulCat RNN block.
 
     Args:
         rnn_type (str): Select from ``'RNN'``, ``'LSTM'``, ``'GRU'``. Can
@@ -117,10 +114,9 @@ class DoubleRNN(nn.Module):
         """ Input shape [batch, seq, feats] """
         self.rnn1.flatten_parameters()  # Enables faster multi-GPU training.
         self.rnn2.flatten_parameters()  # Enables faster multi-GPU training.
-        output = inp
-        rnn_output1, _ = self.rnn1(output)
-        rnn_output2, _ = self.rnn2(output)
-        return torch.cat((rnn_output1 * rnn_output2, output), -1)
+        rnn_output1, _ = self.rnn1(inp)
+        rnn_output2, _ = self.rnn2(inp)
+        return torch.cat((rnn_output1 * rnn_output2, inp), -1)
 
 
 class StackedResidualRNN(nn.Module):
@@ -263,10 +259,12 @@ class DPRNNBlock(nn.Module):
     ):
         super(DPRNNBlock, self).__init__()
         if use_mulcat:
-            self.intra_RNN = DoubleRNN(
+            # IntraRNN block and linear projection layer (always bi-directional)
+            self.intra_RNN = MulCatRNN(
                 rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True
             )
-            self.inter_RNN = DoubleRNN(
+            # InterRNN block and linear projection layer (uni or bi-directional)
+            self.inter_RNN = MulCatRNN(
                 rnn_type,
                 in_chan,
                 hid_size,
@@ -286,11 +284,9 @@ class DPRNNBlock(nn.Module):
                 dropout=dropout,
                 bidirectional=bidirectional,
             )
-        # IntraRNN and linear projection layer (always bi-directional)
         self.intra_linear = nn.Linear(self.intra_RNN.output_size, in_chan)
         self.intra_norm = norms.get(norm_type)(in_chan)
 
-        # InterRNN block and linear projection layer (uni or bi-directional)
         self.inter_linear = nn.Linear(self.inter_RNN.output_size, in_chan)
         self.inter_norm = norms.get(norm_type)(in_chan)
 
