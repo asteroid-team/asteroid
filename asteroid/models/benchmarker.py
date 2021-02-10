@@ -11,11 +11,29 @@ class Benchmarker:
     """Wrapper around benchmark libraries on CPU. For inference time, memory
     usage and flops measurements.
 
-        Args:
-            model (torch.nn.Module): Instance of model.
-            inputs_shape (list(int)): A sequence of integers defining the shape of the output tensor.
-            repeat (int,optional) : The number of measurement to make for inference time measurement.
+    Args:
+        model (torch.nn.Module): Instance of model.
+        inputs_shape (list(int)): A sequence of integers defining the shape of the output tensor.
+        repeat (int,optional) : The number of measurement to make for inference time measurement.
 
+    Examples:
+        Examples should be written in doctest format, and should illustrate how
+        to use the function.
+        >>> from asteroid.models.benchmarker import Benchmarker
+        >>> from asteroid.models import ConvTasNet
+
+        >>> inputs_shape = [800]
+        >>> model = ConvTasNet(n_src=1)
+        >>> A = Benchmarker(model, inputs_shape, repeat=10)
+        >>> print(A.compute_inference_time())
+        Mean inference time 0.04166898940093233 standard deviation 0.0014542574214454578 Min 0.04037960300047416 in seconds
+        >>> print(A.compute_memory_usage())
+        -------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------
+                           Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg       CPU Mem  Self CPU Mem    # of Calls                                   Input Shapes
+        -------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------
+                   aten::conv1d         0.01%       3.105us         0.55%     283.483us     283.483us     247.50 Kb           0 b             1  [[1, 128, 99], [512, 128, 1], [512], [], [],
+        >>>print(A.compute_flops())
+        [11639695]
     """
 
     def __init__(self, model, inputs_shape, repeat=1000):
