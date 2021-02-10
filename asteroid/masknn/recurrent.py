@@ -395,6 +395,7 @@ class DPRNN(nn.Module):
         self.rnn_type = rnn_type
         self.num_layers = num_layers
         self.dropout = dropout
+        self.use_mulcat = use_mulcat
 
         layer_norm = norms.get(norm_type)(in_chan)
         bottleneck_conv = nn.Conv1d(in_chan, bn_chan, 1)
@@ -491,6 +492,7 @@ class DPRNN(nn.Module):
             "rnn_type": self.rnn_type,
             "num_layers": self.num_layers,
             "dropout": self.dropout,
+            "use_mulcat": self.use_mulcat,
         }
         return config
 

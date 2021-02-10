@@ -108,9 +108,16 @@ def test_save_and_load_convtasnet(fb, sample_rate):
     )
 
 
-def test_dprnntasnet_sep():
+@pytest.mark.parametrize("use_mulcat", [True, False])
+def test_dprnntasnet_sep(use_mulcat):
     nnet = DPRNNTasNet(
-        n_src=2, n_repeats=2, bn_chan=16, hid_size=4, chunk_size=20, n_filters=32, use_mulcat=True
+        n_src=2,
+        n_repeats=2,
+        bn_chan=16,
+        hid_size=4,
+        chunk_size=20,
+        n_filters=32,
+        use_mulcat=use_mulcat,
     )
     # Test torch input
     wav = torch.rand(1, 800)
