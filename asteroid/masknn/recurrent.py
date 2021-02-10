@@ -77,6 +77,8 @@ class MulCatRNN(nn.Module):
         dropout (float, optional): Dropout ratio. Default is 0.
         bidirectional (bool, optional): Whether the RNN layers are
             bidirectional. Default is ``False``.
+    References
+        [1] Eliya Nachmani, Yossi Adi, & Lior Wolf. (2020). Voice Separation with an Unknown Number of Multiple Speakers.
     """
 
     def __init__(
