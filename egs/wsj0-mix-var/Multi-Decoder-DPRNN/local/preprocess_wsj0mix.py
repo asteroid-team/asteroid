@@ -21,6 +21,7 @@ def preprocess_one_dir(in_dir, out_dir, out_filename):
     with open(os.path.join(out_dir, out_filename + ".json"), "w") as f:
         json.dump(file_infos, f, indent=4)
 
+
 def preprocess(inp_args):
     """ Create .json files for all conditions."""
     speaker_list = ["mix"] + [f"s{n+1}" for n in range(inp_args.n_src)]
