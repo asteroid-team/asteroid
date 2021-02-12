@@ -288,7 +288,7 @@ class DPRNNBlock(nn.Module):
                 hid_size,
                 num_layers,
                 dropout=dropout,
-                bidirectional=bidirectional,
+                bidirectional=True,
             )
             self.inter_RNN = SingleRNN(
                 rnn_type,
