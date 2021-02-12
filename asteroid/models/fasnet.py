@@ -53,7 +53,7 @@ class FasNetTAC(BaseModel):
         window_ms=4,
         stride=None,
         context_ms=16,
-        sample_rate=16000,
+        samplerate=16000,
         tac_hidden_dim=384,
         norm_type="gLN",
         chunk_size=50,
@@ -63,7 +63,7 @@ class FasNetTAC(BaseModel):
         dropout=0.0,
         use_tac=True,
     ):
-        super().__init__(sample_rate=sample_rate, in_channels=None)
+        super().__init__(sample_rate=samplerate, in_channels=None)
 
         self.enc_dim = enc_dim
         self.feature_dim = feature_dim
@@ -79,7 +79,7 @@ class FasNetTAC(BaseModel):
         if not stride:
             self.stride = self.window // 2
         else:
-            self.stride = int(self.sample_rate * stride / 1000)
+            self.stride = int(self.samplerate * stride / 1000)
         self.filter_dim = self.context * 2 + 1
         self.output_dim = self.context * 2 + 1
         self.tac_hidden_dim = tac_hidden_dim
@@ -179,10 +179,11 @@ class FasNetTAC(BaseModel):
 
         all_cos_sim = xcorr(all_context, ref_seg)
         all_cos_sim = (
-            all_cos_sim.view(n_mics, batch_size, seq_length, self.filter_dim)
-            .permute(1, 0, 3, 2)
+            all_cos_sim.reshape(batch_size, seq_length, n_mics, self.context * 2 + 1)
+            .permute(0, 2, 3, 1)
             .contiguous()
-        )  # B, nmic, 2*context + 1, seq_len
+        )
+        # B, nmic, 2*context + 1, seq_len
 
         # Encoder features and cosine similarity features are concatenated
         input_feature = torch.cat([enc_output, all_cos_sim], 2)
@@ -272,7 +273,7 @@ class FasNetTAC(BaseModel):
             "window_ms": self.window_ms,
             "stride": self.stride,
             "context_ms": self.context_ms,
-            "sample_rate": self.sample_rate,
+            "samplerate": self.sample_rate,
             "tac_hidden_dim": self.tac_hidden_dim,
             "norm_type": self.norm_type,
             "chunk_size": self.chunk_size,
