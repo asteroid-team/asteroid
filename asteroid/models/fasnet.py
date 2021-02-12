@@ -53,7 +53,7 @@ class FasNetTAC(BaseModel):
         window_ms=4,
         stride=None,
         context_ms=16,
-        samplerate=16000,
+        sample_rate=16000,
         tac_hidden_dim=384,
         norm_type="gLN",
         chunk_size=50,
@@ -63,7 +63,7 @@ class FasNetTAC(BaseModel):
         dropout=0.0,
         use_tac=True,
     ):
-        super().__init__(sample_rate=samplerate, in_channels=None)
+        super().__init__(sample_rate=sample_rate, in_channels=None)
 
         self.enc_dim = enc_dim
         self.feature_dim = feature_dim
@@ -79,7 +79,7 @@ class FasNetTAC(BaseModel):
         if not stride:
             self.stride = self.window // 2
         else:
-            self.stride = int(self.samplerate * stride / 1000)
+            self.stride = int(self.sample_rate * stride / 1000)
         self.filter_dim = self.context * 2 + 1
         self.output_dim = self.context * 2 + 1
         self.tac_hidden_dim = tac_hidden_dim
@@ -273,7 +273,7 @@ class FasNetTAC(BaseModel):
             "window_ms": self.window_ms,
             "stride": self.stride,
             "context_ms": self.context_ms,
-            "samplerate": self.sample_rate,
+            "sample_rate": self.sample_rate,
             "tac_hidden_dim": self.tac_hidden_dim,
             "norm_type": self.norm_type,
             "chunk_size": self.chunk_size,
