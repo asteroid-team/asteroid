@@ -14,7 +14,6 @@ net:
   n_src: 2
   window_ms: 4
   context_ms: 16
-  sample_rate: 16000
 optim:
   lr: 0.001
   weight_decay: !!float 1e-5
