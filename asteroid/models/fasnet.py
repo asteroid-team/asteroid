@@ -179,10 +179,11 @@ class FasNetTAC(BaseModel):
 
         all_cos_sim = xcorr(all_context, ref_seg)
         all_cos_sim = (
-            all_cos_sim.view(n_mics, batch_size, seq_length, self.filter_dim)
-            .permute(1, 0, 3, 2)
+            all_cos_sim.reshape(batch_size, seq_length, n_mics, self.context * 2 + 1)
+            .permute(0, 2, 3, 1)
             .contiguous()
-        )  # B, nmic, 2*context + 1, seq_len
+        )
+        # B, nmic, 2*context + 1, seq_len
 
         # Encoder features and cosine similarity features are concatenated
         input_feature = torch.cat([enc_output, all_cos_sim], 2)
