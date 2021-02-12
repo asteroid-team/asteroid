@@ -270,7 +270,7 @@ class DPRNNBlock(nn.Module):
                 hid_size,
                 num_layers,
                 dropout=dropout,
-                bidirectional=bidirectional,
+                bidirectional=True,
             )
             # InterRNN block and linear projection layer (uni or bi-directional)
             self.inter_RNN = MulCatRNN(
