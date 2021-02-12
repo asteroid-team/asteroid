@@ -26,6 +26,7 @@ eval_use_gpu=1
 
 # Dataset option
 dataset_type=adhoc
+samplerate=16000
 
 . utils/parse_options.sh
 
@@ -101,7 +102,7 @@ echo "Results from the following experiment will be stored in $expdir"
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   mkdir -p logs
-  CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir ${expdir} | tee logs/train_${tag}.log
+  CUDA_VISIBLE_DEVICES=$id $python_path train.py --sample_rate $samplerate --exp_dir ${expdir} | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
 
 	# Get ready to publish
