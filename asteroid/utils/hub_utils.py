@@ -45,9 +45,10 @@ def cached_download(filename_or_url):
     if os.path.isfile(filename_or_url):
         return filename_or_url
 
-    if filename_or_url.startswith(("http://", "https://")) and not filename_or_url.startswith(
-        huggingface_hub.HUGGINGFACE_CO_URL_HOME
-    ):
+    if filename_or_url.startswith(huggingface_hub.HUGGINGFACE_CO_URL_HOME):
+        filename_or_url = filename_or_url[len(huggingface_hub.HUGGINGFACE_CO_URL_HOME) :]
+
+    if filename_or_url.startswith(("http://", "https://")):
         url = filename_or_url
     elif filename_or_url in MODELS_URLS_HASHTABLE:
         url = MODELS_URLS_HASHTABLE[filename_or_url]
