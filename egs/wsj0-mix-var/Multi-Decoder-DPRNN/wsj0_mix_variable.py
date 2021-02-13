@@ -27,19 +27,22 @@ def pad_audio(audio, len_samples):
 
 
 class Wsj0mixVariable(data.Dataset):
+    """Dataset class for the wsj0-mix with variable number of speakers source separation dataset,
+
+    Args:
+        json_dirs: list of folders containing json files, e.g. **/dataset/#speakers/wav8k/min/tr/**
+        n_srcs: list specifying number of speakers for each folder
+        sr: sampzle rate
+        seglen: length of segment in seconds
+        minlen: minimum segment length
+
+    References
+        Junzhe Zhu, Raymond Yeh, & Mark Hasegawa-Johnson. (2020). Multi-Decoder DPRNN: High Accuracy Source Counting and Separation.
+    """
+
     def __init__(
         self, json_dirs, n_srcs=[2, 3, 4, 5], sr=8000, seglen=4.0, minlen=2.0
     ):  # segment and cv_maxlen not implemented
-        """
-        each line of textfile comes in the form of:
-            filename1, dB1, filename2, dB2, ...
-            args:
-                root: folder where dataset/ is located
-                json_folders: folders containing json files, **/dataset/#speakers/wav8k/min/tr/**
-                sr: sample rate
-                seglen: length of each segment in seconds
-                minlen: minimum segment length
-        """
         if seglen is None:
             self.seg_len = None
             self.min_len = None
@@ -145,7 +148,9 @@ if __name__ == "__main__":
     cv_json = [os.path.join(data, suffix, "cv") for suffix in suffixes]
     tt_json = [os.path.join(data, suffix, "tt") for suffix in suffixes]
     dataset_tr = Wsj0mixVariable(tr_json)
-    dataloader = torch.utils.data.DataLoader(dataset_tr, batch_size=3, collate_fn=_collate_fn)
+    dataloader = torch.utils.data.DataLoader(
+        dataset_tr, batch_size=3, collate_fn=_collate_fn, num_workers=3
+    )
     print(len(dataset_tr))
     for mixtures, ilens, sources_list in tqdm(dataloader):
         print(mixtures.shape, ilens, [len(sources) for sources in sources_list])
