@@ -49,15 +49,20 @@ def main(conf):
         learning_rate=conf["optim"]["lr"],
     )
 
-    val_dataset = AVSpeechDataset(
-        Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"]
-    )
+    val_dataset = AVSpeechDataset(Path("data/val.csv"), Path(EMBED_DIR), conf["main_args"]["n_src"])
 
     model = load_best_model(conf, conf["main_args"]["exp_dir"])
 
-    print(
-        f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters"
-    )
+    print(f"AVFusion has {sum(np.prod(i.shape) for i in model.parameters()):,} parameters")
+
+    if torch.cuda.device_count() > 1:
+        print(f"Multiple GPUs available")
+        device_ids = (
+            list(map(int, conf["main_args"]["gpus"].split(",")))
+            if conf["main_args"]["gpus"] != "-1"
+            else None
+        )
+        model = torch.nn.DataParallel(model, device_ids=device_ids)
 
     if torch.cuda.device_count() > 1:
         print(f"Multiple GPUs available")

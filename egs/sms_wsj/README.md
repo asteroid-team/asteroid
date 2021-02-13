@@ -1,4 +1,4 @@
-### About the SMS_WSJ dataset
+### SMS_WSJ dataset
 
 SMS_WSJ (stands for Spatialized Multi-Speaker Wall Street Journal) 
 is a multichannel source separation dataset, based on WSJ0 and WSJ1.
@@ -6,7 +6,7 @@ is a multichannel source separation dataset, based on WSJ0 and WSJ1.
 All the information regarding the dataset can be found in 
 [this repo](https://github.com/fgnt/sms_wsj).
 
-### References
+**References**
 If you use this dataset, please cite the corresponding paper as follows :
 ```BibTex
 @Article{SmsWsj19,

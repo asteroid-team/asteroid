@@ -1,0 +1,16 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+]
+
+[tool.black]
+# https://github.com/psf/black
+line-length = 100
+target-version = ["py36"]
+exclude = "(.eggs|.git|.hg|.mypy_cache|.nox|.tox|.venv|.svn|_build|buck-out|build|dist)"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:Using or importing the ABCs.*:DeprecationWarning"
+]

@@ -19,24 +19,24 @@ def input_face_embeddings(
     save_frames: bool = False,
 ) -> torch.Tensor:
     """
-        Get the face embedding
+    Get the face embedding
 
-        NOTE: If a face is not detected by the detector,
-        instead of throwing an error it zeros the input
-        for embedder.
+    NOTE: If a face is not detected by the detector,
+    instead of throwing an error it zeros the input
+    for embedder.
 
-        NOTE: Memory hungry function, hence the profiler.
+    NOTE: Memory hungry function, hence the profiler.
 
-        Args:
-            frames: Frames from the video
-            is_path: Whether to read from filesystem or memory
-            mtcnn: face detector
-            resnet: face embedder
-            face_embed_cuda: use cuda for model
-            use_half: use half precision
+    Args:
+        frames: Frames from the video
+        is_path: Whether to read from filesystem or memory
+        mtcnn: face detector
+        resnet: face embedder
+        face_embed_cuda: use cuda for model
+        use_half: use half precision
 
-        Returns:
-            emb: Embedding for all input frames
+    Returns:
+        emb: Embedding for all input frames
     """
     if face_embed_cuda and torch.cuda.is_available():
         device = torch.device("cuda:0")

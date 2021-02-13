@@ -1,0 +1,29 @@
+name: Automatic lint
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  build:
+    name: Lint code base
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/lint')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - uses: actions/checkout@v2
+      - run: git pull
+      - run: pip install black==20.8b1 flake8
+      - run: python -m black --config=pyproject.toml asteroid tests egs
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v5
+        with:
+          message: "[Bot] Lint PR"
+          add: "*.py"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

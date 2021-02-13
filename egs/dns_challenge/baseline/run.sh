@@ -1,5 +1,8 @@
 #!/bin/bash
-set -e  # Exit on error
+
+# Exit on error
+set -e
+set -o pipefail
 
 # Main storage directory. You'll need disk space to dump DNS dataset.
 storage_dir=
@@ -49,12 +52,7 @@ fi
 
 if [[ $stage -le  2 ]]; then
   echo "Stage 2 : preprocess the dataset"
-  python local/preprocess_dns.py --data_dir $storage_dir --json_dir $
-  
-  
-  
-  
-  dir
+  python local/preprocess_dns.py --data_dir $storage_dir --json_dir $dumpdir
 fi
 
 # Generate a random ID for the run if no tag is specified

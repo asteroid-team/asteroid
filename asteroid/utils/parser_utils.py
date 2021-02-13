@@ -2,7 +2,7 @@ import argparse
 
 
 def prepare_parser_from_dict(dic, parser=None):
-    """ Prepare an argparser from a dictionary.
+    """Prepare an argparser from a dictionary.
 
     Args:
         dic (dict): Two-level config dictionary with unique bottom-level keys.
@@ -15,9 +15,10 @@ def prepare_parser_from_dict(dic, parser=None):
             and arguments corresponding to the second level keys with default
             values given by the values.
     """
+
     def standardized_entry_type(value):
-        """ If the default value is None, replace NoneType by str_int_float.
-            If the default value is boolean, look for boolean strings."""
+        """If the default value is None, replace NoneType by str_int_float.
+        If the default value is boolean, look for boolean strings."""
         if value is None:
             return str_int_float
         if isinstance(str2bool(value), bool):
@@ -30,13 +31,12 @@ def prepare_parser_from_dict(dic, parser=None):
         group = parser.add_argument_group(k)
         for kk in dic[k].keys():
             entry_type = standardized_entry_type(dic[k][kk])
-            group.add_argument('--' + kk, default=dic[k][kk],
-                               type=entry_type)
+            group.add_argument("--" + kk, default=dic[k][kk], type=entry_type)
     return parser
 
 
 def str_int_float(value):
-    """ Type to convert strings to int, float (in this order) if possible.
+    """Type to convert strings to int, float (in this order) if possible.
 
     Args:
         value (str): Value to convert.
@@ -56,9 +56,9 @@ def str2bool(value):
     """ Type to convert strings to Boolean (returns input if not boolean) """
     if not isinstance(value, str):
         return value
-    if value.lower() in ('yes', 'true', 'y', '1'):
+    if value.lower() in ("yes", "true", "y", "1"):
         return True
-    elif value.lower() in ('no', 'false', 'n', '0'):
+    elif value.lower() in ("no", "false", "n", "0"):
         return False
     else:
         return value
@@ -69,11 +69,11 @@ def str2bool_arg(value):
     value = str2bool(value)
     if isinstance(value, bool):
         return value
-    raise argparse.ArgumentTypeError('Boolean value expected.')
+    raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
 def isfloat(value):
-    """ Computes whether `value` can be cast to a float.
+    """Computes whether `value` can be cast to a float.
 
     Args:
         value (str): Value to check.
@@ -90,7 +90,7 @@ def isfloat(value):
 
 
 def isint(value):
-    """ Computes whether `value` can be cast to an int
+    """Computes whether `value` can be cast to an int
 
     Args:
         value (str): Value to check.
@@ -107,7 +107,7 @@ def isint(value):
 
 
 def parse_args_as_dict(parser, return_plain_args=False, args=None):
-    """ Get a dict of dicts out of process `parser.parse_args()`
+    """Get a dict of dicts out of process `parser.parse_args()`
 
     Top-level keys corresponding to groups and bottom-level keys corresponding
     to arguments. Under `'main_args'`, the arguments which don't belong to a
@@ -130,11 +130,10 @@ def parse_args_as_dict(parser, return_plain_args=False, args=None):
     args = parser.parse_args(args=args)
     args_dic = {}
     for group in parser._action_groups:
-        group_dict = {a.dest: getattr(args, a.dest, None)
-                      for a in group._group_actions}
+        group_dict = {a.dest: getattr(args, a.dest, None) for a in group._group_actions}
         args_dic[group.title] = group_dict
-    args_dic['main_args'] = args_dic['optional arguments']
-    del args_dic['optional arguments']
+    args_dic["main_args"] = args_dic["optional arguments"]
+    del args_dic["optional arguments"]
     if return_plain_args:
         return args_dic, args
     return args_dic

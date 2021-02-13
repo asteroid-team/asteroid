@@ -1,0 +1,38 @@
+filterbank:
+  fb_type: stft
+  n_filters: 512
+  kernel_size: 512
+  stride: 256
+demask_net:
+  input_type: mag
+  output_type: mag
+  hidden_dims: [1024]
+  dropout: 0
+  activation: relu
+  mask_act: relu
+  norm_type: gLN
+data:
+  fs: 16000
+  length: 4
+  clean_speech_train: ./data/clean/train-clean-360.json
+  clean_speech_valid: ./data/clean/dev-clean.json
+  rir_train: ./data/rirs/train.json
+  rir_valid: ./data/rirs/validation.json
+optim:
+  lr: 0.001
+  weight_decay: !!float 1e-5
+training:
+  epochs: 200
+  batch_size: 4
+  gradient_clipping: 5
+  accumulate_batches: 1
+  save_top_k: 10
+  num_workers: 8
+  patience: 30
+  half_lr: true
+  early_stop: true
+  gaussian_mask_noise_snr_dB: np.random.randint(3, 12)
+  white_noise_dB: np.random.randint(-3, 30)
+  speed_augm: np.random.uniform(0.95, 1.05)
+  gain_augm: np.random.randint(-30, -2)
+  n_taps: 97

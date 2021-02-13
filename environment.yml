@@ -1,0 +1,10 @@
+name: asteroid
+channels:
+  - anaconda
+  - conda-forge
+dependencies:
+  - python=3.8
+  - Cython
+  - pip:
+    - -r file:requirements.txt
+    - -e .

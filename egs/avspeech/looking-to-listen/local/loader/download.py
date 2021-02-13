@@ -87,9 +87,7 @@ def main(args):
 if __name__ == "__main__":
     parse = argparse.ArgumentParser(description="Download parameters")
     parse.add_argument("--jobs", type=int, default=1)
-    parse.add_argument(
-        "--path", type=str, default="../../data/audio_visual/avspeech_train.csv"
-    )
+    parse.add_argument("--path", type=str, default="../../data/audio_visual/avspeech_train.csv")
     parse.add_argument("--vid-dir", type=str, default=VIDEO_DIR)
     parse.add_argument("--start", type=int, default=0)
     parse.add_argument("--end", type=int, default=10_000)

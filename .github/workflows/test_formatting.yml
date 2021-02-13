@@ -1,0 +1,25 @@
+name: Linter
+on: [push, pull_request]
+
+jobs:
+  code-black:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install Black and flake8
+        run: pip install black==20.8b1 flake8
+      - name: Run Black
+        run: python -m black --config=pyproject.toml --check asteroid tests egs
+
+      - name: Link with flake8
+        # Exit on important linting errors and warn about others.
+        run: |
+          python -m flake8  asteroid tests  --show-source --statistics  --select=F6,F7,F82,F52
+          python -m flake8 --config .flake8 --exit-zero asteroid tests  --statistics

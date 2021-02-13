@@ -1,6 +1,4 @@
 import re
-import os
-import cv2
 import librosa
 import numpy as np
 from pathlib import Path
@@ -8,20 +6,18 @@ import torch
 from torch.utils import data
 from torch.nn import functional as F
 import pandas as pd
-from typing import Callable, Tuple, List, Union
-from asteroid.filterbanks import Encoder, Decoder, STFTFB, transforms
-
-EPS = 1e-8
+from typing import Union
+from asteroid_filterbanks import Encoder, Decoder, STFTFB
 
 
 def get_frames(video):
+    import cv2  # Fix sphinx import
+
     frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
     frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    buffer_video = np.empty(
-        (frame_count, frame_height, frame_width, 3), np.dtype("uint8")
-    )
+    buffer_video = np.empty((frame_count, frame_height, frame_width, 3), np.dtype("uint8"))
 
     frame = 0
     ret = True
@@ -38,17 +34,16 @@ def get_frames(video):
 class Signal:
     """This class holds the video frames and the audio signal.
 
-        Args:
-            video_path (str,Path): Path to video (mp4).
-            audio_path (str,Path): Path to audio (wav).
-            embed_dir (str,Path): Path to directory that stores embeddings.
-            sr (int): sampling rate of audio.
-            video_start_length: video part no. [1]
-            fps (int): fps of video.
-            signal_len (int): length of the signal
+    Args:
+        video_path (str,Path): Path to video (mp4).
+        audio_path (str,Path): Path to audio (wav).
+        embed_dir (str,Path): Path to directory that stores embeddings.
+        sr (int): sampling rate of audio.
+        video_start_length: video part no. [1]
+        fps (int): fps of video.
+        signal_len (int): length of the signal
 
-        Note:
-            [1]: each video consists of multiple parts which consists of fps*signal_len frames.
+    .. note:: each video consists of multiple parts which consists of fps*signal_len frames.
     """
 
     def __init__(
@@ -84,6 +79,8 @@ class Signal:
         self._check_video_embed()
 
     def _load(self, sr: int):
+        import cv2  # Fix sphinx import
+
         self.audio, _ = librosa.load(self.audio_path.as_posix(), sr=sr)
         self.video = cv2.VideoCapture(self.video_path.as_posix())
 
@@ -117,22 +114,19 @@ class Signal:
 class AVSpeechDataset(data.Dataset):
     """Audio Visual Speech Separation dataset as described in [1].
 
-        Args:
-            input_df_path (str,Path): path for combination dataset.
-            embed_dir (str,Path): path where embeddings are stored.
-            n_src (int): number of sources.
+    Args:
+        input_df_path (str,Path): path for combination dataset.
+        embed_dir (str,Path): path where embeddings are stored.
+        n_src (int): number of sources.
 
-        References:
-            [1]: 'Looking to Listen at the Cocktail Party:
-            A Speaker-Independent Audio-Visual Model for Speech Separation' Ephrat et. al
-            https://arxiv.org/abs/1804.03619
+    References
+        [1] "Looking to Listen at the Cocktail Party: A Speaker-Independent Audio-Visual
+        Model for Speech Separation" Ephrat et. al https://arxiv.org/abs/1804.03619
     """
 
     dataset_name = "AVSpeech"
 
-    def __init__(
-        self, input_df_path: Union[str, Path], embed_dir: Union[str, Path], n_src=2
-    ):
+    def __init__(self, input_df_path: Union[str, Path], embed_dir: Union[str, Path], n_src=2):
         if isinstance(input_df_path, str):
             input_df_path = Path(input_df_path)
         if isinstance(embed_dir, str):
@@ -144,7 +138,7 @@ class AVSpeechDataset(data.Dataset):
         self.stft_encoder = Encoder(STFTFB(n_filters=512, kernel_size=400, stride=160))
 
     @staticmethod
-    def encode(x: np.ndarray, p=0.3, stft_encoder=None):
+    def encode(x: np.ndarray, p=0.3, stft_encoder=None, EPS=1e-8):
         if stft_encoder is None:
             stft_encoder = Encoder(STFTFB(n_filters=512, kernel_size=400, stride=160))
 
@@ -208,9 +202,7 @@ class AVSpeechDataset(data.Dataset):
 
         for i in range(self.n_src):
             # audio to spectrogram
-            spectrogram = self.encode(
-                all_signals[i].get_audio(), stft_encoder=self.stft_encoder
-            )
+            spectrogram = self.encode(all_signals[i].get_audio(), stft_encoder=self.stft_encoder)
             audio_tensors.append(spectrogram)
 
             # get embed
