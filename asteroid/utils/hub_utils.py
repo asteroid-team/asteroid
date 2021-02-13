@@ -6,7 +6,6 @@ from typing import Union, Dict, List
 import requests
 from torch import hub
 import huggingface_hub
-import huggingface_hub.file_download
 
 
 CACHE_DIR = os.getenv(
@@ -46,9 +45,10 @@ def cached_download(filename_or_url):
     if os.path.isfile(filename_or_url):
         return filename_or_url
 
-    if filename_or_url.startswith(("http://", "https://")) and not filename_or_url.startswith(
-        huggingface_hub.file_download.HUGGINGFACE_CO_REPO_URL_BASE
-    ):
+    if filename_or_url.startswith(huggingface_hub.HUGGINGFACE_CO_URL_HOME):
+        filename_or_url = filename_or_url[len(huggingface_hub.HUGGINGFACE_CO_URL_HOME) :]
+
+    if filename_or_url.startswith(("http://", "https://")):
         url = filename_or_url
     elif filename_or_url in MODELS_URLS_HASHTABLE:
         url = MODELS_URLS_HASHTABLE[filename_or_url]
@@ -63,7 +63,7 @@ def cached_download(filename_or_url):
             model_id = filename_or_url
             revision = None
         url = huggingface_hub.hf_hub_url(
-            model_id, filename=huggingface_hub.file_download.PYTORCH_WEIGHTS_NAME, revision=revision
+            model_id, filename=huggingface_hub.PYTORCH_WEIGHTS_NAME, revision=revision
         )
         return huggingface_hub.cached_download(url, cache_dir=get_cache_dir())
     cached_filename = url_to_filename(url)
@@ -94,7 +94,7 @@ def get_cache_dir():
 
 @lru_cache()
 def model_list(
-    endpoint=huggingface_hub.file_download.HUGGINGFACE_CO_REPO_URL_BASE, name_only=False
+    endpoint=huggingface_hub.HUGGINGFACE_CO_URL_HOME, name_only=False
 ) -> Union[str, List[Dict]]:
     """Get the public list of all the models on huggingface with an 'asteroid' tag."""
     path = "{}api/models?full=true&filter=asteroid".format(endpoint)
