@@ -491,7 +491,7 @@ class Audio_Visual_Fusion(nn.Module):
         complex_mask = torch.sigmoid(self.complex_mask_layer(mixed_av))  # (N,298,2*257*num_person)
 
         batch_size = complex_mask.size(0)  # N
-        complex_mask = complex_mask.view(batch_size, 2, 298, 257, self.num_person)
+        complex_mask = complex_mask.view(batch_size, 298, 2, 257, self.num_person).transpose(1, 2)
 
         output_audio = torch.zeros_like(complex_mask, device=self.device)
         for i in range(self.num_person):

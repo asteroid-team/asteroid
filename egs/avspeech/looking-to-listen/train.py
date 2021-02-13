@@ -83,7 +83,10 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--gpus", type=str, help="list of GPUs", default="-1")
     parser.add_argument(
-        "--n-src", type=int, help="number of inputs to neural network", default=2,
+        "--n-src",
+        type=int,
+        help="number of inputs to neural network",
+        default=2,
     )
     parser.add_argument(
         "--exp_dir",

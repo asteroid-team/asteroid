@@ -83,13 +83,9 @@ def audio_mixer(
     train_files = audio_files[:total_train_files]
     val_files = audio_files[-total_val_files:]
 
-    storage_space_train, excess_storage = requires_excess_storage_space(
-        len(train_files), n_src
-    )
+    storage_space_train, excess_storage = requires_excess_storage_space(len(train_files), n_src)
 
-    storage_space_val, _ = requires_excess_storage_space(
-        len(val_files), n_src
-    )
+    storage_space_val, _ = requires_excess_storage_space(len(val_files), n_src)
 
     storage_space = storage_space_train + storage_space_val
     if excess_storage:
