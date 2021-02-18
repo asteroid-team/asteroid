@@ -16,8 +16,6 @@
 [![PyPI Status](https://pepy.tech/badge/asteroid)](https://pepy.tech/project/asteroid)
 [![Slack][slack-badge]][slack-invite]
 
-:pray: **If you've been using recipes, please help us improve their future by filling this [feedback form](https://9k0qpjags8z.typeform.com/to/B3ezIoTv)!** :pray:
-
 </div>
 
 --------------------------------------------------------------------------------
