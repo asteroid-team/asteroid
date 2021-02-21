@@ -6,7 +6,8 @@ from asteroid.masknn import recurrent as rec
 @pytest.mark.parametrize("mask_act", ["relu", "softmax"])
 @pytest.mark.parametrize("out_chan", [None, 10])
 @pytest.mark.parametrize("hop_size", [None, 5])
-def test_dprnn(mask_act, out_chan, hop_size):
+@pytest.mark.parametrize("use_mulcat", [True, False])
+def test_dprnn(mask_act, out_chan, hop_size, use_mulcat):
     in_chan, n_src = 20, 2
     model = rec.DPRNN(
         in_chan=in_chan,
@@ -18,6 +19,7 @@ def test_dprnn(mask_act, out_chan, hop_size):
         hid_size=11,
         out_chan=out_chan,
         hop_size=hop_size,
+        use_mulcat=use_mulcat,
     )
     batch, n_frames = 2, 78
     inp = torch.randn(batch, in_chan, n_frames)

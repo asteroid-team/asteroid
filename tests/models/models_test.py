@@ -108,8 +108,17 @@ def test_save_and_load_convtasnet(fb, sample_rate):
     )
 
 
-def test_dprnntasnet_sep():
-    nnet = DPRNNTasNet(n_src=2, n_repeats=2, bn_chan=16, hid_size=4, chunk_size=20, n_filters=32)
+@pytest.mark.parametrize("use_mulcat", [True, False])
+def test_dprnntasnet_sep(use_mulcat):
+    nnet = DPRNNTasNet(
+        n_src=2,
+        n_repeats=2,
+        bn_chan=16,
+        hid_size=4,
+        chunk_size=20,
+        n_filters=32,
+        use_mulcat=use_mulcat,
+    )
     # Test torch input
     wav = torch.rand(1, 800)
     out = nnet.separate(wav)
@@ -127,7 +136,8 @@ def test_dprnntasnet_sep_from_hf():
 
 @pytest.mark.parametrize("fb", ["free", "stft", "analytic_free", "param_sinc"])
 @pytest.mark.parametrize("sample_rate", [8000.0, 16000.0])
-def test_save_and_load_dprnn(fb, sample_rate):
+@pytest.mark.parametrize("use_mulcat", [True, False])
+def test_save_and_load_dprnn(fb, sample_rate, use_mulcat):
     _default_test_model(
         DPRNNTasNet(
             n_src=2,
@@ -138,6 +148,7 @@ def test_save_and_load_dprnn(fb, sample_rate):
             n_filters=32,
             fb_name=fb,
             sample_rate=sample_rate,
+            use_mulcat=use_mulcat,
         )
     )
 

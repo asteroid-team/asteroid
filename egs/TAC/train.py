@@ -57,7 +57,7 @@ def main(conf):
         drop_last=True,
     )
 
-    model = FasNetTAC(**conf["net"])
+    model = FasNetTAC(**conf["net"], sample_rate=conf["data"]["sample_rate"])
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     # Define scheduler
     if conf["training"]["half_lr"]:

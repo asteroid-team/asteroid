@@ -71,6 +71,7 @@ class DPRNNTasNet(BaseEncoderMaskerDecoder):
         stride=8,
         encoder_activation=None,
         sample_rate=8000,
+        use_mulcat=False,
         **fb_kwargs,
     ):
         encoder, decoder = make_enc_dec(
@@ -105,5 +106,6 @@ class DPRNNTasNet(BaseEncoderMaskerDecoder):
             rnn_type=rnn_type,
             num_layers=num_layers,
             dropout=dropout,
+            use_mulcat=use_mulcat,
         )
         super().__init__(encoder, masker, decoder, encoder_activation=encoder_activation)
