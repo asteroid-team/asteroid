@@ -68,7 +68,12 @@ test_dir=data/wav${sr_string}k/$eval_mode/test
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating Librimix dataset"
-  . local/prepare_data.sh --storage_dir $storage_dir --n_src $n_src --compute_wer $compute_wer
+  . local/generate_librimix.sh --storage_dir $storage_dir --n_src $n_src
+fi
+
+if [[ $stage -le  1 ]]; then
+	echo "Stage 1: Generating csv files including wav path and duration"
+  . local/prepare_data.sh --storage_dir $storage_dir --n_src $n_src
 fi
 
 # Generate a random ID for the run if no tag is specified
@@ -82,8 +87,8 @@ mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
 
-if [[ $stage -le 1 ]]; then
-  echo "Stage 1: Training"
+if [[ $stage -le 2 ]]; then
+  echo "Stage 2: Training"
   mkdir -p logs
   CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir $expdir \
 		--n_blocks $n_blocks \
@@ -111,8 +116,8 @@ if [[ $stage -le 1 ]]; then
 fi
 
 
-if [[ $stage -le 2 ]]; then
-	echo "Stage 2 : Evaluation"
+if [[ $stage -le 3 ]]; then
+	echo "Stage 3 : Evaluation"
 
 	if [[ $compute_wer -eq 1 ]]; then
 	  if [[ $eval_mode != "max" ]]; then

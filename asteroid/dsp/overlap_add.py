@@ -66,6 +66,7 @@ class LambdaOverlapAdd(torch.nn.Module):
         self.window_size = window_size
         self.hop_size = hop_size if hop_size is not None else window_size // 2
         self.n_src = n_src
+        self.in_channels = getattr(nnet, "in_channels", None)
 
         if window:
             from scipy.signal import get_window  # for torch.hub

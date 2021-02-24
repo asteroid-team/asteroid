@@ -62,6 +62,67 @@ class SingleRNN(nn.Module):
         return rnn_output
 
 
+class MulCatRNN(nn.Module):
+    """MulCat RNN block from [1].
+
+    Composed of two RNNs, returns ``cat([RNN_1(x) * RNN_2(x), x])``.
+
+    Args:
+        rnn_type (str): Select from ``'RNN'``, ``'LSTM'``, ``'GRU'``. Can
+            also be passed in lowercase letters.
+        input_size (int): Dimension of the input feature. The input should have
+            shape [batch, seq_len, input_size].
+        hidden_size (int): Dimension of the hidden state.
+        n_layers (int, optional): Number of layers used in RNN. Default is 1.
+        dropout (float, optional): Dropout ratio. Default is 0.
+        bidirectional (bool, optional): Whether the RNN layers are
+            bidirectional. Default is ``False``.
+    References
+        [1] Eliya Nachmani, Yossi Adi, & Lior Wolf. (2020). Voice Separation with an Unknown Number of Multiple Speakers.
+    """
+
+    def __init__(
+        self, rnn_type, input_size, hidden_size, n_layers=1, dropout=0, bidirectional=False
+    ):
+        super(MulCatRNN, self).__init__()
+        assert rnn_type.upper() in ["RNN", "LSTM", "GRU"]
+        rnn_type = rnn_type.upper()
+        self.rnn_type = rnn_type
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.n_layers = n_layers
+        self.dropout = dropout
+        self.bidirectional = bidirectional
+        self.rnn1 = getattr(nn, rnn_type)(
+            input_size,
+            hidden_size,
+            num_layers=n_layers,
+            dropout=dropout,
+            batch_first=True,
+            bidirectional=bool(bidirectional),
+        )
+        self.rnn2 = getattr(nn, rnn_type)(
+            input_size,
+            hidden_size,
+            num_layers=n_layers,
+            dropout=dropout,
+            batch_first=True,
+            bidirectional=bool(bidirectional),
+        )
+
+    @property
+    def output_size(self):
+        return self.hidden_size * (2 if self.bidirectional else 1) + self.input_size
+
+    def forward(self, inp):
+        """ Input shape [batch, seq, feats] """
+        self.rnn1.flatten_parameters()  # Enables faster multi-GPU training.
+        self.rnn2.flatten_parameters()  # Enables faster multi-GPU training.
+        rnn_output1, _ = self.rnn1(inp)
+        rnn_output2, _ = self.rnn2(inp)
+        return torch.cat((rnn_output1 * rnn_output2, inp), 2)
+
+
 class StackedResidualRNN(nn.Module):
     """Stacked RNN with builtin residual connection.
     Only supports forward RNNs.
@@ -196,22 +257,51 @@ class DPRNNBlock(nn.Module):
         norm_type="gLN",
         bidirectional=True,
         rnn_type="LSTM",
+        use_mulcat=False,
         num_layers=1,
         dropout=0,
     ):
         super(DPRNNBlock, self).__init__()
-        # IntraRNN and linear projection layer (always bi-directional)
-        self.intra_RNN = SingleRNN(
-            rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=True
-        )
-        self.intra_linear = nn.Linear(hid_size * 2, in_chan)
+        if use_mulcat:
+            # IntraRNN block and linear projection layer (always bi-directional)
+            self.intra_RNN = MulCatRNN(
+                rnn_type,
+                in_chan,
+                hid_size,
+                num_layers,
+                dropout=dropout,
+                bidirectional=True,
+            )
+            # InterRNN block and linear projection layer (uni or bi-directional)
+            self.inter_RNN = MulCatRNN(
+                rnn_type,
+                in_chan,
+                hid_size,
+                num_layers,
+                dropout=dropout,
+                bidirectional=bidirectional,
+            )
+        else:
+            self.intra_RNN = SingleRNN(
+                rnn_type,
+                in_chan,
+                hid_size,
+                num_layers,
+                dropout=dropout,
+                bidirectional=True,
+            )
+            self.inter_RNN = SingleRNN(
+                rnn_type,
+                in_chan,
+                hid_size,
+                num_layers,
+                dropout=dropout,
+                bidirectional=bidirectional,
+            )
+        self.intra_linear = nn.Linear(self.intra_RNN.output_size, in_chan)
         self.intra_norm = norms.get(norm_type)(in_chan)
-        # InterRNN block and linear projection layer (uni or bi-directional)
-        self.inter_RNN = SingleRNN(
-            rnn_type, in_chan, hid_size, num_layers, dropout=dropout, bidirectional=bidirectional
-        )
-        num_direction = int(bidirectional) + 1
-        self.inter_linear = nn.Linear(hid_size * num_direction, in_chan)
+
+        self.inter_linear = nn.Linear(self.inter_RNN.output_size, in_chan)
         self.inter_norm = norms.get(norm_type)(in_chan)
 
     def forward(self, x):
@@ -284,6 +374,7 @@ class DPRNN(nn.Module):
         mask_act="relu",
         bidirectional=True,
         rnn_type="LSTM",
+        use_mulcat=False,
         num_layers=1,
         dropout=0,
     ):
@@ -304,6 +395,7 @@ class DPRNN(nn.Module):
         self.rnn_type = rnn_type
         self.num_layers = num_layers
         self.dropout = dropout
+        self.use_mulcat = use_mulcat
 
         layer_norm = norms.get(norm_type)(in_chan)
         bottleneck_conv = nn.Conv1d(in_chan, bn_chan, 1)
@@ -319,6 +411,7 @@ class DPRNN(nn.Module):
                     norm_type=norm_type,
                     bidirectional=bidirectional,
                     rnn_type=rnn_type,
+                    use_mulcat=use_mulcat,
                     num_layers=num_layers,
                     dropout=dropout,
                 )
@@ -399,6 +492,7 @@ class DPRNN(nn.Module):
             "rnn_type": self.rnn_type,
             "num_layers": self.num_layers,
             "dropout": self.dropout,
+            "use_mulcat": self.use_mulcat,
         }
         return config
 

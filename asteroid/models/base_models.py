@@ -1,10 +1,11 @@
 import torch
 import warnings
+from typing import Optional
 
 from .. import separate
 from ..masknn import activations
 from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
-from ..utils.hub_utils import cached_download
+from ..utils.hub_utils import cached_download, SR_HASHTABLE
 from ..utils.deprecation_utils import is_overridden, mark_deprecated, VisibleDeprecationWarning
 
 
@@ -22,20 +23,32 @@ def _unsqueeze_to_3d(x):
 class BaseModel(torch.nn.Module):
     """Base class for serializable models.
 
-    Defines saving/loading procedures as well as separation methods from
-    file, torch tensors and numpy arrays.
-    Need to overwrite the `forward` method, the `sample_rate` property and
-    the `get_model_args` method.
+    Defines saving/loading procedures, and separation interface to `separate`.
+    Need to overwrite the `forward` and `get_model_args` methods.
 
     Models inheriting from `BaseModel` can be used by :mod:`asteroid.separate`
     and by the `asteroid-infer` CLI. For models whose `forward` doesn't go from
     waveform to waveform tensors, overwrite `forward_wav` to return
     waveform tensors.
+
+    Args:
+        sample_rate (float): Operating sample rate of the model.
+        in_channels: Number of input channels in the signal.
+            If None, no checks will be performed.
     """
 
-    def __init__(self, sample_rate: float = 8000.0):
+    def __init__(self, sample_rate: float = None, in_channels: Optional[int] = 1):
         super().__init__()
+        if sample_rate is None:
+            sample_rate = 8000.0
+            warnings.warn(
+                "The argument `sample_rate` of `BaseModel` will be required in the future. "
+                "It is no longer a keyword argument. This will raise an error in future release. "
+                "Defaults to 8000.0",
+                VisibleDeprecationWarning,
+            )
         self.__sample_rate = sample_rate
+        self.in_channels = in_channels
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError
@@ -139,20 +152,12 @@ class BaseModel(torch.nn.Module):
                 "model_args`. Found only: {}".format(conf.keys())
             )
         conf["model_args"].update(kwargs)  # kwargs overwrite config.
-        if "sample_rate" not in conf["model_args"]:
-            # Try retrieving from pretrained models
-            from ..utils.hub_utils import SR_HASHTABLE
-
-            sr = None
-            if isinstance(pretrained_model_conf_or_path, str):
-                sr = SR_HASHTABLE.get(pretrained_model_conf_or_path, None)
-            if sr is None:
-                raise RuntimeError(
-                    "Couldn't load pretrained model without sampling rate. You can either pass "
-                    "`sample_rate` to the `from_pretrained` method or edit your model to include "
-                    "the `sample_rate` key, or use `asteroid-register-sr model sample_rate` CLI."
-                )
-            conf["model_args"]["sample_rate"] = sr
+        if "sample_rate" not in conf["model_args"] and isinstance(
+            pretrained_model_conf_or_path, str
+        ):
+            conf["model_args"]["sample_rate"] = SR_HASHTABLE.get(
+                pretrained_model_conf_or_path, None
+            )
         # Attempt to find the model and instantiate it.
         try:
             model_class = get(conf["model_name"])

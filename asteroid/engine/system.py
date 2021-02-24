@@ -11,6 +11,13 @@ class System(pl.LightningModule):
     Contains a model, an optimizer, a loss function, training and validation
     dataloaders and learning rate scheduler.
 
+    Note that by default, any PyTorch-Lightning hooks are *not* passed to the model.
+    If you want to use Lightning hooks, add the hooks to a subclass::
+
+        class MySystem(System):
+            def on_train_batch_start(self, batch, batch_idx, dataloader_idx):
+                return self.model.on_train_batch_start(batch, batch_idx, dataloader_idx)
+
     Args:
         model (torch.nn.Module): Instance of model.
         optimizer (torch.optim.Optimizer): Instance or list of optimizers.
@@ -171,22 +178,6 @@ class System(pl.LightningModule):
         """Overwrite if you want to save more things in the checkpoint."""
         checkpoint["training_config"] = self.config
         return checkpoint
-
-    def on_batch_start(self, batch):
-        """Overwrite if needed. Called by pytorch-lightning"""
-        pass
-
-    def on_batch_end(self):
-        """Overwrite if needed. Called by pytorch-lightning"""
-        pass
-
-    def on_epoch_start(self):
-        """Overwrite if needed. Called by pytorch-lightning"""
-        pass
-
-    def on_epoch_end(self):
-        """Overwrite if needed. Called by pytorch-lightning"""
-        pass
 
     @staticmethod
     def config_to_hparams(dic):
