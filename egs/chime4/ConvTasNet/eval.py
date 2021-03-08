@@ -153,7 +153,7 @@ def main(conf):
         # Save the report
         with open(os.path.join(eval_save_dir, "final_wer.md"), "w") as f:
             f.write(wer_card)
-        all_transcriptions = wer_tracker.trans_dic
+        all_transcriptions = wer_tracker.transcriptions
         with open(os.path.join(eval_save_dir, "all_transcriptions.json"), "w") as f:
             json.dump(all_transcriptions, f, indent=4)
 
