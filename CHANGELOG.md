@@ -12,6 +12,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 
+## [0.4.2] - 2021-02-18
+
+### Breaking
+- [src] Make sample_rate positional in BaseModel (#431)
+
+### Added
+- [src&egs] ESPNet in LibriMix recipe :tada: (#329)
+- [cli] Add --device to asteroid-infer (#375)
+- [src] Add stft_n_filters to BaseDCUNet (#406)
+- [src&tests] Add MetricTracker (#394)
+- [egs] Librimix recipes for all models (#418)
+- [src] Track transcriptions in WerTracker (#414)
+- [docs] Add note about System Lightning hooks (#428)
+- [src] Support Multichannel models (#427)
+- [src&egs] Add FasNetTAC model, dataset and recipe  (#306)
+- [src] Add mulcat option to DPRNN (#416)
+
+### Changed
+- [src&install] Drop librosa and refactor requirements files (#386)
+- [src] Remove unused hooks (#424)
+- [hub] Use huggingface_hub deps, remove inlined HF code (#409)
+
+### Fixed
+- [egs] Pass samplerate to model (#407)
+- [src] Fix Large-DCUNet-20 arch (#405)
+- [src] Fix inconsistent devices for tensors (#417)
+- [egs] Fix model saving path in DeepClustering recipes(#398)
+- [src] Fix unpassed SR in TasNet and SudoRMRF (#433)
+- [egs] Fix reshaping issue in AVSpeech (#441)
+
+
 ## [0.4.1] - 2021-01-05
 
 ### Added

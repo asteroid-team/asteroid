@@ -7,3 +7,4 @@ asteroid-filterbanks>=0.2.4
 requests
 filelock
 SoundFile>=0.10.2
+huggingface_hub>=0.0.2

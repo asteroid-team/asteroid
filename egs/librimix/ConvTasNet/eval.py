@@ -5,7 +5,6 @@ import torch
 import yaml
 import json
 import argparse
-import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
@@ -17,6 +16,7 @@ from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 from asteroid import ConvTasNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
+from asteroid.dsp.normalization import normalize_estimates
 from asteroid.metrics import WERTracker, MockWERTracker
 
 
@@ -117,11 +117,12 @@ def main(conf):
             metrics_list=COMPUTE_METRICS,
         )
         utt_metrics["mix_path"] = test_set.mixture_path
+        est_sources_np_normalized = normalize_estimates(est_sources_np, mix_np)
         utt_metrics.update(
             **wer_tracker(
                 mix=mix_np,
                 clean=sources_np,
-                estimate=est_sources_np,
+                estimate=est_sources_np_normalized,
                 wav_id=ids,
                 sample_rate=conf["sample_rate"],
             )
@@ -136,8 +137,7 @@ def main(conf):
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):
                 sf.write(local_save_dir + "s{}.wav".format(src_idx), src, conf["sample_rate"])
-            for src_idx, est_src in enumerate(est_sources_np):
-                est_src *= np.max(np.abs(mix_np)) / np.max(np.abs(est_src))
+            for src_idx, est_src in enumerate(est_sources_np_normalized):
                 sf.write(
                     local_save_dir + "s{}_estimate.wav".format(src_idx),
                     est_src,

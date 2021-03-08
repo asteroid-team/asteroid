@@ -41,9 +41,8 @@ setup(
         "scipy>=1.1.0",
         "torch>=1.3.0",
         "asteroid-filterbanks>=0.2.4",
-        "requests",
-        "filelock",
         "SoundFile>=0.10.2",
+        "huggingface_hub>=0.0.2",
         # From requirements/install.txt
         "PyYAML>=5.0",
         "pandas>=0.23.4",

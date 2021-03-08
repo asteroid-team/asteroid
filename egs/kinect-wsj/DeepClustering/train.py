@@ -78,7 +78,7 @@ def main(conf):
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
         json.dump(checkpoint.best_k_models, f, indent=0)
     # Save last model for convenience
-    torch.save(system.model.state_dict(), os.path.join(exp_dir, "checkpoints/final.pth"))
+    torch.save(system.model.state_dict(), os.path.join(exp_dir, "final_model.pth"))
 
 
 # TODO:Should ideally be inherited from wsj0-mix

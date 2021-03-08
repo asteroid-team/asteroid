@@ -94,9 +94,9 @@ class CumLN(_LayerNorm):
         batch, chan, spec_len = x.size()
         cum_sum = torch.cumsum(x.sum(1, keepdim=True), dim=-1)
         cum_pow_sum = torch.cumsum(x.pow(2).sum(1, keepdim=True), dim=-1)
-        cnt = torch.arange(start=chan, end=chan * (spec_len + 1), step=chan, dtype=x.dtype).view(
-            1, 1, -1
-        )
+        cnt = torch.arange(
+            start=chan, end=chan * (spec_len + 1), step=chan, dtype=x.dtype, device=x.device
+        ).view(1, 1, -1)
         cum_mean = cum_sum / cnt
         cum_var = cum_pow_sum - cum_mean.pow(2)
         return self.apply_gain_and_bias((x - cum_mean) / (cum_var + EPS).sqrt())

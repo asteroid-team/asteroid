@@ -296,8 +296,9 @@ class WERTracker:
                 txt = self.predict_hypothesis(wav)
                 out_count = Counter(
                     self.hsdi(
-                        truth=self.trans_dic[tmp_id], hypothesis=txt,
-                        transformation=self.transformation
+                        truth=self.trans_dic[tmp_id],
+                        hypothesis=txt,
+                        transformation=self.transformation,
                     )
                 )
                 self.clean_counter += out_count

@@ -72,10 +72,10 @@ if [[ $stage -le 0 ]]; then
 			    --start $download_start \
 			    --end $download_end
 
+	cd $root_dir
 	vid_dir=$storage_dir/storage/video
 	n_files=$(ls -1q $vid_dir/*_final.mp4 | wc -l)
 	echo "Total files: $n_files"
-	cd $root_dir
 fi
 
 
