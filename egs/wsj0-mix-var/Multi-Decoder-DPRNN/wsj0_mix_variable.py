@@ -32,7 +32,7 @@ class Wsj0mixVariable(data.Dataset):
     Args:
         json_dirs: list of folders containing json files, e.g. **/dataset/#speakers/wav8k/min/tr/**
         n_srcs: list specifying number of speakers for each folder
-        sr: sampzle rate
+        sample_rate: sample rate
         seglen: length of segment in seconds
         minlen: minimum segment length
 
@@ -41,16 +41,16 @@ class Wsj0mixVariable(data.Dataset):
     """
 
     def __init__(
-        self, json_dirs, n_srcs=[2, 3, 4, 5], sr=8000, seglen=4.0, minlen=2.0
+        self, json_dirs, n_srcs=[2, 3, 4, 5], sample_rate=8000, seglen=4.0, minlen=2.0
     ):  # segment and cv_maxlen not implemented
         if seglen is None:
             self.seg_len = None
             self.min_len = None
         else:
-            self.seg_len = int(seglen * sr)
-            self.min_len = int(minlen * sr)
+            self.seg_len = int(seglen * sample_rate)
+            self.min_len = int(minlen * sample_rate)
         self.like_test = self.seg_len is None
-        self.sr = sr
+        self.sr = sample_rate
         self.data = []
         for json_dir, n_src in zip(json_dirs, n_srcs):
             mix_json = os.path.join(json_dir, "mix.json")
@@ -120,25 +120,26 @@ def _collate_fn(batch):
     Args:
         batch: list, len(batch) = batch_size, each entry is a tuple of (mixture, sources)
     Returns:
-        mixtures_list: B x T, torch.Tensor, padded mixtures
-        ilens : B, torch.Tensor, length of each mixture before padding
-        sources_list: list of B Tensors, each C x T, where C is (variable) number of source audios
+        mixtures_tensor: B x T, torch.Tensor, padded mixtures
+        source_tensor: B x C x T, torch.Tensor, padded in both channel and time dimension
+        ilens : B, torch.Tensor, length of each mixture
+        num_sources : B, torch.Tensor, number of sources for each mixture
     """
-    ilens = []  # shape of mixtures
-    mixtures = []  # mixtures, same length as longest source in whole batch
-    sources_list = []  # padded sources, same length as mixtures
-    maxlen = max([len(mixture) for mixture, sources in batch])
-    for mixture, sources in batch:  # compute length to pad to
+    ilens = [len(mixture) for mixture, _ in batch]
+    num_sources = [len(sources) for _, sources in batch]
+    mixture_tensor = torch.zeros(len(batch), max(ilens))
+    source_tensor = torch.zeros(len(batch), max(num_sources), max(ilens))
+
+    for i, (mixture, sources) in enumerate(batch):  # compute length to pad to
         assert len(mixture) == len(sources[0])
-        ilens.append(len(mixture))
-        mixtures.append(pad_audio(mixture, maxlen))
-        sources = torch.Tensor(
-            np.stack([pad_audio(source, maxlen) for source in sources], axis=0)
+        mixture_tensor[i, : ilens[i]] = torch.Tensor(mixture).float()
+        source_tensor[i, : num_sources[i], : ilens[i]] = torch.Tensor(
+            np.stack(sources, axis=0)
         ).float()
-        sources_list.append(sources)
-    mixtures = torch.Tensor(np.stack(mixtures, axis=0)).float()
     ilens = torch.Tensor(np.stack(ilens)).int()
-    return mixtures, ilens, sources_list
+    num_sources = torch.Tensor(np.stack(num_sources)).int()
+
+    return mixture_tensor, source_tensor, ilens, num_sources
 
 
 if __name__ == "__main__":
@@ -152,5 +153,5 @@ if __name__ == "__main__":
         dataset_tr, batch_size=3, collate_fn=_collate_fn, num_workers=3
     )
     print(len(dataset_tr))
-    for mixtures, ilens, sources_list in tqdm(dataloader):
-        print(mixtures.shape, ilens, [len(sources) for sources in sources_list])
+    for mixture_tensor, source_tensor, ilens, num_sources in tqdm(dataloader):
+        print(mixture_tensor.shape, source_tensor.shape, ilens, num_sources)

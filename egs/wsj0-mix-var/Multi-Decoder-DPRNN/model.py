@@ -9,10 +9,26 @@ from asteroid_filterbanks import make_enc_dec
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.masknn import activations, norms
 from asteroid.masknn.recurrent import DPRNNBlock
-from asteroid.utils import has_arg
+from asteroid.models.base_models import _shape_reconstructed, _unsqueeze_to_3d
+from asteroid.utils.generic_utils import has_arg
+from asteroid.utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 
 
-class DPRNN_Multistage(nn.Module):
+def make_model_and_optimizer(conf):
+    """Function to define the model and optimizer for a config dictionary.
+    Args:
+        conf: Dictionary containing the output of hierachical argparse.
+    Returns:
+        model, optimizer.
+    The main goal of this function is to make reloading for resuming
+    and evaluation very simple.
+    """
+    model = MultiDecoderDPRNN(**conf["masknet"], **conf["filterbank"])
+    optimizer = make_optimizer(model.parameters(), **conf["optim"])
+    return model, optimizer
+
+
+class DPRNN_MultiStage(nn.Module):
     """Implementation of the Dual-Path-RNN model,
         with multi-stage output, without Conv2D projection
 
@@ -36,21 +52,20 @@ class DPRNN_Multistage(nn.Module):
         bn_chan,
         hid_size,
         chunk_size,
-        hop_size=None,
-        n_repeats=6,
-        norm_type="gLN",
-        bidirectional=True,
-        rnn_type="LSTM",
-        use_mulcat=True,
-        num_layers=1,
-        dropout=0,
+        hop_size,
+        n_repeats,
+        norm_type,
+        bidirectional,
+        rnn_type,
+        use_mulcat,
+        num_layers,
+        dropout,
     ):
-        super(DPRNN_Multistage, self).__init__()
+        super(DPRNN_MultiStage, self).__init__()
         self.in_chan = in_chan
         self.bn_chan = bn_chan
         self.hid_size = hid_size
         self.chunk_size = chunk_size
-        hop_size = hop_size if hop_size is not None else chunk_size // 2
         self.hop_size = hop_size
         self.n_repeats = n_repeats
         self.norm_type = norm_type
@@ -88,7 +103,7 @@ class DPRNN_Multistage(nn.Module):
             mixture_w (:class:`torch.Tensor`): Tensor of shape $(batch, nfilters, nframes)$
 
         Returns:
-            :class:`torch.Tensor`: estimated mask of shape $(batch, nsrc, nfilters, nframes)$
+            list of (:class:`torch.Tensor`): Tensor of shape $(batch, bn_chan, chunk_size, n_chunks)
         """
         batch, n_filters, n_frames = mixture_w.size()
         output = self.bottleneck(mixture_w)  # [batch, bn_chan, n_frames]
@@ -102,22 +117,22 @@ class DPRNN_Multistage(nn.Module):
         output = output.reshape(batch, self.bn_chan, self.chunk_size, n_chunks)
         # Apply stacked DPRNN Blocks sequentially
         output_list = []
-        for i in range(self.num_layers):
-            output = self.dual_rnn[i](output)
+        for i in range(self.n_repeats):
+            output = self.net[i](output)
             output_list.append(output)
         return output_list
 
 
 class SingleDecoder(nn.Module):
     def __init__(
-        self, kernel_size, in_chan, n_src, bn_chan, chunk_size, hop_size=None, mask_act="relu"
+        self, kernel_size, stride, in_chan, n_src, bn_chan, chunk_size, hop_size, mask_act
     ):
         super(SingleDecoder, self).__init__()
         self.kernel_size = kernel_size
+        self.stride = stride
         self.in_chan = in_chan
         self.bn_chan = bn_chan
         self.chunk_size = chunk_size
-        hop_size = hop_size if hop_size is not None else chunk_size // 2
         self.hop_size = hop_size
         self.n_src = n_src
         self.mask_act = mask_act
@@ -138,37 +153,210 @@ class SingleDecoder(nn.Module):
         else:
             self.output_act = mask_nl_class()
 
-        _, self.trans_conv = make_enc_dec("free", kernel_size=kernel_size, n_filters=in_chan)
+        _, self.trans_conv = make_enc_dec(
+            "free", kernel_size=kernel_size, stride=stride, n_filters=in_chan
+        )
 
-    def forward(self, x, e, gap):
+    def forward(self, output, mixture_w):
         """
-        args:
-            x: [num_stages, out_channels, K, S]
-            e: [in_channels, L]
+        Takes a single example mask and encoding, outputs waveform
+        Args:
+            output: LSTM output, Tensor of shape $(num_stages, bn_chan, chunk_size, n_chunks)$
+            mixture_w: Encoder output, Tensor of shape $(num_stages, in_chan, nframes)
         outputs:
-            x: [num_stages, num_spks, T]
+            Signal, Tensor of shape $(num_stages, n_src, T)
         """
-        x = self.prelu(x)
-        # [num_stages, num_spks * out_channels, K, S]
-        x = self.conv2d(x)
-        num_stages, _, K, S = x.shape
-        # [num_stages * num_spks, out_channels, K, S]
-        x = x.view(num_stages * self.num_spks, self.out_channels, K, S)
-        # [num_stages * num_spks, out_channels, L]
-        x = self._over_add(x, gap)
-        x = self.output(x) * self.output_gate(x)
-        # [num_stages * num_spks, in_channels, L]
-        x = self.end_conv1x1(x)
-        _, N, L = x.shape
-        # [num_stages, num_spks, in_channels, L]
-        x = x.view(num_stages, self.num_spks, N, L)
-        x = self.activation(x)
-        # [1, 1, in_channels, L]
-        e = e.unsqueeze(0).unsqueeze(1)
-        x = x * e
-        # [num_stages * num_spks, N, L]
-        x = x.view(num_stages * self.num_spks, N, L)
-        # [num_stages, num_spks, T]
-        x = self.decoder(x).view(num_stages, self.num_spks, -1)
+        batch, bn_chan, chunk_size, n_chunks = output.size()
+        _, in_chan, n_frames = mixture_w.size()
+        assert self.bn_chan == bn_chan
+        assert self.in_chan == in_chan
+        assert self.chunk_size == chunk_size
+        output = self.first_out(output)
+        output = output.reshape(batch * self.n_src, self.bn_chan, self.chunk_size, n_chunks)
+        # Overlap and add:
+        # [batch, out_chan, chunk_size, n_chunks] -> [batch, out_chan, n_frames]
+        to_unfold = self.bn_chan * self.chunk_size
+        output = fold(
+            output.reshape(batch * self.n_src, to_unfold, n_chunks),
+            (n_frames, 1),
+            kernel_size=(self.chunk_size, 1),
+            padding=(self.chunk_size, 0),
+            stride=(self.hop_size, 1),
+        )
+        # Apply gating
+        output = output.reshape(batch * self.n_src, self.bn_chan, -1)
+        output = self.net_out(output) * self.net_gate(output)
+        # Compute mask
+        score = self.mask_net(output)
+        est_mask = self.output_act(score)
+        est_mask = est_mask.reshape(batch, self.n_src, self.in_chan, n_frames)
+        mixture_w = mixture_w.unsqueeze(1)
+        source_w = est_mask * mixture_w
+        source_w = source_w.reshape(batch * self.n_src, self.in_chan, n_frames)
+        est_wavs = self.trans_conv(source_w)
+        est_wavs = est_wavs.reshape(batch, self.n_src, -1)
+        return est_wavs
 
-        return x
+
+class Decoder_Select(nn.Module):
+    """Selects which decoder to use, as well as whether to use multiloss
+    Args:
+        n_srcs: list of [B], number of sources for each decoder
+    """
+
+    def __init__(
+        self, kernel_size, stride, in_chan, n_srcs, bn_chan, chunk_size, hop_size, mask_act
+    ):
+        super().__init__()
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.in_chan = in_chan
+        self.n_srcs = n_srcs
+        self.bn_chan = bn_chan
+        self.chunk_size = chunk_size
+        self.hop_size = hop_size
+        self.mask_act = mask_act
+
+        self.n_src2idx = {n_src: i for i, n_src in enumerate(n_srcs)}
+        self.decoders = torch.nn.ModuleList()
+        for n_src in n_srcs:
+            self.decoders.append(
+                SingleDecoder(
+                    kernel_size=kernel_size,
+                    stride=stride,
+                    in_chan=in_chan,
+                    n_src=n_src,
+                    bn_chan=bn_chan,
+                    chunk_size=chunk_size,
+                    hop_size=hop_size,
+                    mask_act=mask_act,
+                )
+            )
+        self.selector = nn.Sequential(
+            nn.Conv2d(bn_chan, in_chan, 1),
+            nn.AdaptiveAvgPool2d(1),
+            nn.ReLU(),
+            nn.Conv2d(in_chan, len(n_srcs), 1),
+        )
+
+    def forward(self, output_list, mixture_w, ground_truth):
+        """Forward
+        Args:
+            output_list: list of $(batch, bn_chan, chunk_size, n_chunks)$
+            mixture_w: Tensor of $(batch, in_chan, n_frames)$
+            ground_truth: None of list of [B] ints, or Long Tensor of $(B)
+        Output:
+            output_wavs: Tensor of $(batch, num_stages, maxspks, T)$
+            selector_output: $(batch, num_stages, num_decoders)$
+        """
+        batch, bn_chan, chunk_size, n_chunks = output_list[0].size()
+        _, in_chan, n_frames = mixture_w.size()
+        assert self.chunk_size == chunk_size
+        if not self.training:
+            output_list = output_list[-1:]
+        num_stages = len(output_list)
+        # [batch, num_stages, bn_chan, chunk_size, n_chunks]
+        output = torch.stack(output_list, 1).reshape(
+            batch * num_stages, bn_chan, chunk_size, n_chunks
+        )
+        selector_output = self.selector(output).reshape(batch, num_stages, -1)
+        output = output.reshape(batch, num_stages, bn_chan, chunk_size, n_chunks)
+        # [batch, num_stages, in_chan, n_frames]
+        mixture_w = mixture_w.unsqueeze(1).repeat(1, num_stages, 1, 1)
+        if ground_truth is not None:  # oracle
+            decoder_selected = torch.LongTensor([self.n_src2idx[truth] for truth in ground_truth])
+        else:
+            assert num_stages == 1  # can't use select with multistage
+            decoder_selected = selector_output.reshape(batch, -1).argmax(1)
+        T = self.kernel_size + self.stride * (n_frames - 1)
+        output_wavs = torch.zeros(batch, num_stages, max(self.n_srcs), T).to(output.device)
+        for i in range(batch):
+            output_wavs[i, :, : self.n_srcs[decoder_selected[i]], :] = self.decoders[
+                decoder_selected[i]
+            ](output[i], mixture_w[i])
+        return output_wavs, selector_output
+
+
+class MultiDecoderDPRNN(nn.Module):
+    def __init__(
+        self,
+        n_srcs,
+        bn_chan=128,
+        hid_size=128,
+        chunk_size=100,
+        hop_size=None,
+        n_repeats=6,
+        norm_type="gLN",
+        mask_act="sigmoid",
+        bidirectional=True,
+        rnn_type="LSTM",
+        num_layers=1,
+        dropout=0,
+        kernel_size=16,
+        n_filters=64,
+        stride=8,
+        encoder_activation=None,
+        use_mulcat=False,
+    ):
+        super().__init__()
+        self.encoder_activation = encoder_activation
+        self.enc_activation = activations.get(encoder_activation or "linear")()
+        hop_size = hop_size if hop_size is not None else chunk_size // 2
+        self.encoder, _ = make_enc_dec(
+            "free",
+            kernel_size=kernel_size,
+            n_filters=n_filters,
+            stride=stride,
+        )
+        # Update in_chan
+        self.masker = DPRNN_MultiStage(
+            in_chan=n_filters,
+            bn_chan=bn_chan,
+            hid_size=hid_size,
+            chunk_size=chunk_size,
+            hop_size=hop_size,
+            n_repeats=n_repeats,
+            norm_type=norm_type,
+            bidirectional=bidirectional,
+            rnn_type=rnn_type,
+            use_mulcat=use_mulcat,
+            num_layers=num_layers,
+            dropout=dropout,
+        )
+        self.decoder_select = Decoder_Select(
+            kernel_size=kernel_size,
+            stride=stride,
+            in_chan=n_filters,
+            n_srcs=n_srcs,
+            bn_chan=bn_chan,
+            chunk_size=chunk_size,
+            hop_size=hop_size,
+            mask_act=mask_act,
+        )
+
+    def forward(self, wav, ground_truth=None):
+        shape = jitable_shape(wav)
+        # [batch, 1, T]
+        wav = _unsqueeze_to_3d(wav)
+        tf_rep = self.enc_activation(self.encoder(wav))
+        est_masks_list = self.masker(tf_rep)
+        decoded, selector_output = self.decoder_select(
+            est_masks_list, tf_rep, ground_truth=ground_truth
+        )
+        reconstructed = pad_x_to_y(decoded, wav)
+        return _shape_reconstructed(reconstructed, shape), _shape_reconstructed(
+            selector_output, shape
+        )
+
+
+# Training notes:
+# Weight different stages in accordance with facebook code
+if __name__ == "__main__":
+    network = MultiDecoderDPRNN([2, 3], bn_chan=32, hid_size=32, n_filters=16)
+    input = torch.rand(2, 3200)
+    wavs, selector_output = network(input, [3, 2])
+    print(wavs.shape)
+    assert (wavs[1, :, 2] == 0).all()
+    network.eval()
+    wavs, selector_output = network(input)
+    print(wavs.shape)
