@@ -330,7 +330,7 @@ with open(os.path.join(PATH_ROOT, "requirements", "docs.txt"), "r") as fp:
             MOCK_REQUIRE_PACKAGES.append(pkg.rstrip())
 
 # TODO: better parse from package since the import name and package name may differ
-MOCK_MANUAL_PACKAGES = ["torch", "torchvision"]
+MOCK_MANUAL_PACKAGES = ["torch", "torchvision", "soundfile"]
 autodoc_mock_imports = MOCK_REQUIRE_PACKAGES + MOCK_MANUAL_PACKAGES
 # for mod_name in MOCK_REQUIRE_PACKAGES:
 #     sys.modules[mod_name] = mock.Mock()
