@@ -6,6 +6,7 @@ import soundfile as sf
 import asteroid
 from asteroid import models
 from asteroid.filterbanks import make_enc_dec
+from asteroid_filterbanks.transforms import to_torch_complex
 from asteroid.dsp import LambdaOverlapAdd
 from asteroid.models.fasnet import FasNetTAC
 from asteroid.separate import separate
@@ -21,6 +22,7 @@ from asteroid.models import (
     SuDORMRFNet,
 )
 from asteroid.models.base_models import BaseModel
+from asteroid.models.dcunet import BaseDCUNet
 from asteroid.utils.deprecation_utils import VisibleDeprecationWarning
 
 HF_EXAMPLE_MODEL_IDENTIFER = "julien-c/DPRNNTasNet-ks16_WHAM_sepclean"
@@ -214,6 +216,20 @@ def test_fasnet(use_tac):
     )
 
 
+def test_BaseDCUNet_apply_mask():
+    x = torch.randn((10, 17), dtype=torch.complex64)
+    mask = torch.randn((10, 1, 17), dtype=torch.complex64)
+    dummy = type("dummy", (object,), {})()
+    dummy.masking_method = "unbounded"
+    out_unbounded = BaseDCUNet.apply_masks(dummy, x, mask)
+    dummy.masking_method = "tanh"
+    out_tanh = BaseDCUNet.apply_masks(dummy, x, mask)
+    # Output shape sanity check
+    assert out_unbounded.shape == out_tanh.shape
+    # assert tanh output is bounded by |x|
+    assert (torch.abs(to_torch_complex(out_tanh).squeeze()) <= torch.abs(x)).all()
+
+
 def test_dcunet():
     n_fft = 1024
     _, istft = make_enc_dec(
@@ -225,6 +241,7 @@ def test_dcunet():
     _default_test_model(DCUNet("DCUNet-20"), input_samples=input_samples)
     _default_test_model(DCUNet("Large-DCUNet-20"), input_samples=input_samples)
     _default_test_model(DCUNet("DCUNet-10", n_src=2), input_samples=input_samples)
+    _default_test_model(DCUNet("DCUNet-10", masking_method="tanh"), input_samples=input_samples)
 
     # DCUMaskNet should fail with wrong freqency dimensions
     DCUNet("mini").masker(torch.zeros((1, 9, 17), dtype=torch.complex64))
@@ -244,6 +261,7 @@ def test_dccrnet():
     input_samples = istft(torch.zeros((n_fft + 2, 16))).shape[0]
     _default_test_model(DCCRNet("DCCRN-CL"), input_samples=input_samples)
     _default_test_model(DCCRNet("DCCRN-CL", n_src=2), input_samples=input_samples)
+    _default_test_model(DCCRNet("DCCRN-CL", masking_method="tanh"), input_samples=input_samples)
 
     # DCCRMaskNet should fail with wrong input dimensions
     DCCRNet("mini").masker(torch.zeros((1, 256, 3), dtype=torch.complex64))

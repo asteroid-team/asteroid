@@ -1,3 +1,5 @@
+import torch
+
 from asteroid_filterbanks import make_enc_dec
 from asteroid_filterbanks.transforms import from_torch_complex, to_torch_complex
 from ..masknn.convolutional import DCUMaskNet
@@ -13,7 +15,12 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
         stft_kernel_size (int): STFT frame length to use.
         stft_stride (int, optional): STFT hop length to use.
         sample_rate (float): Sampling rate of the model.
+        masking_method (str): The masking method to use. One of {"unbounded", "tanh"}.
         masknet_kwargs (optional): Passed to the masknet constructor.
+
+    References
+        - [1] : "Phase-aware Speech Enhancement with Deep Complex U-Net",
+          Hyeong-Seok Choi et al. https://arxiv.org/abs/1903.03107
     """
 
     masknet_class = NotImplemented
@@ -25,12 +32,14 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
         stft_kernel_size=1024,
         stft_stride=256,
         sample_rate=16000.0,
+        masking_method="unbounded",
         **masknet_kwargs,
     ):
         self.architecture = architecture
         self.stft_n_filters = stft_n_filters
         self.stft_kernel_size = stft_kernel_size
         self.stft_stride = stft_stride
+        self.masking_method = masking_method
         self.masknet_kwargs = masknet_kwargs
 
         encoder, decoder = make_enc_dec(
@@ -48,7 +57,13 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
         return to_torch_complex(tf_rep)
 
     def apply_masks(self, tf_rep, est_masks):
-        masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
+        if self.masking_method == "tanh":
+            mag_est_masks = torch.abs(est_masks)
+            # Scaling factor confines mask to unit disc (see [1])
+            scaling_factor = torch.tanh(mag_est_masks) / mag_est_masks
+            masked_tf_rep = scaling_factor * est_masks * tf_rep.unsqueeze(1)
+        else:
+            masked_tf_rep = est_masks * tf_rep.unsqueeze(1)
         return from_torch_complex(masked_tf_rep)
 
     def get_model_args(self):
@@ -59,6 +74,7 @@ class BaseDCUNet(BaseEncoderMaskerDecoder):
             "stft_kernel_size": self.stft_kernel_size,
             "stft_stride": self.stft_stride,
             "sample_rate": self.sample_rate,
+            "masking_method": self.masking_method,
             **self.masknet_kwargs,
         }
         return model_args
