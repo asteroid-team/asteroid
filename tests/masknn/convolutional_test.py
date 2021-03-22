@@ -6,7 +6,8 @@ from asteroid.masknn import TDConvNet, TDConvNetpp
 @pytest.mark.parametrize("mask_act", ["relu", "softmax"])
 @pytest.mark.parametrize("out_chan", [None, 10])
 @pytest.mark.parametrize("skip_chan", [0, 12])
-def test_tdconvnet(mask_act, out_chan, skip_chan):
+@pytest.mark.parametrize("causal", [True, False])
+def test_tdconvnet(mask_act, out_chan, skip_chan, causal):
     in_chan, n_src = 20, 2
     model = TDConvNet(
         in_chan=in_chan,
