@@ -235,7 +235,7 @@ class TDConvNet(nn.Module):
             "n_src": self.n_src,
             "norm_type": self.norm_type,
             "mask_act": self.mask_act,
-            "causal": self.causal
+            "causal": self.causal,
         }
         return config
 
