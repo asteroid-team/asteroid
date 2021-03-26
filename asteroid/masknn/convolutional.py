@@ -16,6 +16,17 @@ from ._local import _DilatedConvNorm, _NormAct, _ConvNormAct, _ConvNorm
 from ..utils.torch_utils import script_if_tracing, pad_x_to_y
 
 
+class _Chop1d(nn.Module):
+    """To ensure the output length is the same as the input."""
+
+    def __init__(self, chop_size):
+        super().__init__()
+        self.chop_size = chop_size
+
+    def forward(self, x):
+        return x[..., : -self.chop_size].contiguous()
+
+
 class Conv1DBlock(nn.Module):
     """One dimensional convolutional block, as proposed in [1].
 
@@ -36,6 +47,8 @@ class Conv1DBlock(nn.Module):
             -  ``'cLN'``: channelwise Layernorm.
             -  ``'cgLN'``: cumulative global Layernorm.
             -  Any norm supported by :func:`~.norms.get`
+        causal (bool, optional) : Whether or not the convolutions are causal
+
 
     References
         [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
@@ -44,7 +57,15 @@ class Conv1DBlock(nn.Module):
     """
 
     def __init__(
-        self, in_chan, hid_chan, skip_out_chan, kernel_size, padding, dilation, norm_type="gLN"
+        self,
+        in_chan,
+        hid_chan,
+        skip_out_chan,
+        kernel_size,
+        padding,
+        dilation,
+        norm_type="gLN",
+        causal=False,
     ):
         super(Conv1DBlock, self).__init__()
         self.skip_out_chan = skip_out_chan
@@ -53,6 +74,8 @@ class Conv1DBlock(nn.Module):
         depth_conv1d = nn.Conv1d(
             hid_chan, hid_chan, kernel_size, padding=padding, dilation=dilation, groups=hid_chan
         )
+        if causal:
+            depth_conv1d = nn.Sequential(depth_conv1d, _Chop1d(padding))
         self.shared_block = nn.Sequential(
             in_conv1d,
             nn.PReLU(),
@@ -97,6 +120,7 @@ class TDConvNet(nn.Module):
         norm_type (str, optional): To choose from ``'BN'``, ``'gLN'``,
             ``'cLN'``.
         mask_act (str, optional): Which non-linear function to generate mask.
+        causal (bool, optional) : Whether or not the convolutions are causal.
 
     References
         [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking
@@ -117,6 +141,7 @@ class TDConvNet(nn.Module):
         conv_kernel_size=3,
         norm_type="gLN",
         mask_act="relu",
+        causal=False,
     ):
         super(TDConvNet, self).__init__()
         self.in_chan = in_chan
@@ -131,6 +156,7 @@ class TDConvNet(nn.Module):
         self.conv_kernel_size = conv_kernel_size
         self.norm_type = norm_type
         self.mask_act = mask_act
+        self.causal = causal
 
         layer_norm = norms.get(norm_type)(in_chan)
         bottleneck_conv = nn.Conv1d(in_chan, bn_chan, 1)
@@ -139,7 +165,10 @@ class TDConvNet(nn.Module):
         self.TCN = nn.ModuleList()
         for r in range(n_repeats):
             for x in range(n_blocks):
-                padding = (conv_kernel_size - 1) * 2 ** x // 2
+                if not causal:
+                    padding = (conv_kernel_size - 1) * 2 ** x // 2
+                else:
+                    padding = (conv_kernel_size - 1) * 2 ** x
                 self.TCN.append(
                     Conv1DBlock(
                         bn_chan,
@@ -149,6 +178,7 @@ class TDConvNet(nn.Module):
                         padding=padding,
                         dilation=2 ** x,
                         norm_type=norm_type,
+                        causal=causal,
                     )
                 )
         mask_conv_inp = skip_chan if skip_chan else bn_chan
@@ -203,6 +233,7 @@ class TDConvNet(nn.Module):
             "n_src": self.n_src,
             "norm_type": self.norm_type,
             "mask_act": self.mask_act,
+            "causal": self.causal,
         }
         return config
 
