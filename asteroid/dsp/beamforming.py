@@ -20,10 +20,10 @@ class SCM(nn.Module):
         if mask.ndim == 3:
             mask = mask[:, None]
 
-        psd = torch.einsum("bmft,bnft->bmnf", mask * x, x.conj())
+        scm = torch.einsum("bmft,bnft->bmnf", mask * x, x.conj())
         if normalize:
-            psd /= mask.sum(-1, keepdim=True).transpose(-1, -2)
-        return psd
+            scm /= mask.sum(-1, keepdim=True).transpose(-1, -2)
+        return scm
 
 
 class _BeamFormer(nn.Module):
