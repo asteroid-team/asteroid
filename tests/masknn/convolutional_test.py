@@ -19,7 +19,7 @@ def test_tdconvnet(mask_act, out_chan, skip_chan, causal):
         hid_chan=11,
         skip_chan=skip_chan,
         out_chan=out_chan,
-        causal=causal
+        causal=causal,
     )
     batch, n_frames = 2, 24
     inp = torch.randn(batch, in_chan, n_frames)
