@@ -16,15 +16,15 @@ from ._local import _DilatedConvNorm, _NormAct, _ConvNormAct, _ConvNorm
 from ..utils.torch_utils import script_if_tracing, pad_x_to_y
 
 
-class Chomp1d(nn.Module):
+class _Chop1d(nn.Module):
     """To ensure the output length is the same as the input."""
 
-    def __init__(self, chomp_size):
-        super(Chomp1d, self).__init__()
-        self.chomp_size = chomp_size
+    def __init__(self, chop_size):
+        super().__init__()
+        self.chop_size = chop_size
 
     def forward(self, x):
-        return x[:, :, : -self.chomp_size].contiguous()
+        return x[..., : -self.chop_size].contiguous()
 
 
 class Conv1DBlock(nn.Module):
@@ -75,9 +75,7 @@ class Conv1DBlock(nn.Module):
             hid_chan, hid_chan, kernel_size, padding=padding, dilation=dilation, groups=hid_chan
         )
         if causal:
-            depth_conv1d = nn.Sequential(depth_conv1d, Chomp1d(padding))
-        else:
-            depth_conv1d = depth_conv1d
+            depth_conv1d = nn.Sequential(depth_conv1d, _Chop1d(padding))
         self.shared_block = nn.Sequential(
             in_conv1d,
             nn.PReLU(),
@@ -122,7 +120,7 @@ class TDConvNet(nn.Module):
         norm_type (str, optional): To choose from ``'BN'``, ``'gLN'``,
             ``'cLN'``.
         mask_act (str, optional): Which non-linear function to generate mask.
-        causal (bool, optional) : Whether or not the convolutions are causal
+        causal (bool, optional) : Whether or not the convolutions are causal.
 
     References
         [1] : "Conv-TasNet: Surpassing ideal time-frequency magnitude masking

@@ -26,7 +26,7 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
         mask_act (str, optional): Which non-linear function to generate mask.
         in_chan (int, optional): Number of input channels, should be equal to
             n_filters.
-        causal (bool, optional) : Whether or not the convolutions are causal
+        causal (bool, optional) : Whether or not the convolutions are causal.
         fb_name (str, className): Filterbank family from which to make encoder
             and decoder. To choose among [``'free'``, ``'analytic_free'``,
             ``'param_sinc'``, ``'stft'``].
