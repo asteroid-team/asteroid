@@ -8,7 +8,7 @@ def make_unet_encoder_decoder_args(encoder_args, decoder_args):
             out_chan,
             kernel_size,
             stride,
-            [n // 2 for n in kernel_size] if padding == "auto" else padding,
+            tuple([n // 2 for n in kernel_size]) if padding == "auto" else padding,
         )
         for in_chan, out_chan, kernel_size, stride, padding in encoder_args
     )
@@ -25,7 +25,7 @@ def make_unet_encoder_decoder_args(encoder_args, decoder_args):
                 out_chan,
                 kernel_size,
                 stride,
-                [n // 2 for n in kernel_size] if padding == "auto" else padding,
+                tuple([n // 2 for n in kernel_size]) if padding == "auto" else padding,
                 output_padding,
             )
             for in_chan, out_chan, kernel_size, stride, padding, output_padding in decoder_args
