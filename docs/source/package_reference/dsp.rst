@@ -5,6 +5,15 @@ DSP Modules
     :class: hidden-section
 
 
+
+:hidden:`Beamforming`
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. autoclass:: asteroid.dsp.beamforming.MvdrBeamformer
+.. autoclass:: asteroid.dsp.beamforming.SdwMwfBeamformer
+.. autoclass:: asteroid.dsp.beamforming.GEVBeamformer
+.. autoclass:: asteroid.dsp.beamforming.SCM
+
+
 :hidden:`LambdaOverlapAdd`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: asteroid.dsp.LambdaOverlapAdd

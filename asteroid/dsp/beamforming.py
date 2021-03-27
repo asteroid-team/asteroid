@@ -45,7 +45,10 @@ class MvdrBeamformer(_BeamFormer):
         target_scm: torch.Tensor,
         noise_scm: torch.Tensor,
     ):
-        """Compute and apply MVDR beamformer from the speech and noise SCM matrices
+        r"""Compute and apply MVDR beamformer from the speech and noise SCM matrices.
+
+        :math:`\mathbf{w} =  \displaystyle \frac{\Sigma_{nn}^{-1} \mathbf{a}}{
+        \mathbf{a}^H \Sigma_{nn}^{-1} \mathbf{a}}` where :math:`\mathbf{a}` is the ATF estimated from the target SCM.
 
         Args:
             mix (torch.ComplexTensor): shape (batch, mics, freqs, frames)
@@ -55,7 +58,7 @@ class MvdrBeamformer(_BeamFormer):
         Returns:
             Filtered mixture. torch.ComplexTensor (batch, freqs, frames)
         """
-        # Get Acoustic transfer function (1st PCA of Σss)
+        # Get acoustic transfer function (1st PCA of Σss)
         e_val, e_vec = torch.symeig(target_scm.permute(0, 3, 1, 2), eigenvectors=True)
         atf_vect = e_vec[..., -1]  # bfm
         return self.from_atf_vect(mix=mix, atf_vec=atf_vect.transpose(-1, -2), noise_scm=noise_scm)
@@ -96,7 +99,9 @@ class SdwMwfBeamformer(_BeamFormer):
     def forward(
         self, mix: torch.Tensor, target_scm: torch.Tensor, noise_scm: torch.Tensor, ref_mic: int = 0
     ):
-        """Compute and apply MVDR beamformer.
+        """Compute and apply SDW-MWF beamformer.
+
+        :math:`\mathbf{w} =  \displaystyle (\Sigma_{ss} + \mu \Sigma_{nn})^{-1} \Sigma_{ss}`.
 
         Args:
             mix (torch.ComplexTensor): shape (batch, mics, freqs, frames)
@@ -120,7 +125,9 @@ class SdwMwfBeamformer(_BeamFormer):
 class GEVBeamformer(_BeamFormer):
     def forward(self, mix: torch.Tensor, target_scm: torch.Tensor, noise_scm: torch.Tensor):
         """Compute and apply the GEV beamformer.
-        We compute the principal component of noise_scm^-1 @ target_scm by solving the GEV decomposition
+
+        :math:`\mathbf{w} =  \displaystyle MaxEig\{ \Sigma_{nn}^{-1}\Sigma_{ss} \}`, where
+        MaxEig extracts the eigenvector corresponding to the maximum eigenvalue (using the GEV decomposition).
 
         Args:
             mix: shape (batch, mics, freqs, frames)
@@ -131,7 +138,7 @@ class GEVBeamformer(_BeamFormer):
             Filtered mixture. torch.ComplexTensor (batch, freqs, frames)
         """
         noise_scm_t = noise_scm.permute(0, 3, 1, 2)
-        noise_scm_t = condition_covariance(noise_scm_t, 1e-6)
+        noise_scm_t = condition_scm(noise_scm_t, 1e-6)
         e_val, e_vec = generalized_eigenvalue_decomposition(
             target_scm.permute(0, 3, 1, 2), noise_scm_t
         )
@@ -143,17 +150,20 @@ class GEVBeamformer(_BeamFormer):
         return output
 
 
-def stable_solve(inp, mat):
-    """Return torch.solve in mat is non-singular, else regularize `mat` and torch.solve."""
+def stable_solve(b, a):
+    """Return torch.solve in matrix `a` is non-singular, else regularize `a` and return torch.solve."""
     try:
-        return torch.solve(inp, mat)[0]
+        return torch.solve(b, a)[0]
     except RuntimeError:
-        mat = condition_covariance(mat, 1e-6)
-        return torch.solve(inp, mat)[0]
+        a = condition_scm(a, 1e-6)
+        return torch.solve(b, a)[0]
 
 
-def condition_covariance(x, gamma, dim1=-2, dim2=-1):
-    """see https://stt.msu.edu/users/mauryaas/Ashwini_JPEN.pdf (2.3)"""
+def condition_scm(x, gamma=1e-6, dim1=-2, dim2=-1):
+    """Condition input SCM with (x + gamma tr(x) I) / (1 + gamma) along `dim1` and `dim2`.
+
+    See https://stt.msu.edu/users/mauryaas/Ashwini_JPEN.pdf (2.3).
+    """
     # Assume 4d with ...mm
     if dim1 != -2 or dim2 != -1:
         raise NotImplementedError
@@ -163,13 +173,13 @@ def condition_covariance(x, gamma, dim1=-2, dim2=-1):
 
 
 def batch_trace(x, dim1=-2, dim2=-1):
-    """Compute the trace along dim1 and dim2 for a any matrix ndim>=2."""
+    """Compute the trace along `dim1` and `dim2` for a any matrix `ndim>=2`."""
     return torch.diagonal(x, dim1=dim1, dim2=dim2).sum(-1)
 
 
 def generalized_eigenvalue_decomposition(a, b):
-    """Solves the generalized eigenvalue decomposition through cholesky decomposition.
-    Returns eigen values and eigen vectors.
+    """Solves the generalized eigenvalue decomposition through Cholesky decomposition.
+    Returns eigen values and eigen vectors (ascending order).
     """
     cholesky = torch.cholesky(b)
     inv_cholesky = torch.inverse(cholesky)
