@@ -6,17 +6,17 @@ DSP Modules
 
 
 :hidden:`LambdaOverlapAdd`
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: asteroid.dsp.LambdaOverlapAdd
    :members:
 
 :hidden:`DualPath Processing`
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: asteroid.dsp.DualPathProcessing
    :members:
 
 :hidden:`Mixture Consistency`
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autofunction:: asteroid.dsp.mixture_consistency
 
 :hidden:`VAD`

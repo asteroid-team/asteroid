@@ -5,7 +5,7 @@ Filterbank API
 ==============
 
 Filterbank, Encoder and Decoder
------------------
+-------------------------------
 .. autoclass:: asteroid_filterbanks.Filterbank
    :members:
 .. autoclass:: asteroid_filterbanks.Encoder
@@ -27,12 +27,12 @@ Learnable filterbanks
     :members:
 
 :hidden:`Analytic Free`
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: asteroid_filterbanks.analytic_free_fb
     :members:
 
 :hidden:`Parameterized Sinc`
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: asteroid_filterbanks.param_sinc_fb
     :members:
 
@@ -58,7 +58,7 @@ Transforms
 ----------
 
 :hidden:`Griffin-Lim and MISI`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: asteroid_filterbanks.griffin_lim
    :members:

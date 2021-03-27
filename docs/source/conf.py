@@ -320,7 +320,8 @@ def run_apidoc(_):
 
 
 def setup(app):
-    app.connect("builder-inited", run_apidoc)
+    return
+    # app.connect("builder-inited", run_apidoc)
 
 
 # copy all notebooks to local folder #FIXME : temp fix
