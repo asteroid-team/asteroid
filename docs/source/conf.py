@@ -157,7 +157,7 @@ def linkcode_resolve(domain, info):
     except:
         return base_url % str_from(filename, start=repos_name)
     out = base_url % str_from(file, start=repos_name) + "#L%d-L%d" % (start, end)
-    return out.replace("asteroid/asteroid/asteroid/", "asteroid")
+    return out.replace("asteroid/asteroid/asteroid/", "asteroid/")
 
 
 # -- Options for HTML output -------------------------------------------------
