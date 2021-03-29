@@ -1,25 +1,25 @@
 # Filterbank config
 filterbank:
   n_filters: 64
-  kernel_size: 16
-  stride: 8
+  kernel_size: 8
+  stride: 4
 # Network config
 masknet:
   n_srcs: [2, 3, 4, 5]
   bn_chan: 128
   hid_size: 128
-  chunk_size: 100
-  hop_size: 50
+  chunk_size: 128
+  hop_size: 64
   n_repeats: 8
   mask_act: 'sigmoid'
   bidirectional: true
   dropout: 0
-  use_mulcat: true
+  use_mulcat: false
 # Training config
 training:
   epochs: 200
-  batch_size: 3
-  num_workers: 3
+  batch_size: 2
+  num_workers: 2
   half_lr: yes
   lr_decay: yes
   early_stop: yes
