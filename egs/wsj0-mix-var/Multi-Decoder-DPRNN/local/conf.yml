@@ -31,7 +31,7 @@ optim:
   weight_decay: 0.00000
 # Data config
 data:
-  dataset: "/ws/ifp-10_3/hasegawa/junzhez2/asteroid/dataset"
+  dataset: "../../../dataset"
   train_dir: "{}speakers/wav8k/min/tr"
   valid_dir: "{}speakers/wav8k/min/cv"
   task: sep_clean
