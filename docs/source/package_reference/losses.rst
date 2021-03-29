@@ -26,7 +26,7 @@ using Sinkhorn algorithm (SinkPIT) as well as Mixture Invariant Training (MixIT)
    :members:
 
 :hidden:`SinkPIT`
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 .. automodule:: asteroid.losses.sinkpit_wrapper
    :members:
 

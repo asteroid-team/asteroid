@@ -1,7 +1,5 @@
 The docs built from master can be viewed [here](https://asteroid-team.github.io/asteroid/).
-We need to work on it so, any contribution are welcome.
-Our (future) template can be found
-[here](https://github.com/asteroid-team/asteroid_sphinx_theme).
+Our template can be found [here](https://github.com/asteroid-team/asteroid_sphinx_theme).
 
 ## Building the docs
 To build the docs, you'll need [Sphinx](https://www.sphinx-doc.org/en/master/),

@@ -26,6 +26,7 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
         mask_act (str, optional): Which non-linear function to generate mask.
         in_chan (int, optional): Number of input channels, should be equal to
             n_filters.
+        causal (bool, optional) : Whether or not the convolutions are causal.
         fb_name (str, className): Filterbank family from which to make encoder
             and decoder. To choose among [``'free'``, ``'analytic_free'``,
             ``'param_sinc'``, ``'stft'``].
@@ -56,6 +57,7 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
         norm_type="gLN",
         mask_act="sigmoid",
         in_chan=None,
+        causal=False,
         fb_name="free",
         kernel_size=16,
         n_filters=512,
@@ -93,5 +95,6 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
             conv_kernel_size=conv_kernel_size,
             norm_type=norm_type,
             mask_act=mask_act,
+            causal=causal,
         )
         super().__init__(encoder, masker, decoder, encoder_activation=encoder_activation)

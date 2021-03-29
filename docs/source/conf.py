@@ -16,21 +16,35 @@ import glob
 import shutil
 import builtins
 import asteroid_sphinx_theme
-
+import codecs
+import os
+import re
 
 PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 PATH_ROOT = os.path.join(PATH_HERE, "..", "..")
 sys.path.insert(0, os.path.abspath(PATH_ROOT))
+
+
+def read(*parts):
+    with codecs.open(os.path.join(PATH_ROOT, *parts), "r") as fp:
+        return fp.read()
+
+
+def find_version(*file_paths):
+    version_file = read(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
 
 # -- Project information -----------------------------------------------------
 
 project = "asteroid"
 copyright = "2019, Oncoming"
 author = "Manuel Pariente et al."
-# The short X.Y version
-version = "0.4.0"
 # The full version, including alpha/beta/rc tags
-release = "0.4.0rc1"
+release = find_version("asteroid", "__init__.py")
 
 # -- General configuration ---------------------------------------------------
 
@@ -109,7 +123,6 @@ pygments_style = None
 # Resolve function for the linkcode extension. Now, the source button links
 # to the Github code instead of code in the docs.
 def linkcode_resolve(domain, info):
-    # TODO: handle the release better. Maybe use the versioneer?
     if domain != "py" or not info["module"]:
         return None
     info["module"] = info["module"].replace("asteroid.filterbanks", "asteroid_filterbanks")
@@ -143,7 +156,8 @@ def linkcode_resolve(domain, info):
         file, start, end = find_source()
     except:
         return base_url % str_from(filename, start=repos_name)
-    return base_url % str_from(file, start=repos_name) + "#L%d-L%d" % (start, end)
+    out = base_url % str_from(file, start=repos_name) + "#L%d-L%d" % (start, end)
+    return out.replace("asteroid/asteroid/asteroid/", "asteroid/")
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -167,7 +181,6 @@ html_theme_options = {
     "collapse_navigation": False,
     "display_version": True,
     "logo_only": False,
-    "asteroid_project": "docs",
 }
 
 html_logo = "_static/images/favicon.ico"
@@ -307,7 +320,8 @@ def run_apidoc(_):
 
 
 def setup(app):
-    app.connect("builder-inited", run_apidoc)
+    return
+    # app.connect("builder-inited", run_apidoc)
 
 
 # copy all notebooks to local folder #FIXME : temp fix
