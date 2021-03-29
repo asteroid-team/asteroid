@@ -87,13 +87,13 @@ if [[ $stage -le  2 ]]; then
 	# Make json directories with min/max modes and sampling rates
 	echo "Stage 2: Generating json files including wav path and duration"
 	for tmp_nsrc in 2 3 4 5; do
-				tmp_dumpdir=$wsj0mix_wav_dir/${tmp_nsrc}speakers/wav8k/min
-				echo "Generating json files in $tmp_dumpdir"
-				[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
-				local_wsj_dir=$wsj0mix_wav_dir/${tmp_nsrc}speakers/wav8k/min/
-				$python_path local/preprocess_wsj0mix.py --in_dir $local_wsj_dir \
-				 																			--n_src $tmp_nsrc \
-				 																			--out_dir $tmp_dumpdir
+		tmp_dumpdir=$wsj0mix_wav_dir/${tmp_nsrc}speakers/wav8k/min
+		echo "Generating json files in $tmp_dumpdir"
+		[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
+		local_wsj_dir=$wsj0mix_wav_dir/${tmp_nsrc}speakers/wav8k/min/
+		$python_path local/preprocess_wsj0mix.py --in_dir $local_wsj_dir \
+																					--n_src $tmp_nsrc \
+																					--out_dir $tmp_dumpdir
 	done
 fi
 
@@ -129,7 +129,7 @@ fi
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4 : Evaluation"
 	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
-	  --n_src $n_src \
+	  	--n_src $n_src \
 		--test_dir $test_dir \
 		--use_gpu $eval_use_gpu \
 		--exp_dir ${expdir} | tee logs/eval_${tag}.log
