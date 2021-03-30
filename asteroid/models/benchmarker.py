@@ -26,21 +26,22 @@ class Benchmarker:
         >>> model = ConvTasNet(n_src=1)
         >>> A = Benchmarker(model, inputs_shape, repeat=10)
         >>> print(A.compute_inference_time())
-        Mean inference time 0.04166898940093233 standard deviation 0.0014542574214454578 Min 0.04037960300047416 in seconds
+        Mean inference time 0.041 standard deviation 0.001 Min 0.040 in seconds
         >>> print(A.compute_memory_usage())
-        -------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------
-                           Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg       CPU Mem  Self CPU Mem    # of Calls                                   Input Shapes
-        -------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------
-                   aten::conv1d         0.01%       3.105us         0.55%     283.483us     283.483us     247.50 Kb           0 b             1  [[1, 128, 99], [512, 128, 1], [512], [], [],
+        -------------------------------  ------------  ------------ ...
+                           Name    Self CPU %      Self CPU         ...
+        -------------------------------  ------------  ------------ ...
+                   aten::conv1d         0.01%       3.105us         ...
         >>>print(A.compute_flops())
         [11639695]
     """
 
-    def __init__(self, model, inputs_shape, repeat=1000):
+    def __init__(self, model, inputs_shape, repeat=1000, decimal=3):
 
         self.model = model
         self.inputs_shape = inputs_shape
         self.repeat = repeat
+        self.decimal = decimal
         # Assume [-1,1) inputs
         self.inputs = (torch.randn(self.inputs_shape) - 0.5) * 2
         # warm_up
@@ -55,8 +56,8 @@ class Benchmarker:
         t0 = timeit.Timer(lambda: self.process_rand_inputs())
         T = t0.repeat(self.repeat, 1)
         return (
-            f"Mean inference time {np.mean(T)} standard deviation"
-            f" {np.std(T)} Min {np.min(T)} in seconds"
+            f"Mean inference time {np.around(np.mean(T),decimals=self.decimal)}, standard deviation"
+            f" {np.around(np.std(T),decimals=self.decimal)}, Min {np.around(np.min(T),decimals=self.decimal)} in seconds"
         )
 
     def compute_memory_usage(self):
