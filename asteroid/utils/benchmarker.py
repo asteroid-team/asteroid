@@ -19,7 +19,7 @@ class Benchmarker:
     Examples:
         Examples should be written in doctest format, and should illustrate how
         to use the function.
-        >>> from asteroid.models.benchmarker import Benchmarker
+        >>> from asteroid.utils.benchmarker import Benchmarker
         >>> from asteroid.models import ConvTasNet
 
         >>> inputs_shape = [800]

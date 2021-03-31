@@ -1,5 +1,6 @@
 import torch
-from asteroid.models.benchmarker import Benchmarker
+from torch import nn
+from asteroid.utils.benchmarker import Benchmarker
 
 
 def test_benchmark():
