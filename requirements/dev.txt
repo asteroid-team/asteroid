@@ -7,3 +7,4 @@ coverage
 codecov
 
 librosa
+pypapi
