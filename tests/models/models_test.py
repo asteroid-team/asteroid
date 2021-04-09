@@ -33,8 +33,8 @@ def test_set_sample_rate_raises_warning():
         model.sample_rate = 16000.0
 
 
-def test_no_sample_rate_raises_warning():
-    with pytest.warns(VisibleDeprecationWarning):
+def test_no_sample_rate_raises():
+    with pytest.raises(TypeError):
         BaseModel()
 
 
