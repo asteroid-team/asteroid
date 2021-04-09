@@ -94,19 +94,6 @@ class BaseModel(torch.nn.Module):
             wav (torch.Tensor): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
         """
-        if is_overridden("_separate", self, parent=BaseModel):
-            # If `_separate` is overridden, the mark_deprecated won't be triggered.
-            warnings.warn(
-                "`BaseModel._separate` has been deprecated and will be remove from a "
-                "future release. Use `forward_wav` instead",
-                VisibleDeprecationWarning,
-            )
-            return self._separate(wav, *args, **kwargs)
-        return self(wav, *args, **kwargs)
-
-    @mark_deprecated("Use `forward_wav` instead.")
-    def _separate(self, wav, *args, **kwargs):
-        """Deprecated."""
         return self(wav, *args, **kwargs)
 
     @classmethod
