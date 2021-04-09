@@ -37,16 +37,8 @@ class BaseModel(torch.nn.Module):
             If None, no checks will be performed.
     """
 
-    def __init__(self, sample_rate: float = None, in_channels: Optional[int] = 1):
+    def __init__(self, sample_rate: float, in_channels: Optional[int] = 1):
         super().__init__()
-        if sample_rate is None:
-            sample_rate = 8000.0
-            warnings.warn(
-                "The argument `sample_rate` of `BaseModel` will be required in the future. "
-                "It is no longer a keyword argument. This will raise an error in future release. "
-                "Defaults to 8000.0",
-                VisibleDeprecationWarning,
-            )
         self.__sample_rate = sample_rate
         self.in_channels = in_channels
 
