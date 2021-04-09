@@ -12,6 +12,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 
+
+
+## [0.4.5] - 2021-04-09
+
+- [src] Fix padding in DCUNet ConvTranspose2d (#466)
+- [src&tests] Causal TDConvNet and ConvTasNet (#465)
+- [tests] Fix test from #465 (#467)
+- [docs] Fix wrong doclinks (#469)
+- [docs] Fix docs (links and errors) (#470)
+- [src&tests] Add beamforming modules :tada: (#468)
+
 ## [0.4.2] - 2021-02-18
 
 ### Breaking
