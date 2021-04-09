@@ -3,7 +3,7 @@ import torch
 from torch.testing import assert_allclose
 import warnings
 
-from asteroid.filterbanks import STFTFB, Encoder, transforms
+from asteroid_filterbanks import STFTFB, Encoder, transforms
 from asteroid.losses import PITLossWrapper
 from asteroid.losses import sdr, mse
 from asteroid.losses import deep_clustering_loss, SingleSrcPMSQE

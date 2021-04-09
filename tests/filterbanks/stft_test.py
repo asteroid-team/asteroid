@@ -5,11 +5,11 @@ import numpy as np
 from scipy.signal import get_window
 import random
 
-from asteroid.filterbanks import Encoder, Decoder, STFTFB
-from asteroid.filterbanks import make_enc_dec, griffin_lim, misi
-from asteroid.filterbanks.stft_fb import perfect_synthesis_window
-from asteroid.filterbanks import transforms
-from asteroid.filterbanks.melgram_fb import MelScale, MelGramFB
+from asteroid_filterbanks import Encoder, Decoder, STFTFB
+from asteroid_filterbanks import make_enc_dec, griffin_lim, misi
+from asteroid_filterbanks.stft_fb import perfect_synthesis_window
+from asteroid_filterbanks import transforms
+from asteroid_filterbanks.melgram_fb import MelScale, MelGramFB
 
 
 def fb_config_list():

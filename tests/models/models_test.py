@@ -5,7 +5,7 @@ import numpy as np
 import soundfile as sf
 import asteroid
 from asteroid import models
-from asteroid.filterbanks import make_enc_dec
+from asteroid_filterbanks import make_enc_dec
 from asteroid.dsp import LambdaOverlapAdd
 from asteroid.models.fasnet import FasNetTAC
 from asteroid.separate import separate

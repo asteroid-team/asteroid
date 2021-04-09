@@ -5,7 +5,7 @@ from torch.testing import assert_allclose
 import numpy as np
 
 from asteroid import filterbanks as fb
-from asteroid.filterbanks import transforms
+from asteroid_filterbanks import transforms
 
 
 COMPLEX_FBS = [fb.STFTFB, fb.ParamSincFB, fb.AnalyticFreeFB]
@@ -65,13 +65,6 @@ def test_comp_mask(encoder_list):
         )
         masked = transforms.apply_complex_mask(tf_rep, id_complex_mask, dim=1)
         assert_allclose(masked, tf_rep)
-
-
-@pytest.mark.filterwarnings("ignore:asteroid.filterbanks.transforms.take_reim")
-def test_reim(encoder_list):
-    for (enc, fb_dim) in encoder_list:
-        tf_rep = enc(torch.randn(2, 1, 16000))  # [batch, freq, time]
-        assert_allclose(tf_rep, transforms.take_reim(tf_rep))
 
 
 def test_mag(encoder_list):

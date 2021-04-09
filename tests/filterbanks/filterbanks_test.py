@@ -4,9 +4,9 @@ import torch
 from torch.testing import assert_allclose
 
 from asteroid import filterbanks
-from asteroid.filterbanks import Encoder, Decoder
-from asteroid.filterbanks import FreeFB, AnalyticFreeFB, ParamSincFB, MultiphaseGammatoneFB
-from asteroid.filterbanks import make_enc_dec
+from asteroid_filterbanks import Encoder, Decoder
+from asteroid_filterbanks import FreeFB, AnalyticFreeFB, ParamSincFB, MultiphaseGammatoneFB
+from asteroid_filterbanks import make_enc_dec
 
 
 def fb_config_list():
