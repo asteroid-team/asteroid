@@ -6,7 +6,7 @@ from .. import separate
 from ..masknn import activations
 from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download, SR_HASHTABLE
-from ..utils.deprecation_utils import is_overridden, mark_deprecated, VisibleDeprecationWarning
+from ..utils.deprecation_utils import is_overridden, mark_deprecated
 
 
 @script_if_tracing

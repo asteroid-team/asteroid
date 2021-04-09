@@ -4,7 +4,6 @@ from asteroid_filterbanks import make_enc_dec
 from asteroid_filterbanks.transforms import mag, magreim
 from ..masknn import norms, activations
 from ..utils.torch_utils import pad_x_to_y
-from ..utils.deprecation_utils import VisibleDeprecationWarning
 import warnings
 
 
