@@ -3,7 +3,7 @@ import pytest
 import torch
 from torch.testing import assert_allclose
 
-from asteroid import filterbanks
+import asteroid_filterbanks as fb
 from asteroid_filterbanks import Encoder, Decoder
 from asteroid_filterbanks import FreeFB, AnalyticFreeFB, ParamSincFB, MultiphaseGammatoneFB
 from asteroid_filterbanks import make_enc_dec
@@ -120,28 +120,28 @@ def test_make_enc_dec(who):
     fb_config = {"n_filters": 500, "kernel_size": 16, "stride": 8}
     enc, dec = make_enc_dec("free", who_is_pinv=who, **fb_config)
     enc, dec = make_enc_dec(FreeFB, who_is_pinv=who, **fb_config)
-    assert enc.filterbank == filterbanks.get(enc.filterbank)
+    assert enc.filterbank == fb.get(enc.filterbank)
 
 
 @pytest.mark.parametrize("wrong", ["wrong_string", 12, object()])
 def test_get_errors(wrong):
     with pytest.raises(ValueError):
         # Should raise for anything not a Optimizer instance + unknown string
-        filterbanks.get(wrong)
+        fb.get(wrong)
 
 
 def test_get_none():
-    assert filterbanks.get(None) is None
+    assert fb.get(None) is None
 
 
 def test_register():
-    class Custom(filterbanks.Filterbank):
+    class Custom(fb.Filterbank):
         def filters(self):
             return None
 
-    filterbanks.register_filterbank(Custom)
-    cls = filterbanks.get("Custom")
+    fb.register_filterbank(Custom)
+    cls = fb.get("Custom")
     assert cls == Custom
 
     with pytest.raises(ValueError):
-        filterbanks.register_filterbank(filterbanks.STFTFB)
+        fb.register_filterbank(fb.STFTFB)
