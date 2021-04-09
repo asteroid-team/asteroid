@@ -3,7 +3,7 @@ import pytest
 from asteroid_filterbanks import make_enc_dec, transforms as tr
 
 from asteroid.dsp.beamforming import (
-    _BeamFormer,
+    BeamFormer,
     SCM,
     MvdrBeamformer,
     SdwMwfBeamformer,
@@ -19,7 +19,7 @@ istft = lambda x: _istft(tr.from_torch_complex(x))
 
 
 @pytest.mark.skipif(not torch_has_complex_support, "No complex support ")
-def _default_beamformer_test(beamformer: _BeamFormer, n_mics=4, *args, **kwargs):
+def _default_beamformer_test(beamformer: BeamFormer, n_mics=4, *args, **kwargs):
     scm = SCM()
 
     speech = torch.randn(1, n_mics, 16000 * 6)

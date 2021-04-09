@@ -4,29 +4,11 @@ from torch import nn
 
 class SCM(nn.Module):
     def forward(self, x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = True):
-        """Compute the spatial covariance matrix from a STFT signal x.
-
-        Args:
-            x (torch.ComplexTensor): shape  [batch, mics, freqs, frames]
-            mask (torch.Tensor): [batch, 1, freqs, frames] or [batch, 1, freqs, frames]. Optional
-            normalize (bool): Whether to normalize with the mask mean per bin.
-
-        Returns:
-            torch.ComplexTensor, the SCM with shape (batch, mics, mics, freqs)
-        """
-        batch, mics, freqs, frames = x.shape
-        if mask is None:
-            mask = torch.ones(batch, 1, freqs, frames)
-        if mask.ndim == 3:
-            mask = mask[:, None]
-
-        scm = torch.einsum("bmft,bnft->bmnf", mask * x, x.conj())
-        if normalize:
-            scm /= mask.sum(-1, keepdim=True).transpose(-1, -2)
-        return scm
+        """See :func:`compute_scm`."""
+        return compute_scm(x, mask=mask, normalize=normalize)
 
 
-class _BeamFormer(nn.Module):
+class BeamFormer(nn.Module):
     @staticmethod
     def apply_beamforming_vector(bf_vector: torch.Tensor, mix: torch.Tensor):
         """Apply the beamforming vector to the mixture. Output (batch, freqs, frames).
@@ -38,7 +20,7 @@ class _BeamFormer(nn.Module):
         return torch.einsum("...mf,...mft->...ft", bf_vector.conj(), mix)
 
 
-class MvdrBeamformer(_BeamFormer):
+class MvdrBeamformer(BeamFormer):
     def forward(
         self,
         mix: torch.Tensor,
@@ -91,7 +73,7 @@ class MvdrBeamformer(_BeamFormer):
         return output
 
 
-class SdwMwfBeamformer(_BeamFormer):
+class SdwMwfBeamformer(BeamFormer):
     def __init__(self, mu=1.0):
         super().__init__()
         self.mu = mu
@@ -122,7 +104,7 @@ class SdwMwfBeamformer(_BeamFormer):
         return output
 
 
-class GEVBeamformer(_BeamFormer):
+class GEVBeamformer(BeamFormer):
     def forward(self, mix: torch.Tensor, target_scm: torch.Tensor, noise_scm: torch.Tensor):
         """Compute and apply the GEV beamformer.
 
@@ -148,6 +130,29 @@ class GEVBeamformer(_BeamFormer):
         bf_vect = bf_vect.squeeze(-1).transpose(-1, -2)  # -> bft
         output = self.apply_beamforming_vector(bf_vect, mix=mix)  # -> bft
         return output
+
+
+def compute_scm(x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = True):
+    """Compute the spatial covariance matrix from a STFT signal x.
+
+    Args:
+        x (torch.ComplexTensor): shape  [batch, mics, freqs, frames]
+        mask (torch.Tensor): [batch, 1, freqs, frames] or [batch, 1, freqs, frames]. Optional
+        normalize (bool): Whether to normalize with the mask mean per bin.
+
+    Returns:
+        torch.ComplexTensor, the SCM with shape (batch, mics, mics, freqs)
+    """
+    batch, mics, freqs, frames = x.shape
+    if mask is None:
+        mask = torch.ones(batch, 1, freqs, frames)
+    if mask.ndim == 3:
+        mask = mask[:, None]
+
+    scm = torch.einsum("bmft,bnft->bmnf", mask * x, x.conj())
+    if normalize:
+        scm /= mask.sum(-1, keepdim=True).transpose(-1, -2)
+    return scm
 
 
 def stable_solve(b, a):
