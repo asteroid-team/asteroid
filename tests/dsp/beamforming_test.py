@@ -9,12 +9,17 @@ from asteroid.dsp.beamforming import (
     SdwMwfBeamformer,
     GEVBeamformer,
 )
+from asteroid.utils.test_utils import torch_version_tuple
+
+
+torch_has_complex_support = torch_version_tuple()[1] == 8
 
 _stft, _istft = make_enc_dec("stft", kernel_size=512, n_filters=512, stride=128)
 stft = lambda x: tr.to_torch_complex(_stft(x))
 istft = lambda x: _istft(tr.from_torch_complex(x))
 
 
+@pytest.mark.skipif(not torch_has_complex_support, "No complex support ")
 def _default_beamformer_test(beamformer: _BeamFormer, n_mics=4, *args, **kwargs):
     scm = SCM()
 
@@ -32,16 +37,19 @@ def _default_beamformer_test(beamformer: _BeamFormer, n_mics=4, *args, **kwargs)
     ys_gev = istft(Ys_gev)
 
 
+@pytest.mark.skipif(not torch_has_complex_support, "No complex support ")
 @pytest.mark.parametrize("n_mics", [2, 3, 4])
 def test_gev(n_mics):
     _default_beamformer_test(GEVBeamformer(), n_mics=n_mics)
 
 
+@pytest.mark.skipif(not torch_has_complex_support, "No complex support ")
 @pytest.mark.parametrize("n_mics", [2, 3, 4])
 def test_mvdr(n_mics):
     _default_beamformer_test(MvdrBeamformer(), n_mics=n_mics)
 
 
+@pytest.mark.skipif(not torch_has_complex_support, "No complex support ")
 @pytest.mark.parametrize("n_mics", [2, 3, 4])
 @pytest.mark.parametrize("mu", [1.0, 2.0, 0])
 def test_mwf(n_mics, mu):
