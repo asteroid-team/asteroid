@@ -6,7 +6,7 @@ from .. import separate
 from ..masknn import activations
 from ..utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_shape
 from ..utils.hub_utils import cached_download, SR_HASHTABLE
-from ..utils.deprecation_utils import is_overridden, mark_deprecated, VisibleDeprecationWarning
+from ..utils.deprecation_utils import is_overridden, mark_deprecated
 
 
 @script_if_tracing
@@ -37,16 +37,8 @@ class BaseModel(torch.nn.Module):
             If None, no checks will be performed.
     """
 
-    def __init__(self, sample_rate: float = None, in_channels: Optional[int] = 1):
+    def __init__(self, sample_rate: float, in_channels: Optional[int] = 1):
         super().__init__()
-        if sample_rate is None:
-            sample_rate = 8000.0
-            warnings.warn(
-                "The argument `sample_rate` of `BaseModel` will be required in the future. "
-                "It is no longer a keyword argument. This will raise an error in future release. "
-                "Defaults to 8000.0",
-                VisibleDeprecationWarning,
-            )
         self.__sample_rate = sample_rate
         self.in_channels = in_channels
 
@@ -94,19 +86,6 @@ class BaseModel(torch.nn.Module):
             wav (torch.Tensor): waveform array/tensor.
                 Shape: 1D, 2D or 3D tensor, time last.
         """
-        if is_overridden("_separate", self, parent=BaseModel):
-            # If `_separate` is overridden, the mark_deprecated won't be triggered.
-            warnings.warn(
-                "`BaseModel._separate` has been deprecated and will be remove from a "
-                "future release. Use `forward_wav` instead",
-                VisibleDeprecationWarning,
-            )
-            return self._separate(wav, *args, **kwargs)
-        return self(wav, *args, **kwargs)
-
-    @mark_deprecated("Use `forward_wav` instead.")
-    def _separate(self, wav, *args, **kwargs):
-        """Deprecated."""
         return self(wav, *args, **kwargs)
 
     @classmethod

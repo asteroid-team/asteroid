@@ -15,18 +15,6 @@ class VisibleDeprecationWarning(UserWarning):
     # Taken from numpy
 
 
-class DeprecationMixin:
-    """ Deprecation mixin. Example to come """
-
-    def warn_deprecated(self):
-        warnings.warn(
-            "{} is deprecated since v0.1.0, it will be removed in "
-            "v0.2.0. Please use {} instead."
-            "".format(self.__class__.__name__, self.__class__.__bases__[0].__name__),
-            VisibleDeprecationWarning,
-        )
-
-
 def mark_deprecated(message, version=None):
     """Decorator to add deprecation message.
 
