@@ -8,6 +8,7 @@ from asteroid.dsp.beamforming import (
     MvdrBeamformer,
     SdwMwfBeamformer,
     GEVBeamformer,
+    stable_cholesky,
 )
 
 
@@ -53,3 +54,11 @@ def test_mvdr(n_mics):
 @pytest.mark.parametrize("mu", [1.0, 2.0, 0])
 def test_mwf(n_mics, mu):
     _default_beamformer_test(SdwMwfBeamformer(mu=mu), n_mics=n_mics)
+
+
+def test_stable_cholesky():
+    stable_cholesky(torch.zeros(2, 2))
+    with pytest.warns(RuntimeWarning):
+        stable_cholesky(torch.zeros(2, 2), verbose=True)
+    with pytest.raises(RuntimeError):
+        stable_cholesky(torch.zeros(2, 2), jitter=0.0)
