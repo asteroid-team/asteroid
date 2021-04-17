@@ -57,4 +57,8 @@ def test_mwf(n_mics, mu):
 
 
 def test_stable_cholesky():
-    hey = stable_cholesky(torch.zeros(2, 2))
+    stable_cholesky(torch.zeros(2, 2))
+    with pytest.warns(RuntimeWarning):
+        stable_cholesky(torch.zeros(2, 2), verbose=True)
+    with pytest.raises(RuntimeError):
+        stable_cholesky(torch.zeros(2, 2), jitter=0.0)
