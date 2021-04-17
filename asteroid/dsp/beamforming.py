@@ -193,7 +193,7 @@ def generalized_eigenvalue_decomposition(a, b):
     """Solves the generalized eigenvalue decomposition through Cholesky decomposition.
     Returns eigen values and eigen vectors (ascending order).
     """
-    cholesky = safe_cholesky(b, max_tries=2)
+    cholesky = stable_cholesky(b, max_tries=2)
     inv_cholesky = torch.inverse(cholesky)
     # Compute C matrix L⁻1 A L^-T
     cmat = inv_cholesky @ a @ inv_cholesky.conj().transpose(-1, -2)
@@ -204,7 +204,7 @@ def generalized_eigenvalue_decomposition(a, b):
     return e_val, e_vec
 
 
-def safe_cholesky(input, upper=False, out=None, jitter=1e-6, max_tries=2, verbose=False):
+def stable_cholesky(input, upper=False, out=None, jitter=1e-6, max_tries=2, verbose=False):
     """Compute the Cholesky decomposition of A.
     If A is only p.s.d, add a small jitter to the diagonal.
 
