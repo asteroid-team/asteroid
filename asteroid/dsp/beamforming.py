@@ -1,7 +1,5 @@
 import torch
 from torch import nn
-import warnings
-from functools import wraps
 
 
 class SCM(nn.Module):
@@ -10,7 +8,7 @@ class SCM(nn.Module):
         return compute_scm(x, mask=mask, normalize=normalize)
 
 
-class BeamFormer(nn.Module):
+class Beamformer(nn.Module):
     @staticmethod
     def apply_beamforming_vector(bf_vector: torch.Tensor, mix: torch.Tensor):
         """Apply the beamforming vector to the mixture. Output (batch, freqs, frames).
@@ -22,7 +20,7 @@ class BeamFormer(nn.Module):
         return torch.einsum("...mf,...mft->...ft", bf_vector.conj(), mix)
 
 
-class MvdrBeamformer(BeamFormer):
+class RTFMVDRBeamformer(Beamformer):
     def forward(
         self,
         mix: torch.Tensor,
@@ -42,39 +40,45 @@ class MvdrBeamformer(BeamFormer):
         Returns:
             Filtered mixture. torch.ComplexTensor (batch, freqs, frames)
         """
-        # Get acoustic transfer function (1st PCA of Σss)
+        # TODO: Implement several RTF estimation strategies, and choose one here, or expose all.
+        # Get relative transfer function (1st PCA of Σss)
         e_val, e_vec = torch.symeig(target_scm.permute(0, 3, 1, 2), eigenvectors=True)
-        atf_vect = e_vec[..., -1]  # bfm
-        return self.from_atf_vect(mix=mix, atf_vec=atf_vect.transpose(-1, -2), noise_scm=noise_scm)
+        rtf_vect = e_vec[..., -1]  # bfm
+        return self.from_rtf_vect(mix=mix, rtf_vec=rtf_vect.transpose(-1, -2), noise_scm=noise_scm)
 
-    def from_atf_vect(
+    def from_rtf_vect(
         self,
         mix: torch.Tensor,
-        atf_vec: torch.Tensor,
+        rtf_vec: torch.Tensor,
         noise_scm: torch.Tensor,
     ):
         """Compute and apply MVDR beamformer from the ATF vector and noise SCM matrix.
 
         Args:
             mix (torch.ComplexTensor): shape (batch, mics, freqs, frames)
-            atf_vec (torch.ComplexTensor): (batch, mics, freqs)
+            rtf_vec (torch.ComplexTensor): (batch, mics, freqs)
             noise_scm (torch.ComplexTensor): (batch, mics, mics, freqs)
 
         Returns:
             Filtered mixture. torch.ComplexTensor (batch, freqs, frames)
         """
         noise_scm_t = noise_scm.permute(0, 3, 1, 2)  # -> bfmm
-        atf_vec_t = atf_vec.transpose(-1, -2).unsqueeze(-1)  # -> bfm1
+        rtf_vec_t = rtf_vec.transpose(-1, -2).unsqueeze(-1)  # -> bfm1
 
-        numerator = stable_solve(atf_vec_t, noise_scm_t)  # -> bfm1
+        numerator = stable_solve(rtf_vec_t, noise_scm_t)  # -> bfm1
 
-        denominator = torch.matmul(atf_vec_t.conj().transpose(-1, -2), numerator)  # -> bf11
+        denominator = torch.matmul(rtf_vec_t.conj().transpose(-1, -2), numerator)  # -> bf11
         bf_vect = (numerator / denominator).squeeze(-1).transpose(-1, -2)  # -> bfm1  -> bmf
         output = self.apply_beamforming_vector(bf_vect, mix=mix)  # -> bft
         return output
 
 
-class SdwMwfBeamformer(BeamFormer):
+class SoudenMVDRBeamformer(Beamformer):
+    # TODO(popcornell): fill in the code.
+    pass
+
+
+class SDWMWFBeamformer(Beamformer):
     def __init__(self, mu=1.0):
         super().__init__()
         self.mu = mu
@@ -105,7 +109,7 @@ class SdwMwfBeamformer(BeamFormer):
         return output
 
 
-class GEVBeamformer(BeamFormer):
+class GEVBeamformer(Beamformer):
     def forward(self, mix: torch.Tensor, target_scm: torch.Tensor, noise_scm: torch.Tensor):
         """Compute and apply the GEV beamformer.
 
@@ -262,3 +266,9 @@ def _common_dtype(*args):
     if len(set(all_dtypes)) > 1:
         raise RuntimeError(f"Expected inputs from the same dtype. Received {all_dtypes}.")
     return all_dtypes[0]
+
+
+# Legacy
+BeamFormer = Beamformer
+SdwMwfBeamformer = SDWMWFBeamformer
+MvdrBeamformer = RTFMVDRBeamformer
