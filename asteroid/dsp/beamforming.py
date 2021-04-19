@@ -84,7 +84,11 @@ class SDWMWFBeamformer(Beamformer):
         self.mu = mu
 
     def forward(
-        self, mix: torch.Tensor, target_scm: torch.Tensor, noise_scm: torch.Tensor, ref_mic: int = 0
+        self,
+        mix: torch.Tensor,
+        target_scm: torch.Tensor,
+        noise_scm: torch.Tensor,
+        ref_mic: int = None,
     ):
         """Compute and apply SDW-MWF beamformer.
 
@@ -103,8 +107,13 @@ class SDWMWFBeamformer(Beamformer):
         target_scm_t = target_scm.permute(0, 3, 1, 2)  # -> bfmm
 
         denominator = target_scm_t + self.mu * noise_scm_t
-        bf_vect = stable_solve(target_scm_t, denominator)
-        bf_vect = bf_vect[..., ref_mic].transpose(-1, -2)  # -> bfm1  -> bmf
+        bf_mat = stable_solve(target_scm_t, denominator)
+        batch_channel_idx = get_optimal_reference_channel(
+            bf_mat=bf_mat, target_scm=target_scm_t, noise_scm=noise_scm_t
+        )
+        # bf_vect = bf_vect[..., ref_mic].transpose(-1, -2)  # -> bfmm  -> bmf
+        batch_idx = torch.arange(bf_mat.shape[0], device=bf_mat.device)
+        bf_vect = bf_mat[batch_idx, ..., batch_channel_idx].transpose(-1, -2)  # -> bfmm  -> bmf
         output = self.apply_beamforming_vector(bf_vect, mix=mix)  # -> bft
         return output
 
@@ -164,6 +173,38 @@ def compute_scm(x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = Tr
     if normalize:
         scm /= mask.sum(-1, keepdim=True).transpose(-1, -2)
     return scm
+
+
+def get_optimal_reference_channel(
+    bf_mat: torch.Tensor,
+    target_scm: torch.Tensor,
+    noise_scm: torch.Tensor,
+    eps: float = 1e-6,
+):
+    """Compute the optimal reference channel given the a posteiori SNR, see [1].
+
+    Args:
+        bf_mat: (batch, freq, mics, mics)
+        target_scm (torch.ComplexTensor): (batch, freqs, mics, mics)
+        noise_scm (torch.ComplexTensor): (batch, freqs, mics, mics)
+        eps: value to clip the denominator.
+
+    Returns:
+        torch.
+
+    References
+        Erdogan et al. 2016: "Improved MVDR beamforming using single-channel maskprediction networks"
+            https://www.merl.com/publications/docs/TR2016-072.pdf
+    """
+    den = torch.clamp(
+        torch.einsum("...flm,...fln,...fnm->...m", bf_mat.conj(), noise_scm, bf_mat).real, min=eps
+    )
+    snr_post = (
+        torch.einsum("...flm,...fln,...fnm->...m", bf_mat.conj(), target_scm, bf_mat).real / den
+    )
+    # Raises an exception when np.inf and/or np.NaN was in target_scm or noise_scm
+    assert torch.all(torch.isfinite(snr_post)), snr_post
+    return torch.argmax(snr_post, dim=-1)
 
 
 def condition_scm(x, eps=1e-6, dim1=-2, dim2=-1):
