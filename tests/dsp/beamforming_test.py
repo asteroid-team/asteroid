@@ -57,8 +57,6 @@ def test_mwf(n_mics, mu):
 
 
 def test_stable_cholesky():
-    stable_cholesky(torch.zeros(2, 2))
-    with pytest.warns(RuntimeWarning):
-        stable_cholesky(torch.zeros(2, 2), verbose=True)
-    with pytest.raises(RuntimeError):
-        stable_cholesky(torch.zeros(2, 2), jitter=0.0)
+    a = torch.randn(3, 3)
+    a = torch.mm(a, a.t())  # make symmetric positive-definite
+    stable_cholesky(a)
