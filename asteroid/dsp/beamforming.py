@@ -163,17 +163,17 @@ def compute_scm(x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = Tr
     return scm
 
 
-def condition_scm(x, gamma=1e-6, dim1=-2, dim2=-1):
-    """Condition input SCM with (x + gamma tr(x) I) / (1 + gamma) along `dim1` and `dim2`.
+def condition_scm(x, eps=1e-6, dim1=-2, dim2=-1):
+    """Condition input SCM with (x + eps tr(x) I) / (1 + eps) along `dim1` and `dim2`.
 
     See https://stt.msu.edu/users/mauryaas/Ashwini_JPEN.pdf (2.3).
     """
     # Assume 4d with ...mm
     if dim1 != -2 or dim2 != -1:
         raise NotImplementedError
-    scale = gamma * batch_trace(x, dim1=dim1, dim2=dim2)[..., None, None] / x.shape[dim1]
+    scale = eps * batch_trace(x, dim1=dim1, dim2=dim2)[..., None, None] / x.shape[dim1]
     scaled_eye = torch.eye(x.shape[dim1])[None, None] * scale
-    return (x + scaled_eye) / (1 + gamma)
+    return (x + scaled_eye) / (1 + eps)
 
 
 def batch_trace(x, dim1=-2, dim2=-1):
@@ -191,15 +191,15 @@ def stable_solve(b, a):
     return _stable_solve(b.to(solve_dtype), a.to(solve_dtype)).to(input_dtype)
 
 
-def _stable_solve(b, a, epsilon=1e-6):
+def _stable_solve(b, a, eps=1e-6):
     try:
         return torch.solve(b, a)[0]
     except RuntimeError:
-        a = condition_scm(a, epsilon)
+        a = condition_scm(a, eps)
         return torch.solve(b, a)[0]
 
 
-def stable_cholesky(input, upper=False, out=None, epsilon=1e-6):
+def stable_cholesky(input, upper=False, out=None, eps=1e-6):
     """Compute the Cholesky decomposition of ``input``.
     If ``input`` is only p.s.d, add a small jitter to the diagonal.
 
@@ -207,23 +207,21 @@ def stable_cholesky(input, upper=False, out=None, epsilon=1e-6):
         input (Tensor): The tensor to compute the Cholesky decomposition of
         upper (bool, optional): See torch.cholesky
         out (Tensor, optional): See torch.cholesky
-        epsilon (int): small jitter added to the diagonal if PD.
+        eps (int): small jitter added to the diagonal if PD.
     """
     # Only run it in double
     input_dtype = input.dtype
     solve_dtype = input_dtype
     if input_dtype not in [torch.float64, torch.complex128]:
         solve_dtype = _to_double_map[input_dtype]
-    return _stable_cholesky(input.to(solve_dtype), upper=upper, out=out, epsilon=epsilon).to(
-        input_dtype
-    )
+    return _stable_cholesky(input.to(solve_dtype), upper=upper, out=out, eps=eps).to(input_dtype)
 
 
-def _stable_cholesky(input, upper=False, out=None, epsilon=1e-6):
+def _stable_cholesky(input, upper=False, out=None, eps=1e-6):
     try:
         return torch.cholesky(input, upper=upper, out=out)
     except RuntimeError:
-        input = condition_scm(input, epsilon)
+        input = condition_scm(input, eps)
         return torch.cholesky(input, upper=upper, out=out)
 
 
