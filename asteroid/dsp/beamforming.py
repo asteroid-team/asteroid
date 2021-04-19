@@ -108,8 +108,8 @@ class SDWMWFBeamformer(Beamformer):
 
         denominator = target_scm_t + self.mu * noise_scm_t
         bf_mat = stable_solve(target_scm_t, denominator)
-        batch_mic_idx = get_optimal_reference_mic(
-            bf_mat=bf_mat, target_scm=target_scm_t, noise_scm=noise_scm_t
+        batch_mic_idx = get_reference_mic_idx(
+            ref_mic, bf_mat, target_scm=target_scm_t, noise_scm=noise_scm_t
         )
         # bf_vect = bf_vect[..., ref_mic].transpose(-1, -2)  # -> bfmm  -> bmf
         batch_idx = torch.arange(bf_mat.shape[0], device=bf_mat.device)
@@ -175,13 +175,48 @@ def compute_scm(x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = Tr
     return scm
 
 
+def get_reference_mic_idx(
+    ref_mic, bf_mat: torch.Tensor, target_scm: torch.Tensor = None, noise_scm: torch.Tensor = None
+):
+    """Return the reference channel indices over the batch.
+
+    Args:
+        ref_mic (Optional[Union[int, torch.Tensor]]): The reference channel.
+            If None, the optimal reference mics are computed with :func:`get_optimal_reference_mic`,
+            If None, and either SCM is None, `ref_mic` is set to `0`,
+            If int, select the corresponding reference mic,
+            If torch.Tensor of size `batch`, select independent reference mic of the batch.
+        bf_mat: beamforming matrix of shape (batch, freq, mics, mics).
+        target_scm (torch.ComplexTensor): (batch, freqs, mics, mics).
+        noise_scm (torch.ComplexTensor): (batch, freqs, mics, mics).
+
+    Returns:
+        torch.LongTensor of size ``batch`` to select with the reference channel indices.
+    """
+    if (target_scm is None or noise_scm is None) and ref_mic is None:
+        ref_mic = 0
+    if ref_mic is None:
+        batch_mic_idx = get_optimal_reference_mic(
+            bf_mat=bf_mat, target_scm=target_scm, noise_scm=noise_scm
+        )
+    elif isinstance(ref_mic, int):
+        batch_mic_idx = torch.LongTensor([ref_mic for _ in bf_mat.shape[0]]).to(bf_mat.device)
+    elif isinstance(ref_mic, torch.Tensor):
+        batch_mic_idx = ref_mic
+    else:
+        raise ValueError(
+            f"Unsupported reference microphone format. Support None, int and torch.Tensor, received {type(ref_mic)}"
+        )
+    return batch_mic_idx
+
+
 def get_optimal_reference_mic(
     bf_mat: torch.Tensor,
     target_scm: torch.Tensor,
     noise_scm: torch.Tensor,
     eps: float = 1e-6,
 ):
-    """Compute the optimal reference mic given the a posteiori SNR, see [1].
+    """Compute the optimal reference mic given the a posteriori SNR, see [1].
 
     Args:
         bf_mat: (batch, freq, mics, mics)
