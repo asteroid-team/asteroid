@@ -66,7 +66,6 @@ class MvdrBeamformer(BeamFormer):
         noise_scm_t = noise_scm.permute(0, 3, 1, 2)  # -> bfmm
         atf_vec_t = atf_vec.transpose(-1, -2).unsqueeze(-1)  # -> bfm1
 
-        # numerator, _ = torch.solve(atf_vec_t, noise_scm_t)  # -> bfm1
         numerator = stable_solve(atf_vec_t, noise_scm_t)  # -> bfm1
 
         denominator = torch.matmul(atf_vec_t.conj().transpose(-1, -2), numerator)  # -> bf11
@@ -100,7 +99,7 @@ class SdwMwfBeamformer(BeamFormer):
         target_scm_t = target_scm.permute(0, 3, 1, 2)  # -> bfmm
 
         denominator = target_scm_t + self.mu * noise_scm_t
-        bf_vect, _ = stable_solve(target_scm_t, denominator)
+        bf_vect = stable_solve(target_scm_t, denominator)
         bf_vect = bf_vect[..., ref_mic].transpose(-1, -2)  # -> bfm1  -> bmf
         output = self.apply_beamforming_vector(bf_vect, mix=mix)  # -> bft
         return output
