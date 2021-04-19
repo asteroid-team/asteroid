@@ -108,12 +108,12 @@ class SDWMWFBeamformer(Beamformer):
 
         denominator = target_scm_t + self.mu * noise_scm_t
         bf_mat = stable_solve(target_scm_t, denominator)
-        batch_channel_idx = get_optimal_reference_channel(
+        batch_mic_idx = get_optimal_reference_mic(
             bf_mat=bf_mat, target_scm=target_scm_t, noise_scm=noise_scm_t
         )
         # bf_vect = bf_vect[..., ref_mic].transpose(-1, -2)  # -> bfmm  -> bmf
         batch_idx = torch.arange(bf_mat.shape[0], device=bf_mat.device)
-        bf_vect = bf_mat[batch_idx, ..., batch_channel_idx].transpose(-1, -2)  # -> bfmm  -> bmf
+        bf_vect = bf_mat[batch_idx, ..., batch_mic_idx].transpose(-1, -2)  # -> bfmm  -> bmf
         output = self.apply_beamforming_vector(bf_vect, mix=mix)  # -> bft
         return output
 
@@ -175,13 +175,13 @@ def compute_scm(x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = Tr
     return scm
 
 
-def get_optimal_reference_channel(
+def get_optimal_reference_mic(
     bf_mat: torch.Tensor,
     target_scm: torch.Tensor,
     noise_scm: torch.Tensor,
     eps: float = 1e-6,
 ):
-    """Compute the optimal reference channel given the a posteiori SNR, see [1].
+    """Compute the optimal reference mic given the a posteiori SNR, see [1].
 
     Args:
         bf_mat: (batch, freq, mics, mics)
@@ -202,7 +202,6 @@ def get_optimal_reference_channel(
     snr_post = (
         torch.einsum("...flm,...fln,...fnm->...m", bf_mat.conj(), target_scm, bf_mat).real / den
     )
-    # Raises an exception when np.inf and/or np.NaN was in target_scm or noise_scm
     assert torch.all(torch.isfinite(snr_post)), snr_post
     return torch.argmax(snr_post, dim=-1)
 
