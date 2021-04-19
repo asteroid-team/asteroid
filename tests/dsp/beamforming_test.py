@@ -57,4 +57,6 @@ def test_mwf(n_mics, mu):
 
 
 def test_stable_cholesky():
-    stable_cholesky(torch.randn(2, 2))
+    a = torch.randn(3, 3)
+    a = torch.mm(a, a.t())  # make symmetric positive-definite
+    stable_cholesky(a)
