@@ -57,4 +57,4 @@ def test_mwf(n_mics, mu):
 
 
 def test_stable_cholesky():
-    stable_cholesky(torch.zeros(2, 2))
+    stable_cholesky(torch.randn(2, 2))
