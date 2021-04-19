@@ -163,56 +163,6 @@ def compute_scm(x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = Tr
     return scm
 
 
-_to_double_map = {
-    torch.float16: torch.float64,
-    torch.float32: torch.float64,
-    torch.complex32: torch.complex128,
-    torch.complex64: torch.complex128,
-}
-
-
-def double_wrap(func):
-    def tensor_cast_or_nothing(dtype, *args, **kwargs):
-        return (a if not isinstance(a, torch.Tensor) else a.to(dtype) for a in args)
-
-    def input_dtype(*args, **kwargs):
-        """Raises if dtype are different, or return the common dtype."""
-        all_dtype = list(
-            map(
-                lambda x: x.dtype,
-                filter(lambda x: isinstance(x, torch.Tensor), args + tuple(kwargs.values())),
-            )
-        )
-        if len(set(all_dtype)) > 1:
-            raise RuntimeError(f"Expected inputs from the same dtype. Received {all_dtype}.")
-        return all_dtype[0]
-
-    @wraps(func)
-    def wrapped(*args, **kwargs):
-        inp_dtype = input_dtype(*args, **kwargs)
-        if input_dtype not in [torch.float64, torch.complex128]:
-            func_dtype = _to_double_map[inp_dtype]
-            return func().to(input_dtype)
-        return func(*args, **kwargs)
-
-    return wrapped
-
-
-def stable_solve(b, a):
-    """Return torch.solve in matrix `a` is non-singular, else regularize `a` and return torch.solve."""
-    if a.dtype != b.dtype:
-        raise RuntimeError("Expected ")
-    input_dtype = a.dtype
-    if input_dtype not in [torch.float64, torch.complex128]:
-        solve_dtype = _to_double_map[input_dtype]
-        return stable_solve(b.to(solve_dtype), a.to(solve_dtype)).to(input_dtype)
-    try:
-        return torch.solve(b, a)[0]
-    except RuntimeError:
-        a = condition_scm(a, 1e-6)
-        return torch.solve(b, a)[0]
-
-
 def condition_scm(x, gamma=1e-6, dim1=-2, dim2=-1):
     """Condition input SCM with (x + gamma tr(x) I) / (1 + gamma) along `dim1` and `dim2`.
 
@@ -231,11 +181,67 @@ def batch_trace(x, dim1=-2, dim2=-1):
     return torch.diagonal(x, dim1=dim1, dim2=dim2).sum(-1)
 
 
+def stable_solve(b, a):
+    """Return torch.solve if `a` is non-singular, else regularize `a` and return torch.solve."""
+    # Only run it in double
+    input_dtype = _common_dtype(b, a)
+    solve_dtype = input_dtype
+    if input_dtype not in [torch.float64, torch.complex128]:
+        solve_dtype = _to_double_map[input_dtype]
+    return _stable_solve(b.to(solve_dtype), a.to(solve_dtype)).to(input_dtype)
+
+
+def _stable_solve(b, a, epsilon=1e-6):
+    try:
+        return torch.solve(b, a)[0]
+    except RuntimeError:
+        a = condition_scm(a, epsilon)
+        return torch.solve(b, a)[0]
+
+
+def stable_cholesky(input, upper=False, out=None, epsilon=1e-6):
+    """Compute the Cholesky decomposition of ``input``.
+    If ``input`` is only p.s.d, add a small jitter to the diagonal.
+
+    Args:
+        input (Tensor): The tensor to compute the Cholesky decomposition of
+        upper (bool, optional): See torch.cholesky
+        out (Tensor, optional): See torch.cholesky
+        epsilon (int): small jitter added to the diagonal if PD.
+    """
+    # Only run it in double
+    input_dtype = input.dtype
+    solve_dtype = input_dtype
+    if input_dtype not in [torch.float64, torch.complex128]:
+        solve_dtype = _to_double_map[input_dtype]
+    return _stable_cholesky(input.to(solve_dtype), upper=upper, out=out, epsilon=epsilon).to(
+        input_dtype
+    )
+
+
+def _stable_cholesky(input, upper=False, out=None, epsilon=1e-6):
+    try:
+        return torch.cholesky(input, upper=upper, out=out)
+    except RuntimeError:
+        input = condition_scm(input, epsilon)
+        return torch.cholesky(input, upper=upper, out=out)
+
+
 def generalized_eigenvalue_decomposition(a, b):
     """Solves the generalized eigenvalue decomposition through Cholesky decomposition.
     Returns eigen values and eigen vectors (ascending order).
     """
-    cholesky = stable_cholesky(b, max_tries=2)
+    # Only run it in double
+    input_dtype = _common_dtype(a, b)
+    solve_dtype = input_dtype
+    if input_dtype not in [torch.float64, torch.complex128]:
+        solve_dtype = _to_double_map[input_dtype]
+    e_val, e_vec = _generalized_eigenvalue_decomposition(a.to(solve_dtype), b.to(solve_dtype))
+    return e_val.to(input_dtype), e_vec.to(input_dtype)
+
+
+def _generalized_eigenvalue_decomposition(a, b):
+    cholesky = stable_cholesky(b)
     inv_cholesky = torch.inverse(cholesky)
     # Compute C matrix L⁻1 A L^-T
     cmat = inv_cholesky @ a @ inv_cholesky.conj().transpose(-1, -2)
@@ -246,40 +252,16 @@ def generalized_eigenvalue_decomposition(a, b):
     return e_val, e_vec
 
 
-def stable_cholesky(input, upper=False, out=None, jitter=1e-6, max_tries=2, verbose=False):
-    """Compute the Cholesky decomposition of A.
-    If A is only p.s.d, add a small jitter to the diagonal.
+_to_double_map = {
+    torch.float16: torch.float64,
+    torch.float32: torch.float64,
+    torch.complex32: torch.complex128,
+    torch.complex64: torch.complex128,
+}
 
-    Args:
-        input (Tensor): The tensor to compute the Cholesky decomposition of
-        upper (bool, optional): See torch.cholesky
-        out (Tensor, optional): See torch.cholesky
-        jitter (float): The jitter to add to the diagonal of A in case A is only p.s.d.
-        max_tries (int, optional): Number of attempts (with increasing jitter) before raising an error.
-        verbose (bool): Whether to raise a warning if the jitter had to be added.
 
-    Adapted from GPytorch https://github.com/cornellius-gp/gpytorch/blob/master/gpytorch/utils/cholesky.py#L12
-    """
-    try:
-        return torch.cholesky(input, upper=upper, out=out)
-    except RuntimeError as e:
-        clone = input.clone()
-        jitter_prev = 0
-        for i in range(max_tries):
-            jitter_new = jitter * (10 ** i)
-            clone.diagonal(dim1=-2, dim2=-1).add_(jitter_new - jitter_prev)
-            jitter_prev = jitter_new
-            try:
-                out = torch.cholesky(clone, upper=upper, out=out)
-                if verbose is True:
-                    warnings.warn(
-                        f"Had to add a jitter of {jitter_new:.1e} to compute the cholesky decomposition.",
-                        RuntimeWarning,
-                    )
-                return out
-            except RuntimeError:
-                continue
-        raise RuntimeError(
-            f"Matrix not positive definite after repeatedly adding jitter up to {jitter_new:.1e}. "
-            f"Original error on first attempt: {e}"
-        )
+def _common_dtype(*args):
+    all_dtypes = [a.dtype for a in args]
+    if len(set(all_dtypes)) > 1:
+        raise RuntimeError(f"Expected inputs from the same dtype. Received {all_dtypes}.")
+    return all_dtypes[0]
