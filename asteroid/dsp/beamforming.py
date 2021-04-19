@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 import warnings
+from functools import wraps
 
 
 class SCM(nn.Module):
@@ -162,8 +163,49 @@ def compute_scm(x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = Tr
     return scm
 
 
+_to_double_map = {
+    torch.float16: torch.float64,
+    torch.float32: torch.float64,
+    torch.complex32: torch.complex128,
+    torch.complex64: torch.complex128,
+}
+
+
+def double_wrap(func):
+    def tensor_cast_or_nothing(dtype, *args, **kwargs):
+        return (a if not isinstance(a, torch.Tensor) else a.to(dtype) for a in args)
+
+    def input_dtype(*args, **kwargs):
+        """Raises if dtype are different, or return the common dtype."""
+        all_dtype = list(
+            map(
+                lambda x: x.dtype,
+                filter(lambda x: isinstance(x, torch.Tensor), args + tuple(kwargs.values())),
+            )
+        )
+        if len(set(all_dtype)) > 1:
+            raise RuntimeError(f"Expected inputs from the same dtype. Received {all_dtype}.")
+        return all_dtype[0]
+
+    @wraps(func)
+    def wrapped(*args, **kwargs):
+        inp_dtype = input_dtype(*args, **kwargs)
+        if input_dtype not in [torch.float64, torch.complex128]:
+            func_dtype = _to_double_map[inp_dtype]
+            return func().to(input_dtype)
+        return func(*args, **kwargs)
+
+    return wrapped
+
+
 def stable_solve(b, a):
     """Return torch.solve in matrix `a` is non-singular, else regularize `a` and return torch.solve."""
+    if a.dtype != b.dtype:
+        raise RuntimeError("Expected ")
+    input_dtype = a.dtype
+    if input_dtype not in [torch.float64, torch.complex128]:
+        solve_dtype = _to_double_map[input_dtype]
+        return stable_solve(b.to(solve_dtype), a.to(solve_dtype)).to(input_dtype)
     try:
         return torch.solve(b, a)[0]
     except RuntimeError:
