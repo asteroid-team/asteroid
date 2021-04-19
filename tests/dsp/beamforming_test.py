@@ -3,10 +3,10 @@ import pytest
 from asteroid_filterbanks import make_enc_dec, transforms as tr
 
 from asteroid.dsp.beamforming import (
-    BeamFormer,
+    Beamformer,
     SCM,
-    MvdrBeamformer,
-    SdwMwfBeamformer,
+    RTFMVDRBeamformer,
+    SDWMWFBeamformer,
     GEVBeamformer,
     stable_cholesky,
 )
@@ -20,7 +20,7 @@ istft = lambda x: _istft(tr.from_torch_complex(x))
 
 
 @pytest.mark.skipif(not torch_has_complex_support, "No complex support ")
-def _default_beamformer_test(beamformer: BeamFormer, n_mics=4, *args, **kwargs):
+def _default_beamformer_test(beamformer: Beamformer, n_mics=4, *args, **kwargs):
     scm = SCM()
 
     speech = torch.randn(1, n_mics, 16000 * 6)
@@ -46,14 +46,14 @@ def test_gev(n_mics):
 @pytest.mark.skipif(not torch_has_complex_support, reason="No complex support ")
 @pytest.mark.parametrize("n_mics", [2, 3, 4])
 def test_mvdr(n_mics):
-    _default_beamformer_test(MvdrBeamformer(), n_mics=n_mics)
+    _default_beamformer_test(RTFMVDRBeamformer(), n_mics=n_mics)
 
 
 @pytest.mark.skipif(not torch_has_complex_support, reason="No complex support ")
 @pytest.mark.parametrize("n_mics", [2, 3, 4])
 @pytest.mark.parametrize("mu", [1.0, 2.0, 0])
 def test_mwf(n_mics, mu):
-    _default_beamformer_test(SdwMwfBeamformer(mu=mu), n_mics=n_mics)
+    _default_beamformer_test(SDWMWFBeamformer(mu=mu), n_mics=n_mics)
 
 
 def test_stable_cholesky():
