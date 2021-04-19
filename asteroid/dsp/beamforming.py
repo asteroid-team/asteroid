@@ -100,7 +100,7 @@ class SdwMwfBeamformer(BeamFormer):
         target_scm_t = target_scm.permute(0, 3, 1, 2)  # -> bfmm
 
         denominator = target_scm_t + self.mu * noise_scm_t
-        bf_vect, _ = torch.solve(target_scm_t, denominator)
+        bf_vect, _ = stable_solve(target_scm_t, denominator)
         bf_vect = bf_vect[..., ref_mic].transpose(-1, -2)  # -> bfm1  -> bmf
         output = self.apply_beamforming_vector(bf_vect, mix=mix)  # -> bft
         return output
