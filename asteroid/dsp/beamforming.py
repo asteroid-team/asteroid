@@ -1,5 +1,7 @@
+from typing import Union
 import torch
 from torch import nn
+from torch.nn import functional as F
 
 
 class SCM(nn.Module):
@@ -18,6 +20,53 @@ class Beamformer(nn.Module):
             mix: shape (batch, mics, freqs, frames).
         """
         return torch.einsum("...mf,...mft->...ft", bf_vector.conj(), mix)
+
+    @staticmethod
+    def get_reference_mic_vects(
+        ref_mic,
+        bf_mat: torch.Tensor,
+        target_scm: torch.Tensor = None,
+        noise_scm: torch.Tensor = None,
+    ):
+        """Return the reference channel indices over the batch.
+
+        Args:
+            ref_mic (Optional[Union[int, torch.Tensor]]): The reference channel.
+                If torch.Tensor (ndim>1), return it, it is the reference mic vector,
+                If torch.LongTensor of size `batch`, select independent reference mic of the batch.
+                If int, select the corresponding reference mic,
+                If None, the optimal reference mics are computed with :func:`get_optimal_reference_mic`,
+                If None, and either SCM is None, `ref_mic` is set to `0`,
+            bf_mat: beamforming matrix of shape (batch, freq, mics, mics).
+            target_scm (torch.ComplexTensor): (batch, freqs, mics, mics).
+            noise_scm (torch.ComplexTensor): (batch, freqs, mics, mics).
+
+        Returns:
+            torch.LongTensor of size ``batch`` to select with the reference channel indices.
+        """
+        # If ref_mic already has the expected shape.
+        if isinstance(ref_mic, torch.Tensor) and ref_mic.ndim > 1:
+            return ref_mic
+
+        if (target_scm is None or noise_scm is None) and ref_mic is None:
+            ref_mic = 0
+        if ref_mic is None:
+            batch_mic_idx = get_optimal_reference_mic(
+                bf_mat=bf_mat, target_scm=target_scm, noise_scm=noise_scm
+            )
+        elif isinstance(ref_mic, int):
+            batch_mic_idx = torch.LongTensor([ref_mic] * bf_mat.shape[0]).to(bf_mat.device)
+        elif isinstance(ref_mic, torch.Tensor):  # Must be 1D
+            batch_mic_idx = ref_mic
+        else:
+            raise ValueError(
+                f"Unsupported reference microphone format. Support None, int and 1D "
+                f"torch.LongTensor and torch.Tensor, received {type(ref_mic)}."
+            )
+        # Output (batch, 1, n_mics, 1)
+        # import ipdb; ipdb.set_trace()
+        ref_mic_vects = F.one_hot(batch_mic_idx, num_classes=bf_mat.shape[-1])[:, None, :, None]
+        return ref_mic_vects.to(bf_mat.dtype).to(bf_mat.device)
 
 
 class RTFMVDRBeamformer(Beamformer):
@@ -88,7 +137,7 @@ class SDWMWFBeamformer(Beamformer):
         mix: torch.Tensor,
         target_scm: torch.Tensor,
         noise_scm: torch.Tensor,
-        ref_mic: int = None,
+        ref_mic: Union[torch.Tensor, torch.LongTensor, int] = None,
     ):
         """Compute and apply SDW-MWF beamformer.
 
@@ -106,14 +155,16 @@ class SDWMWFBeamformer(Beamformer):
         noise_scm_t = noise_scm.permute(0, 3, 1, 2)  # -> bfmm
         target_scm_t = target_scm.permute(0, 3, 1, 2)  # -> bfmm
 
+        # import ipdb; ipdb.set_trace()
+
         denominator = target_scm_t + self.mu * noise_scm_t
         bf_mat = stable_solve(target_scm_t, denominator)
-        batch_mic_idx = get_reference_mic_idx(
+        # Reference mic selection and application
+        batch_mic_vects = self.get_reference_mic_vects(
             ref_mic, bf_mat, target_scm=target_scm_t, noise_scm=noise_scm_t
-        )
-        # bf_vect = bf_vect[..., ref_mic].transpose(-1, -2)  # -> bfmm  -> bmf
-        batch_idx = torch.arange(bf_mat.shape[0], device=bf_mat.device)
-        bf_vect = bf_mat[batch_idx, ..., batch_mic_idx].transpose(-1, -2)  # -> bfmm  -> bmf
+        )  # b1m1
+        bf_vect = torch.matmul(bf_mat, batch_mic_vects)  # -> bfmm  -> bfm1
+        bf_vect = bf_vect.squeeze(-1).transpose(-1, -2)  # bfm1 -> bmf
         output = self.apply_beamforming_vector(bf_vect, mix=mix)  # -> bft
         return output
 
@@ -173,41 +224,6 @@ def compute_scm(x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = Tr
     if normalize:
         scm /= mask.sum(-1, keepdim=True).transpose(-1, -2)
     return scm
-
-
-def get_reference_mic_idx(
-    ref_mic, bf_mat: torch.Tensor, target_scm: torch.Tensor = None, noise_scm: torch.Tensor = None
-):
-    """Return the reference channel indices over the batch.
-
-    Args:
-        ref_mic (Optional[Union[int, torch.Tensor]]): The reference channel.
-            If None, the optimal reference mics are computed with :func:`get_optimal_reference_mic`,
-            If None, and either SCM is None, `ref_mic` is set to `0`,
-            If int, select the corresponding reference mic,
-            If torch.Tensor of size `batch`, select independent reference mic of the batch.
-        bf_mat: beamforming matrix of shape (batch, freq, mics, mics).
-        target_scm (torch.ComplexTensor): (batch, freqs, mics, mics).
-        noise_scm (torch.ComplexTensor): (batch, freqs, mics, mics).
-
-    Returns:
-        torch.LongTensor of size ``batch`` to select with the reference channel indices.
-    """
-    if (target_scm is None or noise_scm is None) and ref_mic is None:
-        ref_mic = 0
-    if ref_mic is None:
-        batch_mic_idx = get_optimal_reference_mic(
-            bf_mat=bf_mat, target_scm=target_scm, noise_scm=noise_scm
-        )
-    elif isinstance(ref_mic, int):
-        batch_mic_idx = torch.LongTensor([ref_mic for _ in bf_mat.shape[0]]).to(bf_mat.device)
-    elif isinstance(ref_mic, torch.Tensor):
-        batch_mic_idx = ref_mic
-    else:
-        raise ValueError(
-            f"Unsupported reference microphone format. Support None, int and torch.Tensor, received {type(ref_mic)}"
-        )
-    return batch_mic_idx
 
 
 def get_optimal_reference_mic(
