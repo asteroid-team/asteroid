@@ -139,7 +139,7 @@ class SDWMWFBeamformer(Beamformer):
         noise_scm: torch.Tensor,
         ref_mic: Union[torch.Tensor, torch.LongTensor, int] = None,
     ):
-        """Compute and apply SDW-MWF beamformer.
+        r"""Compute and apply SDW-MWF beamformer.
 
         :math:`\mathbf{w} =  \displaystyle (\Sigma_{ss} + \mu \Sigma_{nn})^{-1} \Sigma_{ss}`.
 
@@ -171,7 +171,7 @@ class SDWMWFBeamformer(Beamformer):
 
 class GEVBeamformer(Beamformer):
     def forward(self, mix: torch.Tensor, target_scm: torch.Tensor, noise_scm: torch.Tensor):
-        """Compute and apply the GEV beamformer.
+        r"""Compute and apply the GEV beamformer.
 
         :math:`\mathbf{w} =  \displaystyle MaxEig\{ \Sigma_{nn}^{-1}\Sigma_{ss} \}`, where
         MaxEig extracts the eigenvector corresponding to the maximum eigenvalue (using the GEV decomposition).
