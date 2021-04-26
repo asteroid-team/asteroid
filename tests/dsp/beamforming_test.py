@@ -6,6 +6,7 @@ from asteroid.dsp.beamforming import (
     Beamformer,
     SCM,
     RTFMVDRBeamformer,
+    SoudenMVDRBeamformer,
     SDWMWFBeamformer,
     GEVBeamformer,
     stable_cholesky,
@@ -20,11 +21,11 @@ istft = lambda x: _istft(tr.from_torch_complex(x))
 
 
 @pytest.mark.skipif(not torch_has_complex_support, "No complex support ")
-def _default_beamformer_test(beamformer: Beamformer, n_mics=4, *args, **kwargs):
+def _default_beamformer_test(beamformer: Beamformer, batch_size=2, n_mics=4, **forward_kwargs):
     scm = SCM()
 
-    speech = torch.randn(1, n_mics, 16000 * 6)
-    noise = torch.randn(1, n_mics, 16000 * 6)
+    speech = torch.randn(batch_size, n_mics, 16000 * 6)
+    noise = torch.randn(batch_size, n_mics, 16000 * 6)
     mix = speech + noise
     # GeV Beamforming
     mix_stft = stft(mix)
@@ -33,27 +34,53 @@ def _default_beamformer_test(beamformer: Beamformer, n_mics=4, *args, **kwargs):
     sigma_ss = scm(speech_stft)
     sigma_nn = scm(noise_stft)
 
-    Ys_gev = beamformer.forward(mix=mix_stft, target_scm=sigma_ss, noise_scm=sigma_nn)
+    Ys_gev = beamformer.forward(
+        mix=mix_stft, target_scm=sigma_ss, noise_scm=sigma_nn, **forward_kwargs
+    )
     ys_gev = istft(Ys_gev)
 
 
 @pytest.mark.skipif(not torch_has_complex_support, reason="No complex support ")
 @pytest.mark.parametrize("n_mics", [2, 3, 4])
-def test_gev(n_mics):
-    _default_beamformer_test(GEVBeamformer(), n_mics=n_mics)
+@pytest.mark.parametrize("batch_size", [1, 2])
+def test_gev(n_mics, batch_size):
+    _default_beamformer_test(GEVBeamformer(), n_mics=n_mics, batch_size=batch_size)
 
 
 @pytest.mark.skipif(not torch_has_complex_support, reason="No complex support ")
 @pytest.mark.parametrize("n_mics", [2, 3, 4])
-def test_mvdr(n_mics):
-    _default_beamformer_test(RTFMVDRBeamformer(), n_mics=n_mics)
+@pytest.mark.parametrize("batch_size", [1, 2])
+def test_mvdr(n_mics, batch_size):
+    _default_beamformer_test(RTFMVDRBeamformer(), n_mics=n_mics, batch_size=batch_size)
+    _default_beamformer_test(SoudenMVDRBeamformer(), n_mics=n_mics, batch_size=batch_size)
 
 
 @pytest.mark.skipif(not torch_has_complex_support, reason="No complex support ")
 @pytest.mark.parametrize("n_mics", [2, 3, 4])
 @pytest.mark.parametrize("mu", [1.0, 2.0, 0])
-def test_mwf(n_mics, mu):
-    _default_beamformer_test(SDWMWFBeamformer(mu=mu), n_mics=n_mics)
+@pytest.mark.parametrize("batch_size", [1, 2])
+def test_mwf(n_mics, mu, batch_size):
+    _default_beamformer_test(SDWMWFBeamformer(mu=mu), n_mics=n_mics, batch_size=batch_size)
+
+
+@pytest.mark.skipif(not torch_has_complex_support, reason="No complex support ")
+@pytest.mark.parametrize("n_mics", [2, 3, 4])
+@pytest.mark.parametrize("batch_size", [1, 2])
+def test_mwf_indices(n_mics, batch_size):
+    _default_beamformer_test(SDWMWFBeamformer(), n_mics=n_mics, batch_size=batch_size, ref_mic=0)
+    _default_beamformer_test(SDWMWFBeamformer(), n_mics=n_mics, batch_size=batch_size, ref_mic=None)
+    _default_beamformer_test(
+        SDWMWFBeamformer(),
+        n_mics=n_mics,
+        batch_size=batch_size,
+        ref_mic=torch.randint(0, n_mics, size=(batch_size,)),
+    )
+    _default_beamformer_test(
+        SDWMWFBeamformer(),
+        n_mics=n_mics,
+        batch_size=batch_size,
+        ref_mic=torch.randn(batch_size, 1, n_mics, 1, dtype=torch.complex64),
+    )
 
 
 def test_stable_cholesky():
