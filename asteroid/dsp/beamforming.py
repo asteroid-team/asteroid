@@ -266,7 +266,7 @@ def condition_scm(x, eps=1e-6, dim1=-2, dim2=-1):
     if dim1 != -2 or dim2 != -1:
         raise NotImplementedError
     scale = eps * batch_trace(x, dim1=dim1, dim2=dim2)[..., None, None] / x.shape[dim1]
-    scaled_eye = torch.eye(x.shape[dim1])[None, None] * scale
+    scaled_eye = torch.eye(x.shape[dim1], device=x.device)[None, None] * scale
     return (x + scaled_eye) / (1 + eps)
 
 
