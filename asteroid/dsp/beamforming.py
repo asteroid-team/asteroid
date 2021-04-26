@@ -123,8 +123,48 @@ class RTFMVDRBeamformer(Beamformer):
 
 
 class SoudenMVDRBeamformer(Beamformer):
-    # TODO(popcornell): fill in the code.
-    pass
+    def forward(
+        self,
+        mix: torch.Tensor,
+        target_scm: torch.Tensor,
+        noise_scm: torch.Tensor,
+        ref_mic: int = 0,
+        eps=1e-8,
+    ):
+
+        r"""Compute and apply MVDR beamformer from the speech and noise SCM matrices.
+        This class uses Souden's formulation [1]
+
+        :math:`\mathbf{w} =  \displaystyle \frac{\Sigma_{nn}^{-1} \Sigma_{tt}}{
+        Tr\left( \Sigma_{nn}^{-1} \Sigma_{tt} \right) }\mathbf{u}` where :math:`\mathbf{a}` is the steering vector.
+
+        ----
+        References:
+            [1] Souden, M., Benesty, J., & Affes, S. (2009). On optimal frequency-domain multichannel linear filtering for noise reduction. IEEE Transactions on audio, speech, and language processing, 18(2), 260-276.
+
+        Args:
+            mix (torch.ComplexTensor): shape (batch, mics, freqs, frames)
+            target_scm (torch.ComplexTensor): (batch, mics, mics, freqs)
+            noise_scm (torch.ComplexTensor): (batch, mics, mics, freqs)
+
+        Returns:
+            Filtered mixture. torch.ComplexTensor (batch, freqs, frames)
+        """
+
+        noise_scm = noise_scm.permute(0, 3, 1, 2)  # -> bfmm
+        target_scm = target_scm.permute(0, 3, 1, 2)  # -> bfmm
+
+        numerator = stable_solve(target_scm, noise_scm)
+        bf_mat = numerator / (batch_trace(numerator)[..., None, None] + eps)  # bfmm
+
+        # allow for a-posteriori SNR selection
+        batch_mic_vects = self.get_reference_mic_vects(
+            ref_mic, bf_mat, target_scm=target_scm, noise_scm=noise_scm
+        )
+        bf_vect = torch.matmul(bf_mat, batch_mic_vects)  # -> bfmm  -> bfm1
+        bf_vect = bf_vect.squeeze(-1).transpose(-1, -2)  # bfm1 -> bmf
+        output = self.apply_beamforming_vector(bf_vect, mix=mix)  # -> bft
+        return output
 
 
 class SDWMWFBeamformer(Beamformer):
