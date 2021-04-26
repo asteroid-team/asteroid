@@ -135,8 +135,8 @@ class SoudenMVDRBeamformer(Beamformer):
         r"""Compute and apply MVDR beamformer from the speech and noise SCM matrices.
         This class uses Souden's formulation [1]
 
-        :math:`\mathbf{w} =  \displaystyle \frac{\Sigma_{nn}^{-1} \Sigma_{tt}}{
-        Tr\left( \Sigma_{nn}^{-1} \Sigma_{tt} \right) }\mathbf{u}` where :math:`\mathbf{a}` is the steering vector.
+        :math:`\mathbf{w} =  \displaystyle \frac{\Sigma_{nn}^{-1} \Sigma_{ss}}{
+        Tr\left( \Sigma_{nn}^{-1} \Sigma_{ss} \right) }\mathbf{u}` where :math:`\mathbf{a}` is the steering vector.
 
         ----
         References:

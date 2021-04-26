@@ -6,6 +6,7 @@ from asteroid.dsp.beamforming import (
     Beamformer,
     SCM,
     RTFMVDRBeamformer,
+    SoudenMVDRBeamformer,
     SDWMWFBeamformer,
     GEVBeamformer,
     stable_cholesky,
@@ -51,6 +52,7 @@ def test_gev(n_mics, batch_size):
 @pytest.mark.parametrize("batch_size", [1, 2])
 def test_mvdr(n_mics, batch_size):
     _default_beamformer_test(RTFMVDRBeamformer(), n_mics=n_mics, batch_size=batch_size)
+    _default_beamformer_test(SoudenMVDRBeamformer(), n_mics=n_mics, batch_size=batch_size)
 
 
 @pytest.mark.skipif(not torch_has_complex_support, reason="No complex support ")
