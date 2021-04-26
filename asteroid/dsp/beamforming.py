@@ -79,7 +79,8 @@ class RTFMVDRBeamformer(Beamformer):
         r"""Compute and apply MVDR beamformer from the speech and noise SCM matrices.
 
         :math:`\mathbf{w} =  \displaystyle \frac{\Sigma_{nn}^{-1} \mathbf{a}}{
-        \mathbf{a}^H \Sigma_{nn}^{-1} \mathbf{a}}` where :math:`\mathbf{a}` is the ATF estimated from the target SCM.
+        \mathbf{a}^H \Sigma_{nn}^{-1} \mathbf{a}}` where :math:`\mathbf{a}` is the
+        ATF estimated from the target SCM.
 
         Args:
             mix (torch.ComplexTensor): shape (batch, mics, freqs, frames)
@@ -128,29 +129,31 @@ class SoudenMVDRBeamformer(Beamformer):
         mix: torch.Tensor,
         target_scm: torch.Tensor,
         noise_scm: torch.Tensor,
-        ref_mic: int = 0,
+        ref_mic: Union[torch.Tensor, torch.LongTensor, int] = 0,
         eps=1e-8,
     ):
-
         r"""Compute and apply MVDR beamformer from the speech and noise SCM matrices.
-        This class uses Souden's formulation [1]
+        This class uses Souden's formulation [1].
 
         :math:`\mathbf{w} =  \displaystyle \frac{\Sigma_{nn}^{-1} \Sigma_{ss}}{
-        Tr\left( \Sigma_{nn}^{-1} \Sigma_{ss} \right) }\mathbf{u}` where :math:`\mathbf{a}` is the steering vector.
+        Tr\left( \Sigma_{nn}^{-1} \Sigma_{ss} \right) }\mathbf{u}` where :math:`\mathbf{a}`
+        is the steering vector.
 
-        ----
-        References:
-            [1] Souden, M., Benesty, J., & Affes, S. (2009). On optimal frequency-domain multichannel linear filtering for noise reduction. IEEE Transactions on audio, speech, and language processing, 18(2), 260-276.
 
         Args:
             mix (torch.ComplexTensor): shape (batch, mics, freqs, frames)
             target_scm (torch.ComplexTensor): (batch, mics, mics, freqs)
             noise_scm (torch.ComplexTensor): (batch, mics, mics, freqs)
+            ref_mic (int): reference microphone.
+            eps: numerical stabilizer.
 
         Returns:
             Filtered mixture. torch.ComplexTensor (batch, freqs, frames)
-        """
 
+        References
+            [1] Souden, M., Benesty, J., & Affes, S. (2009). On optimal frequency-domain multichannel
+            linear filtering for noise reduction. IEEE Transactions on audio, speech, and language processing, 18(2), 260-276.
+        """
         noise_scm = noise_scm.permute(0, 3, 1, 2)  # -> bfmm
         target_scm = target_scm.permute(0, 3, 1, 2)  # -> bfmm
 
@@ -214,7 +217,8 @@ class GEVBeamformer(Beamformer):
         r"""Compute and apply the GEV beamformer.
 
         :math:`\mathbf{w} =  \displaystyle MaxEig\{ \Sigma_{nn}^{-1}\Sigma_{ss} \}`, where
-        MaxEig extracts the eigenvector corresponding to the maximum eigenvalue (using the GEV decomposition).
+        MaxEig extracts the eigenvector corresponding to the maximum eigenvalue
+        (using the GEV decomposition).
 
         Args:
             mix: shape (batch, mics, freqs, frames)
