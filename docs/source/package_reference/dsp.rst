@@ -8,11 +8,13 @@ DSP Modules
 
 :hidden:`Beamforming`
 ~~~~~~~~~~~~~~~~~~~~~~~~
-.. autoclass:: asteroid.dsp.beamforming.MvdrBeamformer
-.. autoclass:: asteroid.dsp.beamforming.SdwMwfBeamformer
-.. autoclass:: asteroid.dsp.beamforming.GEVBeamformer
-.. autoclass:: asteroid.dsp.beamforming.SCM
 
+.. autoclass:: asteroid.dsp.beamforming.Beamformer
+.. autoclass:: asteroid.dsp.beamforming.SDWMWFBeamformer
+.. autoclass:: asteroid.dsp.beamforming.GEVBeamformer
+.. autoclass:: asteroid.dsp.beamforming.RTFMVDRBeamformer
+.. autoclass:: asteroid.dsp.beamforming.SoudenMVDRBeamformer
+.. autoclass:: asteroid.dsp.beamforming.SCM
 
 :hidden:`LambdaOverlapAdd`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -11,6 +11,8 @@ class SCM(nn.Module):
 
 
 class Beamformer(nn.Module):
+    """Base class for beamforming modules."""
+
     @staticmethod
     def apply_beamforming_vector(bf_vector: torch.Tensor, mix: torch.Tensor):
         """Apply the beamforming vector to the mixture. Output (batch, freqs, frames).
