@@ -24,6 +24,7 @@ MODELS_URLS_HASHTABLE = {
     "popcornell/DPRNNTasNet_WHAM_enhancesingle": "https://zenodo.org/record/3998647/files/model.pth?download=1",
     "tmirzaev-dotcom/ConvTasNet_Libri3Mix_sepnoisy": "https://zenodo.org/record/4020529/files/model.pth?download=1",
     "mhu-coder/ConvTasNet_Libri1Mix_enhsingle": "https://zenodo.org/record/4301955/files/model.pth?download=1",
+    "r-sawata/XUMX_MUSDB18_music_separation": "https://zenodo.org/record/4704231/files/pretrained_xumx.pth?download=1",
 }
 
 SR_HASHTABLE = {k: 8000.0 if not "DeMask" in k else 16000.0 for k in MODELS_URLS_HASHTABLE}
