@@ -345,6 +345,7 @@ class _STFT(nn.Module):
             normalized=False,
             onesided=True,
             pad_mode="reflect",
+            return_complex=False,
         )
 
         # reshape back to channel dimension
