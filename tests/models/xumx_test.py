@@ -19,9 +19,8 @@ sources = [
 @pytest.mark.parametrize(
     "data",
     (
-        torch.rand(4, 2, 44100, requires_grad=False),
+        torch.rand(3, 2, 44100, requires_grad=False),
         torch.rand(1, 2, 2 * 44100, requires_grad=False),
-        torch.rand(8, 2, 100000, requires_grad=False),
     ),
 )
 def test_forward(nb_channels, sources, bidirectional, spec_power, return_time_signals, data):
@@ -30,7 +29,8 @@ def test_forward(nb_channels, sources, bidirectional, spec_power, return_time_si
         input_mean=None,
         input_scale=None,
         nb_channels=nb_channels,
-        hidden_size=256,
+        hidden_size=128,
+        nb_layers=2,
         in_chan=4096,
         n_hop=1024,
         sources=sources,
