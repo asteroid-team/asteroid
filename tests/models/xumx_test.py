@@ -46,7 +46,7 @@ def test_forward(nb_channels, sources, bidirectional, spec_power, return_time_si
 
 
 def test_get_model_args():
-    sources_tmp = {"src_0": "vocals"}
+    sources_tmp = ["vocals"]
     x_umx = XUMX(sources=sources_tmp, window_length=4096)
     expected = {
         "window_length": 4096,
@@ -74,4 +74,11 @@ def test_model_loading():
     model_conf = model.serialize()
 
     new_model = XUMX.from_pretrained(model_conf)
-    assert model.in_chan == new_model.in_chan
+
+    random_input = torch.rand(3, 2, 44100, requires_grad=False)
+    model = model.eval()
+    new_model = new_model.eval()
+    with torch.no_grad():
+        output1 = model(random_input)
+        output2 = new_model(random_input)
+    assert torch.allclose(output1[0], output2[0])
