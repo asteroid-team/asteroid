@@ -39,8 +39,8 @@ setup(
         # From requirements/torchhub.txt
         "numpy>=1.16.4",
         "scipy>=1.1.0",
-        "torch>=1.3.0",
-        "asteroid-filterbanks>=0.2.4,<0.4.0",
+        "torch>=1.8.0",
+        "asteroid-filterbanks>=0.4.0",
         "SoundFile>=0.10.2",
         "huggingface_hub>=0.0.2",
         # From requirements/install.txt
