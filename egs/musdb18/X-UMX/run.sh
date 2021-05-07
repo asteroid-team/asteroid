@@ -49,6 +49,7 @@ eval_use_gpu=-1
 
 if [[ $stage -le  0 ]]; then
   echo "Stage 0: Downloading MUSDB18 into $musdb18_dir"
+  pip install -r requirements.txt
   wget -c --tries=0 --read-timeout=20 https://zenodo.org/record/1117372/files/musdb18.zip -P $musdb18_dir
   mkdir -p $musdb18_dir/logs
   unzip $musdb18_dir/musdb18.zip -d $musdb18_dir >> $musdb18_dir/logs/unzip_musdb18.log

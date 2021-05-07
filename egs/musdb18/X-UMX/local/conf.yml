@@ -16,7 +16,7 @@ optim:
   weight_decay: 0.00001
 # Data config
 data:
-  train_dir: /data
+  train_dir: ./data
   output: x-umx_outputs
   sample_rate: 44100
   num_workers: 4
