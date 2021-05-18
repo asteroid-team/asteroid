@@ -1,6 +1,7 @@
 from asteroid_filterbanks import make_enc_dec
 from ..masknn import TDConvNet
 from .base_models import BaseEncoderMaskerDecoder
+import warnings
 
 
 class ConvTasNet(BaseEncoderMaskerDecoder):
@@ -84,8 +85,9 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
             )
         if causal and norm_type != "cgLN":
             norm_type = "cgLN"
-            print(
-                "In causal configuration cumulative layer normalization"
+            warnings.warn(
+                "In causal configuration cumulative layer normalization (cgLN)"
+                "or channel-wise Layer Normalization (chanLN)  "
                 f"must be used. Changing f{norm_type} to cgLN"
             )
         # Update in_chan
