@@ -83,7 +83,7 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
                 "be the same. Received "
                 f"{n_feats} and {in_chan}"
             )
-        if causal and norm_type != "cgLN":
+        if causal and norm_type not in ['cgLN', 'cLN']:
             norm_type = "cgLN"
             warnings.warn(
                 "In causal configuration cumulative layer normalization (cgLN)"
