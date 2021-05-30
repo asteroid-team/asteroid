@@ -31,9 +31,8 @@ optim:
   weight_decay: 0.00000
 # Data config
 data:
-  dataset: "../../../dataset"
-  train_dir: "{}speakers/wav8k/min/tr"
-  valid_dir: "{}speakers/wav8k/min/cv"
+  train_dir: "../../../dataset/{}speakers/wav8k/min/tr"
+  valid_dir: "../../../dataset/{}speakers/wav8k/min/cv"
   task: sep_clean
   sample_rate: 8000
   seglen: 4.0

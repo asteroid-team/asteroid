@@ -25,7 +25,7 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --loss_alpha 0.1 --id 0,1
 
 # General
-stage=2  # Controls from which stage to start
+stage=4  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=$CUDA_VISIBLE_DEVICES
@@ -34,17 +34,17 @@ id=$CUDA_VISIBLE_DEVICES
 #data_dir=data  # Local data directory (No disk space needed)
 sample_rate=8000
 mode=min
-n_src=2  # 2 or 3
+n_srcs=(2 3 4 5)
 
 # Training
-batch_size=32
-num_workers=8
-optimizer=rmsprop
-lr=0.0001
+batch_size=2
+num_workers=2
+optimizer=adam
+lr=0.001
 weight_decay=0.0
 epochs=200
-loss_alpha=1.0  # DC loss weight : 1.0 => DC, <1.0 => Chimera
-take_log=true  # Whether to input log mag spec to the NN
+lambda=0.05
+resume_from=
 
 # Evaluation
 eval_use_gpu=1
@@ -52,8 +52,8 @@ eval_use_gpu=1
 . utils/parse_options.sh
 
 sr_string=$(($sample_rate/1000))
-suffix=${n_src}speakers/wav${sr_string}k/$mode
-dumpdir=data/$suffix  # directory to put generated json file
+suffix={}speakers/wav${sr_string}k/$mode
+dumpdir=../../../dataset/$suffix  # directory to put generated json file
 
 train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
@@ -68,16 +68,14 @@ if [[ $stage -le  1 ]]; then
 	echo "Stage 1 : Downloading wsj0-mix mixing scripts"
 	# Link + WHAM is ok for 2 source.
 	# wget https://www.merl.com/demos/deep-clustering/create-speaker-mixtures.zip -O ./local/
-	wget https://github.com/JunzheJosephZhu/MultiDecoder-DPRNN/blob/master/create-speaker-mixtures-2345.zip -0 ./local/
-	unzip ./local/create-speaker-mixtures.zip -d ./local/create-speaker-mixtures
-	mv ./local/create-speaker-mixtures.zip ./local/create-speaker-mixtures
+	wget https://github.com/JunzheJosephZhu/MultiDecoder-DPRNN/raw/master/create-speaker-mixtures-2345.zip -P ./local
+	unzip ./local/create-speaker-mixtures-2345.zip -d ./local/create-speaker-mixtures-2345
+	mv ./local/create-speaker-mixtures-2345.zip ./local/create-speaker-mixtures-2345
 
 	echo "You need to generate the wsj0-mix dataset using the official MATLAB
-			  scripts (already downloaded into ./local/create-speaker-mixtures).
+			  scripts (already downloaded into ./local/create-speaker-mixtures-2345).
 			  If you don't have Matlab, you can use Octavve and replace
 				all mkdir(...) in create_wav_2speakers.m with system(['mkdir -p '...]).
-				Note: for 2-speaker separation, the sep_clean task from WHAM is the same as
-				wsj0-2mix and the mixing scripts are in Python.
 				Specify wsj0mix_wav_dir and start from stage 2 when the mixtures have been generated.
 				Exiting now."
 	exit 1
@@ -86,7 +84,7 @@ fi
 if [[ $stage -le  2 ]]; then
 	# Make json directories with min/max modes and sampling rates
 	echo "Stage 2: Generating json files including wav path and duration"
-	for tmp_nsrc in 2 3 4 5; do
+	for tmp_nsrc in "${n_srcs[@]}"; do
 		tmp_dumpdir=$wsj0mix_wav_dir/${tmp_nsrc}speakers/wav8k/min
 		echo "Generating json files in $tmp_dumpdir"
 		[[ ! -d $tmp_dumpdir ]] && mkdir -p $tmp_dumpdir
@@ -100,36 +98,37 @@ fi
 # Generate a random ID for the run if no tag is specified
 uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
-	tag=${n_src}sep_${sr_string}k${mode}_${uuid}
+	tag=$( IFS=$''; echo "${n_srcs[*]}" )sep_${sr_string}k${mode}_${uuid}
 fi
-expdir=exp/train_chimera_${tag}
+expdir=exp/tmp_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
+  echo "If you want to change n_srcs, please change the config file"
+  echo "visible cuda devices are $( IFS=$''; echo "${id[*]}" )"
   mkdir -p logs
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
 		--train_dir $train_dir \
 		--valid_dir $valid_dir \
-		--n_src $n_src \
 		--sample_rate $sample_rate \
 		--optimizer $optimizer \
 		--lr $lr \
 		--weight_decay $weight_decay \
 		--epochs $epochs \
 		--batch_size $batch_size \
-		--loss_alpha $loss_alpha \
-		--take_log $take_log \
+		--lambda $lambda \
 		--num_workers $num_workers \
 		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
+		--resume_from $resume_from
 	cp logs/train_${tag}.log $expdir/train.log
 fi
 
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4 : Evaluation"
+	echo "If you want to change n_srcs, please change the config file"
 	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
-	  	--n_src $n_src \
 		--test_dir $test_dir \
 		--use_gpu $eval_use_gpu \
 		--exp_dir ${expdir} | tee logs/eval_${tag}.log

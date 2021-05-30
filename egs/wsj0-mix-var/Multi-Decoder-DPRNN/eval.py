@@ -32,8 +32,8 @@ from wsj0_mix_variable import Wsj0mixVariable, _collate_fn
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--task",
+    default="sep_clean",
     type=str,
-    required=True,
     help="One of `enh_single`, `enh_both`, " "`sep_clean` or `sep_noisy`",
 )
 parser.add_argument(
@@ -50,13 +50,14 @@ parser.add_argument(
 
 def main(conf):
     best_model_path = os.path.join(conf["exp_dir"], "best_model.pth")
-    sample_rate = conf["train_conf"]["data"]["sample_rate"]
     if not os.path.exists(best_model_path):
         # make pth from checkpoint
-        model = load_best_model(conf["train_conf"], conf["exp_dir"], sample_rate=sample_rate)
+        model = load_best_model(
+            conf["train_conf"], conf["exp_dir"], sample_rate=conf["sample_rate"]
+        )
         torch.save(model.state_dict(), best_model_path)
     else:
-        model, _ = make_model_and_optimizer(conf["train_conf"], sample_rate=sample_rate)
+        model, _ = make_model_and_optimizer(conf["train_conf"], sample_rate=conf["sample_rate"])
         model.eval()
         model.load_state_dict(torch.load(best_model_path))
     # Handle device placement
@@ -64,7 +65,7 @@ def main(conf):
         model.cuda()
     model_device = next(model.parameters()).device
     test_dirs = [
-        os.path.join(conf["train_conf"]["data"]["dataset"], conf["test_dir"].format(n_src))
+        conf["test_dir"].format(n_src)
         for n_src in conf["train_conf"]["masknet"]["n_srcs"]
     ]
     test_set = Wsj0mixVariable(
@@ -82,7 +83,7 @@ def main(conf):
     save_idx = random.sample(range(len(test_set)), conf["n_save_ex"])
     series_list = []
     torch.no_grad().__enter__()
-    for idx in tqdm(range(100)):
+    for idx in tqdm(range(len(test_set))):
         # Forward the network on the mixture.
         mix, sources = [
             torch.Tensor(x) for x in tensors_to_device(test_set[idx], device=model_device)
@@ -123,7 +124,7 @@ def main(conf):
 
     # Print and save summary metrics
     final_results = {}
-    for metric_name in ["P-Si-SNR"]:
+    for metric_name in ["P-Si-SNR", "Accuracy"]:
         final_results[metric_name] = all_metrics_df[metric_name].mean()
     print("Overall metrics :")
     pprint(final_results)

@@ -20,19 +20,16 @@ from model import make_model_and_optimizer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best validation model")
-<<<<<<< HEAD
 parser.add_argument("--resume_from", default=None, help="Model to resume from")
-=======
->>>>>>> 33764410bf79f63345275f3c180e568c4782c62c
 
 
 def main(conf):
     train_dirs = [
-        os.path.join(conf["data"]["dataset"], conf["data"]["train_dir"].format(n_src))
+        conf["data"]["train_dir"].format(n_src)
         for n_src in conf["masknet"]["n_srcs"]
     ]
     valid_dirs = [
-        os.path.join(conf["data"]["dataset"], conf["data"]["valid_dir"].format(n_src))
+        conf["data"]["valid_dir"].format(n_src)
         for n_src in conf["masknet"]["n_srcs"]
     ]
     train_set = Wsj0mixVariable(
