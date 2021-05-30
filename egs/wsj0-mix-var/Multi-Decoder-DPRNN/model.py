@@ -30,7 +30,7 @@ from asteroid.utils.torch_utils import pad_x_to_y, script_if_tracing, jitable_sh
 from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
 
 
-def make_model_and_optimizer(conf):
+def make_model_and_optimizer(conf, sample_rate):
     """Function to define the model and optimizer for a config dictionary.
     Args:
         conf: Dictionary containing the output of hierachical argparse.
@@ -39,7 +39,7 @@ def make_model_and_optimizer(conf):
     The main goal of this function is to make reloading for resuming
     and evaluation very simple.
     """
-    model = MultiDecoderDPRNN(**conf["masknet"], **conf["filterbank"])
+    model = MultiDecoderDPRNN(**conf["masknet"], **conf["filterbank"], sample_rate=sample_rate)
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     return model, optimizer
 
@@ -97,8 +97,9 @@ class MultiDecoderDPRNN(BaseModel):
         stride=8,
         encoder_activation=None,
         use_mulcat=False,
+        sample_rate=8000,
     ):
-        super().__init__()
+        super().__init__(sample_rate=sample_rate)
         self.encoder_activation = encoder_activation
         self.enc_activation = activations.get(encoder_activation or "linear")()
         hop_size = hop_size if hop_size is not None else chunk_size // 2
@@ -453,7 +454,7 @@ class Decoder_Select(nn.Module):
         return output_wavs, selector_output
 
 
-def load_best_model(train_conf, exp_dir):
+def load_best_model(train_conf, exp_dir, sample_rate=8000):
     """Load best model after training.
 
     Args:
@@ -465,7 +466,7 @@ def load_best_model(train_conf, exp_dir):
         nn.Module the best (or last) pretrained model according to the val_loss.
     """
     # Create the model from recipe-local function
-    model, _ = make_model_and_optimizer(train_conf)
+    model, _ = make_model_and_optimizer(train_conf, sample_rate=sample_rate)
     try:
         # Last best model summary
         with open(os.path.join(exp_dir, "best_k_models.json"), "r") as f:

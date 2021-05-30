@@ -20,6 +20,7 @@ from model import make_model_and_optimizer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best validation model")
+parser.add_argument("--resume_from", default=None, help="Model to resume from")
 
 
 def main(conf):
@@ -61,7 +62,7 @@ def main(conf):
         drop_last=True,
         collate_fn=_collate_fn,
     )
-    model, optimizer = make_model_and_optimizer(conf)
+    model, optimizer = make_model_and_optimizer(conf, sample_rate=conf["data"]["sample_rate"])
     scheduler = []
     if conf["training"]["half_lr"]:
         scheduler.append(ReduceLROnPlateau(optimizer=optimizer, factor=0.5, patience=5))
@@ -88,12 +89,12 @@ def main(conf):
     callbacks = []
     checkpoint_dir = os.path.join(exp_dir, "checkpoints/")
     checkpoint = ModelCheckpoint(
-        checkpoint_dir,
+        dirpath=checkpoint_dir,
+        filename="{epoch}-{step}",
         monitor="avg_sdr",
         mode="max",
         save_top_k=5,
         verbose=True,
-        filename="{epoch}-{step}",
     )
     callbacks.append(checkpoint)
     if conf["training"]["early_stop"]:
@@ -112,7 +113,7 @@ def main(conf):
         distributed_backend=distributed_backend,
         limit_train_batches=1.0,  # Useful for fast experiment
         gradient_clip_val=200,
-        resume_from_checkpoint="exp/tmp/checkpoints-v1.ckpt",
+        resume_from_checkpoint=conf["main_args"]["resume_from"],
     )
     trainer.fit(system)
 

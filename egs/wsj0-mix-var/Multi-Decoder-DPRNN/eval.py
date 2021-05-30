@@ -50,12 +50,13 @@ parser.add_argument(
 
 def main(conf):
     best_model_path = os.path.join(conf["exp_dir"], "best_model.pth")
+    sample_rate = conf["train_conf"]["data"]["sample_rate"]
     if not os.path.exists(best_model_path):
         # make pth from checkpoint
-        model = load_best_model(conf["train_conf"], conf["exp_dir"])
+        model = load_best_model(conf["train_conf"], conf["exp_dir"], sample_rate=sample_rate)
         torch.save(model.state_dict(), best_model_path)
     else:
-        model, _ = make_model_and_optimizer(conf["train_conf"])
+        model, _ = make_model_and_optimizer(conf["train_conf"], sample_rate=sample_rate)
         model.eval()
         model.load_state_dict(torch.load(best_model_path))
     # Handle device placement
