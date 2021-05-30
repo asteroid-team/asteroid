@@ -24,14 +24,8 @@ parser.add_argument("--resume_from", default=None, help="Model to resume from")
 
 
 def main(conf):
-    train_dirs = [
-        conf["data"]["train_dir"].format(n_src)
-        for n_src in conf["masknet"]["n_srcs"]
-    ]
-    valid_dirs = [
-        conf["data"]["valid_dir"].format(n_src)
-        for n_src in conf["masknet"]["n_srcs"]
-    ]
+    train_dirs = [conf["data"]["train_dir"].format(n_src) for n_src in conf["masknet"]["n_srcs"]]
+    valid_dirs = [conf["data"]["valid_dir"].format(n_src) for n_src in conf["masknet"]["n_srcs"]]
     train_set = Wsj0mixVariable(
         json_dirs=train_dirs,
         n_srcs=conf["masknet"]["n_srcs"],

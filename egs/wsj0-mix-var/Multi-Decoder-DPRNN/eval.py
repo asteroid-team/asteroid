@@ -65,8 +65,7 @@ def main(conf):
         model.cuda()
     model_device = next(model.parameters()).device
     test_dirs = [
-        conf["test_dir"].format(n_src)
-        for n_src in conf["train_conf"]["masknet"]["n_srcs"]
+        conf["test_dir"].format(n_src) for n_src in conf["train_conf"]["masknet"]["n_srcs"]
     ]
     test_set = Wsj0mixVariable(
         json_dirs=test_dirs,
