@@ -25,10 +25,12 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --loss_alpha 0.1 --id 0,1
 
 # General
-stage=4  # Controls from which stage to start
+stage=3  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
-# You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=$CUDA_VISIBLE_DEVICES
+# You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES). To do so, uncomment the line below.
+# id=(1 2 3 4)
+
 
 # Data
 #data_dir=data  # Local data directory (No disk space needed)
@@ -107,7 +109,7 @@ echo "Results from the following experiment will be stored in $expdir"
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
   echo "If you want to change n_srcs, please change the config file"
-  echo "visible cuda devices are $( IFS=$''; echo "${id[*]}" )"
+  echo "visible cuda devices are ${id[*]}"
   mkdir -p logs
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \
 		--train_dir $train_dir \
