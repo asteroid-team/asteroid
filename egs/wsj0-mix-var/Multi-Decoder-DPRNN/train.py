@@ -88,7 +88,12 @@ def main(conf):
     callbacks = []
     checkpoint_dir = os.path.join(exp_dir, "checkpoints/")
     checkpoint = ModelCheckpoint(
-        checkpoint_dir, monitor="avg_sdr", mode="max", save_top_k=5, verbose=True
+        checkpoint_dir,
+        monitor="avg_sdr",
+        mode="max",
+        save_top_k=5,
+        verbose=True,
+        filename="{epoch}-{step}",
     )
     callbacks.append(checkpoint)
     if conf["training"]["early_stop"]:
@@ -103,10 +108,11 @@ def main(conf):
         max_epochs=conf["training"]["epochs"],
         callbacks=callbacks,
         default_root_dir=exp_dir,
-        gpus=[0, 2, 3],
+        gpus=gpus,
         distributed_backend=distributed_backend,
         limit_train_batches=1.0,  # Useful for fast experiment
         gradient_clip_val=200,
+        resume_from_checkpoint="exp/tmp/checkpoints-v1.ckpt",
     )
     trainer.fit(system)
 
