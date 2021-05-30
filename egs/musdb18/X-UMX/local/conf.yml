@@ -1,0 +1,44 @@
+# Training config
+training:
+  epochs: 1000
+  batch_size: 14
+  loss_combine_sources: yes
+  loss_use_multidomain: yes
+  mix_coef: 10.0
+  val_dur: 80.0
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  patience: 1000
+  lr_decay_patience: 80
+  lr_decay_gamma: 0.3
+  weight_decay: 0.00001
+# Data config
+data:
+  train_dir: ./data
+  output: x-umx_outputs
+  sample_rate: 44100
+  num_workers: 4
+  seed: 42
+  seq_dur: 6.0
+  samples_per_track: 64
+  source_augmentations:
+    - gain
+    - channelswap
+  sources:
+    - bass
+    - drums
+    - vocals
+    - other
+# Network config
+model:
+  pretrained: null
+  bidirectional: yes
+  window_length: 4096
+  in_chan: 4096
+  nhop: 1024
+  hidden_size: 512
+  bandwidth: 16000
+  nb_channels: 2
+  spec_power: 1

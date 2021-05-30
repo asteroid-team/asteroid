@@ -2,8 +2,8 @@
 # Note that Asteroid itself is not required to be installed.
 numpy>=1.16.4
 scipy>=1.1.0
-torch>=1.3.0
-asteroid-filterbanks>=0.2.4
+torch>=1.8.0
+asteroid-filterbanks>=0.4.0
 requests
 filelock
 SoundFile>=0.10.2

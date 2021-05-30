@@ -1,10 +1,9 @@
 ## Pretrained models
-Asteroid provides pretrained models through the
-[Asteroid community](https://zenodo.org/communities/asteroid-models) in Zenodo.
-Have a look at the Zenodo page to choose which model you want to use.
+Asteroid provides pretrained models through [Hugging Face's Model Hub](https://huggingface.co/models?filter=asteroid).
+Have a look at this page to choose which model you want to use.
 
-Enjoy having pretrained models? **Please share your models** if you train some,
-we made it simple with the `asteroid-upload` CLI, check the next sections.
+Enjoy having pretrained models? **Please share your models** if you train some :pray:
+It's really simple with the Hub, check the next sections.
 
 ### Using them
 Loading a pretrained model is super simple!
@@ -12,8 +11,6 @@ Loading a pretrained model is super simple!
 from asteroid.models import ConvTasNet
 model = ConvTasNet.from_pretrained('mpariente/ConvTasNet_WHAM!_sepclean')
 ```
-Use the [search page](https://zenodo.org/communities/asteroid-models/search)
-if you want to narrow your search.
 
 You can also load it with Hub
 ```python
@@ -27,22 +24,19 @@ The cache directory is either the value in the `$ASTEROID_CACHE` environment var
 or `~/.cache/torch/asteroid`.
 
 ### Share your models
-At the end of each sharing-enabled recipe, all the necessary infos are gathered into a file, the only thing
-that's left to do is to run
-```bash
-asteroid-upload exp/your_exp_dir/publish_dir --uploader "Name Here"
-```
-Ok, not really. First you need to register to [Zenodo](https://zenodo.org/) (Sign in with GitHub: ok),
-[create a token](https://zenodo.org/account/settings/applications/tokens/new/) and use it with
-the `--token` option of the CLI, or by setting the `ACCESS_TOKEN` environment variable.
-If you plan to upload more models (and you should :innocent:), you can fill in your infos in
-`uploader_info.yml` at the root, like this.
-```yaml
-uploader: Manuel Pariente
-affiliation: INRIA
-git_username: mpariente
-token: TOKEN_HERE
-```
+At the end of each sharing-enabled recipe, all the necessary infos are gathered into a file,
+the only thing that's left to is to add it to the Model Hub.
+After creating an account ([here](https://huggingface.co/join)), you can
+- Add a new model [here](https://huggingface.co/new).
+  with a name like `{model_name}_{dataset_name}_{task}_{sampling_rate}`.
+- Clone the repo (`git clone the_URL_youre_at`), cd into it.
+- Copy the `model_card_template.md` and fill in the missing information.
+- Move the pretrained model in the folder, rename it `pytorch.bin`.
+- Register files and commit `git add . && git commit -m "Model release: v1"`.
+- And push :tada: `git push` :tada:
+- Thank you! :pray:
+
+You can have a look at [the docs](https://huggingface.co/docs) for more details!
 
 ### Note about licenses
 All Asteroid's pretrained models are shared under the
@@ -50,4 +44,5 @@ All Asteroid's pretrained models are shared under the
 license. This means that models are released under the same license as the original
 training data. **If any non-commercial data is used during training (wsj0, WHAM's noises etc..), the
 models are non-commercial use only.**
-This is indicated in the bottom of the corresponding Zenodo page (ex: [here](https://zenodo.org/record/3903795#collapseTwo)).
+This is indicated in the bottom of the model page
+(ex: [here on the bottom](https://huggingface.co/mpariente/ConvTasNet_WHAM_sepclean)).

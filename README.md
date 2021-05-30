@@ -7,7 +7,7 @@
 [![Build Status](https://github.com/asteroid-team/asteroid/workflows/CI/badge.svg)](https://github.com/asteroid-team/asteroid/actions?query=workflow%3ACI+branch%3Amaster+event%3Apush)
 [![codecov][codecov-badge]][codecov]
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Documentation Status](https://img.shields.io/badge/docs-0.4.4-blue)](https://asteroid.readthedocs.io/en/v0.4.4/)
+[![Documentation Status](https://img.shields.io/badge/docs-0.4.5-blue)](https://asteroid.readthedocs.io/en/v0.4.5/)
 [![Latest Docs Status](https://github.com/asteroid-team/asteroid/workflows/Latest%20docs/badge.svg)](https://asteroid-team.github.io/asteroid/)
 
 

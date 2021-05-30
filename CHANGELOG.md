@@ -12,6 +12,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 
+## [0.5.0] - 2021-07-05
+
+### Breaking
+- [src&tests] Remove all deprecated code (#474)
+- [all] Drop support for torch<1.8.0 (#476)
+
+### Added
+- [src] Beamforming: Souden MVDR and optimal channel selection (#484)
+- [src&egs] X-UMX Official baseline for Music Demixing Challenge (#490)
+
+### Changed
+- [src] Compute linalg beamforming ops in double (#482)
+- [src] Improve Beamforming naming and add TODOs (#483)
+- [src] Beamforming: enable forcing float linalg ops (#485)
+- [docs] Update instructions for pretrained model sharing (#489)
+- [install] Bump lightning version under 1.3.0 (#493)
+
+### Fixed
+- [nb] Fix shape in 00_GettingStarted.ipynb (#478)
+- [src] Stabilize GEV beamformer (#479)
+- [src] Beamforming: fix doc references
+
+
+## [0.4.5] - 2021-04-09
+
+- [src] Fix padding in DCUNet ConvTranspose2d (#466)
+- [src&tests] Causal TDConvNet and ConvTasNet (#465)
+- [tests] Fix test from #465 (#467)
+- [docs] Fix wrong doclinks (#469)
+- [docs] Fix docs (links and errors) (#470)
+- [src&tests] Add beamforming modules :tada: (#468)
+
 ## [0.4.2] - 2021-02-18
 
 ### Breaking

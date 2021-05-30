@@ -5,7 +5,7 @@ import numpy as np
 import soundfile as sf
 import asteroid
 from asteroid import models
-from asteroid.filterbanks import make_enc_dec
+from asteroid_filterbanks import make_enc_dec
 from asteroid.dsp import LambdaOverlapAdd
 from asteroid.models.fasnet import FasNetTAC
 from asteroid.separate import separate
@@ -33,8 +33,8 @@ def test_set_sample_rate_raises_warning():
         model.sample_rate = 16000.0
 
 
-def test_no_sample_rate_raises_warning():
-    with pytest.warns(VisibleDeprecationWarning):
+def test_no_sample_rate_raises():
+    with pytest.raises(TypeError):
         BaseModel()
 
 

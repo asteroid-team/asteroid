@@ -10,7 +10,6 @@ from . import norms, activations
 from .base import BaseDCUMaskNet
 from .norms import GlobLN
 from ..utils import has_arg
-from ..utils.deprecation_utils import VisibleDeprecationWarning
 from ._dcunet_architectures import DCUNET_ARCHITECTURES
 from ._local import _DilatedConvNorm, _NormAct, _ConvNormAct, _ConvNorm
 from ..utils.torch_utils import script_if_tracing, pad_x_to_y

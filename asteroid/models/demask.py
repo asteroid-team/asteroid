@@ -4,7 +4,6 @@ from asteroid_filterbanks import make_enc_dec
 from asteroid_filterbanks.transforms import mag, magreim
 from ..masknn import norms, activations
 from ..utils.torch_utils import pad_x_to_y
-from ..utils.deprecation_utils import VisibleDeprecationWarning
 import warnings
 
 
@@ -53,14 +52,6 @@ class DeMask(BaseEncoderMaskerDecoder):
         sample_rate=16000,
         **fb_kwargs,
     ):
-        fb_type = fb_kwargs.pop("fb_type", None)
-        if fb_type:
-            warnings.warn(
-                "Using `fb_type` keyword argument is deprecated and "
-                "will be removed in v0.4.0. Use `fb_name` instead.",
-                VisibleDeprecationWarning,
-            )
-            fb_name = fb_type
         encoder, decoder = make_enc_dec(
             fb_name,
             kernel_size=kernel_size,

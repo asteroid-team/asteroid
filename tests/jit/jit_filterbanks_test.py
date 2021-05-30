@@ -1,7 +1,7 @@
 import torch
 import pytest
 from torch.testing import assert_allclose
-from asteroid.filterbanks import make_enc_dec
+from asteroid_filterbanks import make_enc_dec
 from asteroid.models.base_models import BaseEncoderMaskerDecoder
 
 

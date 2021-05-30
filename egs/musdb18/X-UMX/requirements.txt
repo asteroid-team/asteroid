@@ -1,0 +1,4 @@
+scikit-learn>=0.22
+musdb>=0.4.0
+museval>=0.4.0
+norbert>=0.2.1
