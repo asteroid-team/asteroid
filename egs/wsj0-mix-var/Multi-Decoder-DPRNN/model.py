@@ -454,7 +454,7 @@ class Decoder_Select(nn.Module):
         return output_wavs, selector_output
 
 
-def load_best_model(train_conf, exp_dir, sample_rate=8000):
+def load_best_model(train_conf, exp_dir, sample_rate):
     """Load best model after training.
 
     Args:
