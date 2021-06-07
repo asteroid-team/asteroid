@@ -25,7 +25,7 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --loss_alpha 0.1 --id 0,1
 
 # General
-stage=3  # Controls from which stage to start
+stage=2  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 id=$CUDA_VISIBLE_DEVICES
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES). To do so, uncomment the line below.
@@ -55,7 +55,7 @@ eval_use_gpu=1
 
 sr_string=$(($sample_rate/1000))
 suffix={}speakers/wav${sr_string}k/$mode
-dumpdir=../../../dataset/$suffix  # directory to put generated json file
+dumpdir=data/$suffix  # directory to put generated json file
 
 train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
@@ -108,7 +108,6 @@ echo "Results from the following experiment will be stored in $expdir"
 
 if [[ $stage -le 3 ]]; then
   echo "Stage 3: Training"
-  echo "If you want to change n_srcs, please change the config file"
   echo "visible cuda devices are ${id[*]}"
   mkdir -p logs
   CUDA_VISIBLE_DEVICES=$id $python_path train.py \

@@ -1,4 +1,3 @@
-import os
 import argparse
 import json
 import torch
@@ -156,6 +155,12 @@ class VarSpkrSystem(System):
 
 
 class WeightedPITLoss(nn.Module):
+    """
+    This loss has two components. One is the standard PIT loss, with Si-SDR summed(not mean, but sum) over each source
+    under the best matching permutation. The other component is the classification loss, which is cross entropy for the
+    speaker number classification head network.
+    """
+
     def __init__(self, n_srcs, lamb=0.05):
         super().__init__()
         self.n_src2idx = {n_src: i for i, n_src in enumerate(n_srcs)}
