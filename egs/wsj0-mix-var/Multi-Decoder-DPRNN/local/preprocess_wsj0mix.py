@@ -44,5 +44,4 @@ if __name__ == "__main__":
         "--out_dir", type=str, default=None, help="Directory path to put output files"
     )
     args = parser.parse_args()
-    print(args)
     preprocess(args)
