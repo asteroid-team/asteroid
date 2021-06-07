@@ -84,11 +84,11 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
                 f"{n_feats} and {in_chan}"
             )
         if causal and norm_type not in ["cgLN", "cLN"]:
-            norm_type = "cgLN"
+            norm_type = "cLN"
             warnings.warn(
                 "In causal configuration cumulative layer normalization (cgLN)"
-                "or channel-wise Layer Normalization (chanLN)  "
-                f"must be used. Changing f{norm_type} to cgLN"
+                "or channel-wise layer normalization (chanLN)  "
+                f"must be used. Changing {norm_type} to cLN"
             )
         # Update in_chan
         masker = TDConvNet(
