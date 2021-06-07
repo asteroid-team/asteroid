@@ -32,7 +32,7 @@ from wsj0_mix_variable import Wsj0mixVariable, _collate_fn
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--task",
-    default="sep_clean",
+    default="sep_count",
     type=str,
     help="One of `enh_single`, `enh_both`, " "`sep_clean` or `sep_noisy`",
 )

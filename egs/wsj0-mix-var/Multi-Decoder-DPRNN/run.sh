@@ -25,7 +25,7 @@ python_path=python
 # ./run.sh --stage 3 --tag my_tag --loss_alpha 0.1 --id 0,1
 
 # General
-stage=2  # Controls from which stage to start
+stage=4  # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 id=$CUDA_VISIBLE_DEVICES
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES). To do so, uncomment the line below.
