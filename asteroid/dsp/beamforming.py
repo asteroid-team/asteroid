@@ -375,7 +375,7 @@ def generalized_eigenvalue_decomposition(a, b):
     if input_dtype not in [torch.float64, torch.complex128]:
         solve_dtype = _precision_mapping()[input_dtype]
     e_val, e_vec = _generalized_eigenvalue_decomposition(a.to(solve_dtype), b.to(solve_dtype))
-    return e_val.to(input_dtype), e_vec.to(input_dtype)
+    return e_val.to(input_dtype).real, e_vec.to(input_dtype)
 
 
 def _generalized_eigenvalue_decomposition(a, b):
