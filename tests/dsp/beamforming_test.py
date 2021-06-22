@@ -9,6 +9,7 @@ from asteroid.dsp.beamforming import (
     SoudenMVDRBeamformer,
     SDWMWFBeamformer,
     GEVBeamformer,
+    GEVDBeamformer,
     stable_cholesky,
 )
 
@@ -81,6 +82,15 @@ def test_mwf_indices(n_mics, batch_size):
         batch_size=batch_size,
         ref_mic=torch.randn(batch_size, 1, n_mics, 1, dtype=torch.complex64),
     )
+
+
+@pytest.mark.skipif(not torch_has_complex_support, reason="No complex support ")
+@pytest.mark.parametrize("n_mics", [2, 3, 4])
+@pytest.mark.parametrize("mu", [2.0, 1.0, 0.5])
+@pytest.mark.parametrize("rank", [1, 2, None])
+@pytest.mark.parametrize("batch_size", [1, 2])
+def test_gevd(n_mics, mu, rank, batch_size):
+    _default_beamformer_test(GEVDBeamformer(mu=mu, rank=rank), n_mics=n_mics, batch_size=batch_size)
 
 
 def test_stable_cholesky():
