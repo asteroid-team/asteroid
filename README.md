@@ -111,6 +111,7 @@ More information in [egs/README.md](./egs).
 * [x] [DPTNet](./asteroid/models/dptnet.py) ([Chen et al.](https://arxiv.org/abs/2007.13975))
 * [x] [DCCRNet](./asteroid/models/dccrnet.py) ([Hu et al.](https://arxiv.org/abs/2008.00264))
 * [x] [DCUNet](./asteroid/models/dcunet.py) ([Choi et al.](https://arxiv.org/abs/1903.03107))
+* [x] [CrossNet-Open-Unmix](./asteroid/models/x_umx.py) ([Sawata et al.](https://arxiv.org/abs/2010.04228))
 * [ ] Open-Unmix (coming) ([Stöter et al.](https://sigsep.github.io/open-unmix/))
 * [ ] Wavesplit (coming) ([Zeghidour et al.](https://arxiv.org/abs/2002.08933))
 
