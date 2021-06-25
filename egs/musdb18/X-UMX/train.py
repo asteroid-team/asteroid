@@ -234,15 +234,25 @@ class MultiDomainLoss(_Loss):
         https://arxiv.org/abs/2010.04228 (and ICASSP 2021)
     """
 
-    def __init__(self, args):
+    def __init__(
+        self,
+        window_length,
+        in_chan,
+        n_hop,
+        spec_power,
+        nb_channels,
+        loss_combine_sources,
+        loss_use_multidomain,
+        mix_coef,
+    ):
         super().__init__()
         self.transform = nn.Sequential(
-            _STFT(window_length=args.window_length, n_fft=args.in_chan, n_hop=args.nhop),
-            _Spectrogram(spec_power=args.spec_power, mono=(args.nb_channels == 1)),
+            _STFT(window_length=window_length, n_fft=in_chan, n_hop=n_hop),
+            _Spectrogram(spec_power=spec_power, mono=(nb_channels == 1)),
         )
-        self._combi = args.loss_combine_sources
-        self._multi = args.loss_use_multidomain
-        self.coef = args.mix_coef
+        self._combi = loss_combine_sources
+        self._multi = loss_use_multidomain
+        self.coef = mix_coef
         print("Combination Loss: {}".format(self._combi))
         if self._multi:
             print(
@@ -413,7 +423,16 @@ def main(conf, args):
     es = EarlyStopping(monitor="val_loss", mode="min", patience=args.patience, verbose=True)
 
     # Define Loss function.
-    loss_func = MultiDomainLoss(args)
+    loss_func = MultiDomainLoss(
+        window_length=args.window_length,
+        in_chan=args.in_chan,
+        n_hop=args.nhop,
+        spec_power=args.spec_power,
+        nb_channels=args.nb_channels,
+        loss_combine_sources=args.loss_combine_sources,
+        loss_use_multidomain=args.loss_use_multidomain,
+        mix_coef=args.mix_coef,
+    )
     system = XUMXManager(
         model=x_unmix,
         loss_func=loss_func,

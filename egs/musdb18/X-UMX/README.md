@@ -2,6 +2,8 @@
 
 This recipe contains __CrossNet-Open-Unmix (X-UMX)__, an improved version of [Open-Unmix (UMX)](https://github.com/sigsep/open-unmix-nnabla) for music source separation. X-UMX achieves an improved performance without additional learnable parameters compared to the original UMX model. Details of X-UMX can be found in [this paper](https://arxiv.org/abs/2010.04228). X-UMX is one of the two official baseline models for the [Music Demixing (MDX) Challenge 2021](https://www.aicrowd.com/challenges/music-demixing-challenge-ismir-2021).
 
+__Related Projects:__ [umx-pytorch](https://github.com/sigsep/open-unmix-pytorch) | [umx-nnabla](https://github.com/sigsep/open-unmix-nnabla) | x-umx-pytorch | [x-umx-nnabla](https://github.com/sony/ai-research-code/tree/master/x-umx) | [musdb](https://github.com/sigsep/sigsep-mus-db) | [museval](https://github.com/sigsep/sigsep-mus-eval)
+
 ### Source separation with pretrained model
 Pretrained models on MUSDB18 for X-UMX, which reproduce the results from our paper, are available and can be easily tried out:
 ```
