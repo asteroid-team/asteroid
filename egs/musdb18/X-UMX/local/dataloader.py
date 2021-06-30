@@ -69,9 +69,11 @@ def filtering_out_valid(input_dataset):
     Return:
         input_dataset (w/o validation tracks)
     """
-    for i, tmp in enumerate(input_dataset.tracks):
-        if str(tmp["path"]).split("/")[-1] in validation_tracks:
-            del input_dataset.tracks[i]
+    input_dataset.tracks = [
+        tmp
+        for tmp in input_dataset.tracks
+        if not (str(tmp["path"]).split("/")[-1] in validation_tracks)
+    ]
 
     return input_dataset
 
