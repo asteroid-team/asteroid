@@ -248,6 +248,89 @@ class GEVBeamformer(Beamformer):
         return bf_vect
 
 
+class GEVDBeamformer(Beamformer):
+    """Generalized eigenvalue decomposition speech distortion weighted multichannel Wiener filter.
+
+        Compare to SDW-MWF, spatial covariance matrix are computed from low rank approximation
+        based on eigen values decomposition,
+        see equation 62 in `[1] <https://hal.inria.fr/hal-01390918/file/14-1.pdf>`_.
+
+    Attributes:
+        mu (float): Speech distortion constant.
+        rank (int): Rank for the approximation of target covariance matrix,
+            no approximation is made if `rank` is None.
+
+    References:
+        [1] R. Serizel, M. Moonen, B. Van Dijk and J. Wouters,
+        "Low-rank Approximation Based Multichannel Wiener Filter Algorithms for
+        Noise Reduction with Application in Cochlear Implants,"
+        in IEEE/ACM Transactions on Audio, Speech, and Language Processing, April 2014.
+    """
+
+    def __init__(self, mu: float = 1.0, rank: int = 1):
+        self.mu = mu
+        self.rank = rank
+
+    def compute_beamforming_vector(self, target_scm: torch.Tensor, noise_scm: torch.Tensor):
+        """Compute beamforming vectors for GEVD beamFormer.
+
+        Args:
+            target_scm (torch.ComplexTensor): shape (batch, mics, mics, freqs)
+            noise_scm (torch.ComplexTensor): shape (batch, mics, mics, freqs)
+
+        Returns:
+            torch.ComplexTensor: shape (batch, mics, freqs)
+
+        """
+        #  GEV decomposition of noise_scm^(-1) * target_scm
+        e_values, e_vectors = _generalized_eigenvalue_decomposition(
+            target_scm.permute(0, 3, 1, 2),  # bmmf -> bfmm
+            noise_scm.permute(0, 3, 1, 2),  # bmmf -> bfmm
+        )
+
+        #  Prevent negative and infinite eigenvalues
+        eps = torch.finfo(e_values.dtype).eps
+        e_values = torch.clamp(e_values, min=eps, max=1e6)
+
+        #  Sort eigen values and vectors in descending-order
+        e_values = torch.diag_embed(torch.flip(e_values, [-1]))
+        e_vectors = torch.flip(e_vectors, [-1])
+
+        #  Force zero values for all GEV but the highest
+        if self.rank:
+            e_values[..., self.rank :, :] = 0.0
+
+        #  Compute bf vectors as SDW MWF filter  in eigen space
+        complex_type = e_vectors.dtype
+        ev_plus_mu = e_values + self.mu * torch.eye(e_values.shape[-1]).expand_as(e_values)
+        bf_vect = (
+            e_vectors
+            @ e_values.to(complex_type)
+            @ torch.linalg.inv(e_vectors @ ev_plus_mu.to(complex_type))
+        )
+
+        return bf_vect[..., 0].permute(0, 2, 1)  # bfmm -> bfm -> bmf
+
+    def forward(
+        self,
+        mix: torch.Tensor,
+        target_scm: torch.Tensor,
+        noise_scm: torch.Tensor,
+    ):
+        """Compute and apply the GEVD beamformer.
+
+        Args:
+            mix (torch.ComplexTensor): shape (batch, mics, freqs, frames)
+            target_scm (torch.ComplexTensor): (batch, mics, mics, freqs)
+            noise_scm (torch.ComplexTensor): (batch, mics, mics, freqs)
+
+        Returns:
+            Filtered mixture. torch.ComplexTensor (batch, freqs, frames)
+        """
+        bf_vect = self.compute_beamforming_vector(target_scm, noise_scm)
+        return self.apply_beamforming_vector(bf_vect, mix=mix)
+
+
 def compute_scm(x: torch.Tensor, mask: torch.Tensor = None, normalize: bool = True):
     """Compute the spatial covariance matrix from a STFT signal x.
 
