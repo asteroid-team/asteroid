@@ -258,7 +258,7 @@ class GEVDBeamformer(Beamformer):
     Attributes:
         mu (float): Speech distortion constant.
         rank (int): Rank for the approximation of target covariance matrix,
-            no approximation is made if rank is None.
+            no approximation is made if `rank` is None.
 
     References:
         [1] R. Serizel, M. Moonen, B. Van Dijk and J. Wouters,
@@ -267,7 +267,7 @@ class GEVDBeamformer(Beamformer):
         in IEEE/ACM Transactions on Audio, Speech, and Language Processing, April 2014.
     """
 
-    def __init__(self, mu: float, rank: int):
+    def __init__(self, mu: float = 1.0, rank: int = 1):
         self.mu = mu
         self.rank = rank
 
@@ -290,9 +290,7 @@ class GEVDBeamformer(Beamformer):
 
         #  Prevent negative and infinite eigenvalues
         eps = torch.finfo(e_values.dtype).eps
-
-        e_values = torch.maximum(e_values, eps * torch.ones(e_values.shape))
-        e_values = torch.minimum(e_values, 1e6 * torch.ones(e_values.shape))
+        e_values = torch.clamp(e_values, min=eps, max=1.6)
 
         #  Sort eigen values and vectors in descending-order
         e_values = torch.diag_embed(torch.flip(e_values, [-1]))
@@ -304,11 +302,11 @@ class GEVDBeamformer(Beamformer):
 
         #  Compute bf vectors as SDW MWF filter  in eigen space
         complex_type = e_vectors.dtype
-        inv_ev_plus_mu = torch.linalg.inv(
-            e_values + self.mu * torch.eye(e_values.shape[-1]).expand_as(e_values)
-        ).to(complex_type)
+        ev_plus_mu = e_values + self.mu * torch.eye(e_values.shape[-1]).expand_as(e_values)
         bf_vect = (
-            e_vectors @ e_values.to(complex_type) @ inv_ev_plus_mu @ torch.linalg.inv(e_vectors)
+            e_vectors
+            @ e_values.to(complex_type)
+            @ torch.linalg.inv(e_vectors @ ev_plus_mu.to(complex_type))
         )
 
         return bf_vect[..., 0].permute(0, 2, 1)  # bfmm -> bfm -> bmf
@@ -524,4 +522,3 @@ def _precision_mapping():
 BeamFormer = Beamformer
 SdwMwfBeamformer = SDWMWFBeamformer
 MvdrBeamformer = RTFMVDRBeamformer
-GevdBeamformer = GEVDBeamformer
