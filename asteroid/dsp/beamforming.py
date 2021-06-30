@@ -290,7 +290,7 @@ class GEVDBeamformer(Beamformer):
 
         #  Prevent negative and infinite eigenvalues
         eps = torch.finfo(e_values.dtype).eps
-        e_values = torch.clamp(e_values, min=eps, max=1.6)
+        e_values = torch.clamp(e_values, min=eps, max=1e6)
 
         #  Sort eigen values and vectors in descending-order
         e_values = torch.diag_embed(torch.flip(e_values, [-1]))
