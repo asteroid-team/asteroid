@@ -5,13 +5,13 @@ from torch.nn.modules.loss import _Loss
 from scipy.optimize import linear_sum_assignment
 
 
-class PairwiseNegSDR_Loose(_Loss):
+class PairwiseNegSDR_Loss(_Loss):
     """
     Same as asteroid.losses.PairwiseNegSDR, but supports speaker number mismatch
     """
 
     def __init__(self, sdr_type, zero_mean=True, take_log=True, EPS=1e-8):
-        super(PairwiseNegSDR_Loose, self).__init__()
+        super(PairwiseNegSDR_Loss, self).__init__()
         assert sdr_type in ["snr", "sisdr", "sdsdr"]
         self.sdr_type = sdr_type
         self.zero_mean = zero_mean
@@ -87,4 +87,4 @@ class Penalized_PIT_Wrapper(nn.Module):
 
 
 # alias
-pairwise_neg_sisdr_loose = PairwiseNegSDR_Loose("sisdr")
+pairwise_neg_sisdr_loss = PairwiseNegSDR_Loss("sisdr")

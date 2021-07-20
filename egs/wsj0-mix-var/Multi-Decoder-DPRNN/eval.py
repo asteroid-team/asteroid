@@ -10,7 +10,7 @@ References:
     [1] "Multi-Decoder DPRNN: High Accuracy Source Counting and Separation",
         Junzhe Zhu, Raymond Yeh, Mark Hasegawa-Johnson. https://arxiv.org/abs/2011.12022
 """
-from metrics import Penalized_PIT_Wrapper, pairwise_neg_sisdr_loose
+from metrics import Penalized_PIT_Wrapper, pairwise_neg_sisdr_loss
 import os
 import json
 import yaml
@@ -88,10 +88,10 @@ def main(conf):
             torch.Tensor(x) for x in tensors_to_device(test_set[idx], device=model_device)
         ]
         est_sources = model.separate(mix[None])
-        p_si_snr = Penalized_PIT_Wrapper(pairwise_neg_sisdr_loose)(est_sources, sources)
+        p_si_snr = Penalized_PIT_Wrapper(pairwise_neg_sisdr_loss)(est_sources, sources)
         utt_metrics = {
             "P-Si-SNR": p_si_snr.item(),
-            "Accuracy": float(sources.size(0) == est_sources.size(0)),
+            "counting_accuracy": float(sources.size(0) == est_sources.size(0)),
         }
         utt_metrics["mix_path"] = test_set.data[idx][0]
         series_list.append(pd.Series(utt_metrics))
@@ -123,7 +123,7 @@ def main(conf):
 
     # Print and save summary metrics
     final_results = {}
-    for metric_name in ["P-Si-SNR", "Accuracy"]:
+    for metric_name in ["P-Si-SNR", "counting_accuracy"]:
         final_results[metric_name] = all_metrics_df[metric_name].mean()
     print("Overall metrics :")
     pprint(final_results)

@@ -127,6 +127,7 @@ if [[ $stage -le 3 ]]; then
 fi
 
 if [[ $stage -le 4 ]]; then
+	expdir=exp/tmp
 	echo "Stage 4 : Evaluation"
 	echo "If you want to change n_srcs, please change the config file"
 	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
