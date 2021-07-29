@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "pretrained model can be found at: https://huggingface.co/JunzheJosephZhu/MultiDecoderDPRNN"
+
 # Exit on error
 set -e
 set -o pipefail
