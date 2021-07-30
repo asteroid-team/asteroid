@@ -1,0 +1,1620 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Losses &amp; Metrics &mdash; asteroid 0.5.2dev documentation</title>
+  
+
+  
+  
+  
+  
+    <link rel="canonical" href="https://github.com/asteroid-team/asteroidpackage_reference/losses.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Lightning Wrapper" href="system.html" />
+    <link rel="prev" title="Models" href="models.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch">
+       <!-- <img class="call-to-action-img" src="../_static/images/asteroid_logo_dark.png"/> -->
+      </a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <div class="resources-dropdown">
+              <a id="resourcesDropdownButton" data-toggle="resources-dropdown">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/"">
+                  <span class=dropdown-title>Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <!--
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/">
+                  <span class=dropdown-title>About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+                -->
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Start here</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../why_use_asteroid.html">What is Asteroid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p><span class="caption-text">Notebooks and Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Getting started with Asteroid</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb">Introduction and Overview</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/02_Filterbank.ipynb">Understanding the Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb">Our PITLossWrapper explained</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb">Processing large wav files</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j">Community: Numpy vs. Asteroid STFT</a></li>
+</ul>
+<p><span class="caption-text">Asteroid</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/egs_README.html">What is a recipe?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_datasets.html">Datasets and tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training_and_evaluation.html">Training and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/pretrained_models.html">Pretrained models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<p><span class="caption-text">Package reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data.html">PyTorch Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filterbanks.html">Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blocks.html">DNN building blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Losses &amp; Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">Lightning Wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers &amp; Schedulers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">DSP Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+<p><span class="caption-text">Community</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guide.html">Asteroid High-Level Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/CONTRIBUTING.html">How to contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Losses &amp; Metrics</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/package_reference/losses.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="losses-metrics">
+<h1>Losses &amp; Metrics<a class="headerlink" href="#losses-metrics" title="Permalink to this headline">¶</a></h1>
+<section id="permutation-invariant-training-pit-made-easy">
+<h2>Permutation invariant training (PIT) made easy<a class="headerlink" href="#permutation-invariant-training-pit-made-easy" title="Permalink to this headline">¶</a></h2>
+<p>Asteroid supports regular Permutation Invariant Training (PIT), it’s extension
+using Sinkhorn algorithm (SinkPIT) as well as Mixture Invariant Training (MixIT).</p>
+<section id="module-asteroid.losses.pit_wrapper">
+<span id="pit"></span><h3><span class="hidden-section">PIT</span><a class="headerlink" href="#module-asteroid.losses.pit_wrapper" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="asteroid.losses.pit_wrapper.PITLossWrapper">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.losses.pit_wrapper.</code><code class="sig-name descname">PITLossWrapper</code><span class="sig-paren">(</span><em class="sig-param">loss_func</em>, <em class="sig-param">pit_from='pw_mtx'</em>, <em class="sig-param">perm_reduce=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L7-L318"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITLossWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<p>Permutation invariant loss wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss_func</strong> – function with signature (est_targets, targets, <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs).</p></li>
+<li><p><strong>pit_from</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – <p>Determines how PIT is applied.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'pw_mtx'</span></code> (pairwise matrix): <cite>loss_func</cite> computes pairwise
+losses and returns a torch.Tensor of shape
+<span class="math notranslate nohighlight">\((batch, n\_src, n\_src)\)</span>. Each element
+<span class="math notranslate nohighlight">\((batch, i, j)\)</span> corresponds to the loss between
+<span class="math notranslate nohighlight">\(targets[:, i]\)</span> and <span class="math notranslate nohighlight">\(est\_targets[:, j]\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'pw_pt'</span></code> (pairwise point): <cite>loss_func</cite> computes the loss for
+a batch of single source and single estimates (tensors won’t
+have the source axis). Output shape : <span class="math notranslate nohighlight">\((batch)\)</span>.
+See <a class="reference internal" href="#asteroid.losses.pit_wrapper.PITLossWrapper.get_pw_losses" title="asteroid.losses.pit_wrapper.PITLossWrapper.get_pw_losses"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_pw_losses()</span></code></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'perm_avg'</span></code> (permutation average): <cite>loss_func</cite> computes the
+average loss for a given permutations of the sources and
+estimates. Output shape : <span class="math notranslate nohighlight">\((batch)\)</span>.
+See <a class="reference internal" href="#asteroid.losses.pit_wrapper.PITLossWrapper.best_perm_from_perm_avg_loss" title="asteroid.losses.pit_wrapper.PITLossWrapper.best_perm_from_perm_avg_loss"><code class="xref py py-meth docutils literal notranslate"><span class="pre">best_perm_from_perm_avg_loss()</span></code></a>.</p></li>
+</ul>
+<p>In terms of efficiency, <code class="docutils literal notranslate"><span class="pre">'perm_avg'</span></code> is the least efficicient.</p>
+</p></li>
+<li><p><strong>perm_reduce</strong> (<em>Callable</em>) – torch function to reduce permutation losses.
+Defaults to None (equivalent to mean). Signature of the func
+(pwl_set, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs) : <span class="math notranslate nohighlight">\((B, n\_src!, n\_src) --&gt; (B, n\_src!)\)</span>.
+<cite>perm_reduce</cite> can receive <a href="#id5"><span class="problematic" id="id6">**</span></a>kwargs during forward using the
+<cite>reduce_kwargs</cite> argument (dict). If those argument are static,
+consider defining a small function or using <cite>functools.partial</cite>.
+Only used in <cite>‘pw_mtx’</cite> and <cite>‘pw_pt’</cite> <cite>pit_from</cite> modes.</p></li>
+</ul>
+</dd>
+</dl>
+<p>For each of these modes, the best permutation and reordering will be
+automatically computed. When either <code class="docutils literal notranslate"><span class="pre">'pw_mtx'</span></code> or <code class="docutils literal notranslate"><span class="pre">'pw_pt'</span></code> is used,
+and the number of sources is larger than three, the hungarian algorithm is
+used to find the best permutation.</p>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">pairwise_neg_sisdr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sources</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_sources</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compute PIT loss based on pairwise losses</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">pairwise_neg_sisdr</span><span class="p">,</span> <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;pw_mtx&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_sources</span><span class="p">,</span> <span class="n">sources</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Using reduce</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="n">perm_loss</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">weighted</span> <span class="o">=</span> <span class="n">perm_loss</span> <span class="o">*</span> <span class="n">src</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">weighted</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">pairwise_neg_sisdr</span><span class="p">,</span> <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;pw_mtx&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                           <span class="n">perm_reduce</span><span class="o">=</span><span class="n">reduce</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reduce_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="n">sources</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_sources</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                     <span class="n">reduce_kwargs</span><span class="o">=</span><span class="n">reduce_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid.losses.pit_wrapper.PITLossWrapper.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">return_est=False</em>, <em class="sig-param">reduce_kwargs=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L75-L132"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITLossWrapper.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the best permutation and return the loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>est_targets</strong> – torch.Tensor. Expected shape $(batch, nsrc, …)$.
+The batch of target estimates.</p></li>
+<li><p><strong>targets</strong> – torch.Tensor. Expected shape $(batch, nsrc, …)$.
+The batch of training targets</p></li>
+<li><p><strong>return_est</strong> – Boolean. Whether to return the reordered targets
+estimates (To compute metrics or to save example).</p></li>
+<li><p><strong>reduce_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – kwargs that will be passed to the
+pairwise losses reduce function (<cite>perm_reduce</cite>).</p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+loss function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Best permutation loss for each batch sample, average over
+the batch.</p></li>
+<li><p>The reordered targets estimates if <code class="docutils literal notranslate"><span class="pre">return_est</span></code> is True.
+<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape $(batch, nsrc, …)$.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.pit_wrapper.PITLossWrapper.get_pw_losses">
+<em class="property">static </em><code class="sig-name descname">get_pw_losses</code><span class="sig-paren">(</span><em class="sig-param">loss_func</em>, <em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L134-L162"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITLossWrapper.get_pw_losses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get pair-wise losses between the training targets and its estimate
+for a given loss function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss_func</strong> – function with signature (est_targets, targets, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs)
+The loss function to get pair-wise losses from.</p></li>
+<li><p><strong>est_targets</strong> – torch.Tensor. Expected shape $(batch, nsrc, …)$.
+The batch of target estimates.</p></li>
+<li><p><strong>targets</strong> – torch.Tensor. Expected shape $(batch, nsrc, …)$.
+The batch of training targets.</p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+loss function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>torch.Tensor or size $(batch, nsrc, nsrc)$, losses computed for
+all permutations of the targets and est_targets.</p>
+</dd>
+</dl>
+<p>This function can be called on a loss function which returns a tensor
+of size <span class="math notranslate nohighlight">\((batch)\)</span>. There are more efficient ways to compute pair-wise
+losses using broadcasting.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.pit_wrapper.PITLossWrapper.best_perm_from_perm_avg_loss">
+<em class="property">static </em><code class="sig-name descname">best_perm_from_perm_avg_loss</code><span class="sig-paren">(</span><em class="sig-param">loss_func</em>, <em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L164-L194"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITLossWrapper.best_perm_from_perm_avg_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find best permutation from loss function with source axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss_func</strong> – function with signature $(est_targets, targets, <a href="#id9"><span class="problematic" id="id10">**</span></a>kwargs)$
+The loss function batch losses from.</p></li>
+<li><p><strong>est_targets</strong> – torch.Tensor. Expected shape $(batch, nsrc, <a href="#id11"><span class="problematic" id="id12">*</span></a>)$.
+The batch of target estimates.</p></li>
+<li><p><strong>targets</strong> – torch.Tensor. Expected shape $(batch, nsrc, <a href="#id13"><span class="problematic" id="id14">*</span></a>)$.
+The batch of training targets.</p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+loss function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     The loss corresponding to the best permutation of size $(batch,)$.</p></li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>:</dt><dd><p>The indices of the best permutations.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.pit_wrapper.PITLossWrapper.find_best_perm">
+<em class="property">static </em><code class="sig-name descname">find_best_perm</code><span class="sig-paren">(</span><em class="sig-param">pair_wise_losses</em>, <em class="sig-param">perm_reduce=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L196-L227"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITLossWrapper.find_best_perm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the best permutation, given the pair-wise losses.</p>
+<p>Dispatch between factorial method if number of sources is small (&lt;3)
+and hungarian method for more sources. If <code class="docutils literal notranslate"><span class="pre">perm_reduce</span></code> is not None,
+the factorial method is always used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pair_wise_losses</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – Tensor of shape <span class="math notranslate nohighlight">\((batch, n\_src, n\_src)\)</span>. Pairwise losses.</p></li>
+<li><p><strong>perm_reduce</strong> (<em>Callable</em>) – torch function to reduce permutation losses.
+Defaults to None (equivalent to mean). Signature of the func
+(pwl_set, <a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs) : <span class="math notranslate nohighlight">\((B, n\_src!, n\_src) -&gt; (B, n\_src!)\)</span></p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+permutation reduce function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –   The loss corresponding to the best permutation of size $(batch,)$.</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>:
+The indices of the best permutations.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.pit_wrapper.PITLossWrapper.reorder_source">
+<em class="property">static </em><code class="sig-name descname">reorder_source</code><span class="sig-paren">(</span><em class="sig-param">source</em>, <em class="sig-param">batch_indices</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L229-L244"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITLossWrapper.reorder_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reorder sources according to the best permutation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – Tensor of shape <span class="math notranslate nohighlight">\((batch, n_src, time)\)</span></p></li>
+<li><p><strong>batch_indices</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – Tensor of shape <span class="math notranslate nohighlight">\((batch, n_src)\)</span>.
+Contains optimal permutation indices for each batch.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – Reordered sources.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.pit_wrapper.PITLossWrapper.find_best_perm_factorial">
+<em class="property">static </em><code class="sig-name descname">find_best_perm_factorial</code><span class="sig-paren">(</span><em class="sig-param">pair_wise_losses</em>, <em class="sig-param">perm_reduce=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L246-L295"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITLossWrapper.find_best_perm_factorial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the best permutation given the pair-wise losses by looping
+through all the permutations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pair_wise_losses</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – Tensor of shape <span class="math notranslate nohighlight">\((batch, n_src, n_src)\)</span>. Pairwise losses.</p></li>
+<li><p><strong>perm_reduce</strong> (<em>Callable</em>) – torch function to reduce permutation losses.
+Defaults to None (equivalent to mean). Signature of the func
+(pwl_set, <a href="#id17"><span class="problematic" id="id18">**</span></a>kwargs) : <span class="math notranslate nohighlight">\((B, n\_src!, n\_src) -&gt; (B, n\_src!)\)</span></p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+permutation reduce function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –   The loss corresponding to the best permutation of size $(batch,)$.</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>:
+The indices of the best permutations.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p>MIT Copyright (c) 2018 Kaituo XU.
+See <a class="reference external" href="https://github.com/kaituoxu/Conv-TasNet/blob/master">Original code</a> and <a class="reference external" href="https://github.com/kaituoxu/Conv-TasNet/blob/master/LICENSE">License</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.pit_wrapper.PITLossWrapper.find_best_perm_hungarian">
+<em class="property">static </em><code class="sig-name descname">find_best_perm_hungarian</code><span class="sig-paren">(</span><em class="sig-param">pair_wise_losses: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L297-L318"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITLossWrapper.find_best_perm_hungarian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the best permutation given the pair-wise losses, using the Hungarian algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –   The loss corresponding to the best permutation of size (batch,).</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>:
+The indices of the best permutations.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid.losses.pit_wrapper.PITReorder">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.losses.pit_wrapper.</code><code class="sig-name descname">PITReorder</code><span class="sig-paren">(</span><em class="sig-param">loss_func</em>, <em class="sig-param">pit_from='pw_mtx'</em>, <em class="sig-param">perm_reduce=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L321-L333"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITReorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#asteroid.losses.pit_wrapper.PITLossWrapper" title="asteroid.losses.pit_wrapper.PITLossWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid.losses.pit_wrapper.PITLossWrapper</span></code></a></p>
+<p>Permutation invariant reorderer. Only returns the reordered estimates.
+See <cite>:py:class:asteroid.losses.PITLossWrapper</cite>.</p>
+<dl class="method">
+<dt id="asteroid.losses.pit_wrapper.PITReorder.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">reduce_kwargs=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pit_wrapper.py#L325-L333"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pit_wrapper.PITReorder.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the best permutation and return the loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>est_targets</strong> – torch.Tensor. Expected shape $(batch, nsrc, …)$.
+The batch of target estimates.</p></li>
+<li><p><strong>targets</strong> – torch.Tensor. Expected shape $(batch, nsrc, …)$.
+The batch of training targets</p></li>
+<li><p><strong>return_est</strong> – Boolean. Whether to return the reordered targets
+estimates (To compute metrics or to save example).</p></li>
+<li><p><strong>reduce_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – kwargs that will be passed to the
+pairwise losses reduce function (<cite>perm_reduce</cite>).</p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+loss function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Best permutation loss for each batch sample, average over
+the batch.</p></li>
+<li><p>The reordered targets estimates if <code class="docutils literal notranslate"><span class="pre">return_est</span></code> is True.
+<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> of shape $(batch, nsrc, …)$.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-asteroid.losses.mixit_wrapper">
+<span id="mixit"></span><h3><span class="hidden-section">MixIT</span><a class="headerlink" href="#module-asteroid.losses.mixit_wrapper" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="asteroid.losses.mixit_wrapper.MixITLossWrapper">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.losses.mixit_wrapper.</code><code class="sig-name descname">MixITLossWrapper</code><span class="sig-paren">(</span><em class="sig-param">loss_func</em>, <em class="sig-param">generalized=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/mixit_wrapper.py#L7-L225"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.mixit_wrapper.MixITLossWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<p>Mixture invariant loss wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss_func</strong> – function with signature (est_targets, targets, <a href="#id19"><span class="problematic" id="id20">**</span></a>kwargs).</p></li>
+<li><p><strong>generalized</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Determines how MixIT is applied. If False ,
+apply MixIT for any number of mixtures as soon as they contain
+the same number of sources (<a class="reference internal" href="#asteroid.losses.mixit_wrapper.MixITLossWrapper.best_part_mixit" title="asteroid.losses.mixit_wrapper.MixITLossWrapper.best_part_mixit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">best_part_mixit()</span></code></a>.)
+If True (default), apply MixIT for two mixtures, but those mixtures do not
+necessarly have to contain the same number of sources.
+See <a class="reference internal" href="#asteroid.losses.mixit_wrapper.MixITLossWrapper.best_part_mixit_generalized" title="asteroid.losses.mixit_wrapper.MixITLossWrapper.best_part_mixit_generalized"><code class="xref py py-meth docutils literal notranslate"><span class="pre">best_part_mixit_generalized()</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>For each of these modes, the best partition and reordering will be
+automatically computed.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">multisrc_mse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mixtures</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_sources</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compute MixIT loss based on pairwise losses</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">MixITLossWrapper</span><span class="p">(</span><span class="n">multisrc_mse</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_sources</span><span class="p">,</span> <span class="n">mixtures</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>References</dt><dd><p>[1] Scott Wisdom et al. “Unsupervised sound separation using
+mixtures of mixtures.” arXiv:2006.12701 (2020)</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid.losses.mixit_wrapper.MixITLossWrapper.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">return_est=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/mixit_wrapper.py#L41-L78"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.mixit_wrapper.MixITLossWrapper.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the best partition and return the loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>est_targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nsrc, *)\)</span>.
+The batch of target estimates.</p></li>
+<li><p><strong>targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nmix, ...)\)</span>.
+The batch of training targets</p></li>
+<li><p><strong>return_est</strong> – Boolean. Whether to return the estimated mixtures
+estimates (To compute metrics or to save example).</p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+loss function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Best partition loss for each batch sample, average over
+the batch. torch.Tensor(loss_value)</p></li>
+<li><p>The estimated mixtures (estimated sources summed according to the partition)
+if return_est is True. torch.Tensor of shape <span class="math notranslate nohighlight">\((batch, nmix, ...)\)</span>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.mixit_wrapper.MixITLossWrapper.best_part_mixit">
+<em class="property">static </em><code class="sig-name descname">best_part_mixit</code><span class="sig-paren">(</span><em class="sig-param">loss_func</em>, <em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/mixit_wrapper.py#L80-L134"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.mixit_wrapper.MixITLossWrapper.best_part_mixit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find best partition of the estimated sources that gives the minimum
+loss for the MixIT training paradigm in [1]. Valid for any number of
+mixtures as soon as they contain the same number of sources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss_func</strong> – function with signature <code class="docutils literal notranslate"><span class="pre">(est_targets,</span> <span class="pre">targets,</span> <span class="pre">**kwargs)</span></code>
+The loss function to get batch losses from.</p></li>
+<li><p><strong>est_targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.
+The batch of target estimates.</p></li>
+<li><p><strong>targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nmix, ...)\)</span>.
+The batch of training targets (mixtures).</p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+loss function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –   The loss corresponding to the best permutation of size (batch,).</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.LongTensor</span></code>:
+The indices of the best partition.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>:
+list of the possible partitions of the sources.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.mixit_wrapper.MixITLossWrapper.best_part_mixit_generalized">
+<em class="property">static </em><code class="sig-name descname">best_part_mixit_generalized</code><span class="sig-paren">(</span><em class="sig-param">loss_func</em>, <em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/mixit_wrapper.py#L136-L186"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.mixit_wrapper.MixITLossWrapper.best_part_mixit_generalized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find best partition of the estimated sources that gives the minimum
+loss for the MixIT training paradigm in [1]. Valid only for two mixtures,
+but those mixtures do not necessarly have to contain the same number of
+sources e.g the case where one mixture is silent is allowed..</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss_func</strong> – function with signature <code class="docutils literal notranslate"><span class="pre">(est_targets,</span> <span class="pre">targets,</span> <span class="pre">**kwargs)</span></code>
+The loss function to get batch losses from.</p></li>
+<li><p><strong>est_targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.
+The batch of target estimates.</p></li>
+<li><p><strong>targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nmix, ...)\)</span>.
+The batch of training targets (mixtures).</p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+loss function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –   The loss corresponding to the best permutation of size (batch,).</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.LongTensor</span></code>:
+The indexes of the best permutations.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>:
+list of the possible partitions of the sources.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.mixit_wrapper.MixITLossWrapper.loss_set_from_parts">
+<em class="property">static </em><code class="sig-name descname">loss_set_from_parts</code><span class="sig-paren">(</span><em class="sig-param">loss_func</em>, <em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">parts</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/mixit_wrapper.py#L188-L198"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.mixit_wrapper.MixITLossWrapper.loss_set_from_parts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Common loop between both best_part_mixit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.mixit_wrapper.MixITLossWrapper.reorder_source">
+<em class="property">static </em><code class="sig-name descname">reorder_source</code><span class="sig-paren">(</span><em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">min_loss_idx</em>, <em class="sig-param">parts</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/mixit_wrapper.py#L200-L225"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.mixit_wrapper.MixITLossWrapper.reorder_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reorder sources according to the best partition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>est_targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.
+The batch of target estimates.</p></li>
+<li><p><strong>targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nmix, ...)\)</span>.
+The batch of training targets.</p></li>
+<li><p><strong>min_loss_idx</strong> – torch.LongTensor. The indexes of the best permutations.</p></li>
+<li><p><strong>parts</strong> – list of the possible partitions of the sources.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – Reordered sources of shape <span class="math notranslate nohighlight">\((batch, nmix, time)\)</span>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-asteroid.losses.sinkpit_wrapper">
+<span id="sinkpit"></span><h3><span class="hidden-section">SinkPIT</span><a class="headerlink" href="#module-asteroid.losses.sinkpit_wrapper" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="asteroid.losses.sinkpit_wrapper.SinkPITLossWrapper">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.losses.sinkpit_wrapper.</code><code class="sig-name descname">SinkPITLossWrapper</code><span class="sig-paren">(</span><em class="sig-param">loss_func</em>, <em class="sig-param">n_iter=200</em>, <em class="sig-param">hungarian_validation=True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/sinkpit_wrapper.py#L7-L148"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.sinkpit_wrapper.SinkPITLossWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<p>Permutation invariant loss wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss_func</strong> – function with signature (targets, est_targets, <a href="#id21"><span class="problematic" id="id22">**</span></a>kwargs).</p></li>
+<li><p><strong>n_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – number of the Sinkhorn iteration (default = 200).
+Supposed to be an even number.</p></li>
+<li><p><strong>hungarian_validation</strong> (<em>boolean</em>) – Whether to use the Hungarian algorithm
+for the validation. (default = True)</p></li>
+</ul>
+</dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">loss_func</span></code> computes pairwise losses and returns a torch.Tensor of shape
+<span class="math notranslate nohighlight">\((batch, n\_src, n\_src)\)</span>. Each element <span class="math notranslate nohighlight">\((batch, i, j)\)</span> corresponds to
+the loss between <span class="math notranslate nohighlight">\(targets[:, i]\)</span> and <span class="math notranslate nohighlight">\(est\_targets[:, j]\)</span>
+It evaluates an approximate value of the PIT loss using Sinkhorn’s iterative algorithm.
+See <code class="xref py py-meth docutils literal notranslate"><span class="pre">best_softperm_sinkhorn()</span></code> and <a class="reference external" href="http://arxiv.org/abs/2010.11871">http://arxiv.org/abs/2010.11871</a></p>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytorch_lightning</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">pairwise_neg_sisdr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sources</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_sources</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compute SinkPIT loss based on pairwise losses</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">SinkPITLossWrapper</span><span class="p">(</span><span class="n">pairwise_neg_sisdr</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_sources</span><span class="p">,</span> <span class="n">sources</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># A fixed temperature parameter `beta` (=10) is used</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># unless a cooling callback is set. The value can be</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># dynamically changed using a cooling callback module as follows.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">NeuralNetworkModel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">YourDataset</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loader</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">system</span> <span class="o">=</span> <span class="n">System</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">model</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">optimizer</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">loss_func</span><span class="o">=</span><span class="n">SinkPITLossWrapper</span><span class="p">(</span><span class="n">pairwise_neg_sisdr</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">train_loader</span><span class="o">=</span><span class="n">loader</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">val_loader</span><span class="o">=</span><span class="n">loader</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trainer</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">SinkPITBetaScheduler</span><span class="p">(</span><span class="k">lambda</span> <span class="n">epoch</span> <span class="p">:</span> <span class="mf">1.02</span> <span class="o">**</span> <span class="n">epoch</span><span class="p">)],</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid.losses.sinkpit_wrapper.SinkPITLossWrapper.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">est_targets</em>, <em class="sig-param">targets</em>, <em class="sig-param">return_est=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/sinkpit_wrapper.py#L71-L119"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.sinkpit_wrapper.SinkPITLossWrapper.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the loss using Sinkhorn’s algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>est_targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.
+The batch of target estimates.</p></li>
+<li><p><strong>targets</strong> – torch.Tensor. Expected shape <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.
+The batch of training targets</p></li>
+<li><p><strong>return_est</strong> – Boolean. Whether to return the reordered targets
+estimates (To compute metrics or to save example).</p></li>
+<li><p><strong>**kwargs</strong> – additional keyword argument that will be passed to the
+loss function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt>Best permutation loss for each batch sample, average over</dt><dd><p>the batch. torch.Tensor(loss_value)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>The reordered targets estimates if return_est is True.</dt><dd><p>torch.Tensor of shape <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.losses.sinkpit_wrapper.SinkPITLossWrapper.best_softperm_sinkhorn">
+<em class="property">static </em><code class="sig-name descname">best_softperm_sinkhorn</code><span class="sig-paren">(</span><em class="sig-param">pair_wise_losses</em>, <em class="sig-param">beta=10</em>, <em class="sig-param">n_iter=200</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/sinkpit_wrapper.py#L121-L148"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.sinkpit_wrapper.SinkPITLossWrapper.best_softperm_sinkhorn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute an approximate PIT loss using Sinkhorn’s algorithm.
+See <a class="reference external" href="http://arxiv.org/abs/2010.11871">http://arxiv.org/abs/2010.11871</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pair_wise_losses</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – Tensor of shape <span class="math notranslate nohighlight">\((batch, n_src, n_src)\)</span>. Pairwise losses.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Inverse temperature parameter. (default = 10)</p></li>
+<li><p><strong>n_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of iteration. Even number. (default = 200)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –   The loss corresponding to the best permutation of size (batch,).</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>:
+A soft permutation matrix.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="available-loss-functions">
+<h2>Available loss functions<a class="headerlink" href="#available-loss-functions" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">PITLossWrapper</span></code> supports three types of loss function. For “easy” losses,
+we implement the three types (pairwise point, single-source loss and multi-source loss).
+For others, we only implement the single-source loss which can be aggregated
+into both PIT and nonPIT training.</p>
+<section id="mse">
+<h3><span class="hidden-section">MSE</span><a class="headerlink" href="#mse" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="asteroid.losses.mse.PairwiseMSE">
+<code class="sig-prename descclassname">asteroid.losses.mse.</code><code class="sig-name descname">PairwiseMSE</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span> &#x2192; Any<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/mse.py#L4-L33"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.mse.PairwiseMSE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measure pairwise mean square error on a batch.</p>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>est_targets : <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.</p></li>
+<li><p>targets: <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – with shape <span class="math notranslate nohighlight">\((batch, nsrc, nsrc)\)</span></p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">PITLossWrapper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">PairwiseMSE</span><span class="p">(),</span> <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;pairwise&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.losses.mse.SingleSrcMSE">
+<code class="sig-prename descclassname">asteroid.losses.mse.</code><code class="sig-name descname">SingleSrcMSE</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span> &#x2192; Any<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/mse.py#L36-L64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.mse.SingleSrcMSE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measure mean square error on a batch.
+Supports both tensors with and without source axis.</p>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>est_targets: <span class="math notranslate nohighlight">\((batch, ...)\)</span>.</p></li>
+<li><p>targets: <span class="math notranslate nohighlight">\((batch, ...)\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – with shape <span class="math notranslate nohighlight">\((batch)\)</span></p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">PITLossWrapper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># singlesrc_mse / multisrc_mse support both &#39;pw_pt&#39; and &#39;perm_avg&#39;.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">singlesrc_mse</span><span class="p">,</span> <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;pw_pt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.losses.mse.MultiSrcMSE">
+<code class="sig-prename descclassname">asteroid.losses.mse.</code><code class="sig-name descname">MultiSrcMSE</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span> &#x2192; Any<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/mse.py#L36-L64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.mse.MultiSrcMSE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measure mean square error on a batch.
+Supports both tensors with and without source axis.</p>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>est_targets: <span class="math notranslate nohighlight">\((batch, ...)\)</span>.</p></li>
+<li><p>targets: <span class="math notranslate nohighlight">\((batch, ...)\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – with shape <span class="math notranslate nohighlight">\((batch)\)</span></p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">PITLossWrapper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># singlesrc_mse / multisrc_mse support both &#39;pw_pt&#39; and &#39;perm_avg&#39;.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">singlesrc_mse</span><span class="p">,</span> <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;pw_pt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="sdr">
+<h3><span class="hidden-section">SDR</span><a class="headerlink" href="#sdr" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="asteroid.losses.sdr.PairwiseNegSDR">
+<code class="sig-prename descclassname">asteroid.losses.sdr.</code><code class="sig-name descname">PairwiseNegSDR</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span> &#x2192; Any<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/sdr.py#L5-L81"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.sdr.PairwiseNegSDR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for pairwise negative SI-SDR, SD-SDR and SNR on a batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sdr_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – choose between <code class="docutils literal notranslate"><span class="pre">snr</span></code> for plain SNR, <code class="docutils literal notranslate"><span class="pre">sisdr</span></code> for
+SI-SDR and <code class="docutils literal notranslate"><span class="pre">sdsdr</span></code> for SD-SDR [1].</p></li>
+<li><p><strong>zero_mean</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – by default it zero mean the target
+and estimate before computing the loss.</p></li>
+<li><p><strong>take_log</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – by default the log10 of sdr is returned.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>est_targets : <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.</p></li>
+<li><p>targets: <span class="math notranslate nohighlight">\((batch, nsrc, ...)\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – with shape <span class="math notranslate nohighlight">\((batch, nsrc, nsrc)\)</span>. Pairwise losses.</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">PITLossWrapper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">PairwiseNegSDR</span><span class="p">(</span><span class="s2">&quot;sisdr&quot;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                           <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;pairwise&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>References</dt><dd><p>[1] Le Roux, Jonathan, et al. “SDR half-baked or well done.” IEEE
+International Conference on Acoustics, Speech and Signal
+Processing (ICASSP) 2019.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.losses.sdr.SingleSrcNegSDR">
+<code class="sig-prename descclassname">asteroid.losses.sdr.</code><code class="sig-name descname">SingleSrcNegSDR</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span> &#x2192; Any<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/sdr.py#L84-L163"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.sdr.SingleSrcNegSDR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for single-source negative SI-SDR, SD-SDR and SNR.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sdr_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – choose between <code class="docutils literal notranslate"><span class="pre">snr</span></code> for plain SNR, <code class="docutils literal notranslate"><span class="pre">sisdr</span></code> for
+SI-SDR and <code class="docutils literal notranslate"><span class="pre">sdsdr</span></code> for SD-SDR [1].</p></li>
+<li><p><strong>zero_mean</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – by default it zero mean the target and
+estimate before computing the loss.</p></li>
+<li><p><strong>take_log</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – by default the log10 of sdr is returned.</p></li>
+<li><p><strong>reduction</strong> (<em>string</em><em>, </em><em>optional</em>) – Specifies the reduction to apply to
+the output:
+<code class="docutils literal notranslate"><span class="pre">'none'</span></code> | <code class="docutils literal notranslate"><span class="pre">'mean'</span></code>. <code class="docutils literal notranslate"><span class="pre">'none'</span></code>: no reduction will be applied,
+<code class="docutils literal notranslate"><span class="pre">'mean'</span></code>: the sum of the output will be divided by the number of
+elements in the output.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>est_targets : <span class="math notranslate nohighlight">\((batch, time)\)</span>.</p></li>
+<li><p>targets: <span class="math notranslate nohighlight">\((batch, time)\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – with shape <span class="math notranslate nohighlight">\((batch)\)</span> if <code class="docutils literal notranslate"><span class="pre">reduction='none'</span></code> else
+[] scalar if <code class="docutils literal notranslate"><span class="pre">reduction='mean'</span></code>.</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">PITLossWrapper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">SingleSrcNegSDR</span><span class="p">(</span><span class="s2">&quot;sisdr&quot;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                           <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;pw_pt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>References</dt><dd><p>[1] Le Roux, Jonathan, et al. “SDR half-baked or well done.” IEEE
+International Conference on Acoustics, Speech and Signal
+Processing (ICASSP) 2019.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.losses.sdr.MultiSrcNegSDR">
+<code class="sig-prename descclassname">asteroid.losses.sdr.</code><code class="sig-name descname">MultiSrcNegSDR</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span> &#x2192; Any<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/sdr.py#L166-L241"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.sdr.MultiSrcNegSDR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for computing negative SI-SDR, SD-SDR and SNR for a given
+permutation of source and their estimates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sdr_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – choose between <code class="docutils literal notranslate"><span class="pre">snr</span></code> for plain SNR, <code class="docutils literal notranslate"><span class="pre">sisdr</span></code> for
+SI-SDR and <code class="docutils literal notranslate"><span class="pre">sdsdr</span></code> for SD-SDR [1].</p></li>
+<li><p><strong>zero_mean</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – by default it zero mean the target
+and estimate before computing the loss.</p></li>
+<li><p><strong>take_log</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – by default the log10 of sdr is returned.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>est_targets : <span class="math notranslate nohighlight">\((batch, nsrc, time)\)</span>.</p></li>
+<li><p>targets: <span class="math notranslate nohighlight">\((batch, nsrc, time)\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – with shape <span class="math notranslate nohighlight">\((batch)\)</span> if <code class="docutils literal notranslate"><span class="pre">reduction='none'</span></code> else
+[] scalar if <code class="docutils literal notranslate"><span class="pre">reduction='mean'</span></code>.</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">PITLossWrapper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">MultiSrcNegSDR</span><span class="p">(</span><span class="s2">&quot;sisdr&quot;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                           <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;perm_avg&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>References</dt><dd><p>[1] Le Roux, Jonathan, et al. “SDR half-baked or well done.” IEEE
+International Conference on Acoustics, Speech and Signal
+Processing (ICASSP) 2019.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="pmsqe">
+<h3><span class="hidden-section">PMSQE</span><a class="headerlink" href="#pmsqe" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="asteroid.losses.pmsqe.SingleSrcPMSQE">
+<code class="sig-prename descclassname">asteroid.losses.pmsqe.</code><code class="sig-name descname">SingleSrcPMSQE</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span> &#x2192; Any<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/pmsqe.py#L9-L636"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.pmsqe.SingleSrcPMSQE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Perceptual Metric for Speech Quality Evaluation (PMSQE)
+as described in [1].
+This version is only designed for 16 kHz (512 length DFT).
+Adaptation to 8 kHz could be done by changing the parameters of the
+class (see Tensorflow implementation).
+The SLL, frequency and gain equalization are applied in each
+sequence independently.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Select the used window function for the correct
+factor to be applied. Defaults to sqrt hanning window.
+Among [‘rect’, ‘hann’, ‘sqrt_hann’, ‘hamming’, ‘flatTop’].</p></li>
+<li><p><strong>window_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Correction to the window factor
+applied.</p></li>
+<li><p><strong>bark_eq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to apply bark equalization.</p></li>
+<li><p><strong>gain_eq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to apply gain equalization.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Sample rate of the input audio.</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>References</dt><dd><p>[1] J.M.Martin, A.M.Gomez, J.A.Gonzalez, A.M.Peinado ‘A Deep Learning
+Loss Function based on the Perceptual Evaluation of the
+Speech Quality’, IEEE Signal Processing Letters, 2018.
+Implemented by Juan M. Martin. Contact: <a class="reference external" href="mailto:mdjuamart&#37;&#52;&#48;ugr&#46;es">mdjuamart<span>&#64;</span>ugr<span>&#46;</span>es</a></p>
+<p>Copyright 2019: University of Granada, Signal Processing, Multimedia
+Transmission and Speech/Audio Technologies (SigMAT) Group.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Inspired on the Perceptual Evaluation of the Speech Quality (PESQ)
+algorithm, this function consists of two regularization factors :
+the symmetrical and asymmetrical distortion in the loudness domain.</p>
+</div>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid_filterbanks</span> <span class="kn">import</span> <span class="n">STFTFB</span><span class="p">,</span> <span class="n">Encoder</span><span class="p">,</span> <span class="n">transforms</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">PITLossWrapper</span><span class="p">,</span> <span class="n">SingleSrcPMSQE</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stft</span> <span class="o">=</span> <span class="n">Encoder</span><span class="p">(</span><span class="n">STFTFB</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">n_filters</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">256</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Usage by itself</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="p">,</span> <span class="n">est</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">16000</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref_spec</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="n">stft</span><span class="p">(</span><span class="n">ref</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_spec</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="n">stft</span><span class="p">(</span><span class="n">est</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">SingleSrcPMSQE</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_value</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_spec</span><span class="p">,</span> <span class="n">ref_spec</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Usage with PITLossWrapper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">SingleSrcPMSQE</span><span class="p">(),</span> <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;pw_pt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="p">,</span> <span class="n">est</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">16000</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref_spec</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="n">stft</span><span class="p">(</span><span class="n">ref</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_spec</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="n">stft</span><span class="p">(</span><span class="n">est</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_value</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">ref_spec</span><span class="p">,</span> <span class="n">est_spec</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="stoi">
+<h3><span class="hidden-section">STOI</span><a class="headerlink" href="#stoi" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="multiscale-spectral-loss">
+<h3><span class="hidden-section">MultiScale Spectral Loss</span><a class="headerlink" href="#multiscale-spectral-loss" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="asteroid.losses.multi_scale_spectral.SingleSrcMultiScaleSpectral">
+<code class="sig-prename descclassname">asteroid.losses.multi_scale_spectral.</code><code class="sig-name descname">SingleSrcMultiScaleSpectral</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span> &#x2192; Any<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/multi_scale_spectral.py#L8-L88"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.multi_scale_spectral.SingleSrcMultiScaleSpectral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measure multi-scale spectral loss as described in [1]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – list containing the number of filter desired for
+each STFT</p></li>
+<li><p><strong>windows_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – list containing the size of the window desired for
+each STFT</p></li>
+<li><p><strong>hops_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – list containing the size of the hop desired for
+each STFT</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>est_targets : <span class="math notranslate nohighlight">\((batch, time)\)</span>.</p></li>
+<li><p>targets: <span class="math notranslate nohighlight">\((batch, time)\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – with shape [batch]</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Using it by itself on a pair of source/estimate</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">SingleSrcMultiScaleSpectral</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses</span> <span class="kn">import</span> <span class="n">PITLossWrapper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">32000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Using it with PITLossWrapper with sets of source/estimates</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">PITLossWrapper</span><span class="p">(</span><span class="n">SingleSrcMultiScaleSpectral</span><span class="p">(),</span>
+<span class="gp">&gt;&gt;&gt; </span>                           <span class="n">pit_from</span><span class="o">=</span><span class="s1">&#39;pw_pt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">est_targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>References</dt><dd><p>[1] Jesse Engel and Lamtharn (Hanoi) Hantrakul and Chenjie Gu and
+Adam Roberts “DDSP: Differentiable Digital Signal Processing” ICLR 2020.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="deep-clustering-affinity-loss">
+<h3><span class="hidden-section">Deep clustering (Affinity) loss</span><a class="headerlink" href="#deep-clustering-affinity-loss" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="asteroid.losses.cluster.deep_clustering_loss">
+<code class="sig-prename descclassname">asteroid.losses.cluster.</code><code class="sig-name descname">deep_clustering_loss</code><span class="sig-paren">(</span><em class="sig-param">embedding</em>, <em class="sig-param">tgt_index</em>, <em class="sig-param">binary_mask=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/losses/cluster.py#L4-L61"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.losses.cluster.deep_clustering_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the deep clustering loss defined in [1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embedding</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – Estimated embeddings.
+Expected shape  <span class="math notranslate nohighlight">\((batch, frequency * frame, embedding\_dim)\)</span>.</p></li>
+<li><p><strong>tgt_index</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – Dominating source index in each TF bin.
+Expected shape: <span class="math notranslate nohighlight">\((batch, frequency, frame)\)</span>.</p></li>
+<li><p><strong>binary_mask</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – VAD in TF plane. Bool or Float.
+See asteroid.dsp.vad.ebased_vad.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>torch.Tensor</cite>. Deep clustering loss for every batch sample.</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.losses.cluster</span> <span class="kn">import</span> <span class="n">deep_clustering_loss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spk_cnt</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">embedding</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="o">*</span><span class="mi">400</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spk_cnt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">deep_clustering_loss</span><span class="p">(</span><span class="n">embedding</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Reference</dt><dd><p>[1] Zhong-Qiu Wang, Jonathan Le Roux, John R. Hershey
+“ALTERNATIVE OBJECTIVE FUNCTIONS FOR DEEP CLUSTERING”</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Be careful in viewing the embedding tensors. The target indices
+<code class="docutils literal notranslate"><span class="pre">tgt_index</span></code> are of shape <span class="math notranslate nohighlight">\((batch, freq, frames)\)</span>. Even if the embedding
+is of shape <span class="math notranslate nohighlight">\((batch, freq * frames, emb)\)</span>, the underlying view should be
+<span class="math notranslate nohighlight">\((batch, freq, frames, emb)\)</span> and not <span class="math notranslate nohighlight">\((batch, frames, freq, emb)\)</span>.</p>
+</div>
+</dd></dl>
+
+</section>
+</section>
+<section id="computing-metrics">
+<h2>Computing metrics<a class="headerlink" href="#computing-metrics" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="asteroid.metrics.get_metrics">
+<code class="sig-prename descclassname">asteroid.metrics.</code><code class="sig-name descname">get_metrics</code><span class="sig-paren">(</span><em class="sig-param">mix</em>, <em class="sig-param">clean</em>, <em class="sig-param">estimate</em>, <em class="sig-param">sample_rate=16000</em>, <em class="sig-param">metrics_list='all'</em>, <em class="sig-param">average=True</em>, <em class="sig-param">compute_permutation=False</em>, <em class="sig-param">ignore_metrics_errors=False</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/metrics.py#L15-L115"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.metrics.get_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get speech separation/enhancement metrics from mix/clean/estimate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mix</strong> (<em>np.array</em>) – mixture array.</p></li>
+<li><p><strong>clean</strong> (<em>np.array</em>) – reference array.</p></li>
+<li><p><strong>estimate</strong> (<em>np.array</em>) – estimate array.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – sampling rate of the audio clips.</p></li>
+<li><p><strong>metrics_list</strong> (<em>Union</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – List of metrics to compute.
+Defaults to ‘all’ ([‘si_sdr’, ‘sdr’, ‘sir’, ‘sar’, ‘stoi’, ‘pesq’]).</p></li>
+<li><p><strong>average</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Return dict([float]) if True, else dict([array]).</p></li>
+<li><p><strong>compute_permutation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to compute the permutation on
+estimate sources for the output metrics (default False)</p></li>
+<li><p><strong>ignore_metrics_errors</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to ignore errors that occur in
+computing the metrics. A warning will be printed instead.</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – If computing a metric fails, print this
+filename along with the exception/warning message for debugging purposes.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>mix: <span class="math notranslate nohighlight">\((D, N)\)</span> or <cite>(N, )</cite>.</p></li>
+<li><p>clean: <span class="math notranslate nohighlight">\((K\_source, N)\)</span> or <cite>(N, )</cite>.</p></li>
+<li><p>estimate: <span class="math notranslate nohighlight">\((K\_target, N)\)</span> or <cite>(N, )</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><em>dict</em> – Dictionary with all requested metrics, with <cite>‘input_’</cite> prefix
+for metrics at the input (mixture against clean), no prefix at the
+output (estimate against clean). Output format depends on average.</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pprint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">asteroid.metrics</span> <span class="kn">import</span> <span class="n">get_metrics</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">metrics_dict</span> <span class="o">=</span> <span class="n">get_metrics</span><span class="p">(</span><span class="n">mix</span><span class="p">,</span> <span class="n">clean</span><span class="p">,</span> <span class="n">est</span><span class="p">,</span> <span class="n">sample_rate</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
+<span class="gp">... </span>                           <span class="n">metrics_list</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">metrics_dict</span><span class="p">)</span>
+<span class="go">{&#39;input_pesq&#39;: 1.924380898475647,</span>
+<span class="go"> &#39;input_sar&#39;: -11.67667585294225,</span>
+<span class="go"> &#39;input_sdr&#39;: -14.88667106190552,</span>
+<span class="go"> &#39;input_si_sdr&#39;: -52.43849784881705,</span>
+<span class="go"> &#39;input_sir&#39;: -0.10419427290163795,</span>
+<span class="go"> &#39;input_stoi&#39;: 0.015112115177091223,</span>
+<span class="go"> &#39;pesq&#39;: 1.7713886499404907,</span>
+<span class="go"> &#39;sar&#39;: -11.610963379923195,</span>
+<span class="go"> &#39;sdr&#39;: -14.527246041125844,</span>
+<span class="go"> &#39;si_sdr&#39;: -46.26557128489802,</span>
+<span class="go"> &#39;sir&#39;: 0.4799929272243427,</span>
+<span class="go"> &#39;stoi&#39;: 0.022023073540350643}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="system.html" class="btn btn-neutral float-right" title="Lightning Wrapper" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="models.html" class="btn btn-neutral" title="Models" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Oncoming.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Losses &amp; Metrics</a><ul>
+<li><a class="reference internal" href="#permutation-invariant-training-pit-made-easy">Permutation invariant training (PIT) made easy</a><ul>
+<li><a class="reference internal" href="#module-asteroid.losses.pit_wrapper"><span class="hidden-section">PIT</span></a></li>
+<li><a class="reference internal" href="#module-asteroid.losses.mixit_wrapper"><span class="hidden-section">MixIT</span></a></li>
+<li><a class="reference internal" href="#module-asteroid.losses.sinkpit_wrapper"><span class="hidden-section">SinkPIT</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#available-loss-functions">Available loss functions</a><ul>
+<li><a class="reference internal" href="#mse"><span class="hidden-section">MSE</span></a></li>
+<li><a class="reference internal" href="#sdr"><span class="hidden-section">SDR</span></a></li>
+<li><a class="reference internal" href="#pmsqe"><span class="hidden-section">PMSQE</span></a></li>
+<li><a class="reference internal" href="#stoi"><span class="hidden-section">STOI</span></a></li>
+<li><a class="reference internal" href="#multiscale-spectral-loss"><span class="hidden-section">MultiScale Spectral Loss</span></a></li>
+<li><a class="reference internal" href="#deep-clustering-affinity-loss"><span class="hidden-section">Deep clustering (Affinity) loss</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#computing-metrics">Computing metrics</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/doctools.js"></script>
+         <script src="../_static/language_data.js"></script>
+         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <!--
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Resources</a>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://mpariente.github.io/asteroid/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+
+        <div class="footer-logo-col">
+          <img class="footer-logo-img" src="../_static/images/dark_asteroid_logo.svg"/>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Asteroid</a></li>
+            <li><a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Features</a></li>
+            <li><a href="">Ecosystem</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Blog</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Resources</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Support</a></li>
+            <li><a href="">Tutorials</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/issues" target="_blank">Github Issues</a></li>
+            <li><a href="" target="_blank">Slack</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="https://twitter.com/" target="_blank" class="twitter"></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </footer> -->
+
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch Lightning"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Features</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Resources</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

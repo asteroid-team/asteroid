@@ -1,0 +1,1619 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Filterbank API &mdash; asteroid 0.5.2dev documentation</title>
+  
+
+  
+  
+  
+  
+    <link rel="canonical" href="https://github.com/asteroid-team/asteroidpackage_reference/filterbanks.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="DNN building blocks" href="blocks.html" />
+    <link rel="prev" title="PyTorch Datasets" href="data.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch">
+       <!-- <img class="call-to-action-img" src="../_static/images/asteroid_logo_dark.png"/> -->
+      </a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <div class="resources-dropdown">
+              <a id="resourcesDropdownButton" data-toggle="resources-dropdown">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/"">
+                  <span class=dropdown-title>Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <!--
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/">
+                  <span class=dropdown-title>About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+                -->
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Start here</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../why_use_asteroid.html">What is Asteroid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p><span class="caption-text">Notebooks and Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Getting started with Asteroid</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb">Introduction and Overview</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/02_Filterbank.ipynb">Understanding the Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb">Our PITLossWrapper explained</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb">Processing large wav files</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j">Community: Numpy vs. Asteroid STFT</a></li>
+</ul>
+<p><span class="caption-text">Asteroid</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/egs_README.html">What is a recipe?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_datasets.html">Datasets and tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training_and_evaluation.html">Training and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/pretrained_models.html">Pretrained models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<p><span class="caption-text">Package reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data.html">PyTorch Datasets</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blocks.html">DNN building blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="losses.html">Losses &amp; Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">Lightning Wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers &amp; Schedulers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">DSP Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+<p><span class="caption-text">Community</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guide.html">Asteroid High-Level Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/CONTRIBUTING.html">How to contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Filterbank API</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/package_reference/filterbanks.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="filterbank-api">
+<h1>Filterbank API<a class="headerlink" href="#filterbank-api" title="Permalink to this headline">¶</a></h1>
+<section id="filterbank-encoder-and-decoder">
+<h2>Filterbank, Encoder and Decoder<a class="headerlink" href="#filterbank-encoder-and-decoder" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="asteroid_filterbanks.Filterbank">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.</code><code class="sig-name descname">Filterbank</code><span class="sig-paren">(</span><em class="sig-param">n_filters</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">stride=None</em>, <em class="sig-param">sample_rate=8000.0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L10-L71"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Filterbank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<p>Base Filterbank class.
+Each subclass has to implement a <code class="docutils literal notranslate"><span class="pre">filters</span></code> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of filters.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Length of the filters.</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Stride of the conv or transposed conv. (Hop size).
+If None (default), set to <code class="docutils literal notranslate"><span class="pre">kernel_size</span> <span class="pre">//</span> <span class="pre">2</span></code>.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Sample rate of the expected audio.
+Defaults to 8000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><p><strong>n_feats_out</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of output filters.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid_filterbanks.Filterbank.filters">
+<code class="sig-name descname">filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L36-L38"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Filterbank.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract method for filters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid_filterbanks.Filterbank.pre_analysis">
+<code class="sig-name descname">pre_analysis</code><span class="sig-paren">(</span><em class="sig-param">wav: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L40-L42"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Filterbank.pre_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply transform before encoder convolution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid_filterbanks.Filterbank.post_analysis">
+<code class="sig-name descname">post_analysis</code><span class="sig-paren">(</span><em class="sig-param">spec: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L44-L46"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Filterbank.post_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply transform to encoder convolution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid_filterbanks.Filterbank.pre_synthesis">
+<code class="sig-name descname">pre_synthesis</code><span class="sig-paren">(</span><em class="sig-param">spec: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L48-L50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Filterbank.pre_synthesis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply transform before decoder transposed convolution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid_filterbanks.Filterbank.post_synthesis">
+<code class="sig-name descname">post_synthesis</code><span class="sig-paren">(</span><em class="sig-param">wav: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L52-L54"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Filterbank.post_synthesis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply transform after decoder transposed convolution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid_filterbanks.Filterbank.get_config">
+<code class="sig-name descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L56-L68"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Filterbank.get_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns dictionary of arguments to re-instantiate the class.
+Needs to be subclassed if the filterbanks takes additional arguments
+than <code class="docutils literal notranslate"><span class="pre">n_filters</span></code> <code class="docutils literal notranslate"><span class="pre">kernel_size</span></code> <code class="docutils literal notranslate"><span class="pre">stride</span></code> and <code class="docutils literal notranslate"><span class="pre">sample_rate</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid_filterbanks.Encoder">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.</code><code class="sig-name descname">Encoder</code><span class="sig-paren">(</span><em class="sig-param">filterbank</em>, <em class="sig-param">is_pinv=False</em>, <em class="sig-param">as_conv1d=True</em>, <em class="sig-param">padding=0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L121-L184"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Encoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid_filterbanks.enc_dec._EncDec</span></code></p>
+<p>Encoder class.</p>
+<p>Add encoding methods to Filterbank classes.
+Not intended to be subclassed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filterbank</strong> (<a class="reference internal" href="#asteroid_filterbanks.Filterbank" title="asteroid_filterbanks.Filterbank"><code class="xref py py-class docutils literal notranslate"><span class="pre">Filterbank</span></code></a>) – The filterbank to use
+as an encoder.</p></li>
+<li><p><strong>is_pinv</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to be the pseudo inverse of filterbank.</p></li>
+<li><p><strong>as_conv1d</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to behave like nn.Conv1d.
+If True (default), forwarding input with shape <span class="math notranslate nohighlight">\((batch, 1, time)\)</span>
+will output a tensor of shape <span class="math notranslate nohighlight">\((batch, freq, conv\_time)\)</span>.
+If False, will output a tensor of shape <span class="math notranslate nohighlight">\((batch, 1, freq, conv\_time)\)</span>.</p></li>
+<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Zero-padding added to both sides of the input.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid_filterbanks.Encoder.pinv_of">
+<em class="property">classmethod </em><code class="sig-name descname">pinv_of</code><span class="sig-paren">(</span><em class="sig-param">filterbank</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L145-L152"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Encoder.pinv_of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an <a class="reference internal" href="#asteroid_filterbanks.Encoder" title="asteroid_filterbanks.Encoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">Encoder</span></code></a>, pseudo inverse of a
+<a class="reference internal" href="#asteroid_filterbanks.Filterbank" title="asteroid_filterbanks.Filterbank"><code class="xref py py-class docutils literal notranslate"><span class="pre">Filterbank</span></code></a> or <a class="reference internal" href="#asteroid_filterbanks.Decoder" title="asteroid_filterbanks.Decoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">Decoder</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid_filterbanks.Encoder.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">waveform</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L154-L184"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Encoder.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convolve input waveform with the filters from a filterbank.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>waveform</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – any tensor with samples along the
+last dimension. The waveform representation with and
+batch/channel etc.. dimension.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – The corresponding TF domain signal.</p>
+</dd>
+</dl>
+<dl>
+<dt>Shapes</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">conv_time</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">conv_time</span><span class="p">)</span>  <span class="c1"># Avoid</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">as_conv1d</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">conv_time</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">conv_time</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">conv_time</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="nb">any</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="nb">any</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">conv_time</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid_filterbanks.Decoder">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.</code><code class="sig-name descname">Decoder</code><span class="sig-paren">(</span><em class="sig-param">filterbank</em>, <em class="sig-param">is_pinv=False</em>, <em class="sig-param">padding=0</em>, <em class="sig-param">output_padding=0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L239-L296"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Decoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid_filterbanks.enc_dec._EncDec</span></code></p>
+<p>Decoder class.</p>
+<p>Add decoding methods to Filterbank classes.
+Not intended to be subclassed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filterbank</strong> (<a class="reference internal" href="#asteroid_filterbanks.Filterbank" title="asteroid_filterbanks.Filterbank"><code class="xref py py-class docutils literal notranslate"><span class="pre">Filterbank</span></code></a>) – The filterbank to use as an decoder.</p></li>
+<li><p><strong>is_pinv</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to be the pseudo inverse of filterbank.</p></li>
+<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Zero-padding added to both sides of the input.</p></li>
+<li><p><strong>output_padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Additional size added to one side of the
+output shape.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">padding</span></code> and <code class="docutils literal notranslate"><span class="pre">output_padding</span></code> arguments are directly passed to
+<code class="docutils literal notranslate"><span class="pre">F.conv_transpose1d</span></code>.</p>
+</div>
+<dl class="method">
+<dt id="asteroid_filterbanks.Decoder.pinv_of">
+<em class="property">classmethod </em><code class="sig-name descname">pinv_of</code><span class="sig-paren">(</span><em class="sig-param">filterbank</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L262-L268"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Decoder.pinv_of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an Decoder, pseudo inverse of a filterbank or Encoder.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid_filterbanks.Decoder.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">spec</em>, <em class="sig-param">length: Optional[int] = None</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/enc_dec.py#L270-L296"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.Decoder.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies transposed convolution to a TF representation.</p>
+<p>This is equivalent to overlap-add.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – 3D or 4D Tensor. The TF
+representation. (Output of <a class="reference internal" href="#asteroid_filterbanks.Encoder.forward" title="asteroid_filterbanks.Encoder.forward"><code class="xref py py-func docutils literal notranslate"><span class="pre">Encoder.forward()</span></code></a>).</p></li>
+<li><p><strong>length</strong> – desired output length.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – The corresponding time domain signal.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid_filterbanks.make_enc_dec">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.</code><code class="sig-name descname">make_enc_dec</code><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/__init__.py#L14-L70"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.make_enc_dec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates congruent encoder and decoder from the same filterbank family.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fb_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>className</em>) – Filterbank family from which to make encoder
+and decoder. To choose among [<code class="docutils literal notranslate"><span class="pre">'free'</span></code>, <code class="docutils literal notranslate"><span class="pre">'analytic_free'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'param_sinc'</span></code>, <code class="docutils literal notranslate"><span class="pre">'stft'</span></code>]. Can also be a class defined in a
+submodule in this subpackade (e.g. <a class="reference internal" href="#asteroid_filterbanks.free_fb.FreeFB" title="asteroid_filterbanks.free_fb.FreeFB"><code class="xref py py-class docutils literal notranslate"><span class="pre">FreeFB</span></code></a>).</p></li>
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of filters.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Length of the filters.</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Stride of the convolution.
+If None (default), set to <code class="docutils literal notranslate"><span class="pre">kernel_size</span> <span class="pre">//</span> <span class="pre">2</span></code>.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Sample rate of the expected audio.
+Defaults to 8000.0.</p></li>
+<li><p><strong>who_is_pinv</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – If <cite>None</cite>, no pseudo-inverse filters will
+be used. If string (among [<code class="docutils literal notranslate"><span class="pre">'encoder'</span></code>, <code class="docutils literal notranslate"><span class="pre">'decoder'</span></code>]), decides
+which of <code class="docutils literal notranslate"><span class="pre">Encoder</span></code> or <code class="docutils literal notranslate"><span class="pre">Decoder</span></code> will be the pseudo inverse of
+the other one.</p></li>
+<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Zero-padding added to both sides of the input.
+Passed to Encoder and Decoder.</p></li>
+<li><p><strong>output_padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Additional size added to one side of the output shape.
+Passed to Decoder.</p></li>
+<li><p><strong>**kwargs</strong> – Arguments which will be passed to the filterbank class
+additionally to the usual <cite>n_filters</cite>, <cite>kernel_size</cite> and <cite>stride</cite>.
+Depends on the filterbank family.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#asteroid_filterbanks.Encoder" title="asteroid_filterbanks.Encoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">Encoder</span></code></a>, <a class="reference internal" href="#asteroid_filterbanks.Decoder" title="asteroid_filterbanks.Decoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">Decoder</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid_filterbanks.get">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.</code><code class="sig-name descname">get</code><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/__init__.py#L85-L105"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a filterbank class from a string. Returns its input if it
+is callable (already a <a class="reference internal" href="#asteroid_filterbanks.Filterbank" title="asteroid_filterbanks.Filterbank"><code class="xref py py-class docutils literal notranslate"><span class="pre">Filterbank</span></code></a> for example).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>identifier</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><em>Callable</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – the filterbank identifier.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#asteroid_filterbanks.Filterbank" title="asteroid_filterbanks.Filterbank"><code class="xref py py-class docutils literal notranslate"><span class="pre">Filterbank</span></code></a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="learnable-filterbanks">
+<h2>Learnable filterbanks<a class="headerlink" href="#learnable-filterbanks" title="Permalink to this headline">¶</a></h2>
+<section id="module-asteroid_filterbanks.free_fb">
+<span id="free"></span><h3><span class="hidden-section">Free</span><a class="headerlink" href="#module-asteroid_filterbanks.free_fb" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="asteroid_filterbanks.free_fb.FreeFB">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.free_fb.</code><code class="sig-name descname">FreeFB</code><span class="sig-paren">(</span><em class="sig-param">n_filters</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">stride=None</em>, <em class="sig-param">sample_rate=8000.0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/free_fb.py#L6-L33"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.free_fb.FreeFB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid_filterbanks.enc_dec.Filterbank</span></code></p>
+<p>Free filterbank without any constraints. Equivalent to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Conv1d</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of filters.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Length of the filters.</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Stride of the convolution.
+If None (default), set to <code class="docutils literal notranslate"><span class="pre">kernel_size</span> <span class="pre">//</span> <span class="pre">2</span></code>.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Sample rate of the expected audio.
+Defaults to 8000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><p><strong>n_feats_out</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of output filters.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>References</dt><dd><p>[1] : “Filterbank design for end-to-end speech separation”. ICASSP 2020.
+Manuel Pariente, Samuele Cornell, Antoine Deleforge, Emmanuel Vincent.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid_filterbanks.free_fb.FreeFB.filters">
+<code class="sig-name descname">filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/free_fb.py#L32-L33"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.free_fb.FreeFB.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract method for filters.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-asteroid_filterbanks.analytic_free_fb">
+<span id="analytic-free"></span><h3><span class="hidden-section">Analytic Free</span><a class="headerlink" href="#module-asteroid_filterbanks.analytic_free_fb" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="asteroid_filterbanks.analytic_free_fb.AnalyticFreeFB">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.analytic_free_fb.</code><code class="sig-name descname">AnalyticFreeFB</code><span class="sig-paren">(</span><em class="sig-param">n_filters</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">stride=None</em>, <em class="sig-param">sample_rate=8000.0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/analytic_free_fb.py#L33-L73"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.analytic_free_fb.AnalyticFreeFB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid_filterbanks.enc_dec.Filterbank</span></code></p>
+<p>Free analytic (fully learned with analycity constraints) filterbank.
+For more details, see [1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of filters. Half of <cite>n_filters</cite> will
+have parameters, the other half will be the hilbert transforms.
+<cite>n_filters</cite> should be even.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Length of the filters.</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Stride of the convolution.
+If None (default), set to <code class="docutils literal notranslate"><span class="pre">kernel_size</span> <span class="pre">//</span> <span class="pre">2</span></code>.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Sample rate of the expected audio.
+Defaults to 8000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><p><strong>n_feats_out</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of output filters.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>References</dt><dd><p>[1] : “Filterbank design for end-to-end speech separation”. ICASSP 2020.
+Manuel Pariente, Samuele Cornell, Antoine Deleforge, Emmanuel Vincent.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid_filterbanks.analytic_free_fb.AnalyticFreeFB.filters">
+<code class="sig-name descname">filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/analytic_free_fb.py#L69-L73"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.analytic_free_fb.AnalyticFreeFB.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract method for filters.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-asteroid_filterbanks.param_sinc_fb">
+<span id="parameterized-sinc"></span><h3><span class="hidden-section">Parameterized Sinc</span><a class="headerlink" href="#module-asteroid_filterbanks.param_sinc_fb" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="asteroid_filterbanks.param_sinc_fb.ParamSincFB">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.param_sinc_fb.</code><code class="sig-name descname">ParamSincFB</code><span class="sig-paren">(</span><em class="sig-param">n_filters</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">stride=None</em>, <em class="sig-param">sample_rate=16000.0</em>, <em class="sig-param">min_low_hz=50</em>, <em class="sig-param">min_band_hz=50</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/param_sinc_fb.py#L7-L125"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.param_sinc_fb.ParamSincFB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid_filterbanks.enc_dec.Filterbank</span></code></p>
+<p>Extension of the parameterized filterbank from [1] proposed in [2].
+Modified and extended from from <a class="reference external" href="https://github.com/mravanelli/SincNet">https://github.com/mravanelli/SincNet</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of filters. Half of <cite>n_filters</cite> (the real
+parts) will have parameters, the other half will correspond to the
+imaginary parts. <cite>n_filters</cite> should be even.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Length of the filters.</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Stride of the convolution. If None (default),
+set to <code class="docutils literal notranslate"><span class="pre">kernel_size</span> <span class="pre">//</span> <span class="pre">2</span></code>.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – The sample rate (used for initialization).</p></li>
+<li><p><strong>min_low_hz</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Lowest low frequency allowed (Hz).</p></li>
+<li><p><strong>min_band_hz</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Lowest band frequency allowed (Hz).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><p><strong>n_feats_out</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of output filters.</p>
+</dd>
+</dl>
+<dl>
+<dt>References</dt><dd><p>[1] : “Speaker Recognition from raw waveform with SincNet”. SLT 2018.
+Mirco Ravanelli, Yoshua Bengio.  <a class="reference external" href="https://arxiv.org/abs/1808.00158">https://arxiv.org/abs/1808.00158</a></p>
+<p>[2] : “Filterbank design for end-to-end speech separation”. ICASSP 2020.
+Manuel Pariente, Samuele Cornell, Antoine Deleforge, Emmanuel Vincent.
+<a class="reference external" href="https://arxiv.org/abs/1910.10400">https://arxiv.org/abs/1910.10400</a></p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid_filterbanks.param_sinc_fb.ParamSincFB.filters">
+<code class="sig-name descname">filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/param_sinc_fb.py#L82-L90"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.param_sinc_fb.ParamSincFB.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute filters from parameters</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid_filterbanks.param_sinc_fb.ParamSincFB.get_config">
+<code class="sig-name descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/param_sinc_fb.py#L118-L125"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.param_sinc_fb.ParamSincFB.get_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns dictionary of arguments to re-instantiate the class.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="fixed-filterbanks">
+<h2>Fixed filterbanks<a class="headerlink" href="#fixed-filterbanks" title="Permalink to this headline">¶</a></h2>
+<section id="module-asteroid_filterbanks.stft_fb">
+<span id="stft"></span><h3><span class="hidden-section">STFT</span><a class="headerlink" href="#module-asteroid_filterbanks.stft_fb" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="asteroid_filterbanks.stft_fb.STFTFB">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.stft_fb.</code><code class="sig-name descname">STFTFB</code><span class="sig-paren">(</span><em class="sig-param">n_filters</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">stride=None</em>, <em class="sig-param">window=None</em>, <em class="sig-param">sample_rate=8000.0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/stft_fb.py#L6-L76"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.stft_fb.STFTFB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid_filterbanks.enc_dec.Filterbank</span></code></p>
+<p>STFT filterbank.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of filters. Determines the length of the STFT
+filters before windowing.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Length of the filters (i.e the window).</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Stride of the convolution (hop size). If None
+(default), set to <code class="docutils literal notranslate"><span class="pre">kernel_size</span> <span class="pre">//</span> <span class="pre">2</span></code>.</p></li>
+<li><p><strong>window</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>, optional) – If None, defaults to
+<code class="docutils literal notranslate"><span class="pre">np.sqrt(np.hanning())</span></code>.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Sample rate of the expected audio.
+Defaults to 8000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><p><strong>n_feats_out</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of output filters.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid_filterbanks.stft_fb.STFTFB.filters">
+<code class="sig-name descname">filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/stft_fb.py#L63-L64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.stft_fb.STFTFB.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract method for filters.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.stft_fb.perfect_synthesis_window">
+<code class="sig-prename descclassname">asteroid_filterbanks.stft_fb.</code><code class="sig-name descname">perfect_synthesis_window</code><span class="sig-paren">(</span><em class="sig-param">analysis_window</em>, <em class="sig-param">hop_size</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/stft_fb.py#L79-L103"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.stft_fb.perfect_synthesis_window" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Computes a window for perfect synthesis given an analysis window and</dt><dd><p>a hop size.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>analysis_window</strong> (<em>np.array</em>) – Analysis window of the transform.</p></li>
+<li><p><strong>hop_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Hop size in number of samples.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>np.array</em> – the synthesis window to use for perfectly inverting the STFT.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-asteroid_filterbanks.melgram_fb">
+<span id="melgram"></span><h3><span class="hidden-section">MelGram</span><a class="headerlink" href="#module-asteroid_filterbanks.melgram_fb" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="asteroid_filterbanks.melgram_fb.MelGramFB">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.melgram_fb.</code><code class="sig-name descname">MelGramFB</code><span class="sig-paren">(</span><em class="sig-param">n_filters</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">stride=None</em>, <em class="sig-param">window=None</em>, <em class="sig-param">sample_rate=8000.0</em>, <em class="sig-param">n_mels=40</em>, <em class="sig-param">fmin=0.0</em>, <em class="sig-param">fmax=None</em>, <em class="sig-param">norm='slaney'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/melgram_fb.py#L6-L63"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.melgram_fb.MelGramFB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#asteroid_filterbanks.stft_fb.STFTFB" title="asteroid_filterbanks.stft_fb.STFTFB"><code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid_filterbanks.stft_fb.STFTFB</span></code></a></p>
+<p>Mel magnitude spectrogram filterbank.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of filters. Determines the length of the STFT
+filters before windowing.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Length of the filters (i.e the window).</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Stride of the convolution (hop size). If None
+(default), set to <code class="docutils literal notranslate"><span class="pre">kernel_size</span> <span class="pre">//</span> <span class="pre">2</span></code>.</p></li>
+<li><p><strong>window</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>, optional) – If None, defaults to
+<code class="docutils literal notranslate"><span class="pre">np.sqrt(np.hanning())</span></code>.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Sample rate of the expected audio.
+Defaults to 8000.</p></li>
+<li><p><strong>n_mels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of mel bands.</p></li>
+<li><p><strong>fmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Minimum frequency of the mel filters.</p></li>
+<li><p><strong>fmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Maximum frequency of the mel filters. Defaults to sample_rate//2.</p></li>
+<li><p><strong>norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Mel normalization {None, ‘slaney’, or number}.
+See <cite>librosa.filters.mel</cite></p></li>
+<li><p><strong>**kwargs</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid_filterbanks.melgram_fb.MelGramFB.post_analysis">
+<code class="sig-name descname">post_analysis</code><span class="sig-paren">(</span><em class="sig-param">spec: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/melgram_fb.py#L58-L59"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.melgram_fb.MelGramFB.post_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply transform to encoder convolution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid_filterbanks.melgram_fb.MelGramFB.get_config">
+<code class="sig-name descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/melgram_fb.py#L61-L63"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.melgram_fb.MelGramFB.get_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns dictionary of arguments to re-instantiate the class.
+Needs to be subclassed if the filterbanks takes additional arguments
+than <code class="docutils literal notranslate"><span class="pre">n_filters</span></code> <code class="docutils literal notranslate"><span class="pre">kernel_size</span></code> <code class="docutils literal notranslate"><span class="pre">stride</span></code> and <code class="docutils literal notranslate"><span class="pre">sample_rate</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid_filterbanks.melgram_fb.MelScale">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.melgram_fb.</code><code class="sig-name descname">MelScale</code><span class="sig-paren">(</span><em class="sig-param">n_filters</em>, <em class="sig-param">sample_rate=8000.0</em>, <em class="sig-param">n_mels=40</em>, <em class="sig-param">fmin=0.0</em>, <em class="sig-param">fmax=None</em>, <em class="sig-param">norm='slaney'</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/melgram_fb.py#L66-L101"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.melgram_fb.MelScale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<p>Mel-scale filterbank matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of filters. Determines the length of the STFT
+filters before windowing.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Sample rate of the expected audio.
+Defaults to 8000.</p></li>
+<li><p><strong>n_mels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of mel bands.</p></li>
+<li><p><strong>fmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Minimum frequency of the mel filters.</p></li>
+<li><p><strong>fmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Maximum frequency of the mel filters. Defaults to sample_rate//2.</p></li>
+<li><p><strong>norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Mel normalization {None, ‘slaney’, or number}.
+See <cite>librosa.filters.mel</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="mpgt">
+<h3><span class="hidden-section">MPGT</span><a class="headerlink" href="#mpgt" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="asteroid_filterbanks.multiphase_gammatone_fb.MultiphaseGammatoneFB">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid_filterbanks.multiphase_gammatone_fb.</code><code class="sig-name descname">MultiphaseGammatoneFB</code><span class="sig-paren">(</span><em class="sig-param">n_filters=128</em>, <em class="sig-param">kernel_size=16</em>, <em class="sig-param">sample_rate=8000.0</em>, <em class="sig-param">stride=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/multiphase_gammatone_fb.py#L6-L35"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.multiphase_gammatone_fb.MultiphaseGammatoneFB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid_filterbanks.enc_dec.Filterbank</span></code></p>
+<p>Multi-Phase Gammatone Filterbank as described in [1].</p>
+<p>Please cite [1] whenever using this.</p>
+<p><a class="reference external" href="https://github.com/sp-uhh/mp-gtf">Original code repository:</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of filters.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Length of the filters.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – The sample rate (used for initialization).</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Stride of the convolution. If None (default),
+set to <code class="docutils literal notranslate"><span class="pre">kernel_size</span> <span class="pre">//</span> <span class="pre">2</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>References</dt><dd><p>[1] David Ditter, Timo Gerkmann, “A Multi-Phase Gammatone Filterbank for
+Speech Separation via TasNet”, ICASSP 2020
+Available: <a class="reference external" href="https://ieeexplore.ieee.org/document/9053602/">https://ieeexplore.ieee.org/document/9053602/</a></p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid_filterbanks.multiphase_gammatone_fb.MultiphaseGammatoneFB.filters">
+<code class="sig-name descname">filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/multiphase_gammatone_fb.py#L34-L35"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.multiphase_gammatone_fb.MultiphaseGammatoneFB.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract method for filters.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="transforms">
+<h2>Transforms<a class="headerlink" href="#transforms" title="Permalink to this headline">¶</a></h2>
+<section id="module-asteroid_filterbanks.griffin_lim">
+<span id="griffin-lim-and-misi"></span><h3><span class="hidden-section">Griffin-Lim and MISI</span><a class="headerlink" href="#module-asteroid_filterbanks.griffin_lim" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="asteroid_filterbanks.griffin_lim.griffin_lim">
+<code class="sig-prename descclassname">asteroid_filterbanks.griffin_lim.</code><code class="sig-name descname">griffin_lim</code><span class="sig-paren">(</span><em class="sig-param">mag_specgram</em>, <em class="sig-param">stft_enc</em>, <em class="sig-param">angles=None</em>, <em class="sig-param">istft_dec=None</em>, <em class="sig-param">n_iter=6</em>, <em class="sig-param">momentum=0.9</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/griffin_lim.py#L10-L73"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.griffin_lim.griffin_lim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates matching phase from magnitude spectogram using the
+‘fast’ Griffin Lim algorithm [1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mag_specgram</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – (any, dim, ension, freq, frames) as
+returned by <cite>Encoder(STFTFB)</cite>, the magnitude spectrogram to be
+inverted.</p></li>
+<li><p><strong>stft_enc</strong> (<a class="reference internal" href="#asteroid_filterbanks.Encoder" title="asteroid_filterbanks.Encoder"><em>Encoder</em></a><em>[</em><a class="reference internal" href="#asteroid_filterbanks.stft_fb.STFTFB" title="asteroid_filterbanks.stft_fb.STFTFB"><em>STFTFB</em></a><em>]</em>) – The <cite>Encoder(STFTFB())</cite> object that was
+used to compute the input <cite>mag_spec</cite>.</p></li>
+<li><p><strong>angles</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em> or </em><em>Tensor</em>) – Angles to use to initialize the algorithm.
+If None (default), angles are init with uniform ditribution.</p></li>
+<li><p><strong>istft_dec</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em> or </em><a class="reference internal" href="#asteroid_filterbanks.Decoder" title="asteroid_filterbanks.Decoder"><em>Decoder</em></a><em>[</em><a class="reference internal" href="#asteroid_filterbanks.stft_fb.STFTFB" title="asteroid_filterbanks.stft_fb.STFTFB"><em>STFTFB</em></a><em>]</em>) – Optional Decoder to use to get
+back to the time domain. If None (default), a perfect
+reconstruction Decoder is built from <cite>stft_enc</cite>.</p></li>
+<li><p><strong>n_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of griffin-lim iterations to run.</p></li>
+<li><p><strong>momentum</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – The momentum of fast Griffin-Lim. Original
+Griffin-Lim is obtained for momentum=0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>torch.Tensor</em> – estimated waveforms of shape (any, dim, ension, time).</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stft</span> <span class="o">=</span> <span class="n">Encoder</span><span class="p">(</span><span class="n">STFTFB</span><span class="p">(</span><span class="n">n_filters</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">128</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wav</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spec</span> <span class="o">=</span> <span class="n">stft</span><span class="p">(</span><span class="n">wav</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">masked_spec</span> <span class="o">=</span> <span class="n">spec</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">spec</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mag</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="n">masked_spec</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_wav</span> <span class="o">=</span> <span class="n">griffin_lim</span><span class="p">(</span><span class="n">mag</span><span class="p">,</span> <span class="n">stft</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>References</dt><dd><p>[1] Perraudin et al. “A fast Griffin-Lim algorithm,” WASPAA 2013.</p>
+<p>[2] D. W. Griffin and J. S. Lim:  “Signal estimation from modified
+short-time Fourier transform,” ASSP 1984.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.griffin_lim.misi">
+<code class="sig-prename descclassname">asteroid_filterbanks.griffin_lim.</code><code class="sig-name descname">misi</code><span class="sig-paren">(</span><em class="sig-param">mixture_wav</em>, <em class="sig-param">mag_specgrams</em>, <em class="sig-param">stft_enc</em>, <em class="sig-param">angles=None</em>, <em class="sig-param">istft_dec=None</em>, <em class="sig-param">n_iter=6</em>, <em class="sig-param">momentum=0.0</em>, <em class="sig-param">src_weights=None</em>, <em class="sig-param">dim=1</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/griffin_lim.py#L76-L168"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.griffin_lim.misi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Jointly estimates matching phase from magnitude spectograms using the
+Multiple Input Spectrogram Inversion (MISI) algorithm [1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mixture_wav</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – (batch, time)</p></li>
+<li><p><strong>mag_specgrams</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – (batch, n_src, freq, frames) as
+returned by <cite>Encoder(STFTFB)</cite>, the magnitude spectrograms to be
+jointly inverted using MISI (modified or not).</p></li>
+<li><p><strong>stft_enc</strong> (<a class="reference internal" href="#asteroid_filterbanks.Encoder" title="asteroid_filterbanks.Encoder"><em>Encoder</em></a><em>[</em><a class="reference internal" href="#asteroid_filterbanks.stft_fb.STFTFB" title="asteroid_filterbanks.stft_fb.STFTFB"><em>STFTFB</em></a><em>]</em>) – The <cite>Encoder(STFTFB())</cite> object that was
+used to compute the input <cite>mag_spec</cite>.</p></li>
+<li><p><strong>angles</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em> or </em><em>Tensor</em>) – Angles to use to initialize the algorithm.
+If None (default), angles are init with uniform ditribution.</p></li>
+<li><p><strong>istft_dec</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em> or </em><a class="reference internal" href="#asteroid_filterbanks.Decoder" title="asteroid_filterbanks.Decoder"><em>Decoder</em></a><em>[</em><a class="reference internal" href="#asteroid_filterbanks.stft_fb.STFTFB" title="asteroid_filterbanks.stft_fb.STFTFB"><em>STFTFB</em></a><em>]</em>) – Optional Decoder to use to get
+back to the time domain. If None (default), a perfect
+reconstruction Decoder is built from <cite>stft_enc</cite>.</p></li>
+<li><p><strong>n_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of MISI iterations to run.</p></li>
+<li><p><strong>momentum</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Momentum on updates (this argument comes from
+GriffinLim). Defaults to 0 as it was never proposed anywhere.</p></li>
+<li><p><strong>src_weights</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em> or </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – Consistency weight for each source.
+Shape needs to be broadcastable to <cite>istft_dec(mag_specgrams)</cite>.
+We make sure that the weights sum up to 1 along dim <cite>dim</cite>.
+If <cite>src_weights</cite> is None, compute them based on relative power.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Axis which contains the sources in <cite>mag_specgrams</cite>.
+Used for consistency constraint.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>torch.Tensor</em> – estimated waveforms of shape (batch, n_src, time).</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stft</span> <span class="o">=</span> <span class="n">Encoder</span><span class="p">(</span><span class="n">STFTFB</span><span class="p">(</span><span class="n">n_filters</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">128</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wav</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">specs</span> <span class="o">=</span> <span class="n">stft</span><span class="p">(</span><span class="n">wav</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">masked_specs</span> <span class="o">=</span> <span class="n">specs</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">specs</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mag</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="n">masked_specs</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_wav</span> <span class="o">=</span> <span class="n">misi</span><span class="p">(</span><span class="n">wav</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">mag</span><span class="p">,</span> <span class="n">stft</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>References</dt><dd><p>[1] Gunawan and Sen, “Iterative Phase Estimation for the Synthesis of
+Separated Sources From Single-Channel Mixtures,” in IEEE Signal
+Processing Letters, 2010.</p>
+<p>[2] Wang, LeRoux et al. “End-to-End Speech Separation with Unfolded
+Iterative Phase Reconstruction.” Interspeech 2018 (2018)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-asteroid_filterbanks.transforms">
+<span id="complex-transforms"></span><h3><span class="hidden-section">Complex transforms</span><a class="headerlink" href="#module-asteroid_filterbanks.transforms" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.mul_c">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">mul_c</code><span class="sig-paren">(</span><em class="sig-param">inp</em>, <em class="sig-param">other</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L9-L47"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.mul_c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entrywise product for complex valued tensors.</p>
+<p>Operands are assumed to have the real parts of each entry followed by the
+imaginary parts of each entry along dimension <cite>dim</cite>, e.g. for,
+<code class="docutils literal notranslate"><span class="pre">dim</span> <span class="pre">=</span> <span class="pre">1</span></code>, the matrix</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+ <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>is interpreted as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="n">j</span><span class="p">,</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span><span class="n">j</span><span class="p">],</span>
+ <span class="p">[</span><span class="mi">5</span> <span class="o">+</span> <span class="mi">7</span><span class="n">j</span><span class="p">,</span> <span class="mi">6</span> <span class="o">+</span> <span class="mi">8</span><span class="n">j</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>where <cite>j</cite> is such that <cite>j * j = -1</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inp</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – The first operand with real and
+imaginary parts concatenated on the <cite>dim</cite> axis.</p></li>
+<li><p><strong>other</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – The second operand.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     The complex multiplication between <cite>inp</cite> and <cite>other</cite></p>
+<p>For now, it assumes that <cite>other</cite> has the same shape as <cite>inp</cite> along
+<cite>dim</cite>.</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.reim">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">reim</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span> &#x2192; Tuple[torch.Tensor, torch.Tensor]<a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L50-L58"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.reim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a tuple (re, im).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – Complex valued tensor.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – frequency (or equivalent) dimension along which real and
+imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.mag">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">mag</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">dim: int = -2</em>, <em class="sig-param">EPS: float = 1e-08</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L61-L93"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.mag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes the magnitude of a complex tensor.</p>
+<p>The operands is assumed to have the real parts of each entry followed by
+the imaginary parts of each entry along dimension <cite>dim</cite>, e.g. for,
+<code class="docutils literal notranslate"><span class="pre">dim</span> <span class="pre">=</span> <span class="pre">1</span></code>, the matrix</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+ <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>is interpreted as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="n">j</span><span class="p">,</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span><span class="n">j</span><span class="p">],</span>
+ <span class="p">[</span><span class="mi">5</span> <span class="o">+</span> <span class="mi">7</span><span class="n">j</span><span class="p">,</span> <span class="mi">6</span> <span class="o">+</span> <span class="mi">8</span><span class="n">j</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>where <cite>j</cite> is such that <cite>j * j = -1</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – Complex valued tensor.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – frequency (or equivalent) dimension along which real and
+imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – The magnitude of x.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.magreim">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">magreim</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L96-L104"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.magreim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a concatenation of (mag, re, im).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – Complex valued tensor.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – frequency (or equivalent) dimension along which real and
+imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.apply_real_mask">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">apply_real_mask</code><span class="sig-paren">(</span><em class="sig-param">tf_rep</em>, <em class="sig-param">mask</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L107-L120"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.apply_real_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a real-valued mask to a real-valued representation.</p>
+<p>It corresponds to ReIm mask in [1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tf_rep</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – The time frequency representation to
+apply the mask to.</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – The real-valued mask to be applied.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Kept to have the same interface with the other ones.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – <cite>tf_rep</cite> multiplied by the <cite>mask</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.apply_mag_mask">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">apply_mag_mask</code><span class="sig-paren">(</span><em class="sig-param">tf_rep</em>, <em class="sig-param">mask</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L123-L158"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.apply_mag_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a real-valued mask to a complex-valued representation.</p>
+<p>If <cite>tf_rep</cite> has 2N elements along <cite>dim</cite>, <cite>mask</cite> has N elements, <cite>mask</cite> is
+duplicated along <cite>dim</cite> to apply the same mask to both the Re and Im.</p>
+<p><cite>tf_rep</cite> is assumed to have the real parts of each entry followed by
+the imaginary parts of each entry along dimension <cite>dim</cite>, e.g. for,
+<code class="docutils literal notranslate"><span class="pre">dim</span> <span class="pre">=</span> <span class="pre">1</span></code>, the matrix</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+ <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>is interpreted as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="n">j</span><span class="p">,</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span><span class="n">j</span><span class="p">],</span>
+ <span class="p">[</span><span class="mi">5</span> <span class="o">+</span> <span class="mi">7</span><span class="n">j</span><span class="p">,</span> <span class="mi">6</span> <span class="o">+</span> <span class="mi">8</span><span class="n">j</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>where <cite>j</cite> is such that <cite>j * j = -1</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tf_rep</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – The time frequency representation to
+apply the mask to. Re and Im are concatenated along <cite>dim</cite>.</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – The real-valued mask to be applied.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The frequency (or equivalent) dimension of both <cite>tf_rep</cite> and
+<cite>mask</cite> along which real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – <cite>tf_rep</cite> multiplied by the <cite>mask</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.apply_complex_mask">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">apply_complex_mask</code><span class="sig-paren">(</span><em class="sig-param">tf_rep</em>, <em class="sig-param">mask</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L161-L194"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.apply_complex_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a complex-valued mask to a complex-valued representation.</p>
+<p>Operands are assumed to have the real parts of each entry followed by the
+imaginary parts of each entry along dimension <cite>dim</cite>, e.g. for,
+<code class="docutils literal notranslate"><span class="pre">dim</span> <span class="pre">=</span> <span class="pre">1</span></code>, the matrix</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+ <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>is interpreted as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="n">j</span><span class="p">,</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span><span class="n">j</span><span class="p">],</span>
+ <span class="p">[</span><span class="mi">5</span> <span class="o">+</span> <span class="mi">7</span><span class="n">j</span><span class="p">,</span> <span class="mi">6</span> <span class="o">+</span> <span class="mi">8</span><span class="n">j</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>where <cite>j</cite> is such that <cite>j * j = -1</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tf_rep</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – The time frequency representation to
+apply the mask to.</p></li>
+<li><p><strong>(</strong><strong>class</strong> (<em>mask</em>) – <cite>torch.Tensor</cite>): The complex-valued mask to be applied.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The frequency (or equivalent) dimension of both <cite>tf_rep</cite> an
+<cite>mask</cite> along which real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     <cite>tf_rep</cite> multiplied by the <cite>mask</cite> in the complex sense.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.is_asteroid_complex">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">is_asteroid_complex</code><span class="sig-paren">(</span><em class="sig-param">tensor</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L197-L209"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.is_asteroid_complex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if tensor is complex-like in a given dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – tensor to be checked.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if dimension is even in the specified dimension, otherwise False</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.check_complex">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">check_complex</code><span class="sig-paren">(</span><em class="sig-param">tensor</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L212-L229"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.check_complex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assert that tensor is an Asteroid-style complex in a given dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – tensor to be checked.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>AssertionError if dimension is not even in the specified dimension</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.to_numpy">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">to_numpy</code><span class="sig-paren">(</span><em class="sig-param">tensor</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L232-L245"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.to_numpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert complex-like torch tensor to numpy complex array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – Complex tensor to convert to numpy.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> –     Corresponding complex array.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.from_numpy">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">from_numpy</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L248-L262"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.from_numpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert complex numpy array to complex-like torch tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>np.array</em>) – array to be converted.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     Corresponding torch.Tensor (complex axis in dim <a href="#id1"><span class="problematic" id="id2">`</span></a>dim`=</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.is_torchaudio_complex">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">is_torchaudio_complex</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/scripting.py#L265-L275"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.is_torchaudio_complex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if tensor is Torchaudio-style complex-like (last dimension is 2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – tensor to be checked.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if last dimension is 2, else False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.check_torchaudio_complex">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">check_torchaudio_complex</code><span class="sig-paren">(</span><em class="sig-param">tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/scripting.py#L278-L292"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.check_torchaudio_complex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assert that tensor is Torchaudo-style complex-like (last dimension is 2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tensor</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – tensor to be checked.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>AssertionError if last dimension is != 2.</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.to_torchaudio">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">to_torchaudio</code><span class="sig-paren">(</span><em class="sig-param">tensor</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L295-L307"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.to_torchaudio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts complex-like torch tensor to torchaudio style complex tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>torch.tensor</em>) – asteroid-style complex-like torch tensor.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     torchaudio-style complex-like torch tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.from_torchaudio">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">from_torchaudio</code><span class="sig-paren">(</span><em class="sig-param">tensor</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/scripting.py#L310-L324"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.from_torchaudio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts torchaudio style complex tensor to complex-like torch tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>torch.tensor</em>) – torchaudio-style complex-like torch tensor.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     asteroid-style complex-like torch tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.to_torch_complex">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">to_torch_complex</code><span class="sig-paren">(</span><em class="sig-param">tensor</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L327-L339"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.to_torch_complex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts complex-like torch tensor to native PyTorch complex tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>torch.tensor</em>) – asteroid-style complex-like torch tensor.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     Pytorch native complex-like torch tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.from_torch_complex">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">from_torch_complex</code><span class="sig-paren">(</span><em class="sig-param">tensor</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L342-L354"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.from_torch_complex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts Pytorch native complex tensor to complex-like torch tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>torch.tensor</em>) – PyTorch native complex-like torch tensor.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     asteroid-style complex-like torch tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.angle">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">angle</code><span class="sig-paren">(</span><em class="sig-param">tensor</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L357-L373"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the angle of the complex-like torch tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><em>torch.Tensor</em></a>) – the complex tensor from which to extract the
+phase.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     The counterclockwise angle from the positive real axis on
+the complex plane in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.from_magphase">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">from_magphase</code><span class="sig-paren">(</span><em class="sig-param">mag_spec</em>, <em class="sig-param">phase</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L376-L389"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.from_magphase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a complex-like torch tensor from magnitude and phase components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mag_spec</strong> (<em>torch.tensor</em>) – magnitude of the tensor.</p></li>
+<li><p><strong>phase</strong> (<em>torch.tensor</em>) – angle of the tensor</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – the frequency (or equivalent) dimension along which
+real and imaginary values are concatenated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.10.0a0+gitb241698 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> –     The corresponding complex-like torch tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.magphase">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">magphase</code><span class="sig-paren">(</span><em class="sig-param">spec: torch.Tensor</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span> &#x2192; Tuple[torch.Tensor, torch.Tensor]<a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L392-L396"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.magphase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits Asteroid complex-like tensor into magnitude and phase.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.centerfreq_correction">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">centerfreq_correction</code><span class="sig-paren">(</span><em class="sig-param">spec: torch.Tensor</em>, <em class="sig-param">kernel_size: int</em>, <em class="sig-param">stride: int = None</em>, <em class="sig-param">dim: int = -2</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L399-L425"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.centerfreq_correction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Corrects phase from the input spectrogram so that a sinusoid in the
+middle of a bin keeps the same phase from one frame to the next.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> – Spectrogram tensor of shape (batch, n_freq + 2, frames).</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Kernel size of the STFT.</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Stride of the STFT.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Only works of dim=-2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>Tensor</em> – the input spec with corrected phase.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid_filterbanks.transforms.phase_centerfreq_correction">
+<code class="sig-prename descclassname">asteroid_filterbanks.transforms.</code><code class="sig-name descname">phase_centerfreq_correction</code><span class="sig-paren">(</span><em class="sig-param">phase: torch.Tensor</em>, <em class="sig-param">kernel_size: int</em>, <em class="sig-param">stride: int = None</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference external" href="https://github.com/asteroid-team/asteroid-filterbanks/blob/master/asteroid_filterbanks/transforms.py#L428-L447"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid_filterbanks.transforms.phase_centerfreq_correction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Corrects phase so that a sinusoid in the middle of a bin keeps the
+same phase from one frame to the next.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phase</strong> – tensor of shape (batch, n_freq//2 + 1, frames)</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Kernel size of the STFT.</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Stride of the STFT.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>Tensor</em> – corrected phase.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="blocks.html" class="btn btn-neutral float-right" title="DNN building blocks" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="data.html" class="btn btn-neutral" title="PyTorch Datasets" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Oncoming.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Filterbank API</a><ul>
+<li><a class="reference internal" href="#filterbank-encoder-and-decoder">Filterbank, Encoder and Decoder</a></li>
+<li><a class="reference internal" href="#learnable-filterbanks">Learnable filterbanks</a><ul>
+<li><a class="reference internal" href="#module-asteroid_filterbanks.free_fb"><span class="hidden-section">Free</span></a></li>
+<li><a class="reference internal" href="#module-asteroid_filterbanks.analytic_free_fb"><span class="hidden-section">Analytic Free</span></a></li>
+<li><a class="reference internal" href="#module-asteroid_filterbanks.param_sinc_fb"><span class="hidden-section">Parameterized Sinc</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fixed-filterbanks">Fixed filterbanks</a><ul>
+<li><a class="reference internal" href="#module-asteroid_filterbanks.stft_fb"><span class="hidden-section">STFT</span></a></li>
+<li><a class="reference internal" href="#module-asteroid_filterbanks.melgram_fb"><span class="hidden-section">MelGram</span></a></li>
+<li><a class="reference internal" href="#mpgt"><span class="hidden-section">MPGT</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#transforms">Transforms</a><ul>
+<li><a class="reference internal" href="#module-asteroid_filterbanks.griffin_lim"><span class="hidden-section">Griffin-Lim and MISI</span></a></li>
+<li><a class="reference internal" href="#module-asteroid_filterbanks.transforms"><span class="hidden-section">Complex transforms</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/doctools.js"></script>
+         <script src="../_static/language_data.js"></script>
+         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <!--
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Resources</a>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://mpariente.github.io/asteroid/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+
+        <div class="footer-logo-col">
+          <img class="footer-logo-img" src="../_static/images/dark_asteroid_logo.svg"/>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Asteroid</a></li>
+            <li><a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Features</a></li>
+            <li><a href="">Ecosystem</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Blog</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Resources</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Support</a></li>
+            <li><a href="">Tutorials</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/issues" target="_blank">Github Issues</a></li>
+            <li><a href="" target="_blank">Slack</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="https://twitter.com/" target="_blank" class="twitter"></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </footer> -->
+
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch Lightning"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Features</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Resources</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

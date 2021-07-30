@@ -1,0 +1,794 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Datasets and tasks &mdash; asteroid 0.5.2dev documentation</title>
+  
+
+  
+  
+  
+  
+    <link rel="canonical" href="https://github.com/asteroid-team/asteroidsupported_datasets.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Training and Evaluation" href="training_and_evaluation.html" />
+    <link rel="prev" title="What is a recipe?" href="readmes/egs_README.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch">
+       <!-- <img class="call-to-action-img" src="_static/images/asteroid_logo_dark.png"/> -->
+      </a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <div class="resources-dropdown">
+              <a id="resourcesDropdownButton" data-toggle="resources-dropdown">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/"">
+                  <span class=dropdown-title>Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <!--
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/">
+                  <span class=dropdown-title>About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+                -->
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Start here</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="why_use_asteroid.html">What is Asteroid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p><span class="caption-text">Notebooks and Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Getting started with Asteroid</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb">Introduction and Overview</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/02_Filterbank.ipynb">Understanding the Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb">Our PITLossWrapper explained</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb">Processing large wav files</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j">Community: Numpy vs. Asteroid STFT</a></li>
+</ul>
+<p><span class="caption-text">Asteroid</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readmes/egs_README.html">What is a recipe?</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Datasets and tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training_and_evaluation.html">Training and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readmes/pretrained_models.html">Pretrained models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+<p><span class="caption-text">Package reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="package_reference/data.html">PyTorch Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_reference/filterbanks.html">Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_reference/blocks.html">DNN building blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_reference/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_reference/losses.html">Losses &amp; Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_reference/system.html">Lightning Wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_reference/optimizers.html">Optimizers &amp; Schedulers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_reference/dsp.html">DSP Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_reference/utils.html">Utils</a></li>
+</ul>
+<p><span class="caption-text">Community</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribution_guide.html">Asteroid High-Level Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readmes/CONTRIBUTING.html">How to contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Datasets and tasks</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="_sources/supported_datasets.rst.txt" rel="nofollow"><img src="_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="datasets-and-tasks">
+<h1>Datasets and tasks<a class="headerlink" href="#datasets-and-tasks" title="Permalink to this headline">¶</a></h1>
+<p>The following is a list of supported datasets, sorted by task.
+If you’re more interested in the corresponding PyTorch <code class="docutils literal notranslate"><span class="pre">Dataset</span></code>, see
+<a class="reference internal" href="package_reference/data.html"><span class="doc">this page</span></a></p>
+<section id="speech-separation">
+<h2>Speech separation<a class="headerlink" href="#speech-separation" title="Permalink to this headline">¶</a></h2>
+<section id="wsj0-2mix-dataset">
+<h3>wsj0-2mix dataset<a class="headerlink" href="#wsj0-2mix-dataset" title="Permalink to this headline">¶</a></h3>
+<p>wsj0-2mix is a single channel speech separation dataset base on WSJ0.
+Three speaker extension (wsj0-3mix) is also considered here.</p>
+<p><strong>Reference</strong></p>
+<div class="highlight-BibTex notranslate"><div class="highlight"><pre><span></span><span class="nc">@article</span><span class="p">{</span><span class="nl">Hershey_2016</span><span class="p">,</span>
+   <span class="na">title</span><span class="p">=</span><span class="s">{Deep clustering: Discriminative embeddings for segmentation and separation}</span><span class="p">,</span>
+   <span class="na">ISBN</span><span class="p">=</span><span class="s">{9781479999880}</span><span class="p">,</span>
+   <span class="na">url</span><span class="p">=</span><span class="s">{http://dx.doi.org/10.1109/ICASSP.2016.7471631}</span><span class="p">,</span>
+   <span class="na">DOI</span><span class="p">=</span><span class="s">{10.1109/icassp.2016.7471631}</span><span class="p">,</span>
+   <span class="na">journal</span><span class="p">=</span><span class="s">{2016 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)}</span><span class="p">,</span>
+   <span class="na">publisher</span><span class="p">=</span><span class="s">{IEEE}</span><span class="p">,</span>
+   <span class="na">author</span><span class="p">=</span><span class="s">{Hershey, John R. and Chen, Zhuo and Le Roux, Jonathan and Watanabe, Shinji}</span><span class="p">,</span>
+   <span class="na">year</span><span class="p">=</span><span class="s">{2016}</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="wham-dataset">
+<h3>WHAM dataset<a class="headerlink" href="#wham-dataset" title="Permalink to this headline">¶</a></h3>
+<p>WHAM! is a noisy single-channel speech separation dataset based on WSJ0.
+It is a noisy extension of <a class="reference external" href="./../wsj0-mix/">wsj0-2mix</a>.</p>
+<p>More info <a class="reference external" href="http://wham.whisper.ai/">here</a>.</p>
+<p><strong>References</strong></p>
+<div class="highlight-BibTex notranslate"><div class="highlight"><pre><span></span><span class="nc">@inproceedings</span><span class="p">{</span><span class="nl">WHAMWichern2019</span><span class="p">,</span>
+  <span class="na">author</span><span class="p">=</span><span class="s">{Gordon Wichern and Joe Antognini and Michael Flynn and Licheng Richard Zhu and Emmett McQuinn and Dwight Crow and Ethan Manilow and Jonathan Le Roux}</span><span class="p">,</span>
+  <span class="na">title</span><span class="p">=</span><span class="s">{{WHAM!: extending speech separation to noisy environments}}</span><span class="p">,</span>
+  <span class="na">year</span><span class="p">=</span><span class="m">2019</span><span class="p">,</span>
+  <span class="na">booktitle</span><span class="p">=</span><span class="s">{Proc. Interspeech}</span><span class="p">,</span>
+  <span class="na">pages</span><span class="p">=</span><span class="s">{1368--1372}</span><span class="p">,</span>
+  <span class="na">doi</span><span class="p">=</span><span class="s">{10.21437/Interspeech.2019-2821}</span><span class="p">,</span>
+  <span class="na">url</span><span class="p">=</span><span class="s">{http://dx.doi.org/10.21437/Interspeech.2019-2821}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="whamr-dataset">
+<h3>WHAMR dataset<a class="headerlink" href="#whamr-dataset" title="Permalink to this headline">¶</a></h3>
+<p>WHAMR! is a noisy and reverberant single-channel speech separation dataset
+based on WSJ0.
+It is a reverberant extension of <a class="reference external" href="./../wham">WHAM!</a>.</p>
+<p>Note that WHAMR! can synthesize binaural recordings, but we only consider
+the single channel for now.</p>
+<p>More info <a class="reference external" href="http://wham.whisper.ai/">here</a>.
+<strong>References</strong></p>
+<div class="highlight-BibTex notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">maciejewski2019whamr</span><span class="p">,</span>
+    <span class="na">title</span><span class="p">=</span><span class="s">{WHAMR!: Noisy and Reverberant Single-Channel Speech Separation}</span><span class="p">,</span>
+    <span class="na">author</span><span class="p">=</span><span class="s">{Matthew Maciejewski and Gordon Wichern and Emmett McQuinn and Jonathan Le Roux}</span><span class="p">,</span>
+    <span class="na">year</span><span class="p">=</span><span class="s">{2019}</span><span class="p">,</span>
+    <span class="na">eprint</span><span class="p">=</span><span class="s">{1910.10279}</span><span class="p">,</span>
+    <span class="na">archivePrefix</span><span class="p">=</span><span class="s">{arXiv}</span><span class="p">,</span>
+    <span class="na">primaryClass</span><span class="p">=</span><span class="s">{cs.SD}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="librimix-dataset">
+<h3>LibriMix dataset<a class="headerlink" href="#librimix-dataset" title="Permalink to this headline">¶</a></h3>
+<p>The LibriMix dataset is an open source dataset
+derived from LibriSpeech dataset. It’s meant as an alternative and complement
+to <a class="reference external" href="./../wham/">WHAM</a>.</p>
+<p>More info <a class="reference external" href="https://github.com/JorisCos/LibriMix">here</a>.</p>
+<p><strong>References</strong></p>
+<div class="highlight-BibTeX notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">cosentino2020librimix</span><span class="p">,</span>
+    <span class="na">title</span><span class="p">=</span><span class="s">{LibriMix: An Open-Source Dataset for Generalizable Speech Separation}</span><span class="p">,</span>
+    <span class="na">author</span><span class="p">=</span><span class="s">{Joris Cosentino and Manuel Pariente and Samuele Cornell and Antoine Deleforge and Emmanuel Vincent}</span><span class="p">,</span>
+    <span class="na">year</span><span class="p">=</span><span class="s">{2020}</span><span class="p">,</span>
+    <span class="na">eprint</span><span class="p">=</span><span class="s">{2005.11262}</span><span class="p">,</span>
+    <span class="na">archivePrefix</span><span class="p">=</span><span class="s">{arXiv}</span><span class="p">,</span>
+    <span class="na">primaryClass</span><span class="p">=</span><span class="s">{eess.AS}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="kinect-wsj-dataset">
+<h3>Kinect-WSJ dataset<a class="headerlink" href="#kinect-wsj-dataset" title="Permalink to this headline">¶</a></h3>
+<p>Kinect-WSJ is a reverberated, noisy version of the WSJ0-2MIX dataset.
+Microphones are placed on a linear array with spacing between the devices
+resembling that of Microsoft Kinect ™, the device used to record the CHiME-5 dataset.
+This was done so that we could use the real ambient noise captured as part of CHiME-5 dataset.
+The room impulse responses (RIR) were simulated for a sampling rate of 16,000 Hz.</p>
+<p><strong>Requirements</strong></p>
+<ul class="simple">
+<li><p>wsj_path :  Path to precomputed wsj-2mix dataset. Should contain the folder 2speakers/wav16k/.
+If you don’t have wsj_mix dataset, please create it using the scripts in egs/wsj0_mix</p></li>
+<li><p>chime_path : Path to chime-5 dataset. Should contain the folders train, dev and eval</p></li>
+<li><p>dihard_path : Path to dihard labels. Should contain <code class="docutils literal notranslate"><span class="pre">*.lab</span></code> files for the train and dev set</p></li>
+</ul>
+<p><strong>References</strong><span class="raw-html-m2r"><br></span>
+<a class="reference external" href="https://github.com/sunits/Reverberated_WSJ_2MIX/">Original repo</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@inproceedings</span><span class="p">{</span><span class="n">sivasankaran2020</span><span class="p">,</span>
+  <span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2020</span> <span class="mi">28</span><span class="n">th</span> <span class="p">{{</span><span class="n">European</span> <span class="n">Signal</span> <span class="n">Processing</span> <span class="n">Conference</span><span class="p">}}</span> <span class="p">({{</span><span class="n">EUSIPCO</span><span class="p">}})},</span>
+  <span class="n">title</span><span class="o">=</span><span class="p">{</span><span class="n">Analyzing</span> <span class="n">the</span> <span class="n">impact</span> <span class="n">of</span> <span class="n">speaker</span> <span class="n">localization</span> <span class="n">errors</span> <span class="n">on</span> <span class="n">speech</span> <span class="n">separation</span> <span class="k">for</span> <span class="n">automatic</span> <span class="n">speech</span> <span class="n">recognition</span><span class="p">},</span>
+  <span class="n">author</span><span class="o">=</span><span class="p">{</span><span class="n">Sunit</span> <span class="n">Sivasankaran</span> <span class="ow">and</span> <span class="n">Emmanuel</span> <span class="n">Vincent</span> <span class="ow">and</span> <span class="n">Dominique</span> <span class="n">Fohr</span><span class="p">},</span>
+  <span class="n">year</span><span class="o">=</span><span class="p">{</span><span class="mi">2021</span><span class="p">},</span>
+  <span class="n">month</span> <span class="o">=</span> <span class="n">Jan</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="sms-wsj-dataset">
+<h3>SMS_WSJ dataset<a class="headerlink" href="#sms-wsj-dataset" title="Permalink to this headline">¶</a></h3>
+<p>SMS_WSJ (stands for Spatialized Multi-Speaker Wall Street Journal)
+is a multichannel source separation dataset, based on WSJ0 and WSJ1.</p>
+<p>All the information regarding the dataset can be found in
+<a class="reference external" href="https://github.com/fgnt/sms_wsj">this repo</a>.</p>
+<p><strong>References</strong>
+If you use this dataset, please cite the corresponding paper as follows :</p>
+<div class="highlight-BibTex notranslate"><div class="highlight"><pre><span></span><span class="nc">@Article</span><span class="p">{</span><span class="nl">SmsWsj19</span><span class="p">,</span>
+  <span class="na">author</span>    <span class="p">=</span> <span class="s">{Drude, Lukas and Heitkaemper, Jens and Boeddeker, Christoph and Haeb-Umbach, Reinhold}</span><span class="p">,</span>
+  <span class="na">title</span>     <span class="p">=</span> <span class="s">{{SMS-WSJ}: Database, performance measures, and baseline recipe for multi-channel source separation and recognition}</span><span class="p">,</span>
+  <span class="na">journal</span>   <span class="p">=</span> <span class="s">{arXiv preprint arXiv:1910.13934}</span><span class="p">,</span>
+  <span class="na">year</span>      <span class="p">=</span> <span class="s">{2019}</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="speech-enhancement">
+<h2>Speech enhancement<a class="headerlink" href="#speech-enhancement" title="Permalink to this headline">¶</a></h2>
+<section id="dns-challenge-s-dataset">
+<h3>DNS Challenge’s dataset<a class="headerlink" href="#dns-challenge-s-dataset" title="Permalink to this headline">¶</a></h3>
+<p>The Deep Noise Suppression (DNS) Challenge is a single-channel speech enhancement
+challenge organized by Microsoft, with a focus on real-time applications.
+More info can be found on the <a class="reference external" href="https://dns-challenge.azurewebsites.net/">official page</a>.</p>
+<p><strong>References</strong>
+The challenge paper, <a class="reference external" href="https://arxiv.org/abs/2001.08662">here</a>.</p>
+<div class="highlight-BibTex notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">DNSChallenge2020</span><span class="p">,</span>
+<span class="na">title</span><span class="p">=</span><span class="s">{The INTERSPEECH 2020 Deep Noise Suppression Challenge: Datasets, Subjective Speech Quality and Testing Framework}</span><span class="p">,</span>
+<span class="na">author</span><span class="p">=</span><span class="s">{Chandan K. A. Reddy and Ebrahim Beyrami and Harishchandra Dubey and Vishak Gopal and Roger Cheng and Ross Cutler and Sergiy Matusevych and Robert Aichner and Ashkan Aazami and Sebastian Braun and Puneet Rana and Sriram Srinivasan and Johannes Gehrke}</span><span class="p">,</span> <span class="na">year</span><span class="p">=</span><span class="s">{2020}</span><span class="p">,</span>
+<span class="na">eprint</span><span class="p">=</span><span class="s">{2001.08662}</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The baseline paper, <a class="reference external" href="https://arxiv.org/abs/2001.10601">here</a>.</p>
+<div class="highlight-BibTex notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">xia2020weighted</span><span class="p">,</span>
+<span class="na">title</span><span class="p">=</span><span class="s">{Weighted Speech Distortion Losses for Neural-network-based Real-time Speech Enhancement}</span><span class="p">,</span>
+<span class="na">author</span><span class="p">=</span><span class="s">{Yangyang Xia and Sebastian Braun and Chandan K. A. Reddy and Harishchandra Dubey and Ross Cutler and Ivan Tashev}</span><span class="p">,</span>
+<span class="na">year</span><span class="p">=</span><span class="s">{2020}</span><span class="p">,</span>
+<span class="na">eprint</span><span class="p">=</span><span class="s">{2001.10601}</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="music-source-separation">
+<h2>Music source separation<a class="headerlink" href="#music-source-separation" title="Permalink to this headline">¶</a></h2>
+<section id="musdb18-dataset">
+<h3>MUSDB18 Dataset<a class="headerlink" href="#musdb18-dataset" title="Permalink to this headline">¶</a></h3>
+<p>The musdb18 is a dataset of 150 full lengths music tracks (~10h duration) of different genres along with their isolated drums, bass, vocals and others stems.</p>
+<p>More info <a class="reference external" href="https://sigsep.github.io/datasets/musdb.html">here</a>.</p>
+</section>
+<section id="damp-vsep-dataset">
+<h3>DAMP-VSEP dataset<a class="headerlink" href="#damp-vsep-dataset" title="Permalink to this headline">¶</a></h3>
+<p>All the information regarding the dataset can be found in
+<a class="reference external" href="https://zenodo.org/record/3553059#.X5xKGnX7S-o">zenodo</a>.</p>
+<p><strong>References</strong>
+If you use this dataset, please cite as follows :</p>
+<div class="highlight-BibTex notranslate"><div class="highlight"><pre><span></span><span class="nc">@dataset</span><span class="p">{</span><span class="nl">smule_inc_2019_3553059</span><span class="p">,</span>
+  <span class="na">author</span>       <span class="p">=</span> <span class="s">{Smule, Inc}</span><span class="p">,</span>
+  <span class="na">title</span>        <span class="p">=</span> <span class="s">{{DAMP-VSEP: Smule Digital Archive of Mobile</span>
+<span class="s">                   Performances - Vocal Separation}}</span><span class="p">,</span>
+  <span class="na">month</span>        <span class="p">=</span> <span class="nv">oct</span><span class="p">,</span>
+  <span class="na">year</span>         <span class="p">=</span> <span class="m">2019</span><span class="p">,</span>
+  <span class="na">publisher</span>    <span class="p">=</span> <span class="s">{Zenodo}</span><span class="p">,</span>
+  <span class="na">version</span>      <span class="p">=</span> <span class="s">{1.0.1}</span><span class="p">,</span>
+  <span class="na">doi</span>          <span class="p">=</span> <span class="s">{10.5281/zenodo.3553059}</span><span class="p">,</span>
+  <span class="na">url</span>          <span class="p">=</span> <span class="s">{https://doi.org/10.5281/zenodo.3553059}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="environmental-sound-separation">
+<h2>Environmental sound separation<a class="headerlink" href="#environmental-sound-separation" title="Permalink to this headline">¶</a></h2>
+<section id="fuss-dataset">
+<h3>FUSS dataset<a class="headerlink" href="#fuss-dataset" title="Permalink to this headline">¶</a></h3>
+<p>The Free Universal Sound Separation (FUSS) dataset comprises audio mixtures of arbitrary sounds with source references for use in experiments on arbitrary sound separation.</p>
+<p>All the information related to this dataset can be found in <a class="reference external" href="https://github.com/google-research/sound-separation/tree/master/datasets/fuss">this repo</a>.</p>
+<p><strong>References</strong>
+If you use this dataset, please cite the corresponding paper as follows:</p>
+<div class="highlight-BibTex notranslate"><div class="highlight"><pre><span></span><span class="nc">@Article</span><span class="p">{</span><span class="nl">Wisdom2020</span><span class="p">,</span>
+  <span class="na">author</span>    <span class="p">=</span> <span class="s">{Scott Wisdom and Hakan Erdogan and Daniel P. W. Ellis and Romain Serizel and Nicolas Turpault and Eduardo Fonseca and Justin Salamon and Prem Seetharaman and John R. Hershey}</span><span class="p">,</span>
+  <span class="na">title</span>     <span class="p">=</span> <span class="s">{What&#39;s All the FUSS About Free Universal Sound Separation Data?}</span><span class="p">,</span>
+  <span class="na">journal</span>   <span class="p">=</span> <span class="s">{in preparation}</span><span class="p">,</span>
+  <span class="na">year</span>      <span class="p">=</span> <span class="s">{2020}</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="audio-visual-source-separation">
+<h2>Audio-visual source separation<a class="headerlink" href="#audio-visual-source-separation" title="Permalink to this headline">¶</a></h2>
+<section id="avspeech-dataset">
+<h3>AVSpeech dataset<a class="headerlink" href="#avspeech-dataset" title="Permalink to this headline">¶</a></h3>
+<p>AVSpeech is an audio-visual speech separation dataset which was introduced by Google
+in this article <a class="reference external" href="https://arxiv.org/abs/1804.03619">Looking to Listen at the Cocktail Party:
+A Speaker-Independent Audio-Visual Model for Speech
+Separation</a>.</p>
+<p>More info <a class="reference external" href="https://looking-to-listen.github.io/avspeech/download.html">here</a>.</p>
+<p><strong>References</strong></p>
+<div class="highlight-BibTex notranslate"><div class="highlight"><pre><span></span><span class="nc">@article</span><span class="p">{</span><span class="nl">Ephrat_2018</span><span class="p">,</span>
+   <span class="na">title</span><span class="p">=</span><span class="s">{Looking to listen at the cocktail party}</span><span class="p">,</span>
+   <span class="na">volume</span><span class="p">=</span><span class="s">{37}</span><span class="p">,</span>
+   <span class="na">url</span><span class="p">=</span><span class="s">{http://dx.doi.org/10.1145/3197517.3201357}</span><span class="p">,</span>
+   <span class="na">DOI</span><span class="p">=</span><span class="s">{10.1145/3197517.3201357}</span><span class="p">,</span>
+   <span class="na">journal</span><span class="p">=</span><span class="s">{ACM Transactions on Graphics}</span><span class="p">,</span>
+   <span class="na">publisher</span><span class="p">=</span><span class="s">{Association for Computing Machinery (ACM)}</span><span class="p">,</span>
+   <span class="na">author</span><span class="p">=</span><span class="s">{Ephrat, Ariel and Mosseri, Inbar and Lang, Oran and Dekel, Tali and Wilson, Kevin and Hassidim, Avinatan and Freeman, William T. and Rubinstein, Michael}</span><span class="p">,</span>
+   <span class="na">year</span><span class="p">=</span><span class="s">{2018}</span><span class="p">,</span>
+   <span class="na">pages</span><span class="p">=</span><span class="s">{1–11}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="speaker-extraction">
+<h2>Speaker extraction<a class="headerlink" href="#speaker-extraction" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="training_and_evaluation.html" class="btn btn-neutral float-right" title="Training and Evaluation" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="readmes/egs_README.html" class="btn btn-neutral" title="What is a recipe?" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Oncoming.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Datasets and tasks</a><ul>
+<li><a class="reference internal" href="#speech-separation">Speech separation</a><ul>
+<li><a class="reference internal" href="#wsj0-2mix-dataset">wsj0-2mix dataset</a></li>
+<li><a class="reference internal" href="#wham-dataset">WHAM dataset</a></li>
+<li><a class="reference internal" href="#whamr-dataset">WHAMR dataset</a></li>
+<li><a class="reference internal" href="#librimix-dataset">LibriMix dataset</a></li>
+<li><a class="reference internal" href="#kinect-wsj-dataset">Kinect-WSJ dataset</a></li>
+<li><a class="reference internal" href="#sms-wsj-dataset">SMS_WSJ dataset</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#speech-enhancement">Speech enhancement</a><ul>
+<li><a class="reference internal" href="#dns-challenge-s-dataset">DNS Challenge’s dataset</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#music-source-separation">Music source separation</a><ul>
+<li><a class="reference internal" href="#musdb18-dataset">MUSDB18 Dataset</a></li>
+<li><a class="reference internal" href="#damp-vsep-dataset">DAMP-VSEP dataset</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#environmental-sound-separation">Environmental sound separation</a><ul>
+<li><a class="reference internal" href="#fuss-dataset">FUSS dataset</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#audio-visual-source-separation">Audio-visual source separation</a><ul>
+<li><a class="reference internal" href="#avspeech-dataset">AVSpeech dataset</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#speaker-extraction">Speaker extraction</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+         <script src="_static/jquery.js"></script>
+         <script src="_static/underscore.js"></script>
+         <script src="_static/doctools.js"></script>
+         <script src="_static/language_data.js"></script>
+         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+     
+
+  
+
+  <script type="text/javascript" src="_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <!--
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Resources</a>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://mpariente.github.io/asteroid/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+
+        <div class="footer-logo-col">
+          <img class="footer-logo-img" src="_static/images/dark_asteroid_logo.svg"/>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Asteroid</a></li>
+            <li><a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Features</a></li>
+            <li><a href="">Ecosystem</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Blog</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Resources</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Support</a></li>
+            <li><a href="">Tutorials</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/issues" target="_blank">Github Issues</a></li>
+            <li><a href="" target="_blank">Slack</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="https://twitter.com/" target="_blank" class="twitter"></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </footer> -->
+
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch Lightning"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Features</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Resources</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

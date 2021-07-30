@@ -1,0 +1,652 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>What is a recipe? &mdash; asteroid 0.5.2dev documentation</title>
+  
+
+  
+  
+  
+  
+    <link rel="canonical" href="https://github.com/asteroid-team/asteroidreadmes/egs_README.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Datasets and tasks" href="../supported_datasets.html" />
+    <link rel="prev" title="Installation" href="../installation.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch">
+       <!-- <img class="call-to-action-img" src="../_static/images/asteroid_logo_dark.png"/> -->
+      </a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <div class="resources-dropdown">
+              <a id="resourcesDropdownButton" data-toggle="resources-dropdown">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/"">
+                  <span class=dropdown-title>Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <!--
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/">
+                  <span class=dropdown-title>About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+                -->
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Start here</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../why_use_asteroid.html">What is Asteroid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p><span class="caption-text">Notebooks and Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Getting started with Asteroid</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb">Introduction and Overview</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/02_Filterbank.ipynb">Understanding the Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb">Our PITLossWrapper explained</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb">Processing large wav files</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j">Community: Numpy vs. Asteroid STFT</a></li>
+</ul>
+<p><span class="caption-text">Asteroid</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">What is a recipe?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_datasets.html">Datasets and tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training_and_evaluation.html">Training and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pretrained_models.html">Pretrained models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<p><span class="caption-text">Package reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../package_reference/data.html">PyTorch Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_reference/filterbanks.html">Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_reference/blocks.html">DNN building blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_reference/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_reference/losses.html">Losses &amp; Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_reference/system.html">Lightning Wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_reference/optimizers.html">Optimizers &amp; Schedulers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_reference/dsp.html">DSP Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_reference/utils.html">Utils</a></li>
+</ul>
+<p><span class="caption-text">Community</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guide.html">Asteroid High-Level Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING.html">How to contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>What is a recipe?</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/readmes/egs_README.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="what-is-a-recipe">
+<h1>What is a recipe?<a class="headerlink" href="#what-is-a-recipe" title="Permalink to this headline">¶</a></h1>
+<p>A recipe is a set of scripts that use Asteroid to build a
+source separation system.
+Each directory corresponds to a dataset and each subdirectory
+corresponds to a system build on this dataset.
+You can start by reading <a class="reference external" href="https://github.com/asteroid-team/asteroid/tree/master/egs/wham/ConvTasNet">this recipe</a> to
+get familiar with them.</p>
+<section id="how-is-it-organized">
+<h2>How is it organized?<a class="headerlink" href="#how-is-it-organized" title="Permalink to this headline">¶</a></h2>
+<p>Most recipes are organized as follows. When you clone the repo,
+<code class="docutils literal notranslate"><span class="pre">data</span></code>, <code class="docutils literal notranslate"><span class="pre">exp</span></code> and <code class="docutils literal notranslate"><span class="pre">logs</span></code> won’t be there yet, it’s normal.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── data/
+├── exp/
+├── logs/
+├── local/
+│   ├── convert_sphere2wav.sh
+│   ├── prepare_data.sh
+│   ├── conf.yml
+│   └── preprocess_wham.py
+├── utils/
+│   ├── parse_options.sh
+│   └── prepare_python_env.sh
+├── run.sh
+├── train.py
+├── model.py
+└── eval.py
+</pre></div>
+</div>
+<p>A small graph might help.</p>
+<a class="reference external image-reference" href="../docs/source/_static/images/code_example_croped.png"><img alt="alt text" src="readmes/../docs/source/_static/images/code_example_croped.png" /></a>
+</section>
+<section id="how-does-it-work">
+<h2>How does it work?<a class="headerlink" href="#how-does-it-work" title="Permalink to this headline">¶</a></h2>
+<p>Let’s try to summarize how recipes work :</p>
+<ul class="simple">
+<li><p>There is a master file, <code class="docutils literal notranslate"><span class="pre">run.sh</span></code>,  from which all the steps are
+ran (install dependencies, download data, create dataset, train a model
+evaluate it and so on..). This recipe style is borrowed from
+<a class="reference external" href="https://github.com/kaldi-asr/kaldi">Kaldi</a> and <a class="reference external" href="https://github.com/espnet/espnet">ESPnet</a>.</p>
+<ul>
+<li><p>You usually have to change some variables in the top of
+the file (comments are around it to help you) like data directory,
+python path etc..</p></li>
+<li><p>This script is controlled by several arguments. Among them, <code class="docutils literal notranslate"><span class="pre">stage</span></code> controls
+from where do you start the script. You already generated the data? No need
+to do it again, set <code class="docutils literal notranslate"><span class="pre">stage=3</span></code>!</p></li>
+<li><p>All steps until training are dataset-specific and the corresponding
+scripts are stored in <code class="docutils literal notranslate"><span class="pre">./local</span></code></p></li>
+</ul>
+</li>
+<li><p>The training and evaluation scripts are then called from <code class="docutils literal notranslate"><span class="pre">run.sh</span></code></p>
+<ul>
+<li><p>There is a script, <code class="docutils literal notranslate"><span class="pre">model.py</span></code>, where the model should be defined
+along with the <code class="docutils literal notranslate"><span class="pre">System</span></code> subclass used for training (if needed).</p></li>
+<li><p>We wrap the model definition in one function (<code class="docutils literal notranslate"><span class="pre">make_model_and_optimizer</span></code>).
+The function receives a dictionary which is also saved in the
+experiment folder. This make checkpoint restoring easy without
+any additional constraints.</p></li>
+<li><p>We also write a function to load the best model (<code class="docutils literal notranslate"><span class="pre">load_best_model</span></code>)
+after training. This is useful to load the model several
+time (evaluation, separation of new examples…).</p></li>
+</ul>
+</li>
+<li><p>The arguments flow through bash/python/yaml in a specific way, which
+was designed by us and suits our use-cases until now:</p>
+<ul>
+<li><p>The very first step is the <code class="docutils literal notranslate"><span class="pre">local/conf.yml</span></code> file where is a
+hierarchical configuration file,</p></li>
+<li><p><strong>On the python side</strong> : This file is parsed as a dictionary of
+dictionary in <code class="docutils literal notranslate"><span class="pre">training.py</span></code>. From this dict, we create an argument
+parser which can accept all the second-level keys from the
+dictionary (so second-level keys should be unique) as arguments
+and has the default values from the <code class="docutils literal notranslate"><span class="pre">conf.yml</span></code> file.</p></li>
+<li><p><strong>On the bash side</strong>: we also parse arguments from the command line
+(using <code class="docutils literal notranslate"><span class="pre">utils/parse_options.sh</span></code>). The arguments above the line
+<code class="docutils literal notranslate"><span class="pre">.</span> <span class="pre">utils/parse_options.sh</span></code>  can be parsed, the rest are fixed.
+Most arguments will be passed to the training script. Others control the
+data preparation, GPU usage etc…</p></li>
+<li><p>In light of all this the config file should have sensible default
+values that shouldn’t be modified by hand much. The quickly configurable part
+of the recipe are added to <code class="docutils literal notranslate"><span class="pre">run.sh</span></code> (you want to experiment with the batch
+size, add an argument in and pass it to python. If you want it fixed,
+no need to put it in bash, the conf.yml file keeps it for you.)
+This makes it possible to directly identify the important parts
+of the experiment, without reading lots of lines of
+argparser or bash arguments.</p></li>
+</ul>
+</li>
+<li><p>Some more notes :</p>
+<ul>
+<li><p>After the first execution, you can go and change <code class="docutils literal notranslate"><span class="pre">stage</span></code> in <code class="docutils literal notranslate"><span class="pre">run.sh</span></code> to
+avoid redoing all the steps everytime.</p></li>
+<li><p>To use GPUs for training, run <code class="docutils literal notranslate"><span class="pre">run.sh</span> <span class="pre">--id</span> <span class="pre">0,1</span></code> where <code class="docutils literal notranslate"><span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">1</span></code> are the
+GPUs you want to use, training should automatically take advantage of both GPUs.</p></li>
+<li><p>By default, a random id is generated for each run, you can also add a
+<code class="docutils literal notranslate"><span class="pre">tag</span></code> to name the experiments how you want. For example
+<code class="docutils literal notranslate"><span class="pre">run.sh</span> <span class="pre">--tag</span> <span class="pre">with_cool_loss</span></code> will save all results to
+<code class="docutils literal notranslate"><span class="pre">exp/train_{arch_name}_with_cool_loss</span></code>. You’ll also find the
+corresponding log file in <code class="docutils literal notranslate"><span class="pre">logs/train_{arch_name}_with_cool_loss.log</span></code>.</p></li>
+<li><p>Model loading methods suppose that the model architecture is the same
+as when training was performed. Be careful when you change it.</p></li>
+</ul>
+</li>
+</ul>
+<p>Again, you have a doubt, a question, a suggestion or a request,
+<a class="reference external" href="https://github.com/asteroid-team/asteroid/issues/new">open an issue</a> or <a class="reference external" href="https://join.slack.com/t/asteroid-dev/shared_invite/zt-cn9y85t3-QNHXKD1Et7qoyzu1Ji5bcA">join the slack</a>, we’ll be happy
+to help you.</p>
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../supported_datasets.html" class="btn btn-neutral float-right" title="Datasets and tasks" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="../installation.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Oncoming.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">What is a recipe?</a><ul>
+<li><a class="reference internal" href="#how-is-it-organized">How is it organized?</a></li>
+<li><a class="reference internal" href="#how-does-it-work">How does it work?</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/doctools.js"></script>
+         <script src="../_static/language_data.js"></script>
+         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <!--
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Resources</a>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://mpariente.github.io/asteroid/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+
+        <div class="footer-logo-col">
+          <img class="footer-logo-img" src="../_static/images/dark_asteroid_logo.svg"/>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Asteroid</a></li>
+            <li><a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Features</a></li>
+            <li><a href="">Ecosystem</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Blog</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Resources</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Support</a></li>
+            <li><a href="">Tutorials</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/issues" target="_blank">Github Issues</a></li>
+            <li><a href="" target="_blank">Slack</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="https://twitter.com/" target="_blank" class="twitter"></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </footer> -->
+
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch Lightning"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Features</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Resources</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
