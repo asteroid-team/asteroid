@@ -47,3 +47,8 @@ See `Clipping on Wikipedia <https://en.wikipedia.org/wiki/Clipping_(audio)>`_ an
 generalization error when evaluated on unseen data. If your model works well
 on data similar to your training data but doesn't work on real data, that's probably why.
 More about this `on Wikipedia <https://en.wikipedia.org/wiki/Generalization_error>`_.
+
+How do I load my model after training?
+--------------------------------------
+To load your model after training, follow `these steps <https://pytorch-lightning.readthedocs.io/en/latest/common/weights_loading.html#restoring-training-state>`_ 
+from the PyTorch Lightning docs.
