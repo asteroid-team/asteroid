@@ -221,7 +221,7 @@ class WERTracker:
             See librimix/ConvTasNet recipe.
     """
 
-    def __init__(self, model_name, trans_df, use_gpu):
+    def __init__(self, model_name, trans_df, use_gpu=1):
 
         from espnet2.bin.asr_inference import Speech2Text
         from espnet_model_zoo.downloader import ModelDownloader
@@ -344,7 +344,7 @@ class WERTracker:
         return {k: v for k, v in out if k in keep}
 
     def predict_hypothesis(self, wav):
-        wav = torch.from_numpy(wav).cuda()
+        wav = torch.from_numpy(wav).to(self.device)
         nbests = self.asr_model(wav)
         text, *_ = nbests[0]
         return text
