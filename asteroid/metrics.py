@@ -219,9 +219,10 @@ class WERTracker:
         model_name (str): Name of the petrained model to use.
         trans_df (dataframe): Containing field `utt_id` and `text`.
             See librimix/ConvTasNet recipe.
+        use_gpu (bool): Whether to use GPU for forward caculation. 
     """
 
-    def __init__(self, model_name, trans_df, use_gpu=1):
+    def __init__(self, model_name, trans_df, use_gpu=True):
 
         from espnet2.bin.asr_inference import Speech2Text
         from espnet_model_zoo.downloader import ModelDownloader
