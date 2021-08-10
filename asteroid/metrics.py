@@ -230,7 +230,7 @@ class WERTracker:
         self.model_name = model_name
         self.device = 'cuda' if use_gpu else 'cpu'
         d = ModelDownloader()
-        self.asr_model = Speech2Text(**d.download_and_unpack(model_name), nbest=5, device=self.device)
+        self.asr_model = Speech2Text(**d.download_and_unpack(model_name), device=self.device)
         self.input_txt_list = []
         self.clean_txt_list = []
         self.output_txt_list = []
