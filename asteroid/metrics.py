@@ -1,4 +1,5 @@
 import json
+import torch
 import warnings
 import traceback
 from typing import List
@@ -220,15 +221,16 @@ class WERTracker:
             See librimix/ConvTasNet recipe.
     """
 
-    def __init__(self, model_name, trans_df):
+    def __init__(self, model_name, trans_df, use_gpu):
 
         from espnet2.bin.asr_inference import Speech2Text
         from espnet_model_zoo.downloader import ModelDownloader
         import jiwer
 
         self.model_name = model_name
+        self.device = 'cuda' if use_gpu else 'cpu'
         d = ModelDownloader()
-        self.asr_model = Speech2Text(**d.download_and_unpack(model_name))
+        self.asr_model = Speech2Text(**d.download_and_unpack(model_name), nbest=5, device=self.device)
         self.input_txt_list = []
         self.clean_txt_list = []
         self.output_txt_list = []
@@ -342,6 +344,7 @@ class WERTracker:
         return {k: v for k, v in out if k in keep}
 
     def predict_hypothesis(self, wav):
+        wav = torch.from_numpy(wav).cuda()
         nbests = self.asr_model(wav)
         text, *_ = nbests[0]
         return text
