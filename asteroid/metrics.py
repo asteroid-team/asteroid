@@ -219,7 +219,7 @@ class WERTracker:
         model_name (str): Name of the petrained model to use.
         trans_df (dataframe): Containing field `utt_id` and `text`.
             See librimix/ConvTasNet recipe.
-        use_gpu (bool): Whether to use GPU for forward caculation. 
+        use_gpu (bool): Whether to use GPU for forward caculation.
     """
 
     def __init__(self, model_name, trans_df, use_gpu=True):
@@ -229,7 +229,7 @@ class WERTracker:
         import jiwer
 
         self.model_name = model_name
-        self.device = 'cuda' if use_gpu else 'cpu'
+        self.device = "cuda" if use_gpu else "cpu"
         d = ModelDownloader()
         self.asr_model = Speech2Text(**d.download_and_unpack(model_name), device=self.device)
         self.input_txt_list = []
