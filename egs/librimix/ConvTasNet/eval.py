@@ -71,7 +71,9 @@ def main(conf):
     compute_metrics = update_compute_metrics(conf["compute_wer"], COMPUTE_METRICS)
     anno_df = pd.read_csv(Path(conf["test_dir"]).parent.parent.parent / "test_annotations.csv")
     wer_tracker = (
-        MockWERTracker() if not conf["compute_wer"] else WERTracker(ASR_MODEL_PATH, anno_df)
+        MockWERTracker()
+        if not conf["compute_wer"]
+        else WERTracker(ASR_MODEL_PATH, anno_df, use_gpu=conf["use_gpu"])
     )
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
     model = ConvTasNet.from_pretrained(model_path)
