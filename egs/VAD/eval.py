@@ -10,7 +10,7 @@ import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
 from asteroid.metrics import F1_Tracker
-from binarize import Binarize
+from asteroid.binarize import Binarize
 
 from asteroid.models.conv_tasnet import VAD_Net
 from asteroid.data.vad_dataset import VADDataset
