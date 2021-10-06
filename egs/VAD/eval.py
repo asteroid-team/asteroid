@@ -40,19 +40,6 @@ parser.add_argument("--threshold", type=float, default=0.5)
 compute_metrics = ["accuracy", "precision", "recall", "f1_score"]
 
 
-class NumpyEncoder(json.JSONEncoder):
-    """ Special json encoder for numpy types """
-
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return json.JSONEncoder.default(self, obj)
-
-
 def main(conf):
     test_set = VADDataset(md_file_path=conf["md_path"], segment=None)
     model = VAD_Net.from_pretrained(os.path.join(conf["exp_dir"], "best_model.pth"))
@@ -92,7 +79,7 @@ def main(conf):
             axs[2].title.set_text("Raw")
             plt.savefig(os.path.join(local_save_dir, "result.png"))
             with open(local_save_dir + "metrics.json", "w") as f:
-                json.dump(utt_metrics, f, indent=0, cls=NumpyEncoder)
+                json.dump(utt_metrics, f, indent=0)
 
     # Save all metrics to the experiment folder.
     all_metrics_df = pd.DataFrame(series_list)
