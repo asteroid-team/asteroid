@@ -10,9 +10,9 @@ class F1_loss(_Loss):
         self.eps = eps
 
     def forward(self, estimates, targets):
-        tp = (targets * estimates).sum().to(torch.float32)
-        fp = ((1 - targets) * estimates).sum().to(torch.float32)
-        fn = (targets * (1 - estimates)).sum().to(torch.float32)
+        tp = (targets * estimates).sum()
+        fp = ((1 - targets) * estimates).sum()
+        fn = (targets * (1 - estimates)).sum()
 
         precision = tp / (tp + fp + self.eps)
         recall = tp / (tp + fn + self.eps)
