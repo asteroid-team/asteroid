@@ -424,8 +424,8 @@ class F1_Tracker(nn.Module):
         f1 = 2 * (precision * recall) / (precision + recall + self.epsilon)
         f1 = f1.clamp(min=self.epsilon, max=1 - self.epsilon)
         return {
-            "accuracy": accuracy.data.numpy(),
-            "precision": precision.data.numpy(),
-            "recall": recall.data.numpy(),
-            "f1_score": f1.data.numpy(),
+            "accuracy": float(accuracy),
+            "precision": float(precision),
+            "recall": float(recall),
+            "f1_score": float(f1),
         }
