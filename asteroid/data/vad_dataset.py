@@ -42,8 +42,9 @@ class VADDataset(Dataset):
         label = self.from_vad_to_label(length, row["VAD"], start, stop).unsqueeze(0)
         return source, label
 
-    def from_vad_to_label(self, length, vad, begin, end):
-        label = torch.zeros(length, dtype=torch.float)
-        for start, stop in zip(vad["start"], vad["stop"]):
-            label[..., start:stop] = 1
-        return label[..., begin:end]
+
+def from_vad_to_label(length, vad, begin, end):
+    label = torch.zeros(length, dtype=torch.float)
+    for start, stop in zip(vad["start"], vad["stop"]):
+        label[..., start:stop] = 1
+    return label[..., begin:end]
