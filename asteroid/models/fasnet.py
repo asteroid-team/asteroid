@@ -63,7 +63,7 @@ class FasNetTAC(BaseModel):
         dropout=0.0,
         use_tac=True,
     ):
-        super().__init__(sample_rate=sample_rate, in_channels=None)
+        super().__init__(sample_rate=sample_rate)
 
         self.enc_dim = enc_dim
         self.feature_dim = feature_dim
