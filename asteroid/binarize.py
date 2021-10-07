@@ -24,7 +24,7 @@ class Binarize(torch.nn.Module):
         active = x > self.threshold
         active = active.squeeze(1).tolist()
         pairs = count_same_pair(active)
-        active = fit(pairs, self.stability, self.sample_rate)
+        active = transform_to_binary_sequence(pairs, self.stability, self.sample_rate)
         return active
 
 
@@ -50,7 +50,7 @@ def count_same_pair(nums):
     return result
 
 
-def fit(pairs, stability, sample_rate):
+def transform_to_binary_sequence(pairs, stability, sample_rate):
     """Transforms list of value and consecutive occurrences into a binary sequence with respect to stability
 
     Args:
@@ -64,7 +64,6 @@ def fit(pairs, stability, sample_rate):
 
     batch_active = []
     for pair in pairs:
-        # Start with an empty binary sequence
         active = []
         # Check for fully silent or fully voice sequence
         active, check = check_silence_or_voice(active, pair)
@@ -74,19 +73,20 @@ def fit(pairs, stability, sample_rate):
         i = 0
         # Do until every every sets as been used i.e until we have same sequence length as input length
         while i < len(pair):
+            value, num_consecutive_occurrences = pair[i]
             # Counter for active set of (value, num_consecutive_occ) i.e (1,num_consecutive_occ)
             actived = 0
             # Counter for inactive set of (value, num_consecutive_occ) i.e (0,num_consecutive_occ)
             not_actived = 0
             # num_consecutive_occ <  int(stability * sample_rate) need to resolve instability
-            if pair[i][1] < int(stability * sample_rate):
+            if num_consecutive_occurrences < int(stability * sample_rate):
                 # Resolve instability
                 active, i = resolve_instability(
                     i, pair, stability, sample_rate, actived, not_actived, active
                 )
             # num_consecutive_occ >  int(stability * sample_rate) we can already choose
             else:
-                if pair[i][0]:
+                if value:
                     active.append(torch.ones(pair[i][1]))
                 else:
                     active.append(torch.zeros(pair[i][1]))
@@ -105,13 +105,14 @@ def check_silence_or_voice(active, pair):
         pair: (List): list of value and consecutive occurrences
 
     """
+    value, num_consecutive_occurrences = pair[0]
     check = False
     if len(pair) == 1:
         check = True
-        if pair[0][0]:
-            active = torch.ones(pair[0][1])
+        if value:
+            active = torch.ones(num_consecutive_occurrences)
         else:
-            active = torch.zeros(pair[0][1])
+            active = torch.zeros(num_consecutive_occurrences)
     return active, check
 
 
@@ -131,18 +132,19 @@ def resolve_instability(i, pair, stability, sample_rate, actived, not_actived, a
         active (list) : The binary sequence.
          i (int): The index of the considered pair of value and num_consecutive_occ.
     """
-
     # Until we find stability count the number of samples active and inactive
     while i < len(pair) and pair[i][1] < int(stability * sample_rate):
-        if pair[i][0]:
-            actived += pair[i][1]
+        value, num_consecutive_occurrences = pair[i]
+        if value:
+            actived += num_consecutive_occurrences
             i += 1
         else:
-            not_actived += pair[i][1]
+            not_actived += num_consecutive_occurrences
             i += 1
     # If the length of unstable samples is smaller than the stability criteria and we are already in a state
     # then keep this state.
     if actived + not_actived < int(stability * sample_rate) and len(active) > 0:
+        # Last value
         if active[-1][0] == 1:
             active.append(torch.ones(actived + not_actived))
         else:
