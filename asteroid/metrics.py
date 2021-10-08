@@ -398,15 +398,8 @@ class WERTracker:
         return self.final_df().to_markdown(index=False, tablefmt="github")
 
 
-class F1_Tracker(nn.Module):
-
-    """Calculate F1 score.
-
-    Returns
-    -------
-    torch.Tensor
-
-    """
+class F1Tracker(nn.Module):
+    """F1 score tracker."""
 
     def __init__(self, epsilon=1e-7):
         super().__init__()

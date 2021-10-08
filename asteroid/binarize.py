@@ -5,6 +5,17 @@ import torch
 class Binarize(torch.nn.Module):
     """This module transform a sequence of real numbers between 0 and 1 to a sequence of 0 or 1.
     The logic for transformation is based on thresholding and avoids jumping from 0 to 1 inadvertently.
+
+    Example:
+
+        >>> binarizer = Binarize(threshold=0.5, stability=3, sample_rate=1)
+        >>> inputs=torch.Tensor([0.1, 0.6, 0.2, 0.6, 0.1, 0.1, 0.1, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.1])
+        >>>                    # |------------------|-------------|----------------------------|----|
+        >>>                    #    unstable          stable             stable                 irregularity
+        >>> result = binarizer(inputs.unsqueeze(0).unsqueeze(0))
+        >>> print(result)
+        tensor([[[0., 0., 0., 0., 0., 0., 0., 1., 1., 1., 1., 1., 1., 1.]]])
+
     """
 
     def __init__(self, threshold=0.5, stability=0.1, sample_rate=8000):

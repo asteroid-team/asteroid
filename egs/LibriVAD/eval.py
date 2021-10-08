@@ -1,7 +1,6 @@
 import os
 import random
 
-import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import json
@@ -9,11 +8,11 @@ import argparse
 import pandas as pd
 from tqdm import tqdm
 from pprint import pprint
-from asteroid.metrics import F1_Tracker
+from asteroid.metrics import F1Tracker
 from asteroid.binarize import Binarize
 
-from asteroid.models.conv_tasnet import VAD_Net
-from asteroid.data.vad_dataset import VADDataset
+from asteroid.models.conv_tasnet import VADNet
+from asteroid.data.vad_dataset import LibriVADDataset
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -41,8 +40,8 @@ compute_metrics = ["accuracy", "precision", "recall", "f1_score"]
 
 
 def main(conf):
-    test_set = VADDataset(md_file_path=conf["md_path"], segment=None)
-    model = VAD_Net.from_pretrained(os.path.join(conf["exp_dir"], "best_model.pth"))
+    test_set = LibriVADDataset(md_file_path=conf["md_path"], segment=None)
+    model = VADNet.from_pretrained(os.path.join(conf["exp_dir"], "best_model.pth"))
     # Used to reorder sources only
     # Randomly choose the indexes of sentences to save.
     eval_save_dir = os.path.join(conf["exp_dir"], conf["out_dir"])
@@ -52,7 +51,7 @@ def main(conf):
     save_idx = random.sample(range(len(test_set)), conf["n_save_ex"])
     series_list = []
     torch.no_grad().__enter__()
-    tracker = F1_Tracker()
+    tracker = F1Tracker()
     binarizer = Binarize(threshold=conf["threshold"], stability=0.05)
 
     for idx in tqdm(range(len(test_set))):

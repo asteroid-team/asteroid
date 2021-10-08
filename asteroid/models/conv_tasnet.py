@@ -109,9 +109,6 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
         super().__init__(encoder, masker, decoder, encoder_activation=encoder_activation)
 
 
-class VAD_Net(ConvTasNet):
-    def __init__(self, *args, **fb_kwargs):
-        super().__init__(*args, **fb_kwargs)
-
+class VADNet(ConvTasNet):
     def forward_decoder(self, masked_tf_rep: torch.Tensor) -> torch.Tensor:
-        return torch.nn.Sigmoid()(self.decoder(masked_tf_rep))
+        return torch.nn.functional.sigmoid(self.decoder(masked_tf_rep))

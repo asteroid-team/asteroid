@@ -8,8 +8,8 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from asteroid.data.vad_dataset import VADDataset
-from asteroid.models.conv_tasnet import VAD_Net
+from asteroid.data.vad_dataset import LibriVADDataset
+from asteroid.models.conv_tasnet import VADNet
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
 from asteroid.losses.soft_f1 import F1_loss
@@ -26,8 +26,8 @@ parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best
 
 def main(conf):
 
-    train_set = VADDataset(md_file_path=conf["data"]["train_dir"])
-    val_set = VADDataset(md_file_path=conf["data"]["valid_dir"])
+    train_set = LibriVADDataset(md_file_path=conf["data"]["train_dir"])
+    val_set = LibriVADDataset(md_file_path=conf["data"]["valid_dir"])
     train_loader = DataLoader(
         train_set,
         shuffle=True,
@@ -44,7 +44,7 @@ def main(conf):
         drop_last=True,
     )
 
-    model = VAD_Net(**conf["filterbank"], **conf["masknet"])
+    model = VADNet(**conf["filterbank"], **conf["masknet"])
 
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
 

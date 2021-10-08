@@ -5,7 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 import random
 
 
-class VADDataset(Dataset):
+class LibriVADDataset(Dataset):
     """Dataset class for Voice Activity Detection.
 
     Args:
