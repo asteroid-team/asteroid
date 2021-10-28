@@ -50,7 +50,7 @@ setup(
         "torchaudio>=0.5.0",
         "pb_bss_eval>=0.0.2",
         "torch_stoi>=0.1.2",
-        "torch_optimizer>=0.0.1a12",
+        "torch_optimizer>=0.0.1a12,<0.2.0",
         "julius",
     ],
     entry_points={
