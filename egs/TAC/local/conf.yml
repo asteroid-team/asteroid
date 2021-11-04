@@ -19,10 +19,10 @@ optim:
   weight_decay: !!float 1e-5
 training:
   epochs: 200
-  batch_size: 4
+  batch_size: 1
   gradient_clipping: 5
   accumulate_batches: 1
-  save_top_k: 10
+  save_top_k: 5
   num_workers: 8
   patience: 30
   half_lr: true

@@ -6,5 +6,5 @@ pytorch-lightning>=1.0.1
 torchaudio>=0.8.0
 pb_bss_eval>=0.0.2
 torch_stoi>=0.0.1
-torch_optimizer>=0.0.1a12
+torch_optimizer>=0.0.1a12,<0.2.0
 julius

@@ -43,6 +43,8 @@ def cached_download(filename_or_url):
     Returns:
         str, normalized path to the downloaded (or not) model
     """
+    from .. import __version__ as asteroid_version  # Avoid circular imports
+
     if os.path.isfile(filename_or_url):
         return filename_or_url
 
@@ -66,7 +68,12 @@ def cached_download(filename_or_url):
         url = huggingface_hub.hf_hub_url(
             model_id, filename=huggingface_hub.PYTORCH_WEIGHTS_NAME, revision=revision
         )
-        return huggingface_hub.cached_download(url, cache_dir=get_cache_dir())
+        return huggingface_hub.cached_download(
+            url,
+            cache_dir=get_cache_dir(),
+            library_name="asteroid",
+            library_version=asteroid_version,
+        )
     cached_filename = url_to_filename(url)
     cached_dir = os.path.join(get_cache_dir(), cached_filename)
     cached_path = os.path.join(cached_dir, "model.pth")

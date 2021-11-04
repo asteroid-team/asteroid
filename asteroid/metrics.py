@@ -1,4 +1,5 @@
 import json
+import torch
 import warnings
 import traceback
 from typing import List
@@ -218,17 +219,19 @@ class WERTracker:
         model_name (str): Name of the petrained model to use.
         trans_df (dataframe): Containing field `utt_id` and `text`.
             See librimix/ConvTasNet recipe.
+        use_gpu (bool): Whether to use GPU for forward caculation.
     """
 
-    def __init__(self, model_name, trans_df):
+    def __init__(self, model_name, trans_df, use_gpu=True):
 
         from espnet2.bin.asr_inference import Speech2Text
         from espnet_model_zoo.downloader import ModelDownloader
         import jiwer
 
         self.model_name = model_name
+        self.device = "cuda" if use_gpu else "cpu"
         d = ModelDownloader()
-        self.asr_model = Speech2Text(**d.download_and_unpack(model_name))
+        self.asr_model = Speech2Text(**d.download_and_unpack(model_name), device=self.device)
         self.input_txt_list = []
         self.clean_txt_list = []
         self.output_txt_list = []
@@ -342,6 +345,7 @@ class WERTracker:
         return {k: v for k, v in out if k in keep}
 
     def predict_hypothesis(self, wav):
+        wav = torch.from_numpy(wav).to(self.device)
         nbests = self.asr_model(wav)
         text, *_ = nbests[0]
         return text
