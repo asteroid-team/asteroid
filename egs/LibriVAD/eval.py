@@ -72,7 +72,7 @@ def main(conf):
             fig, axs = plt.subplots(3, sharex=True, sharey=True)
             axs[0].plot(labels.squeeze().data.numpy())
             axs[1].plot(binarized.squeeze().data.numpy())
-            # axs[2].plot(est.squeeze().data.numpy())
+            axs[2].plot(est.squeeze().data.numpy())
             axs[0].title.set_text("Ground truth")
             axs[1].title.set_text("Estimate")
             axs[2].title.set_text("Raw")

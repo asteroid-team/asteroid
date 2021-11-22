@@ -39,7 +39,7 @@ class LibriVADDataset(Dataset):
         s, sr = sf.read(self.source_path, start=start, stop=stop, dtype="float32")
         # Convert sources to tensor
         source = torch.from_numpy(s)
-        label = self.from_vad_to_label(length, row["VAD"], start, stop).unsqueeze(0)
+        label = from_vad_to_label(length, row["VAD"], start, stop).unsqueeze(0)
         return source, label
 
 
