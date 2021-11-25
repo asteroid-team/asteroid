@@ -1,0 +1,32 @@
+# filterbank config
+filterbank:
+  n_filters: 512
+  kernel_size: 16
+  stride: 8
+# Network config
+masknet:
+  n_src: 1
+  n_blocks: 3
+  n_repeats: 5
+  mask_act: relu
+  bn_chan: 128
+  skip_chan: 128
+  hid_chan: 512
+  causal: False
+# Training config
+training:
+  epochs: 200
+  batch_size: 8
+  num_workers: 4
+  half_lr: yes
+  early_stop: yes
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.
+# Data config
+data:
+  train_dir: data/train.json
+  valid_dir: data/dev.json
+  segment: 3

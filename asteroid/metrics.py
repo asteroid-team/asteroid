@@ -7,6 +7,7 @@ from collections import Counter
 import pandas as pd
 import numpy as np
 from pb_bss_eval import InputMetrics, OutputMetrics
+import torch.nn as nn
 
 from .utils import average_arrays_in_dic
 
@@ -395,3 +396,29 @@ class WERTracker:
 
     def final_report_as_markdown(self):
         return self.final_df().to_markdown(index=False, tablefmt="github")
+
+
+class F1Tracker(nn.Module):
+    """F1 score tracker."""
+
+    def __init__(self, epsilon=1e-7):
+        super().__init__()
+        self.epsilon = epsilon
+
+    def forward(self, y_pred, y_true):
+        tp = torch.sum(torch.logical_and(y_pred, y_true))
+        tn = torch.sum(torch.logical_and(torch.logical_not(y_pred), torch.logical_not(y_true)))
+        fp = torch.sum(torch.logical_and(torch.logical_xor(y_pred, y_true), y_pred))
+        fn = torch.sum(torch.logical_and(torch.logical_xor(y_pred, y_true), y_true))
+        accuracy = (tp + tn) / (tp + tn + fp + fn)
+        precision = tp / (tp + fp + self.epsilon)
+        recall = tp / (tp + fn + self.epsilon)
+
+        f1 = 2 * (precision * recall) / (precision + recall + self.epsilon)
+        f1 = f1.clamp(min=self.epsilon, max=1 - self.epsilon)
+        return {
+            "accuracy": float(accuracy),
+            "precision": float(precision),
+            "recall": float(recall),
+            "f1_score": float(f1),
+        }

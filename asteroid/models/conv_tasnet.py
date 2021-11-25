@@ -1,3 +1,4 @@
+import torch
 from asteroid_filterbanks import make_enc_dec
 from ..masknn import TDConvNet
 from .base_models import BaseEncoderMaskerDecoder
@@ -106,3 +107,8 @@ class ConvTasNet(BaseEncoderMaskerDecoder):
             causal=causal,
         )
         super().__init__(encoder, masker, decoder, encoder_activation=encoder_activation)
+
+
+class VADNet(ConvTasNet):
+    def forward_decoder(self, masked_tf_rep: torch.Tensor) -> torch.Tensor:
+        return torch.nn.functional.sigmoid(self.decoder(masked_tf_rep))
