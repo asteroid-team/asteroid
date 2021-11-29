@@ -95,7 +95,7 @@ def main(conf):
         if idx in save_idx:
             local_save_dir = os.path.join(ex_save_dir, "ex_{}/".format(idx))
             os.makedirs(local_save_dir, exist_ok=True)
-            sf.write(local_save_dir + "mixture.wav", mix_np,
+            sf.write(local_save_dir + "mixture.wav", mix_np[0],
                      conf["sample_rate"])
             # Loop over the sources and estimates
             for src_idx, src in enumerate(sources_np):
