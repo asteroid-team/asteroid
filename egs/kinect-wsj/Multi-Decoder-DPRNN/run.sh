@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "pretrained model can be found at: https://huggingface.co/JunzheJosephZhu/MultiDecoderDPRNN"
+
 # Exit on error
 set -e
 set -o pipefail
@@ -32,35 +34,32 @@ stage=3 # Controls from which stage to start
 tag=""  # Controls the directory name associated to the experiment
 # You can ask for several GPUs using id (passed to CUDA_VISIBLE_DEVICES)
 id=$CUDA_VISIBLE_DEVICES
-out_dir=kinect_wsj # Controls the directory name associated to the evaluation results inside the experiment directory
 
-# Network config
-n_blocks=8
-n_repeats=3
-mask_act=relu
-# Training config
-epochs=200
-batch_size=32
-num_workers=8
-half_lr=yes
-early_stop=yes
-# Optim config
-optimizer=adam
-lr=0.001
-weight_decay=0.
-# Data config
+# Data
+#data_dir=data  # Local data directory (No disk space needed)
 sample_rate=16000
 mode=max
-n_src=2
-segment=3
+#n_srcs=(2 3 4 5)
+n_srcs=(2)
 
+# Training
+batch_size=32
+num_workers=8
+optimizer=rmsprop
+lr=0.0001
+weight_decay=0.0
+epochs=200
+lambda=0.05
+resume_from=
+
+# Evaluation
 eval_use_gpu=1
 
 . utils/parse_options.sh
 
 sr_string=$(($sample_rate / 1000))
-suffix=wav${sr_string}k/$mode
-dumpdir=data/$suffix # directory to put generated json file
+suffix=2speakers/wav${sr_string}k/$mode
+dumpdir=$data/$suffix # directory to put generated json file
 
 train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
@@ -104,52 +103,42 @@ fi
 # Generate a random ID for the run if no tag is specified
 uuid=$($python_path -c 'import uuid, sys; print(str(uuid.uuid4())[:8])')
 if [[ -z ${tag} ]]; then
-	tag=${uuid}
+	tag=$(
+		IFS=$''
+		echo "${n_srcs[*]}"
+	)sep_${sr_string}k${mode}_${uuid}
 fi
-
-expdir=exp/train_convtasnet_${tag}
+expdir=exp/train_mddprnn_${tag}
 mkdir -p $expdir && echo $uuid >>$expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
 if [[ $stage -le 3 ]]; then
 	echo "Stage 3: Training"
+	echo "visible cuda devices are ${id[*]}"
 	mkdir -p logs
 	CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-		\
-		\
-		\
 		--train_dir $train_dir \
 		--valid_dir $valid_dir \
-		--n_src $n_src \
 		--sample_rate $sample_rate \
-		--epochs $epochs \
-		--batch_size $batch_size \
-		--num_workers $num_workers \
-		--half_lr $half_lr \
-		--early_stop $early_stop \
 		--optimizer $optimizer \
 		--lr $lr \
-		--weight_decay $weight_decay #--n_blocks $n_blocks \
-	#--n_repeats $n_repeats \
-	#--mask_act $mask_act \
-	#--task $task \
-	#--segment $segment
-	--exp_dir $expdir | tee logs/train_${tag}.log
+		--weight_decay $weight_decay \
+		--epochs $epochs \
+		--batch_size $batch_size \
+		--lambda $lambda \
+		--num_workers $num_workers \
+		--exp_dir ${expdir}/ | tee logs/train_${tag}.log
+	--resume_from $resume_from
 	cp logs/train_${tag}.log $expdir/train.log
-
-	# Get ready to publish
-	mkdir -p $expdir/publish_dir
-	echo "kinect_wsj/ConvTasNet" >$expdir/publish_dir/recipe_name.txt
 fi
 
 if [[ $stage -le 4 ]]; then
+	expdir=exp/tmp
 	echo "Stage 4 : Evaluation"
-
-	$python_path eval.py \
-		--exp_dir $expdir \
+	echo "If you want to change n_srcs, please change the config file"
+	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \
 		--test_dir $test_dir \
-		--out_dir $out_dir \
-		--use_gpu $eval_use_gpu | tee logs/eval_${tag}.log
-
+		--use_gpu $eval_use_gpu \
+		--exp_dir ${expdir} | tee logs/eval_${tag}.log
 	cp logs/eval_${tag}.log $expdir/eval.log
 fi

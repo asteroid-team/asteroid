@@ -35,13 +35,11 @@ id=$CUDA_VISIBLE_DEVICES
 out_dir=kinect_wsj # Controls the directory name associated to the evaluation results inside the experiment directory
 
 # Network config
-n_blocks=8
-n_repeats=3
-mask_act=relu
+
 # Training config
 epochs=200
-batch_size=32
-num_workers=8
+batch_size=12
+num_workers=4
 half_lr=yes
 early_stop=yes
 # Optim config
@@ -52,15 +50,16 @@ weight_decay=0.
 sample_rate=16000
 mode=max
 n_src=2
-segment=3
+#segment=3
+#task=enh_single # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
 
 eval_use_gpu=1
 
 . utils/parse_options.sh
 
 sr_string=$(($sample_rate / 1000))
-suffix=wav${sr_string}k/$mode
-dumpdir=data/$suffix # directory to put generated json file
+suffix=${n_src}speakers/wav${sr_string}k/$mode
+dumpdir=$data/$suffix # directory to put generated json file
 
 train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
@@ -107,21 +106,14 @@ if [[ -z ${tag} ]]; then
 	tag=${uuid}
 fi
 
-expdir=exp/train_convtasnet_${tag}
+expdir=exp/train_sudormrfimproved_${tag}
 mkdir -p $expdir && echo $uuid >>$expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
 if [[ $stage -le 3 ]]; then
 	echo "Stage 3: Training"
 	mkdir -p logs
-	CUDA_VISIBLE_DEVICES=$id $python_path train.py \
-		\
-		\
-		\
-		--train_dir $train_dir \
-		--valid_dir $valid_dir \
-		--n_src $n_src \
-		--sample_rate $sample_rate \
+	CUDA_VISIBLE_DEVICES=$id $python_path train.py --exp_dir $expdir \
 		--epochs $epochs \
 		--batch_size $batch_size \
 		--num_workers $num_workers \
@@ -129,21 +121,20 @@ if [[ $stage -le 3 ]]; then
 		--early_stop $early_stop \
 		--optimizer $optimizer \
 		--lr $lr \
-		--weight_decay $weight_decay #--n_blocks $n_blocks \
-	#--n_repeats $n_repeats \
-	#--mask_act $mask_act \
-	#--task $task \
-	#--segment $segment
-	--exp_dir $expdir | tee logs/train_${tag}.log
+		--weight_decay $weight_decay \
+		--train_dir $train_dir \
+		--valid_dir $valid_dir \
+		--sample_rate $sample_rate \
+		--n_src $n_src | tee logs/train_${tag}.log
 	cp logs/train_${tag}.log $expdir/train.log
 
 	# Get ready to publish
 	mkdir -p $expdir/publish_dir
-	echo "kinect_wsj/ConvTasNet" >$expdir/publish_dir/recipe_name.txt
+	echo "kinect_wsj/SuDORMRF" >$expdir/publish_dir/recipe_name.txt
 fi
 
 if [[ $stage -le 4 ]]; then
-	echo "Stage 4 : Evaluation"
+	echo "Stage 4: Evaluation"
 
 	$python_path eval.py \
 		--exp_dir $expdir \
