@@ -102,15 +102,10 @@ class System(pl.LightningModule):
         """
 
         inputs, targets, masks = batch
+        # Take the first channels
         inputs = inputs[..., 0]
         targets = targets[..., 0]
-        #print(inputs.shape)
-        #torch.Size([32, 2, 64000, 4])
-        #print(targets.shape)
-        #torch.Size([32, 64000, 4])
         est_targets = self(inputs)
-        #print(est_targets.shape)
-        #torch.Size([32, 2, 64000, 4])
         loss = self.loss_func(est_targets, targets)
         return loss
         '''
