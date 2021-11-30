@@ -38,7 +38,7 @@ out_dir=kinect_wsj # Controls the directory name associated to the evaluation re
 
 # Training config
 epochs=200
-batch_size=12
+batch_size=4
 num_workers=4
 half_lr=yes
 early_stop=yes
@@ -104,7 +104,7 @@ if [[ -z ${tag} ]]; then
 	tag=${uuid}
 fi
 
-expdir=exp/train_dccrnet_${tag}
+expdir=exp/train_dcunet_${tag}
 mkdir -p $expdir && echo $uuid >>$expdir/run_uuid.txt
 echo "Results from the following experiment will be stored in $expdir"
 
@@ -128,11 +128,11 @@ if [[ $stage -le 3 ]]; then
 
 	# Get ready to publish
 	mkdir -p $expdir/publish_dir
-	echo "kinect_wsj/DCCRNet" >$expdir/publish_dir/recipe_name.txt
+	echo "kinect_wsj/DCUNet" >$expdir/publish_dir/recipe_name.txt
 fi
 
 if [[ $stage -le 4 ]]; then
-	echo "Stage 4 : Evaluation"
+	echo "Stage 4: Evaluation"
 
 	$python_path eval.py \
 		--exp_dir $expdir \
