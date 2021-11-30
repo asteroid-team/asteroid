@@ -50,8 +50,6 @@ weight_decay=0.
 sample_rate=16000
 mode=max
 n_src=2
-#segment=3
-#task=enh_single # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
 
 eval_use_gpu=1
 

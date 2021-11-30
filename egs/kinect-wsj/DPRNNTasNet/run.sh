@@ -54,20 +54,12 @@ n_src=2
 #task=enh_single  # one of 'enh_single', 'enh_both', 'sep_clean', 'sep_noisy'
 
 eval_use_gpu=1
-# Need to --compute_wer 1 --eval_mode max to be sure the user knows all the metrics
-# are for the all mode.
-compute_wer=0
-eval_mode=max
 
 . utils/parse_options.sh
 
 sr_string=$(($sample_rate / 1000))
 suffix=${n_src}speakers/wav${sr_string}k/$mode
 dumpdir=$data/$suffix # directory to put generated json file
-
-if [ -z "$eval_mode" ]; then
-	eval_mode=$mode
-fi
 
 train_dir=$dumpdir/tr
 valid_dir=$dumpdir/cv
@@ -140,7 +132,7 @@ if [[ $stage -le 3 ]]; then
 	mkdir -p $expdir/publish_dir
 	echo "kinect_wsj/DPRNNTasNet" >$expdir/publish_dir/recipe_name.txt
 fi
-#expdir="exp/train_dprnntasnet_e07a8bcf"
+
 if [[ $stage -le 4 ]]; then
 	echo "Stage 4 : Evaluation"
 
