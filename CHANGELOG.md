@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+
 ## [xxx] - 2021-01-05
 
 ### Breaking
@@ -12,7 +13,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 
-## [0.5.0] - 2021-07-05
+## [0.5.2] - 2021-12-06
+
+### Added
+- [src&egs] Add VAD in Asteroid :tada: (#558)
+- [src&tests] Add GEVD beamformer (#520)
+- [hub] Add library version and name for Hugging Face download stats (#524)
+- [egs] Add recipe for Multi-Decoder DPRNN (#463)
+- [egs] Enable WER eval with GPU (#541)
+- [egs] Add readme and pretrained model to FaSNet recipe (#561)
+
+### Changed
+- [src] Make cLN default in causal ConvTasNet (#511)
+- [install] Pin pytorch-optimizer version to support RAdam (#568)
+
+### Fixed
+- [src] Prevent complex eigen values in gev (#519)
+- [src] Fix default norm_type for causal ConvTasNet (#503)
+- [egs] Fixed bug in X-UMX (#521)
+- [nbs] asteroid.filterbanks to asteroid_filterbanks (#526)
+- [nbs] Fix typos in notebooks/02_Filterbank.ipynb (#527)
+- [install] Fix PL version <1.5.0 (#576)
+
+## [0.5.1] - 2021-05-07
+- [install] Lift the ligthning<1.3.0 restriction (#495)
+
+## [0.5.0] - 2021-05-07
 
 ### Breaking
 - [src&tests] Remove all deprecated code (#474)
