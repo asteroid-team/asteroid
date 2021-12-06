@@ -46,7 +46,7 @@ setup(
         # From requirements/install.txt
         "PyYAML>=5.0",
         "pandas>=0.23.4",
-        "pytorch-lightning>=1.0.1",
+        "pytorch-lightning>=1.0.1,<1.5.0",
         "torchaudio>=0.5.0",
         "pb_bss_eval>=0.0.2",
         "torch_stoi>=0.1.2",
