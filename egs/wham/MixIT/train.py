@@ -12,7 +12,8 @@ from asteroid import DPRNNTasNet
 from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
-from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr, MixITLossWrapper
+from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
+from asteroid.losses import MixITLossWrapper, multisrc_neg_sisdr
 
 # Keys which are not in the conf.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be
@@ -113,7 +114,7 @@ def main(conf):
     # Define Loss function.
     loss_func = {
         "pit": PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx"),
-        "mixit": MixITLossWrapper(pairwise_neg_sisdr, generalized=True),
+        "mixit": MixITLossWrapper(multisrc_neg_sisdr, generalized=True),
     }
 
     system = MixITSystem(
