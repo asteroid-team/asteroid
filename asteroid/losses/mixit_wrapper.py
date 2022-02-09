@@ -194,9 +194,8 @@ class MixITLossWrapper(nn.Module):
             est_mixes = torch.stack([est_targets[:, idx, :].sum(1) for idx in partition], dim=1)
             # get loss for the given partition
             loss_partition = loss_func(est_mixes, targets, **kwargs)
-            assert (
-                loss_partition.ndim == 1
-            ), "Loss function return value should be of size (batch,)."
+            if loss_partition.ndim != 1:
+                raise ValueError("Loss function return value should be of size (batch,).")
             loss_set.append(loss_partition[:, None])
         loss_set = torch.cat(loss_set, dim=1)
         return loss_set
