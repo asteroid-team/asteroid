@@ -186,7 +186,7 @@ def pad(x, lcm: int):
         appropriate_shape = x.shape
         padding = torch.zeros(
             list(appropriate_shape[:-1]) + [lcm - values_to_pad],
-            dtype=x.dtype,
+            dtype=x.dtype, device=x.device
         )
         padded_x = torch.cat([x, padding], dim=-1)
         return padded_x
