@@ -20,7 +20,7 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
         >>> from asteroid.losses.cluster import deep_clustering_loss
         >>> spk_cnt = 3
         >>> embedding = torch.randn(10, 5*400, 20)
-        >>> targets = torch.LongTensor([10, 400, 5]).random_(0, spk_cnt)
+        >>> targets = torch.LongTensor(10, 400, 5).random_(0, spk_cnt)
         >>> loss = deep_clustering_loss(embedding, targets)
 
     Reference
