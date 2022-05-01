@@ -3,7 +3,7 @@ import pytorch_lightning as pl
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from ..utils import flatten_dict
-
+from .schedulers import BaseScheduler
 
 class System(pl.LightningModule):
     """Base class for deep learning systems.
@@ -162,6 +162,14 @@ class System(pl.LightningModule):
                 ], "Scheduler interval should be either step or epoch"
                 epoch_schedulers.append(sched)
         return [self.optimizer], epoch_schedulers
+
+    def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
+        if isinstance(scheduler, BaseScheduler):
+            scheduler.step()
+        elif metric is None:
+            scheduler.step()
+        else:
+            scheduler.step(metric)
 
     def train_dataloader(self):
         """Training dataloader"""
