@@ -838,7 +838,7 @@ class UBlock(_BaseUBlock):
         # Gather them now in reverse order
         for _ in range(self.depth - 1):
             resampled_out_k = self.upsampler(output.pop(-1))
-            output[-1] = output[-1] + resampled_out_k
+            output[-1] = output[-1] + resampled_out_k[..., : output[-1].shape[-1]]
 
         expanded = self.conv_1x1_exp(self.final_norm(output[-1]))
 
@@ -876,7 +876,7 @@ class UConvBlock(_BaseUBlock):
         # Gather them now in reverse order
         for _ in range(self.depth - 1):
             resampled_out_k = self.upsampler(output.pop(-1))
-            output[-1] = output[-1] + resampled_out_k
+            output[-1] = output[-1] + resampled_out_k[..., : output[-1].shape[-1]]
 
         expanded = self.final_norm(output[-1])
 
