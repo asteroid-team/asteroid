@@ -15,6 +15,11 @@ class MixITLossWrapper(nn.Module):
             If True (default), apply MixIT for two mixtures, but those mixtures do not
             necessarly have to contain the same number of sources.
             See :meth:`~MixITLossWrapper.best_part_mixit_generalized`.
+        reduction (string, optional): Specifies the reduction to apply to
+            the output:
+            ``'none'`` | ``'mean'``. ``'none'``: no reduction will be applied,
+            ``'mean'``: the sum of the output will be divided by the number of
+            elements in the output.
 
     For each of these modes, the best partition and reordering will be
     automatically computed.
@@ -33,10 +38,11 @@ class MixITLossWrapper(nn.Module):
         mixtures of mixtures." arXiv:2006.12701 (2020)
     """
 
-    def __init__(self, loss_func, generalized=True):
+    def __init__(self, loss_func, generalized=True, reduction="mean"):
         super().__init__()
         self.loss_func = loss_func
         self.generalized = generalized
+        self.reduction = reduction
 
     def forward(self, est_targets, targets, return_est=False, **kwargs):
         r"""Find the best partition and return the loss.
@@ -69,13 +75,15 @@ class MixITLossWrapper(nn.Module):
             min_loss, min_loss_idx, parts = self.best_part_mixit_generalized(
                 self.loss_func, est_targets, targets, **kwargs
             )
-        # Take the mean over the batch
-        mean_loss = torch.mean(min_loss)
+
+        # Apply any reductions over the batch axis
+        returned_loss = min_loss.mean() if self.reduction == "mean" else min_loss
         if not return_est:
-            return mean_loss
+            return returned_loss
+
         # Order and sum on the best partition to get the estimated mixtures
         reordered = self.reorder_source(est_targets, targets, min_loss_idx, parts)
-        return mean_loss, reordered
+        return returned_loss, reordered
 
     @staticmethod
     def best_part_mixit(loss_func, est_targets, targets, **kwargs):
