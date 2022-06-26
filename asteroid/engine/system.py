@@ -3,7 +3,6 @@ import pytorch_lightning as pl
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from ..utils import flatten_dict
-from .schedulers import BaseScheduler
 
 
 class System(pl.LightningModule):
