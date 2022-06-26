@@ -3,6 +3,7 @@ sphinx-rtd-theme==0.4.3
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-programoutput>=0.16
 sphinx>=1.8.3, <3.0
+jinja2>=3.0.0,<3.1.0
 recommonmark  # fails with badges
 nbsphinx
 m2r2
