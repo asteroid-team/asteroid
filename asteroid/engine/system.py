@@ -5,6 +5,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from ..utils import flatten_dict
 from .schedulers import BaseScheduler
 
+
 class System(pl.LightningModule):
     """Base class for deep learning systems.
     Contains a model, an optimizer, a loss function, training and validation
@@ -164,9 +165,7 @@ class System(pl.LightningModule):
         return [self.optimizer], epoch_schedulers
 
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
-        if isinstance(scheduler, BaseScheduler):
-            scheduler.step()
-        elif metric is None:
+        if metric is None:
             scheduler.step()
         else:
             scheduler.step(metric)
