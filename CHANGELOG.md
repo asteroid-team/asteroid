@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-
 ## [xxx] - 2021-01-05
 
 ### Breaking
@@ -12,6 +11,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Changed
 ### Fixed
 
+
+## [0.5.3] - 2022-06-26
+### Added
+- [egs&tests] MixIT loss function (#595)
+### Changed
+- [docs] Update RTD version to 0.5.1
+### Fixed
+- [src] Fix FasNetTAC loading (#586)
+- [src] Fix device in padding for sudormrf.  Fix #598  (#603)
+- [docs] Fix deep_clustering_loss docs example (#607)
+- [src] Remove torch.complex32 usage for torch 1.11.0 (#609)
+- [egs] Fix package install script for WHAMR! (#613)
+- [src] Fix shape mismatching in SuDORMRF's masknn (#618)
+- [CI] Fix CI Restrict torchmetrics version to under 0.8.0 (#619)
+- [docs] Fix docs Restrict jinja2>=3.0.0,<3.1.0 (#620)
 
 ## [0.5.2] - 2021-12-06
 
