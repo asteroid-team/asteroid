@@ -38,7 +38,7 @@ class MixITLossWrapper(nn.Module):
         mixtures of mixtures." arXiv:2006.12701 (2020)
     """
 
-    def __init__(self, loss_func, generalized=True, reduction='mean'):
+    def __init__(self, loss_func, generalized=True, reduction="mean"):
         super().__init__()
         self.loss_func = loss_func
         self.generalized = generalized
@@ -75,12 +75,12 @@ class MixITLossWrapper(nn.Module):
             min_loss, min_loss_idx, parts = self.best_part_mixit_generalized(
                 self.loss_func, est_targets, targets, **kwargs
             )
-        
+
         # Apply any reductions over the batch axis
-        returned_loss = min_loss.mean() if self.reduction == 'mean' else min_loss
+        returned_loss = min_loss.mean() if self.reduction == "mean" else min_loss
         if not return_est:
             return returned_loss
-        
+
         # Order and sum on the best partition to get the estimated mixtures
         reordered = self.reorder_source(est_targets, targets, min_loss_idx, parts)
         return returned_loss, reordered
