@@ -453,14 +453,11 @@ def main(conf, args):
     callbacks.append(checkpoint)
     callbacks.append(es)
 
-    # Don't ask GPU if they are not available.
-    gpus = -1 if torch.cuda.is_available() else None
-
     trainer = pl.Trainer(
         max_epochs=args.epochs,
         callbacks=callbacks,
         default_root_dir=exp_dir,
-        gpus=gpus,
+        accelerator="gpu" if torch.cuda.is_available() else "cpu",
         strategy="ddp",
         limit_train_batches=1.0,  # Useful for fast experiment
     )

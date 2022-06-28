@@ -1,3 +1,4 @@
+import os
 import argparse
 import json
 import torch
@@ -93,8 +94,6 @@ def main(conf):
     if conf["training"]["early_stop"]:
         callbacks.append(EarlyStopping(monitor="avg_sdr", mode="max", patience=30, verbose=True))
 
-    # Don't ask GPU if they are not available.
-    gpus = -1 if torch.cuda.is_available() else None
     distributed_backend = "dp" if torch.cuda.is_available() else None
 
     # Train model
@@ -102,7 +101,7 @@ def main(conf):
         max_epochs=conf["training"]["epochs"],
         callbacks=callbacks,
         default_root_dir=exp_dir,
-        gpus=gpus,
+        accelerator="gpu" if torch.cuda.is_available() else "cpu",
         strategy="ddp",
         limit_train_batches=1.0,  # Useful for fast experiment
         gradient_clip_val=200,
