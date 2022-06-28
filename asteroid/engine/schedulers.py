@@ -28,7 +28,7 @@ class BaseScheduler(object):
         for param_group in self.optimizer.param_groups:
             param_group["lr"] = lr
 
-    def step(self):
+    def step(self, metrics=None, epoch=None):
         """Update step-wise learning rate before optimizer.step."""
         self.step_num += 1
         lr = self._get_lr()
