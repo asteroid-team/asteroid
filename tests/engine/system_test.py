@@ -20,7 +20,9 @@ def test_system():
         val_loader=loader,
         scheduler=scheduler,
     )
-    trainer = Trainer(max_epochs=1, fast_dev_run=True)
+    trainer = Trainer(
+        max_epochs=1, fast_dev_run=True, accelerator="cpu", strategy="ddp", devices="auto"
+    )
     trainer.fit(system)
 
 
@@ -38,7 +40,9 @@ def test_system_no_scheduler():
         val_loader=loader,
         scheduler=scheduler,
     )
-    trainer = Trainer(max_epochs=1, fast_dev_run=True)
+    trainer = Trainer(
+        max_epochs=1, fast_dev_run=True, accelerator="cpu", strategy="ddp", devices="auto"
+    )
     trainer.fit(system)
 
 

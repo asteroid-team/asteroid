@@ -110,15 +110,13 @@ def train_model_part(conf, train_part="filterbank", pretrained_filterbank=None):
     if conf[train_part + "_training"][train_part[0] + "_early_stop"]:
         callbacks.append(EarlyStopping(monitor="val_loss", patience=30, verbose=True))
 
-    # Don't ask GPU if they are not available.
-    gpus = -1 if torch.cuda.is_available() else None
-    distributed_backend = "ddp" if torch.cuda.is_available() else None
     trainer = pl.Trainer(
         max_epochs=conf[train_part + "_training"][train_part[0] + "_epochs"],
         callbacks=callbacks,
         default_root_dir=exp_dir,
-        gpus=gpus,
-        distributed_backend=distributed_backend,
+        accelerator="gpu" if torch.cuda.is_available() else "cpu",
+        strategy="ddp",
+        devices="auto",
         limit_train_batches=1.0,  # Useful for fast experiment
         gradient_clip_val=5.0,
     )

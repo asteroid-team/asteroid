@@ -77,15 +77,14 @@ def main(conf):
         val_loader=val_loader,
         config=conf,
     )
-    # Don't ask GPU if they are not available.
-    gpus = -1 if torch.cuda.is_available() else None
-    distributed_backend = "ddp" if torch.cuda.is_available() else None
+
     trainer = pl.Trainer(
         max_epochs=conf["training"]["epochs"],
         checkpoint_callback=checkpoint,
         default_root_dir=exp_dir,
-        gpus=gpus,
-        distributed_backend=distributed_backend,
+        accelerator="gpu" if torch.cuda.is_available() else "cpu",
+        strategy="ddp",
+        devices="auto",
     )
     trainer.fit(system)
 
