@@ -103,7 +103,7 @@ def main(conf):
         callbacks=callbacks,
         default_root_dir=exp_dir,
         gpus=gpus,
-        distributed_backend=distributed_backend,
+        strategy="ddp",
         limit_train_batches=1.0,  # Useful for fast experiment
         gradient_clip_val=200,
         resume_from_checkpoint=conf["main_args"]["resume_from"],
