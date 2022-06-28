@@ -93,7 +93,7 @@ def separate(
         Vj = masked_tf_rep[j, Ellipsis].cpu().detach().numpy()
         if softmask:
             # only exponentiate the model if we use softmask
-            Vj = Vj ** alpha
+            Vj = Vj**alpha
         # output is nb_frames, nb_samples, nb_channels, nb_bins
         V.append(Vj[:, 0, Ellipsis])  # remove sample dim
         source_names += [target]

@@ -17,8 +17,8 @@ def snr(pred_signal: torch.Tensor, true_signal: torch.Tensor) -> torch.FloatTens
     """
     inter_signal = true_signal - pred_signal
 
-    true_power = (true_signal ** 2).sum()
-    inter_power = (inter_signal ** 2).sum()
+    true_power = (true_signal**2).sum()
+    inter_power = (inter_signal**2).sum()
 
     snr = 10 * torch.log10(true_power / inter_power)
 

@@ -32,7 +32,7 @@ class Model(nn.Module):
 
     @staticmethod
     def pad_output_to_inp(output, inp):
-        """ Pad first argument to have same size as second argument"""
+        """Pad first argument to have same size as second argument"""
         inp_len = inp.size(-1)
         output_len = output.size(-1)
         return nn.functional.pad(output, [0, inp_len - output_len])

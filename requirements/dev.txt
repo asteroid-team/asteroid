@@ -1,7 +1,7 @@
 # Requirements for development on Asteroid and running tests
 -r ./install.txt
 pre-commit
-black==20.8b1
+black==22.3.0
 pytest
 coverage
 codecov

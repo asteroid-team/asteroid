@@ -55,7 +55,7 @@ class SingleRNN(nn.Module):
         return self.hidden_size * (2 if self.bidirectional else 1)
 
     def forward(self, inp):
-        """ Input shape [batch, seq, feats] """
+        """Input shape [batch, seq, feats]"""
         self.rnn.flatten_parameters()  # Enables faster multi-GPU training.
         output = inp
         rnn_output, _ = self.rnn(output)
@@ -115,7 +115,7 @@ class MulCatRNN(nn.Module):
         return self.hidden_size * (2 if self.bidirectional else 1) + self.input_size
 
     def forward(self, inp):
-        """ Input shape [batch, seq, feats] """
+        """Input shape [batch, seq, feats]"""
         self.rnn1.flatten_parameters()  # Enables faster multi-GPU training.
         self.rnn2.flatten_parameters()  # Enables faster multi-GPU training.
         rnn_output1, _ = self.rnn1(inp)
@@ -305,7 +305,7 @@ class DPRNNBlock(nn.Module):
         self.inter_norm = norms.get(norm_type)(in_chan)
 
     def forward(self, x):
-        """ Input shape : [batch, feats, chunk_size, num_chunks] """
+        """Input shape : [batch, feats, chunk_size, num_chunks]"""
         B, N, K, L = x.size()
         output = x  # for skip connection
         # Intra-chunk processing

@@ -5,7 +5,7 @@ import soundfile as sf
 
 
 def preprocess_one_dir(in_dir, out_dir, out_filename):
-    """ Create .json file for one condition."""
+    """Create .json file for one condition."""
     file_infos = []
     in_dir = os.path.abspath(in_dir)
     wav_list = os.listdir(in_dir)
@@ -23,7 +23,7 @@ def preprocess_one_dir(in_dir, out_dir, out_filename):
 
 
 def preprocess(inp_args):
-    """ Create .json files for all conditions."""
+    """Create .json files for all conditions."""
     speaker_list = ["mix"] + [f"s{n+1}" for n in range(inp_args.n_src)]
     for data_type in ["tr", "cv", "tt"]:
         for spk in speaker_list:

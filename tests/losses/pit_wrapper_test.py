@@ -60,7 +60,7 @@ def test_wrapper(batch_size, n_src, time):
     + list(itertools.permutations([0, 1, 2, 3, 4])),
 )
 def test_permutation(perm):
-    """ Construct fake target/estimates pair. Check the value and reordering."""
+    """Construct fake target/estimates pair. Check the value and reordering."""
     n_src = len(perm)
     perm_tensor = torch.Tensor(perm)
     source_base = torch.ones(1, n_src, 10)
