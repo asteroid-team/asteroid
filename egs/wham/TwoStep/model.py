@@ -87,7 +87,7 @@ class TwoStepTDCN(nn.Module):
                     in_chan=self.bn_chan,
                     hid_chan=self.hid_chan,
                     kernel_size=self.kernel_size,
-                    dilation=2 ** d,
+                    dilation=2**d,
                 )
                 for _ in range(self.n_blocks)
                 for d in range(self.n_repeats)
@@ -180,7 +180,7 @@ class SeparableDilatedConv1DBlock(nn.Module):
         )
 
     def forward(self, x):
-        """ Input shape [batch, feats, seq]"""
+        """Input shape [batch, feats, seq]"""
         y = x.clone()
         return x + self.module(y)
 

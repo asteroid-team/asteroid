@@ -165,9 +165,9 @@ class TDConvNet(nn.Module):
         for r in range(n_repeats):
             for x in range(n_blocks):
                 if not causal:
-                    padding = (conv_kernel_size - 1) * 2 ** x // 2
+                    padding = (conv_kernel_size - 1) * 2**x // 2
                 else:
-                    padding = (conv_kernel_size - 1) * 2 ** x
+                    padding = (conv_kernel_size - 1) * 2**x
                 self.TCN.append(
                     Conv1DBlock(
                         bn_chan,
@@ -175,7 +175,7 @@ class TDConvNet(nn.Module):
                         skip_chan,
                         conv_kernel_size,
                         padding=padding,
-                        dilation=2 ** x,
+                        dilation=2**x,
                         norm_type=norm_type,
                         causal=causal,
                     )
@@ -312,7 +312,7 @@ class TDConvNetpp(nn.Module):
         self.TCN = nn.ModuleList()
         for r in range(n_repeats):
             for x in range(n_blocks):
-                padding = (conv_kernel_size - 1) * 2 ** x // 2
+                padding = (conv_kernel_size - 1) * 2**x // 2
                 self.TCN.append(
                     Conv1DBlock(
                         bn_chan,
@@ -320,7 +320,7 @@ class TDConvNetpp(nn.Module):
                         skip_chan,
                         conv_kernel_size,
                         padding=padding,
-                        dilation=2 ** x,
+                        dilation=2**x,
                         norm_type=norm_type,
                     )
                 )
@@ -329,7 +329,7 @@ class TDConvNetpp(nn.Module):
         for r in range(n_repeats - 1):
             self.dense_skip.append(nn.Conv1d(bn_chan, bn_chan, 1))
 
-        scaling_param = torch.Tensor([0.9 ** l for l in range(1, n_blocks)])
+        scaling_param = torch.Tensor([0.9**l for l in range(1, n_blocks)])
         scaling_param = scaling_param.unsqueeze(0).expand(n_repeats, n_blocks - 1).clone()
         self.scaling_param = nn.Parameter(scaling_param, requires_grad=True)
 

@@ -184,7 +184,7 @@ def _populate_publishable(model, uploader=None, affiliation=None, git_username=N
 
 
 def get_username():
-    """ Get git of FS username for upload. """
+    """Get git of FS username for upload."""
     username = subprocess.check_output(["git", "config", "user.name"])
     username = username.decode("utf-8")[:-1]
     if not username:  # Empty string

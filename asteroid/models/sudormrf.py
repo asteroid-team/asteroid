@@ -166,8 +166,8 @@ class _Padder(nn.Module):
         self.kernel_size = kernel_size
 
         # Appropriate padding is needed for arbitrary lengths
-        self.lcm = abs(self.kernel_size // 2 * 2 ** self.upsampling_depth) // math.gcd(
-            self.kernel_size // 2, 2 ** self.upsampling_depth
+        self.lcm = abs(self.kernel_size // 2 * 2**self.upsampling_depth) // math.gcd(
+            self.kernel_size // 2, 2**self.upsampling_depth
         )
 
         # For serialize

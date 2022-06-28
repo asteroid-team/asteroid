@@ -67,7 +67,7 @@ def main(conf):
         # Forward the network on the mixture.
         mix, sources = tensors_to_device(test_set[idx], device=model_device)
         est_sources = model(mix[None, None])
-        _, indxs = torch.sort(torch.sqrt(torch.mean(est_sources ** 2, dim=-1)), descending=True)
+        _, indxs = torch.sort(torch.sqrt(torch.mean(est_sources**2, dim=-1)), descending=True)
         indxs = indxs[:, :2]
         # we know a-priori that there are 2 sources in WHAM-clean (WSJ0-2mix clean)
         # so we sort the estimated signals and take only the two with highest energy.

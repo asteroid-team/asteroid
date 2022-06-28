@@ -106,7 +106,7 @@ class Model(nn.Module):
         return final_proj, mask_out
 
     def separate(self, x):
-        """ Separate with mask-inference head, output waveforms """
+        """Separate with mask-inference head, output waveforms"""
         if len(x.shape) == 2:
             x = x.unsqueeze(1)
         tf_rep = self.encoder(x)
@@ -117,7 +117,7 @@ class Model(nn.Module):
         return wavs, dic_out
 
     def dc_head_separate(self, x):
-        """ Cluster embeddings to produce binary masks, output waveforms """
+        """Cluster embeddings to produce binary masks, output waveforms"""
         kmeans = KMeans(n_clusters=self.masker.n_src)
         if len(x.shape) == 2:
             x = x.unsqueeze(1)

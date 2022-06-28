@@ -173,7 +173,7 @@ class BaseModel(torch.nn.Module):
         return model_conf
 
     def get_state_dict(self):
-        """ In case the state dict needs to be modified before sharing the model."""
+        """In case the state dict needs to be modified before sharing the model."""
         return self.state_dict()
 
     def get_model_args(self):
@@ -272,7 +272,7 @@ class BaseEncoderMaskerDecoder(BaseModel):
         return self.decoder(masked_tf_rep)
 
     def get_model_args(self):
-        """ Arguments needed to re-instantiate the model. """
+        """Arguments needed to re-instantiate the model."""
         fb_config = self.encoder.filterbank.get_config()
         masknet_config = self.masker.get_config()
         # Assert both dict are disjoint

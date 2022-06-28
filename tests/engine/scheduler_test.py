@@ -18,7 +18,7 @@ def common_setup():
 
 
 def test_state_dict():
-    """ Load and serialize scheduler. """
+    """Load and serialize scheduler."""
     model, optimizer, loader, trainer = common_setup()
     sched = NoamScheduler(optimizer, d_model=10, warmup_steps=100)
     state_dict = sched.state_dict()

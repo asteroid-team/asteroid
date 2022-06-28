@@ -48,7 +48,7 @@ def mixture_consistency(
         all_dims: List[int] = torch.arange(est_sources.ndim).tolist()
         all_dims.pop(dim)  # Remove source axis
         all_dims.pop(0)  # Remove batch axis
-        src_weights = torch.mean(est_sources ** 2, dim=all_dims, keepdim=True)
+        src_weights = torch.mean(est_sources**2, dim=all_dims, keepdim=True)
     # Make sure that the weights sum up to 1
     norm_weights = torch.sum(src_weights, dim=dim, keepdim=True) + 1e-8
     src_weights = src_weights / norm_weights

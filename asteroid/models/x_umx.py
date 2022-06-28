@@ -215,7 +215,7 @@ class XUMX(BaseModel):
         return masked_tf_rep
 
     def get_model_args(self):
-        """ Arguments needed to re-instantiate the model. """
+        """Arguments needed to re-instantiate the model."""
         fb_config = {
             "window_length": self.window_length,
             "in_chan": self.in_chan,

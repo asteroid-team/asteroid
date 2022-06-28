@@ -50,7 +50,7 @@ def make_wav_id_dict(file_list):
 
 
 def get_file_id(fp):
-    """ Split string to get wave id in DNS challenge dataset."""
+    """Split string to get wave id in DNS challenge dataset."""
     return fp.split("_")[-1].split(".")[0]
 
 

@@ -121,7 +121,7 @@ class SimpleModel(nn.Module):
         self.out_proj_layer = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
-        """ Mask estimator's forward pass. Expects [batch, time, input_size]"""
+        """Mask estimator's forward pass. Expects [batch, time, input_size]"""
         # Non negative features from input
         out_rec = self.residual_rec(torch.relu(self.in_proj_layer(x)))
         # Activation is relu on the mask (better gradients allegedly)
