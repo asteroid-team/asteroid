@@ -459,6 +459,7 @@ def main(conf, args):
         default_root_dir=exp_dir,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         strategy="ddp",
+        devices="auto",
         limit_train_batches=1.0,  # Useful for fast experiment
     )
     trainer.fit(system)

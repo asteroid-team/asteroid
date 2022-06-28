@@ -87,6 +87,7 @@ def main(conf):
         default_root_dir=exp_dir,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         strategy="ddp",
+        devices="auto",
         # limit_train_batches=0.0002,  # Useful for fast experiment
         # limit_val_batches=0.0035,  # Useful for fast experiment
         gradient_clip_val=5.0,

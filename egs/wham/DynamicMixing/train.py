@@ -115,6 +115,7 @@ def main(conf):
         default_root_dir=exp_dir,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         strategy="ddp",
+        devices="auto",
         gradient_clip_val=conf["training"]["gradient_clipping"],
     )
     trainer.fit(system)
