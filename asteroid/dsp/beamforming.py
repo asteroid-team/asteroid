@@ -442,10 +442,14 @@ def stable_cholesky(input, upper=False, out=None, eps=1e-6):
 
 def _stable_cholesky(input, upper=False, out=None, eps=1e-6):
     try:
-        return torch.linalg.cholesky(input, upper=upper, out=out)
+        if upper:
+            return torch.linalg.cholesky(input, out=out).mH
+        return torch.linalg.cholesky(input, out=out)
     except RuntimeError:
         input = condition_scm(input, eps)
-        return torch.linalg.cholesky(input, upper=upper, out=out)
+        if upper:
+            return torch.linalg.cholesky(input, out=out).mH
+        return torch.linalg.cholesky(input, out=out)
 
 
 def generalized_eigenvalue_decomposition(a, b):
