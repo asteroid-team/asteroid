@@ -65,6 +65,10 @@ test_dir=data/wav${sr_string}k/$eval_mode/test
 
 if [[ $stage -le  0 ]]; then
 	echo "Stage 0: Generating Librimix dataset"
+	if [ -z "$storage_dir" ]; then
+		echo "Need to fill in the storage_dir variable in run.sh to run stage 0. Exiting"
+		exit 1
+	fi
   . local/generate_librimix.sh --storage_dir $storage_dir --n_src $n_src
 fi
 
