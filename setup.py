@@ -52,7 +52,6 @@ setup(
         "torch_stoi>=0.1.2",
         "torch_optimizer>=0.0.1a12,<0.2.0",
         "julius",
-        "torchmetrics<0.8.0",
     ],
     entry_points={
         "console_scripts": [
