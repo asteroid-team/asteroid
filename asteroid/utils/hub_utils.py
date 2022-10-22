@@ -68,6 +68,7 @@ def cached_download(filename_or_url):
         return huggingface_hub.hf_hub_download(
             repo_id=model_id,
             filename=huggingface_hub.PYTORCH_WEIGHTS_NAME,
+            cache_dir=get_cache_dir(),
             revision=revision,
             library_name="asteroid",
             library_version=asteroid_version,
