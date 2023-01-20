@@ -23,11 +23,13 @@ import soundfile as sf
 from pprint import pprint
 
 from asteroid.utils import tensors_to_device
-from asteroid.metrics import get_metrics
+from asteroid import torch_utils
 
 from model import load_best_model, make_model_and_optimizer
-from wsj0_mix_variable import Wsj0mixVariable, _collate_fn
-
+from wsj0_mix_variable import Wsj0mixVariable
+import glob
+import requests
+import librosa
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -37,10 +39,25 @@ parser.add_argument(
     help="One of `enh_single`, `enh_both`, " "`sep_clean` or `sep_noisy`",
 )
 parser.add_argument(
-    "--test_dir", type=str, required=True, help="Test directory including the json files"
+    "--wav_file",
+    type=str,
+    default="",
+    help="Path to the wav file to run model inference on. Could be a regular expression of {folder_name}/*.wav",
 )
 parser.add_argument(
-    "--use_gpu", type=int, default=0, help="Whether to use the GPU for model execution"
+    "--output_dir", type=str, default="output", help="Output folder for inference results"
+)
+parser.add_argument(
+    "--test_dir",
+    type=str,
+    default="",
+    help="Test directory including the WSJ0-mix(variable #speakers) test set json files",
+)
+parser.add_argument(
+    "--use_gpu",
+    type=int,
+    default=0,
+    help="Whether to use the GPU for model execution. Enter 1 or 0",
 )
 parser.add_argument("--exp_dir", default="exp/tmp", help="Experiment root")
 parser.add_argument(
@@ -49,7 +66,7 @@ parser.add_argument(
 
 
 def main(conf):
-    best_model_path = os.path.join(conf["exp_dir"], "best_model.pth")
+    best_model_path = os.path.join(conf["exp_dir"], "checkpoints", "best-model.ckpt")
     if not os.path.exists(best_model_path):
         # make pth from checkpoint
         model = load_best_model(
@@ -59,84 +76,119 @@ def main(conf):
     else:
         model, _ = make_model_and_optimizer(conf["train_conf"], sample_rate=conf["sample_rate"])
         model.eval()
-        model.load_state_dict(torch.load(best_model_path))
+        checkpoint = torch.load(best_model_path, map_location="cpu")
+        model = torch_utils.load_state_dict_in(checkpoint["state_dict"], model)
     # Handle device placement
-    if conf["use_gpu"]:
+    if conf["use_gpu"] and torch.cuda.is_available():
         model.cuda()
     model_device = next(model.parameters()).device
     test_dirs = [
         conf["test_dir"].format(n_src) for n_src in conf["train_conf"]["masknet"]["n_srcs"]
     ]
-    test_set = Wsj0mixVariable(
-        json_dirs=test_dirs,
-        n_srcs=conf["train_conf"]["masknet"]["n_srcs"],
-        sample_rate=conf["train_conf"]["data"]["sample_rate"],
-        seglen=None,
-        minlen=None,
-    )
-
-    # Randomly choose the indexes of sentences to save.
-    ex_save_dir = os.path.join(conf["exp_dir"], "examples/")
-    if conf["n_save_ex"] == -1:
-        conf["n_save_ex"] = len(test_set)
-    save_idx = random.sample(range(len(test_set)), conf["n_save_ex"])
-    series_list = []
-    torch.no_grad().__enter__()
-    for idx in tqdm(range(len(test_set))):
-        # Forward the network on the mixture.
-        mix, sources = [
-            torch.Tensor(x) for x in tensors_to_device(test_set[idx], device=model_device)
-        ]
-        est_sources = model.separate(mix[None])
-        p_si_snr = Penalized_PIT_Wrapper(pairwise_neg_sisdr_loss)(est_sources, sources)
-        utt_metrics = {
-            "P-Si-SNR": p_si_snr.item(),
-            "counting_accuracy": float(sources.size(0) == est_sources.size(0)),
-        }
-        utt_metrics["mix_path"] = test_set.data[idx][0]
-        series_list.append(pd.Series(utt_metrics))
-
-        # Save some examples in a folder. Wav files and metrics as text.
-        if idx in save_idx:
-            mix_np = mix[None].cpu().data.numpy()
-            sources_np = sources.cpu().data.numpy()
-            est_sources_np = est_sources.cpu().data.numpy()
-            local_save_dir = os.path.join(ex_save_dir, "ex_{}/".format(idx))
-            os.makedirs(local_save_dir, exist_ok=True)
-            sf.write(local_save_dir + "mixture.wav", mix_np[0], conf["sample_rate"])
-            # Loop over the sources and estimates
-            for src_idx, src in enumerate(sources_np):
-                sf.write(local_save_dir + "s{}.wav".format(src_idx + 1), src, conf["sample_rate"])
-            for src_idx, est_src in enumerate(est_sources_np):
+    if conf["wav_file"]:
+        mix_files = glob.glob(conf["wav_file"])
+        if not os.path.exists(conf["output_dir"]):
+            os.makedirs(conf["output_dir"])
+        for mix_file in mix_files:
+            mix, _ = librosa.load(mix_file, sr=conf["sample_rate"])
+            mix = tensors_to_device(torch.Tensor(mix), device=model_device)
+            est_sources = model.separate(mix[None])
+            est_sources = est_sources.cpu().numpy()
+            for i, est_src in enumerate(est_sources):
                 sf.write(
-                    local_save_dir + "s{}_estimate.wav".format(src_idx + 1),
+                    os.path.join(
+                        conf["output_dir"],
+                        os.path.basename(mix_file).replace(".wav", f"_spkr{i}.wav"),
+                    ),
                     est_src,
                     conf["sample_rate"],
                 )
-            # Write local metrics to the example folder.
-            with open(local_save_dir + "metrics.json", "w") as f:
-                json.dump(utt_metrics, f, indent=0)
 
-    # Save all metrics to the experiment folder.
-    all_metrics_df = pd.DataFrame(series_list)
-    all_metrics_df.to_csv(os.path.join(conf["exp_dir"], "all_metrics.csv"))
+    # evaluate metrics
+    if conf["test_dir"]:
+        test_set = Wsj0mixVariable(
+            json_dirs=test_dirs,
+            n_srcs=conf["train_conf"]["masknet"]["n_srcs"],
+            sample_rate=conf["train_conf"]["data"]["sample_rate"],
+            seglen=None,
+            minlen=None,
+        )
 
-    # Print and save summary metrics
-    final_results = {}
-    for metric_name in ["P-Si-SNR", "counting_accuracy"]:
-        final_results[metric_name] = all_metrics_df[metric_name].mean()
-    print("Overall metrics :")
-    pprint(final_results)
-    with open(os.path.join(conf["exp_dir"], "final_metrics.json"), "w") as f:
-        json.dump(final_results, f, indent=0)
+        # Randomly choose the indexes of sentences to save.
+        ex_save_dir = os.path.join(conf["exp_dir"], "examples/")
+        if conf["n_save_ex"] == -1:
+            conf["n_save_ex"] = len(test_set)
+        save_idx = random.sample(range(len(test_set)), conf["n_save_ex"])
+        series_list = []
+        torch.no_grad().__enter__()
+        for idx in tqdm(range(len(test_set))):
+            # Forward the network on the mixture.
+            mix, sources = [
+                torch.Tensor(x) for x in tensors_to_device(test_set[idx], device=model_device)
+            ]
+            est_sources = model.separate(mix[None])
+            p_si_snr = Penalized_PIT_Wrapper(pairwise_neg_sisdr_loss)(est_sources, sources)
+            utt_metrics = {
+                "P-Si-SNR": p_si_snr.item(),
+                "counting_accuracy": float(sources.size(0) == est_sources.size(0)),
+            }
+            utt_metrics["mix_path"] = test_set.data[idx][0]
+            series_list.append(pd.Series(utt_metrics))
+
+            # Save some examples in a folder. Wav files and metrics as text.
+            if idx in save_idx:
+                mix_np = mix[None].cpu().data.numpy()
+                sources_np = sources.cpu().data.numpy()
+                est_sources_np = est_sources.cpu().data.numpy()
+                local_save_dir = os.path.join(ex_save_dir, "ex_{}/".format(idx))
+                os.makedirs(local_save_dir, exist_ok=True)
+                sf.write(local_save_dir + "mixture.wav", mix_np[0], conf["sample_rate"])
+                # Loop over the sources and estimates
+                for src_idx, src in enumerate(sources_np):
+                    sf.write(
+                        local_save_dir + "s{}.wav".format(src_idx + 1), src, conf["sample_rate"]
+                    )
+                for src_idx, est_src in enumerate(est_sources_np):
+                    sf.write(
+                        local_save_dir + "s{}_estimate.wav".format(src_idx + 1),
+                        est_src,
+                        conf["sample_rate"],
+                    )
+                # Write local metrics to the example folder.
+                with open(local_save_dir + "metrics.json", "w") as f:
+                    json.dump(utt_metrics, f, indent=0)
+
+        # Save all metrics to the experiment folder.
+        all_metrics_df = pd.DataFrame(series_list)
+        all_metrics_df.to_csv(os.path.join(conf["exp_dir"], "all_metrics.csv"))
+
+        # Print and save summary metrics
+        final_results = {}
+        for metric_name in ["P-Si-SNR", "counting_accuracy"]:
+            final_results[metric_name] = all_metrics_df[metric_name].mean()
+        print("Overall metrics :")
+        pprint(final_results)
+        with open(os.path.join(conf["exp_dir"], "final_metrics.json"), "w") as f:
+            json.dump(final_results, f, indent=0)
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
     arg_dic = dict(vars(args))
-
-    # Load training config
+    # create an exp and checkpoints folder if none exist
+    os.makedirs(os.path.join(args.exp_dir, "checkpoints"), exist_ok=True)
+    # Download a checkpoint if none exists
+    if len(glob.glob(os.path.join(args.exp_dir, "checkpoints", "*.ckpt"))) == 0:
+        r = requests.get(
+            "https://huggingface.co/JunzheJosephZhu/MultiDecoderDPRNN/resolve/main/best-model.ckpt"
+        )
+        with open(os.path.join(args.exp_dir, "checkpoints", "best-model.ckpt"), "wb") as handle:
+            handle.write(r.content)
+    # if conf doesn't exist, copy default one
     conf_path = os.path.join(args.exp_dir, "conf.yml")
+    if not os.path.exists(conf_path):
+        conf_path = "local/conf.yml"
+    # Load training config
     with open(conf_path) as f:
         train_conf = yaml.safe_load(f)
     arg_dic["sample_rate"] = train_conf["data"]["sample_rate"]

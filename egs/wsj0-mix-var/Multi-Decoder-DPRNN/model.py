@@ -201,7 +201,6 @@ class MultiDecoderDPRNN(BaseModel):
         output_cat[:, :slice_size] = output_wavs[0]
         start = slice_stride
         for i in range(1, slice_nb):
-            end = start + slice_size
             overlap_prev = output_cat[:, start : start + slice_stride].unsqueeze(0)
             overlap_next = output_wavs[i : i + 1, :, :slice_stride]
             pw_losses = pairwise_neg_sisdr(overlap_next, overlap_prev)
