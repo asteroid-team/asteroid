@@ -46,7 +46,7 @@ setup(
         # From requirements/install.txt
         "PyYAML>=5.0",
         "pandas>=0.23.4",
-        "pytorch-lightning>=1.0.1",
+        "pytorch-lightning>=1.5.0",
         "torchaudio>=0.5.0",
         "pb_bss_eval>=0.0.2",
         "torch_stoi>=0.1.2",
@@ -66,9 +66,9 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],

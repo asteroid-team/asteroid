@@ -21,7 +21,7 @@ def preprocess_one_dir(in_dir):
 
 
 def preprocess(inp_args):
-    """ Create .json files for all conditions."""
+    """Create .json files for all conditions."""
     # The filenames are shared between directories (and lengths as well) so
     # we can just search once and replace directory name after.
     speaker_list = [

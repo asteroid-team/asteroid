@@ -39,7 +39,7 @@ class _LayerNorm(nn.Module):
         self.beta = nn.Parameter(torch.zeros(channel_size), requires_grad=True)
 
     def apply_gain_and_bias(self, normed_x):
-        """ Assumes input of size `[batch, chanel, *]`. """
+        """Assumes input of size `[batch, chanel, *]`."""
         return (self.gamma * normed_x.transpose(1, -1) + self.beta).transpose(1, -1)
 
 
@@ -98,7 +98,7 @@ class CumLN(_LayerNorm):
             start=chan, end=chan * (spec_len + 1), step=chan, dtype=x.dtype, device=x.device
         ).view(1, 1, -1)
         cum_mean = cum_sum / cnt
-        cum_var = cum_pow_sum - cum_mean.pow(2)
+        cum_var = cum_pow_sum / cnt - cum_mean.pow(2)
         return self.apply_gain_and_bias((x - cum_mean) / (cum_var + EPS).sqrt())
 
 

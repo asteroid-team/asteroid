@@ -62,7 +62,7 @@ class PairwiseNegSDR(_Loss):
             # [batch, n_src, n_src, 1]
             pair_wise_dot = torch.sum(s_estimate * s_target, dim=3, keepdim=True)
             # [batch, 1, n_src, 1]
-            s_target_energy = torch.sum(s_target ** 2, dim=3, keepdim=True) + self.EPS
+            s_target_energy = torch.sum(s_target**2, dim=3, keepdim=True) + self.EPS
             # [batch, n_src, n_src, time]
             pair_wise_proj = pair_wise_dot * s_target / s_target_energy
         else:
@@ -73,8 +73,8 @@ class PairwiseNegSDR(_Loss):
         else:
             e_noise = s_estimate - pair_wise_proj
         # [batch, n_src, n_src]
-        pair_wise_sdr = torch.sum(pair_wise_proj ** 2, dim=3) / (
-            torch.sum(e_noise ** 2, dim=3) + self.EPS
+        pair_wise_sdr = torch.sum(pair_wise_proj**2, dim=3) / (
+            torch.sum(e_noise**2, dim=3) + self.EPS
         )
         if self.take_log:
             pair_wise_sdr = 10 * torch.log10(pair_wise_sdr + self.EPS)
@@ -145,7 +145,7 @@ class SingleSrcNegSDR(_Loss):
             # [batch, 1]
             dot = torch.sum(est_target * target, dim=1, keepdim=True)
             # [batch, 1]
-            s_target_energy = torch.sum(target ** 2, dim=1, keepdim=True) + self.EPS
+            s_target_energy = torch.sum(target**2, dim=1, keepdim=True) + self.EPS
             # [batch, time]
             scaled_target = dot * target / s_target_energy
         else:
@@ -156,7 +156,7 @@ class SingleSrcNegSDR(_Loss):
         else:
             e_noise = est_target - scaled_target
         # [batch]
-        losses = torch.sum(scaled_target ** 2, dim=1) / (torch.sum(e_noise ** 2, dim=1) + self.EPS)
+        losses = torch.sum(scaled_target**2, dim=1) / (torch.sum(e_noise**2, dim=1) + self.EPS)
         if self.take_log:
             losses = 10 * torch.log10(losses + self.EPS)
         losses = losses.mean() if self.reduction == "mean" else losses
@@ -222,7 +222,7 @@ class MultiSrcNegSDR(_Loss):
             # [batch, n_src]
             pair_wise_dot = torch.sum(est_targets * targets, dim=2, keepdim=True)
             # [batch, n_src]
-            s_target_energy = torch.sum(targets ** 2, dim=2, keepdim=True) + self.EPS
+            s_target_energy = torch.sum(targets**2, dim=2, keepdim=True) + self.EPS
             # [batch, n_src, time]
             scaled_targets = pair_wise_dot * targets / s_target_energy
         else:
@@ -233,8 +233,8 @@ class MultiSrcNegSDR(_Loss):
         else:
             e_noise = est_targets - scaled_targets
         # [batch, n_src]
-        pair_wise_sdr = torch.sum(scaled_targets ** 2, dim=2) / (
-            torch.sum(e_noise ** 2, dim=2) + self.EPS
+        pair_wise_sdr = torch.sum(scaled_targets**2, dim=2) / (
+            torch.sum(e_noise**2, dim=2) + self.EPS
         )
         if self.take_log:
             pair_wise_sdr = 10 * torch.log10(pair_wise_sdr + self.EPS)

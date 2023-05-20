@@ -12,7 +12,8 @@ from asteroid import DPRNNTasNet
 from asteroid.data.wham_dataset import WhamDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
-from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr, MixITLossWrapper
+from asteroid.losses import PITLossWrapper, pairwise_neg_sisdr
+from asteroid.losses import MixITLossWrapper, multisrc_neg_sisdr
 
 # Keys which are not in the conf.yml file can be added here.
 # In the hierarchical dictionary created when parsing, the key `key` can be
@@ -51,7 +52,7 @@ class MixITSystem(System):
         mixture, oracle = batch
         est_sources = self(mixture)
 
-        _, indxs = torch.sort(torch.sqrt(torch.mean(est_sources ** 2, dim=-1)), descending=True)
+        _, indxs = torch.sort(torch.sqrt(torch.mean(est_sources**2, dim=-1)), descending=True)
         indxs = indxs[:, :2]  # we know a-priori that in eval there are 2 sources,
         # we thus discard the estimates with lower energy.
         est_sources = est_sources.gather(1, indxs.unsqueeze(-1).repeat(1, 1, est_sources.shape[-1]))
@@ -113,7 +114,7 @@ def main(conf):
     # Define Loss function.
     loss_func = {
         "pit": PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx"),
-        "mixit": MixITLossWrapper(pairwise_neg_sisdr, generalized=True),
+        "mixit": MixITLossWrapper(multisrc_neg_sisdr, generalized=True),
     }
 
     system = MixITSystem(
@@ -136,15 +137,13 @@ def main(conf):
     if conf["training"]["early_stop"]:
         callbacks.append(EarlyStopping(monitor="val_loss", mode="min", patience=30, verbose=True))
 
-    # Don't ask GPU if they are not available.
-    gpus = -1 if torch.cuda.is_available() else None
-    distributed_backend = "ddp" if torch.cuda.is_available() else None
     trainer = pl.Trainer(
         max_epochs=conf["training"]["epochs"],
         callbacks=callbacks,
         default_root_dir=exp_dir,
-        gpus=gpus,
-        distributed_backend=distributed_backend,
+        accelerator="gpu" if torch.cuda.is_available() else "cpu",
+        strategy="ddp",
+        devices="auto",
         gradient_clip_val=conf["training"]["gradient_clipping"],
     )
     trainer.fit(system)

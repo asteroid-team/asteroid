@@ -104,7 +104,7 @@ class _TestCallback(pl.callbacks.Callback):
         assert self.epoch * self.n_batch <= step
         assert step <= (self.epoch + 1) * self.n_batch
 
-    def on_train_epoch_end(self, trainer, pl_module, outputs):
+    def on_train_epoch_end(self, trainer, pl_module):
         epoch = trainer.current_epoch
         assert epoch == self.epoch
         assert pl_module.loss_func.beta == self.f(epoch)

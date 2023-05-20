@@ -137,7 +137,7 @@ class DeMask(BaseEncoderMaskerDecoder):
         return est_masks * tf_rep
 
     def get_model_args(self):
-        """ Arguments needed to re-instantiate the model. """
+        """Arguments needed to re-instantiate the model."""
         model_args = {
             "input_type": self.input_type,
             "output_type": self.output_type,

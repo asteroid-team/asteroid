@@ -291,7 +291,7 @@ class SingleSrcPMSQE(nn.Module):
 
     @staticmethod
     def get_correction_factor(window_name):
-        """ Returns the power correction factor depending on the window. """
+        """Returns the power correction factor depending on the window."""
         if window_name == "rect":
             return 1.0
         elif window_name == "hann":
@@ -315,7 +315,7 @@ class SingleSrcPMSQE(nn.Module):
         mask_sll[11] = 0.5 * 25.0 / 31.25
         mask_sll[12:104] = 1.0
         mask_sll[104] = 0.5
-        correction = self.pow_correc_factor * (self.nbins + 2.0) / self.nbins ** 2
+        correction = self.pow_correc_factor * (self.nbins + 2.0) / self.nbins**2
         mask_sll = mask_sll * correction
         self.mask_sll = nn.Parameter(tensor(mask_sll), requires_grad=False)
 

@@ -27,8 +27,8 @@ echo "Download WHAM noises into $out_dir"
 
 cd $out_dir/whamr_scripts
 echo "Run python scripts to create the WHAM mixtures"
-# Requires : Numpy, Scipy, Pandas, Pysoundfile and pyroomacoustics
-$python_path -m pip install pyroomacoustics
+# Requires : Pyloudnorm, Numpy, Scipy, Pandas, Pysoundfile and pyroomacoustics
+$python_path -m pip install -r requirements.txt
 
 $python_path create_wham_from_scratch.py \
 	--wsj0-root $wav_dir \

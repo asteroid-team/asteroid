@@ -166,8 +166,8 @@ class _Padder(nn.Module):
         self.kernel_size = kernel_size
 
         # Appropriate padding is needed for arbitrary lengths
-        self.lcm = abs(self.kernel_size // 2 * 2 ** self.upsampling_depth) // math.gcd(
-            self.kernel_size // 2, 2 ** self.upsampling_depth
+        self.lcm = abs(self.kernel_size // 2 * 2**self.upsampling_depth) // math.gcd(
+            self.kernel_size // 2, 2**self.upsampling_depth
         )
 
         # For serialize
@@ -185,8 +185,7 @@ def pad(x, lcm: int):
     if values_to_pad:
         appropriate_shape = x.shape
         padding = torch.zeros(
-            list(appropriate_shape[:-1]) + [lcm - values_to_pad],
-            dtype=x.dtype,
+            list(appropriate_shape[:-1]) + [lcm - values_to_pad], dtype=x.dtype, device=x.device
         )
         padded_x = torch.cat([x, padding], dim=-1)
         return padded_x

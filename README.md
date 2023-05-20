@@ -7,7 +7,7 @@
 [![Build Status](https://github.com/asteroid-team/asteroid/workflows/CI/badge.svg)](https://github.com/asteroid-team/asteroid/actions?query=workflow%3ACI+branch%3Amaster+event%3Apush)
 [![codecov][codecov-badge]][codecov]
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Documentation Status](https://img.shields.io/badge/docs-0.4.5-blue)](https://asteroid.readthedocs.io/en/v0.4.5/)
+[![Documentation Status](https://img.shields.io/badge/docs-0.5.1-blue)](https://asteroid.readthedocs.io/en/v0.5.1/)
 [![Latest Docs Status](https://github.com/asteroid-team/asteroid/workflows/Latest%20docs/badge.svg)](https://asteroid-team.github.io/asteroid/)
 
 
@@ -112,6 +112,7 @@ More information in [egs/README.md](./egs).
 * [x] [DCCRNet](./asteroid/models/dccrnet.py) ([Hu et al.](https://arxiv.org/abs/2008.00264))
 * [x] [DCUNet](./asteroid/models/dcunet.py) ([Choi et al.](https://arxiv.org/abs/1903.03107))
 * [x] [CrossNet-Open-Unmix](./asteroid/models/x_umx.py) ([Sawata et al.](https://arxiv.org/abs/2010.04228))
+* [x] [Multi-Decoder DPRNN](./egs/wsj0-mix-var/Multi-Decoder-DPRNN) ([Zhu et al.](http://www.isle.illinois.edu/speech_web_lg/pubs/2021/zhu2021multi.pdf))
 * [ ] Open-Unmix (coming) ([Stöter et al.](https://sigsep.github.io/open-unmix/))
 * [ ] Wavesplit (coming) ([Zeghidour et al.](https://arxiv.org/abs/2002.08933))
 

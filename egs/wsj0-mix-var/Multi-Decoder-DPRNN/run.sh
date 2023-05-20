@@ -72,7 +72,7 @@ if [[ $stage -le  1 ]]; then
 	echo "Stage 1 : Downloading wsj0-mix mixing scripts"
 	# Link + WHAM is ok for 2 source.
 	# wget https://www.merl.com/demos/deep-clustering/create-speaker-mixtures.zip -O ./local/
-	wget https://github.com/JunzheJosephZhu/MultiDecoder-DPRNN/raw/master/create-speaker-mixtures-2345.zip -P ./local
+	wget https://github.com/JunzheJosephZhu/MDDPRNN-deprecated/raw/master/create-speaker-mixtures-2345.zip -P ./local
 	unzip ./local/create-speaker-mixtures-2345.zip -d ./local/create-speaker-mixtures-2345
 	mv ./local/create-speaker-mixtures-2345.zip ./local/create-speaker-mixtures-2345
 
@@ -106,6 +106,7 @@ if [[ -z ${tag} ]]; then
 fi
 expdir=exp/tmp_${tag}
 mkdir -p $expdir && echo $uuid >> $expdir/run_uuid.txt
+mkdir -p logs
 echo "Results from the following experiment will be stored in $expdir"
 
 if [[ $stage -le 3 ]]; then
@@ -129,7 +130,6 @@ if [[ $stage -le 3 ]]; then
 fi
 
 if [[ $stage -le 4 ]]; then
-	expdir=exp/tmp
 	echo "Stage 4 : Evaluation"
 	echo "If you want to change n_srcs, please change the config file"
 	CUDA_VISIBLE_DEVICES=$id $python_path eval.py \

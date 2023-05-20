@@ -36,7 +36,7 @@ def sample_audio_set():
 
 def requires_excess_storage_space(n, r):
     # r will be very small anyway
-    total = n ** r / math.factorial(r)
+    total = n**r / math.factorial(r)
     # total bytes
     storage_space = (
         total * 96

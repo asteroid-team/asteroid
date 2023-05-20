@@ -6,6 +6,7 @@ from .dcunet import DCUNet
 from .dprnn_tasnet import DPRNNTasNet
 from .sudormrf import SuDORMRFImprovedNet, SuDORMRFNet
 from .dptnet import DPTNet
+from .fasnet import FasNetTAC
 from .lstm_tasnet import LSTMTasNet
 from .demask import DeMask
 from .x_umx import XUMX
@@ -19,6 +20,7 @@ __all__ = [
     "SuDORMRFImprovedNet",
     "SuDORMRFNet",
     "DPTNet",
+    "FasNetTAC",
     "LSTMTasNet",
     "DeMask",
     "DCUNet",

@@ -35,7 +35,7 @@ def test_loader_module():
 
 def test_loader_submodule():
     class SuperModule(nn.Module):
-        """ nn.Module subclass that holds a model under self.whoever """
+        """nn.Module subclass that holds a model under self.whoever"""
 
         def __init__(self, sub_model):
             super().__init__()

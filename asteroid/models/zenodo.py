@@ -139,7 +139,7 @@ class Zenodo(object):
         return r
 
     def get_deposition(self, dep_id=-1):
-        """ Get deposition by deposition id. Get all dep_id is -1 (default)."""
+        """Get deposition by deposition id. Get all dep_id is -1 (default)."""
         if dep_id > -1:
             print(f"Get deposition {dep_id} from Zenodo")
             r = requests.get(
@@ -152,7 +152,7 @@ class Zenodo(object):
         return r
 
     def remove_deposition(self, dep_id):
-        """ Remove deposition with deposition id `dep_id`"""
+        """Remove deposition with deposition id `dep_id`"""
         print(f"Delete deposition number {dep_id}")
         r = requests.delete(
             f"{self.zenodo_address}/api/deposit/depositions/{dep_id}", headers=self.auth_header
@@ -160,7 +160,7 @@ class Zenodo(object):
         return r
 
     def remove_all_depositions(self):
-        """ Removes all unpublished deposition (not records)."""
+        """Removes all unpublished deposition (not records)."""
         all_depositions = self.get_deposition()
         for dep in all_depositions.json():
             self.remove_deposition(dep["id"])

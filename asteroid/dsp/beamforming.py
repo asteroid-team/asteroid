@@ -416,10 +416,10 @@ def stable_solve(b, a):
 
 def _stable_solve(b, a, eps=1e-6):
     try:
-        return torch.solve(b, a)[0]
+        return torch.linalg.solve(a, b)
     except RuntimeError:
         a = condition_scm(a, eps)
-        return torch.solve(b, a)[0]
+        return torch.linalg.solve(a, b)
 
 
 def stable_cholesky(input, upper=False, out=None, eps=1e-6):
@@ -442,10 +442,14 @@ def stable_cholesky(input, upper=False, out=None, eps=1e-6):
 
 def _stable_cholesky(input, upper=False, out=None, eps=1e-6):
     try:
-        return torch.cholesky(input, upper=upper, out=out)
+        if upper:
+            return torch.linalg.cholesky(input, out=out).mH
+        return torch.linalg.cholesky(input, out=out)
     except RuntimeError:
         input = condition_scm(input, eps)
-        return torch.cholesky(input, upper=upper, out=out)
+        if upper:
+            return torch.linalg.cholesky(input, out=out).mH
+        return torch.linalg.cholesky(input, out=out)
 
 
 def generalized_eigenvalue_decomposition(a, b):
@@ -473,14 +477,6 @@ def _generalized_eigenvalue_decomposition(a, b):
     return e_val, e_vec
 
 
-_to_double_map = {
-    torch.float16: torch.float64,
-    torch.float32: torch.float64,
-    torch.complex32: torch.complex128,
-    torch.complex64: torch.complex128,
-}
-
-
 def _common_dtype(*args):
     all_dtypes = [a.dtype for a in args]
     if len(set(all_dtypes)) > 1:
@@ -502,20 +498,24 @@ def force_double_linalg():
 
 
 def _precision_mapping():
+    has_complex32 = hasattr(torch, "complex32")
     if USE_DOUBLE:
-        return {
+        precision_map = {
             torch.float16: torch.float64,
             torch.float32: torch.float64,
-            torch.complex32: torch.complex128,
             torch.complex64: torch.complex128,
         }
+        if has_complex32:
+            precision_map[torch.complex32] = torch.complex128
     else:
-        return {
+        precision_map = {
             torch.float16: torch.float16,
             torch.float32: torch.float32,
-            torch.complex32: torch.complex32,
             torch.complex64: torch.complex64,
         }
+        if has_complex32:
+            precision_map[torch.complex32] = torch.complex32
+    return precision_map
 
 
 # Legacy

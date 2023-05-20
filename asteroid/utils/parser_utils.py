@@ -1,4 +1,6 @@
 import argparse
+import platform
+from packaging.version import parse as parse_version
 
 
 def prepare_parser_from_dict(dic, parser=None):
@@ -53,7 +55,7 @@ def str_int_float(value):
 
 
 def str2bool(value):
-    """ Type to convert strings to Boolean (returns input if not boolean) """
+    """Type to convert strings to Boolean (returns input if not boolean)"""
     if not isinstance(value, str):
         return value
     if value.lower() in ("yes", "true", "y", "1"):
@@ -65,7 +67,7 @@ def str2bool(value):
 
 
 def str2bool_arg(value):
-    """ Argparse type to convert strings to Boolean """
+    """Argparse type to convert strings to Boolean"""
     value = str2bool(value)
     if isinstance(value, bool):
         return value
@@ -132,8 +134,13 @@ def parse_args_as_dict(parser, return_plain_args=False, args=None):
     for group in parser._action_groups:
         group_dict = {a.dest: getattr(args, a.dest, None) for a in group._group_actions}
         args_dic[group.title] = group_dict
-    args_dic["main_args"] = args_dic["optional arguments"]
-    del args_dic["optional arguments"]
+    opt_args_key = (
+        "optional arguments"
+        if parse_version(platform.python_version()) < parse_version("3.10")
+        else "options"
+    )
+    args_dic["main_args"] = args_dic[opt_args_key]
+    del args_dic[opt_args_key]
     if return_plain_args:
         return args_dic, args
     return args_dic
