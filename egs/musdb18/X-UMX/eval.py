@@ -167,6 +167,7 @@ def eval_main(
     softmask=False,
     residual_model=False,
     model_name="xumx",
+    large=False,
     outdir=None,
     start=0.0,
     duration=-1.0,
@@ -176,7 +177,11 @@ def eval_main(
     model_name = os.path.abspath(model_name)
     if not (os.path.exists(model_name)):
         outdir = os.path.abspath("./results_using_pre-trained")
-        model_name = "r-sawata/XUMX_MUSDB18_music_separation"
+        model_name = (
+            "r-sawata/XUMXL_MUSDB18_music_separation"
+            if large
+            else "r-sawata/XUMX_MUSDB18_music_separation"
+        )
     else:
         outdir = os.path.join(
             os.path.abspath(outdir),
@@ -277,6 +282,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--large", action="store_true", default=False, help="Download and use X-UMX Large (X-UMXL)"
+    )
+
+    parser.add_argument(
         "--no-cuda", action="store_true", default=False, help="disables CUDA inference"
     )
 
@@ -292,6 +301,7 @@ if __name__ == "__main__":
         niter=args.niter,
         residual_model=args.residual_model,
         model_name=model,
+        large=args.large,
         outdir=args.outdir,
         start=args.start,
         duration=args.duration,
