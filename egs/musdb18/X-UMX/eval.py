@@ -177,7 +177,11 @@ def eval_main(
     model_name = os.path.abspath(model_name)
     if not (os.path.exists(model_name)):
         outdir = os.path.abspath("./results_using_pre-trained")
-        model_name = "r-sawata/XUMXL_MUSDB18_music_separation" if large else "r-sawata/XUMX_MUSDB18_music_separation"
+        model_name = (
+            "r-sawata/XUMXL_MUSDB18_music_separation"
+            if large
+            else "r-sawata/XUMX_MUSDB18_music_separation"
+        )
     else:
         outdir = os.path.join(
             os.path.abspath(outdir),
