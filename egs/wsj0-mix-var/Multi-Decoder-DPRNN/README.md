@@ -3,7 +3,7 @@
 
 **Abstract**: We propose an end-to-end trainable approach to single-channel speech separation with unknown number of speakers, **only training a single model for arbitrary number of speakers**. Our approach extends the MulCat source separation backbone with additional output heads: a count-head to infer the number of speakers, and decoder-heads for reconstructing the original signals. Beyond the model, we also propose a metric on how to evaluate source separation with variable number of speakers. Specifically, we cleared up the issue on how to evaluate the quality when the ground-truth hasmore or less speakers than the ones predicted by the model. We evaluate our approach on the WSJ0-mix datasets, with mixtures up to five speakers. **We demonstrate that our approach outperforms state-of-the-art in counting the number of speakers and remains competitive in quality of reconstructed signals.**
 
-paper arxiv link: https://arxiv.org/abs/2011.12022
+paper link: http://www.isle.illinois.edu/speech_web_lg/pubs/2021/zhu2021multi.pdf
 
 ## Project Page & Examples
 Project page & example output can be found [here](https://junzhejosephzhu.github.io/Multi-Decoder-DPRNN/)
