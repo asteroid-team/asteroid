@@ -20,7 +20,7 @@ pip install -r requirements.txt
 ```
 To test run on a wav file, run:
 ```
-
+python separate.py --wav_file ${mixture_file}
 ```
 
 
