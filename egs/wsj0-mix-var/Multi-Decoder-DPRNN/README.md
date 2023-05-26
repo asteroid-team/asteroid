@@ -7,11 +7,11 @@ paper arxiv link: https://arxiv.org/abs/2011.12022
 
 ## Project Page & Examples
 Project page & example output can be found [here](https://junzhejosephzhu.github.io/Multi-Decoder-DPRNN/)
-### Colab notebooks:
-* Usage Example: [![Usage Example](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/11MGx3_sgOrQrB6k8edyAvg5mGIxqR5ED?usp=sharing)
-
 
 ## Getting Started
+### Colab notebooks:
+* Usage Example: [![Usage Example](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/11MGx3_sgOrQrB6k8edyAvg5mGIxqR5ED?usp=sharing)
+### Run locally
 To Setup, Run the following commands:
 ```
 git clone https://github.com/asteroid-team/asteroid.git
@@ -22,7 +22,12 @@ To test run on a wav file, run:
 ```
 python separate.py --wav_file ${mixture_file}
 ```
-
+To load the model, run:
+```
+from model import MultiDecoderDPRNN
+model = MultiDecoderDPRNN.from_pretrained("JunzheJosephZhu/MultiDecoderDPRNN").eval()
+model.separate(input_tensor)
+```
 
 Install asteroid by running ```pip install -e .``` in asteroid directory
 To install the requirements, run ```pip install -r requirements.txt```
