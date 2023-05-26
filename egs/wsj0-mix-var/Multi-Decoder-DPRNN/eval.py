@@ -39,12 +39,6 @@ parser.add_argument(
     help="One of `enh_single`, `enh_both`, " "`sep_clean` or `sep_noisy`",
 )
 parser.add_argument(
-    "--wav_file",
-    type=str,
-    default="",
-    help="Path to the wav file to run model inference on. Could be a regular expression of {folder_name}/*.wav",
-)
-parser.add_argument(
     "--output_dir", type=str, default="output", help="Output folder for inference results"
 )
 parser.add_argument(
@@ -85,25 +79,6 @@ def main(conf):
     test_dirs = [
         conf["test_dir"].format(n_src) for n_src in conf["train_conf"]["masknet"]["n_srcs"]
     ]
-    if conf["wav_file"]:
-        mix_files = glob.glob(conf["wav_file"])
-        if not os.path.exists(conf["output_dir"]):
-            os.makedirs(conf["output_dir"])
-        for mix_file in mix_files:
-            mix, _ = librosa.load(mix_file, sr=conf["sample_rate"])
-            mix = tensors_to_device(torch.Tensor(mix), device=model_device)
-            est_sources = model.separate(mix[None])
-            est_sources = est_sources.cpu().numpy()
-            for i, est_src in enumerate(est_sources):
-                sf.write(
-                    os.path.join(
-                        conf["output_dir"],
-                        os.path.basename(mix_file).replace(".wav", f"_spkr{i}.wav"),
-                    ),
-                    est_src,
-                    conf["sample_rate"],
-                )
-
     # evaluate metrics
     if conf["test_dir"]:
         test_set = Wsj0mixVariable(

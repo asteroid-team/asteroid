@@ -18,7 +18,7 @@ git clone https://github.com/asteroid-team/asteroid.git
 cd asteroid/egs/wsj0-mix-var/Multi-Decoder-DPRNN
 pip install -r requirements.txt
 ```
-To test run on a wav file, run:
+To run separation on a wav file, run:
 ```
 python separate.py --wav_file ${mixture_file}
 ```
@@ -29,21 +29,12 @@ model = MultiDecoderDPRNN.from_pretrained("JunzheJosephZhu/MultiDecoderDPRNN").e
 model.separate(input_tensor)
 ```
 
-Install asteroid by running ```pip install -e .``` in asteroid directory
-To install the requirements, run ```pip install -r requirements.txt```
-
-To run a pre-trained model on your own .wav mixture files, run ```python eval.py --wav_file {file_name.wav} --use_gpu {1/0}```. The script should automatically download a pre-trained model(link below).
-
-You can use regular expressions for file names. For example, you can run ```python eval.py --wav_file local/*.wav --use_gpu 0 ```
-
-The default output directory will be ./output, but you can override that with ```--output_dir``` option
-
-If you want to download an alternative pre-trained model, you can create a folder, and save the pretrained model in ```{folder_name}/checkpoints/best-model.ckpt```, then run ```python eval.py --wav_file {file_name.wav} --use_gpu {1/0} --exp_dir {folder_name}```
-
 ## Train your own model
 To train the model, edit the file paths in run.sh and execute ```./run.sh --stage 0```, follow the instructions to generate dataset and train the model.
 
 After training the model, execute ```./run.sh --stage 4``` to evaluate the model. Some examples will be saved in exp/tmp_uuid/examples
+
+Alternatively, the training script and evaluation script can be found at train.py and eval.py
 
 ## Kindly cite this paper
 ```
