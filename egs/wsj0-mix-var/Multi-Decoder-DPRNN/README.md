@@ -5,10 +5,25 @@
 
 paper arxiv link: https://arxiv.org/abs/2011.12022
 
-## Project Page & Demo
+## Project Page & Examples
 Project page & example output can be found [here](https://junzhejosephzhu.github.io/Multi-Decoder-DPRNN/)
+### Colab notebooks:
+* Usage Example: [![Usage Example](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/11MGx3_sgOrQrB6k8edyAvg5mGIxqR5ED?usp=sharing)
+
 
 ## Getting Started
+To Setup, Run the following commands:
+```
+git clone https://github.com/asteroid-team/asteroid.git
+cd asteroid/egs/wsj0-mix-var/Multi-Decoder-DPRNN
+pip install -r requirements.txt
+```
+To test run on a wav file, run:
+```
+
+```
+
+
 Install asteroid by running ```pip install -e .``` in asteroid directory
 To install the requirements, run ```pip install -r requirements.txt```
 
