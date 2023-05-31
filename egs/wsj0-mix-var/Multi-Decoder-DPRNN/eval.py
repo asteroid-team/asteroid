@@ -2,10 +2,10 @@
 Author: Joseph(Junzhe) Zhu, 2021/5. Email: josefzhu@stanford.edu / junzhe.joseph.zhu@gmail.com
 For the original code for the paper[1], please refer to https://github.com/JunzheJosephZhu/MultiDecoder-DPRNN
 Demo Page: https://junzhejosephzhu.github.io/Multi-Decoder-DPRNN/
-Multi-Decoder DPRNN is a method for source separation when the number of speakers is unknown. 
-Our contribution is using multiple output heads, with each head modelling a distinct number of source outputs. 
-In addition, we design a selector network which determines which output head to use, i.e. estimates the number of sources. 
-The "DPRNN" part of the architecture is orthogonal to our contribution, and can be replaced with any other separator, e.g. Conv/LSTM-TasNet. 
+Multi-Decoder DPRNN is a method for source separation when the number of speakers is unknown.
+Our contribution is using multiple output heads, with each head modelling a distinct number of source outputs.
+In addition, we design a selector network which determines which output head to use, i.e. estimates the number of sources.
+The "DPRNN" part of the architecture is orthogonal to our contribution, and can be replaced with any other separator, e.g. Conv/LSTM-TasNet.
 References:
     [1] "Multi-Decoder DPRNN: High Accuracy Source Counting and Separation",
         Junzhe Zhu, Raymond Yeh, Mark Hasegawa-Johnson. https://arxiv.org/abs/2011.12022
