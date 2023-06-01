@@ -2,10 +2,10 @@
 Author: Joseph(Junzhe) Zhu, 2021/5. Email: josefzhu@stanford.edu / junzhe.joseph.zhu@gmail.com
 For the original code for the paper[1], please refer to https://github.com/JunzheJosephZhu/MultiDecoder-DPRNN
 Demo Page: https://junzhejosephzhu.github.io/Multi-Decoder-DPRNN/
-Multi-Decoder DPRNN is a method for source separation when the number of speakers is unknown. 
-Our contribution is using multiple output heads, with each head modelling a distinct number of source outputs. 
-In addition, we design a selector network which determines which output head to use, i.e. estimates the number of sources. 
-The "DPRNN" part of the architecture is orthogonal to our contribution, and can be replaced with any other separator, e.g. Conv/LSTM-TasNet. 
+Multi-Decoder DPRNN is a method for source separation when the number of speakers is unknown.
+Our contribution is using multiple output heads, with each head modelling a distinct number of source outputs.
+In addition, we design a selector network which determines which output head to use, i.e. estimates the number of sources.
+The "DPRNN" part of the architecture is orthogonal to our contribution, and can be replaced with any other separator, e.g. Conv/LSTM-TasNet.
 References:
     [1] "Multi-Decoder DPRNN: High Accuracy Source Counting and Separation",
         Junzhe Zhu, Raymond Yeh, Mark Hasegawa-Johnson. https://arxiv.org/abs/2011.12022
@@ -37,12 +37,6 @@ parser.add_argument(
     default="sep_count",
     type=str,
     help="One of `enh_single`, `enh_both`, " "`sep_clean` or `sep_noisy`",
-)
-parser.add_argument(
-    "--wav_file",
-    type=str,
-    default="",
-    help="Path to the wav file to run model inference on. Could be a regular expression of {folder_name}/*.wav",
 )
 parser.add_argument(
     "--output_dir", type=str, default="output", help="Output folder for inference results"
@@ -85,25 +79,6 @@ def main(conf):
     test_dirs = [
         conf["test_dir"].format(n_src) for n_src in conf["train_conf"]["masknet"]["n_srcs"]
     ]
-    if conf["wav_file"]:
-        mix_files = glob.glob(conf["wav_file"])
-        if not os.path.exists(conf["output_dir"]):
-            os.makedirs(conf["output_dir"])
-        for mix_file in mix_files:
-            mix, _ = librosa.load(mix_file, sr=conf["sample_rate"])
-            mix = tensors_to_device(torch.Tensor(mix), device=model_device)
-            est_sources = model.separate(mix[None])
-            est_sources = est_sources.cpu().numpy()
-            for i, est_src in enumerate(est_sources):
-                sf.write(
-                    os.path.join(
-                        conf["output_dir"],
-                        os.path.basename(mix_file).replace(".wav", f"_spkr{i}.wav"),
-                    ),
-                    est_src,
-                    conf["sample_rate"],
-                )
-
     # evaluate metrics
     if conf["test_dir"]:
         test_set = Wsj0mixVariable(

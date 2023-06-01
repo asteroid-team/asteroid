@@ -3,27 +3,38 @@
 
 **Abstract**: We propose an end-to-end trainable approach to single-channel speech separation with unknown number of speakers, **only training a single model for arbitrary number of speakers**. Our approach extends the MulCat source separation backbone with additional output heads: a count-head to infer the number of speakers, and decoder-heads for reconstructing the original signals. Beyond the model, we also propose a metric on how to evaluate source separation with variable number of speakers. Specifically, we cleared up the issue on how to evaluate the quality when the ground-truth hasmore or less speakers than the ones predicted by the model. We evaluate our approach on the WSJ0-mix datasets, with mixtures up to five speakers. **We demonstrate that our approach outperforms state-of-the-art in counting the number of speakers and remains competitive in quality of reconstructed signals.**
 
-paper arxiv link: https://arxiv.org/abs/2011.12022
+paper link: http://www.isle.illinois.edu/speech_web_lg/pubs/2021/zhu2021multi.pdf
 
-## Project Page & Demo
+## Project Page & Examples
 Project page & example output can be found [here](https://junzhejosephzhu.github.io/Multi-Decoder-DPRNN/)
 
 ## Getting Started
-Install asteroid by running ```pip install -e .``` in asteroid directory
-To install the requirements, run ```pip install -r requirements.txt```
-
-To run a pre-trained model on your own .wav mixture files, run ```python eval.py --wav_file {file_name.wav} --use_gpu {1/0}```. The script should automatically download a pre-trained model(link below).
-
-You can use regular expressions for file names. For example, you can run ```python eval.py --wav_file local/*.wav --use_gpu 0 ```
-
-The default output directory will be ./output, but you can override that with ```--output_dir``` option
-
-If you want to download an alternative pre-trained model, you can create a folder, and save the pretrained model in ```{folder_name}/checkpoints/best-model.ckpt```, then run ```python eval.py --wav_file {file_name.wav} --use_gpu {1/0} --exp_dir {folder_name}```
+### Colab notebooks:
+* Usage Example: [![Usage Example](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/11MGx3_sgOrQrB6k8edyAvg5mGIxqR5ED?usp=sharing)
+### Run locally
+To Setup, Run the following commands:
+```
+git clone https://github.com/asteroid-team/asteroid.git
+cd asteroid/egs/wsj0-mix-var/Multi-Decoder-DPRNN
+pip install -r requirements.txt
+```
+To run separation on a wav file, run:
+```
+python separate.py --wav_file ${mixture_file}
+```
+To load the model, run:
+```
+from model import MultiDecoderDPRNN
+model = MultiDecoderDPRNN.from_pretrained("JunzheJosephZhu/MultiDecoderDPRNN").eval()
+model.separate(input_tensor)
+```
 
 ## Train your own model
 To train the model, edit the file paths in run.sh and execute ```./run.sh --stage 0```, follow the instructions to generate dataset and train the model.
 
 After training the model, execute ```./run.sh --stage 4``` to evaluate the model. Some examples will be saved in exp/tmp_uuid/examples
+
+Alternatively, the training script and evaluation script can be found at train.py and eval.py
 
 ## Kindly cite this paper
 ```
@@ -39,7 +50,7 @@ After training the model, execute ```./run.sh --stage 4``` to evaluate the model
 ```
 
 ## Resources
-Pretrained mini model and config can be found at: https://huggingface.co/JunzheJosephZhu/MultiDecoderDPRNN \
+Pretrained mini model and config can be found at: https://huggingface.co/JunzheJosephZhu/MultiDecoderDPRNN
 
 This is the refactored version of the code, with some hyperparameter changes. If you want to reproduce the paper results, original experiment code & config can be found at https://github.com/JunzheJosephZhu/MultiDecoder-DPRNN
 
