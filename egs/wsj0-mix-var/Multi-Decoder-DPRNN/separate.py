@@ -24,5 +24,6 @@ for i, source in enumerate(sources_est):
     torchaudio.save(f"outputs/{i}.wav", source[None], sample_rate)
 
 print(
-    "Thank you for using Multi-Decoder-DPRNN to separate your mixture files. Please support our work by citing our paper: http://www.isle.illinois.edu/speech_web_lg/pubs/2021/zhu2021multi.pdf"
+    "Thank you for using Multi-Decoder-DPRNN to separate your mixture files. \
+    Please support our work by citing our paper: http://www.isle.illinois.edu/speech_web_lg/pubs/2021/zhu2021multi.pdf"
 )
