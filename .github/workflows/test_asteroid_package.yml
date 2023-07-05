@@ -47,14 +47,14 @@ jobs:
 
     - name: Source code tests
       run: |
-        coverage run -a -m py.test tests  --ignore tests/models/publish_test.py
+        coverage run -a -m pytest tests  --ignore tests/models/publish_test.py
         chmod +x ./tests/cli_test.sh
         ./tests/cli_test.sh
 
     # This tends to fail despite the code works, when Zenodo is slow.
     - name: Model-sharing tests
       run: |
-        coverage run -a -m py.test tests/models/publish_test.py
+        coverage run -a -m pytest tests/models/publish_test.py
       env:
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
