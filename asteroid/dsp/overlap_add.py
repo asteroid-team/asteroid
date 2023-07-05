@@ -55,7 +55,7 @@ class LambdaOverlapAdd(torch.nn.Module):
         n_src,
         window_size,
         hop_size=None,
-        window="hanning",
+        window="hann",
         reorder_chunks=True,
         enable_grad=False,
     ):
