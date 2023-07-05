@@ -38,7 +38,7 @@ setup(
     install_requires=[
         # From requirements/torchhub.txt
         "numpy>=1.16.4",
-        "scipy>=1.1.0",
+        "scipy>=1.10.1",
         "torch>=1.8.0,<2.0.0",
         "asteroid-filterbanks>=0.4.0",
         "SoundFile>=0.10.2",

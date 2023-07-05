@@ -1,7 +1,7 @@
 # Minimal set of requirements required to be able to run Asteroid models from Torch Hub.
 # Note that Asteroid itself is not required to be installed.
 numpy>=1.16.4
-scipy>=1.1.0
+scipy>=1.10.1
 torch>=1.8.0,<2.0.0
 asteroid-filterbanks>=0.4.0
 requests
