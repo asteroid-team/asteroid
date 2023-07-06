@@ -38,7 +38,7 @@ setup(
     install_requires=[
         # From requirements/torchhub.txt
         "numpy>=1.16.4",
-        "scipy>=1.1.0",
+        "scipy>=1.10.1",
         "torch>=1.8.0,<2.0.0",
         "asteroid-filterbanks>=0.4.0",
         "SoundFile>=0.10.2",
@@ -46,7 +46,8 @@ setup(
         # From requirements/install.txt
         "PyYAML>=5.0",
         "pandas>=0.23.4",
-        "pytorch-lightning>=1.5.0,<2.0.0",
+        "pytorch-lightning>=1.5.0,<=1.7.7",
+        "torchmetrics<=0.11.4",
         "torchaudio>=0.5.0",
         "pb_bss_eval>=0.0.2",
         "torch_stoi>=0.1.2",
