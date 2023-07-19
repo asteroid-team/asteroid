@@ -11,6 +11,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Changed
 ### Fixed
 
+
+## [0.6.1] - 2023-07-19
+
+### Breaking
+- [install] Limit torch and pytorch-lightning to 1.x (#671)
+
+### Added
+- [egs] Raise error if storage_dir not specified in LibriMix recipes (#626)
+- [egs] Create Multi-Decoder DPRNN README.md (#632)
+- [egs] Update Multi-Decoder DPRNN with inference function on a single file out-of-the-box (#653)
+- [egs] Add a new pre-trained model (X-UMXL) (#665)
+- [egs] Add a notebook demo, separate.py script for MD-DPRNN. Easier use `from_pretrained` (#668)
+
+### Changed
+- [src] Use torch.linalg for solve and cholesky (#623)
+- [install] Remove torchmetrics version limit
+- [CI] Lint with black 22.3.0 and fix linting CI python3.*8 (#624)
+
+### Fixed
+- [hub] Upgrade deprecated huggingface_hub.cached_download (#645)
+- [src] Fix cumulative normalization (#649)
+- [src] Fix argparse key based on Python version (#628) (#657)
+- [ci] Fix tests in continuous integration (#672)
+
 ## [0.6.0] - 2022-06-28
 
 Just upgrade source code and recipes to PyTorch-Lighting 1.5+.
