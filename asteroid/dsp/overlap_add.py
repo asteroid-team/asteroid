@@ -113,7 +113,7 @@ class LambdaOverlapAdd(torch.nn.Module):
                 frame = _reorder_sources(frame, out[-1], n_src, self.window_size, self.hop_size)
 
             if self.use_window:
-                frame = frame * self.window
+                frame = frame * self.window.to(frame)
             else:
                 frame = frame / (self.window_size / self.hop_size)
             out.append(frame)
