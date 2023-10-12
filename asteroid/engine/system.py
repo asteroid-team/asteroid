@@ -163,7 +163,7 @@ class System(pl.LightningModule):
                 epoch_schedulers.append(sched)
         return [self.optimizer], epoch_schedulers
 
-    def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
+    def lr_scheduler_step(self, scheduler, metric):
         if metric is None:
             scheduler.step()
         else:
