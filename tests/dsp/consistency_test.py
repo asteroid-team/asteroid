@@ -1,5 +1,5 @@
 import torch
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 import pytest
 
 from asteroid.dsp.consistency import mixture_consistency
@@ -13,7 +13,7 @@ def test_consistency_noweight(mix_shape, dim, n_src):
     est_shape = mix_shape[:dim] + [n_src] + mix_shape[dim:]
     est_sources = torch.randn(est_shape)
     consistent_est_sources = mixture_consistency(mix, est_sources, dim=dim)
-    assert_allclose(mix, consistent_est_sources.sum(dim))
+    assert_close(mix, consistent_est_sources.sum(dim))
 
 
 @pytest.mark.parametrize("mix_shape", [[2, 1600], [2, 130, 10]])
@@ -30,7 +30,7 @@ def test_consistency_withweight(mix_shape, dim, n_src):
     src_weights = torch.softmax(torch.randn(src_weights_shape), dim=dim)
     # Apply mixture consitency
     consistent_est_sources = mixture_consistency(mix, est_sources, src_weights=src_weights, dim=dim)
-    assert_allclose(mix, consistent_est_sources.sum(dim))
+    assert_close(mix, consistent_est_sources.sum(dim))
 
 
 def test_consistency_raise():

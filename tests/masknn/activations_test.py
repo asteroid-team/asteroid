@@ -2,7 +2,7 @@
 # list of strings / function pair in parametrize?
 import pytest
 import torch
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 
 from asteroid.masknn import activations
 from torch import nn
@@ -27,14 +27,14 @@ def test_activations(activation_tuple):
     asteroid_act = activations.get(asteroid_act)()
 
     inp = torch.randn(10, 11, 12)
-    assert_allclose(torch_act(inp), asteroid_act(inp))
+    assert_close(torch_act(inp), asteroid_act(inp))
 
 
 def test_softmax():
     torch_softmax = nn.Softmax(dim=-1)
     asteroid_softmax = activations.get("softmax")(dim=-1)
     inp = torch.randn(10, 11, 12)
-    assert_allclose(torch_softmax(inp), asteroid_softmax(inp))
+    assert_close(torch_softmax(inp), asteroid_softmax(inp))
     assert torch_softmax == activations.get(torch_softmax)
 
 

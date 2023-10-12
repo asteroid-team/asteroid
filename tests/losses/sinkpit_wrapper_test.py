@@ -3,7 +3,7 @@ import itertools
 import torch
 from torch import nn, optim
 from torch.utils import data
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
@@ -90,7 +90,7 @@ def test_proximity_sinkhorn_hungarian(batch_size, n_src, beta, n_iter, function_
     mean_loss_hungarian = loss_hungarian(est_targets, targets, return_est=False)
 
     # compare
-    assert_allclose(mean_loss_sinkhorn, mean_loss_hungarian)
+    assert_close(mean_loss_sinkhorn, mean_loss_hungarian)
 
 
 class _TestCallback(pl.callbacks.Callback):

@@ -2,7 +2,7 @@ import itertools
 import argparse
 from collections.abc import MutableMapping
 import torch
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 import pytest
 import numpy as np
 
@@ -64,7 +64,7 @@ def test_boolean(parser):
 )
 def test_transfer(tensors):
     if isinstance(tensors, torch.Tensor):
-        assert_allclose(utils.tensors_to_device(tensors, "cpu"), tensors)
+        assert_close(utils.tensors_to_device(tensors, "cpu"), tensors)
     if isinstance(tensors, list):
         assert list(utils.tensors_to_device(tensors, "cpu")) == list(tensors)
     if isinstance(tensors, dict):

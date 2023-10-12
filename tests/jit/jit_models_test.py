@@ -2,7 +2,7 @@ from typing import Tuple
 
 import torch
 import pytest
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 from asteroid.models import (
     DCCRNet,
     DCUNet,
@@ -20,7 +20,7 @@ from asteroid.models import (
 def assert_consistency(model, traced, tensor):
     ref = model(tensor)
     out = traced(tensor)
-    assert_allclose(ref, out)
+    assert_close(ref, out)
 
 
 @pytest.fixture(scope="module")
