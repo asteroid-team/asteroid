@@ -7,6 +7,11 @@ from .base_models import BaseModel
 
 
 class XUMX(BaseModel):
+    def __init__(self, *args, **kwargs):
+        raise RuntimeError("XUMX is broken in torch 2.0, use torch<2.0 with asteroid<0.7 to use it until it's fixed.")
+
+
+class BrokenXUMX(BaseModel):
     r"""CrossNet-Open-Unmix (X-UMX) for Music Source Separation introduced in [1].
         There are two notable contributions with no effect on inference:
             a) Multi Domain Losses
