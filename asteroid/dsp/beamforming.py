@@ -94,7 +94,7 @@ class RTFMVDRBeamformer(Beamformer):
         """
         # TODO: Implement several RTF estimation strategies, and choose one here, or expose all.
         # Get relative transfer function (1st PCA of Σss)
-        e_val, e_vec = torch.symeig(target_scm.permute(0, 3, 1, 2), eigenvectors=True)
+        e_val, e_vec = torch.linalg.eigh(target_scm.permute(0, 3, 1, 2))
         rtf_vect = e_vec[..., -1]  # bfm
         return self.from_rtf_vect(mix=mix, rtf_vec=rtf_vect.transpose(-1, -2), noise_scm=noise_scm)
 
@@ -471,7 +471,7 @@ def _generalized_eigenvalue_decomposition(a, b):
     # Compute C matrix L⁻1 A L^-T
     cmat = inv_cholesky @ a @ inv_cholesky.conj().transpose(-1, -2)
     # Performing the eigenvalue decomposition
-    e_val, e_vec = torch.symeig(cmat, eigenvectors=True)
+    e_val, e_vec = torch.linalg.eigh(cmat)
     # Collecting the eigenvectors
     e_vec = torch.matmul(inv_cholesky.conj().transpose(-1, -2), e_vec)
     return e_val, e_vec
