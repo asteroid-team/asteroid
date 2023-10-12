@@ -1,6 +1,6 @@
 import pytest
 import torch
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 import warnings
 
 from asteroid_filterbanks import STFTFB, Encoder, transforms
@@ -68,15 +68,15 @@ def test_sisdr_and_mse(n_src, loss):
     w_src_wrapper = PITLossWrapper(multisrc, pit_from="perm_avg")
 
     # Circular tests on value
-    assert_allclose(pw_wrapper(est_targets, targets), wo_src_wrapper(est_targets, targets))
-    assert_allclose(wo_src_wrapper(est_targets, targets), w_src_wrapper(est_targets, targets))
+    assert_close(pw_wrapper(est_targets, targets), wo_src_wrapper(est_targets, targets))
+    assert_close(wo_src_wrapper(est_targets, targets), w_src_wrapper(est_targets, targets))
 
     # Circular tests on returned estimates
-    assert_allclose(
+    assert_close(
         pw_wrapper(est_targets, targets, return_est=True)[1],
         wo_src_wrapper(est_targets, targets, return_est=True)[1],
     )
-    assert_allclose(
+    assert_close(
         wo_src_wrapper(est_targets, targets, return_est=True)[1],
         w_src_wrapper(est_targets, targets, return_est=True)[1],
     )
@@ -151,7 +151,7 @@ def test_pmsqe(sample_rate):
     assert loss_value.shape[0] == ref.shape[0]
     # Assert support for transposed inputs.
     tr_loss_value = loss_func(est_spec.transpose(1, 2), ref_spec.transpose(1, 2))
-    assert_allclose(loss_value, tr_loss_value)
+    assert_close(loss_value, tr_loss_value)
 
 
 @pytest.mark.parametrize("n_src", [2, 3])

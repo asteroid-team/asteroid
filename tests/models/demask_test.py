@@ -4,7 +4,7 @@ import re
 
 import pytest
 import torch
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 
 from asteroid.models import DeMask
 
@@ -55,7 +55,7 @@ from asteroid.models import DeMask
 #     expected_data = torch.load(ref_file)
 #     with torch.no_grad():
 #         output = model(in_data)
-#         assert_allclose(output, expected_data)
+#         assert_close(output, expected_data)
 #
 #
 # def test_get_model_args(model):

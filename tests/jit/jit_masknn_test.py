@@ -1,6 +1,6 @@
 import pytest
 import torch
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 from asteroid.masknn import norms
 
 
@@ -13,10 +13,10 @@ def test_lns(cls):
     traced = torch.jit.trace(model, x)
 
     y = torch.randn(3, chan_size, 18, 12)
-    assert_allclose(traced(y), model(y))
+    assert_close(traced(y), model(y))
 
     y = torch.randn(2, chan_size, 10, 5, 4)
-    assert_allclose(traced(y), model(y))
+    assert_close(traced(y), model(y))
 
 
 def test_cumln():
@@ -27,4 +27,4 @@ def test_cumln():
     traced = torch.jit.trace(model, x)
 
     y = torch.randn(3, chan_size, 100)
-    assert_allclose(traced(y), model(y))
+    assert_close(traced(y), model(y))

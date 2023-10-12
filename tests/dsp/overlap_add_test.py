@@ -1,5 +1,5 @@
 import torch
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 import pytest
 
 from asteroid.dsp.overlap_add import LambdaOverlapAdd
@@ -16,4 +16,4 @@ def test_overlap_add(length, batch_size, n_src, window, window_size, hop_size):
     nnet = lambda x: x.unsqueeze(1).repeat(1, n_src, 1)
     oladd = LambdaOverlapAdd(nnet, n_src, window_size, hop_size, window)
     oladded = oladd(mix)
-    assert_allclose(mix.repeat(1, n_src, 1), oladded)
+    assert_close(mix.repeat(1, n_src, 1), oladded)

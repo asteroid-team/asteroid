@@ -1,6 +1,6 @@
 import torch
 import pytest
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 from asteroid_filterbanks import make_enc_dec
 from asteroid.models.base_models import BaseEncoderMaskerDecoder
 
@@ -30,7 +30,7 @@ def test_jit_filterbanks(filter_bank_name, inference_data):
     with torch.no_grad():
         res = model(inference_data)
         out = traced(inference_data)
-        assert_allclose(res, out)
+        assert_close(res, out)
 
 
 class DummyModel(BaseEncoderMaskerDecoder):

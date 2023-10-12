@@ -1,6 +1,6 @@
 import torch
 import pytest
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 import numpy as np
 import soundfile as sf
 import asteroid
@@ -257,7 +257,7 @@ def _default_test_model(model, input_samples=801, test_input=None):
 
     model_conf = model.serialize()
     reconstructed_model = model.__class__.from_pretrained(model_conf)
-    assert_allclose(model(test_input), reconstructed_model(test_input))
+    assert_close(model(test_input), reconstructed_model(test_input))
 
     # Load with and without SR
     sr = model_conf["model_args"].pop("sample_rate")
@@ -310,7 +310,7 @@ def test_demask(fb):
 
     model_conf = model.serialize()
     reconstructed_model = DeMask.from_pretrained(model_conf)
-    assert_allclose(model(test_input), reconstructed_model(test_input))
+    assert_close(model(test_input), reconstructed_model(test_input))
 
 
 def test_separate():

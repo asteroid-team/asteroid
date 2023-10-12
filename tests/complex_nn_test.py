@@ -1,5 +1,5 @@
 import torch
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 import pytest
 import math
 
@@ -17,23 +17,23 @@ def test_torch_complex_from_magphase():
     mag = torch.randn(shape).abs()
     phase = torch.remainder(torch.randn(shape), math.pi)
     out = cnn.torch_complex_from_magphase(mag, phase)
-    assert_allclose(torch.abs(out), mag)
-    assert_allclose(out.angle(), phase)
+    assert_close(torch.abs(out), mag)
+    assert_close(out.angle(), phase)
 
 
 def test_torch_complex_from_reim():
     comp = torch.randn(10, 12, dtype=torch.complex64)
-    assert_allclose(cnn.torch_complex_from_reim(comp.real, comp.imag), comp)
+    assert_close(cnn.torch_complex_from_reim(comp.real, comp.imag), comp)
 
 
 def test_onreim():
     inp = torch.randn(10, 10, dtype=torch.complex64)
     # Identity
     fn = cnn.on_reim(lambda x: x)
-    assert_allclose(fn(inp), inp)
+    assert_close(fn(inp), inp)
     # Top right quadrant
     fn = cnn.on_reim(lambda x: x.abs())
-    assert_allclose(fn(inp), cnn.torch_complex_from_reim(inp.real.abs(), inp.imag.abs()))
+    assert_close(fn(inp), cnn.torch_complex_from_reim(inp.real.abs(), inp.imag.abs()))
 
 
 def test_on_reim_class():
@@ -48,16 +48,16 @@ def test_on_reim_class():
             return x + self.a
 
     fn = cnn.OnReIm(Identity, 0)
-    assert_allclose(fn(inp), inp)
+    assert_close(fn(inp), inp)
     fn = cnn.OnReIm(Identity, 1)
-    assert_allclose(fn(inp), cnn.torch_complex_from_reim(inp.real + 1, inp.imag + 1))
+    assert_close(fn(inp), cnn.torch_complex_from_reim(inp.real + 1, inp.imag + 1))
 
 
 def test_complex_mul_wrapper():
     a = torch.randn(10, 10, dtype=torch.complex64)
 
     fn = cnn.ComplexMultiplicationWrapper(torch.nn.ReLU)
-    assert_allclose(
+    assert_close(
         fn(a),
         cnn.torch_complex_from_reim(
             torch.relu(a.real) - torch.relu(a.imag), torch.relu(a.real) + torch.relu(a.imag)
@@ -86,4 +86,4 @@ def test_complexsinglernn(n_layers):
         reim = layer.re_module(inp.imag)
         imre = layer.im_module(inp.real)
         inp = cnn.torch_complex_from_reim(rere - imim, reim + imre)
-    assert_allclose(out, inp)
+    assert_close(out, inp)

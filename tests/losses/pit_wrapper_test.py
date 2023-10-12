@@ -1,7 +1,7 @@
 import pytest
 import itertools
 import torch
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 
 from asteroid.losses import PITLossWrapper, pairwise_mse
 
@@ -71,7 +71,7 @@ def test_permutation(perm):
     loss_value, reordered = loss_func(est_sources, sources, return_est=True)
 
     assert loss_value.item() == 0
-    assert_allclose(sources, reordered)
+    assert_close(sources, reordered)
 
 
 def test_permreduce():
@@ -95,8 +95,8 @@ def test_permreduce():
     w_mean = w_mean_reduce(est_sources, sources)
     w_sum = w_sum_reduce(est_sources, sources)
 
-    assert_allclose(wo, w_mean)
-    assert_allclose(wo, w_sum / n_src)
+    assert_close(wo, w_mean)
+    assert_close(wo, w_sum / n_src)
 
 
 def test_permreduce_args():
@@ -123,8 +123,8 @@ def test_best_perm_match(n_src):
     min_loss, min_idx = PITLossWrapper.find_best_perm_factorial(pwl)
     min_loss_hun, min_idx_hun = PITLossWrapper.find_best_perm_hungarian(pwl)
 
-    assert_allclose(min_loss, min_loss_hun)
-    assert_allclose(min_idx, min_idx_hun)
+    assert_close(min_loss, min_loss_hun)
+    assert_close(min_idx, min_idx_hun)
 
 
 def test_raises_wrong_pit_from():
