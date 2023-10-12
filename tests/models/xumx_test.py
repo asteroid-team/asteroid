@@ -11,7 +11,6 @@ sources = [
 ]
 
 
-
 @pytest.mark.skip(reason="XUMX is not broken in torch 2.x")
 @pytest.mark.parametrize("nb_channels", (1, 2))
 @pytest.mark.parametrize("sources", sources)
