@@ -180,7 +180,7 @@ class SinkPITBetaScheduler(pl.callbacks.Callback):
     def __init__(self, cooling_schedule=sinkpit_default_beta_schedule):
         self.cooling_schedule = cooling_schedule
 
-    def on_epoch_start(self, trainer, pl_module):
+    def on_train_epoch_start(self, trainer, pl_module):
         assert isinstance(pl_module.loss_func, SinkPITLossWrapper)
         assert trainer.current_epoch == pl_module.current_epoch  # same
         epoch = pl_module.current_epoch

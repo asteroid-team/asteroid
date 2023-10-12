@@ -99,7 +99,7 @@ class _TestCallback(pl.callbacks.Callback):
         self.epoch = 0
         self.n_batch = total // batch_size
 
-    def on_batch_end(self, trainer, pl_module):
+    def on_train_batch_end(self, trainer, *args, **kwargs):
         step = trainer.global_step
         assert self.epoch * self.n_batch <= step
         assert step <= (self.epoch + 1) * self.n_batch
