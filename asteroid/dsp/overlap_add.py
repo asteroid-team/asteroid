@@ -112,11 +112,14 @@ class LambdaOverlapAdd(torch.nn.Module):
                 # we determine best perm based on xcorr with previous sources
                 frame = _reorder_sources(frame, out[-1], n_src, self.window_size, self.hop_size)
 
-            if self.use_window:
-                frame = frame * self.window.to(frame)
-            else:
-                frame = frame / (self.window_size / self.hop_size)
             out.append(frame)
+
+        # apply windowing/scaling *after* _reorder_sources has been called.
+        for frame in out:
+            if self.use_window:
+                frame *= self.window.to(frame)
+            else:
+                frame /= self.window_size / self.hop_size
 
         out = torch.stack(out).reshape(n_chunks, batch * n_src, self.window_size)
         out = out.permute(1, 2, 0)
