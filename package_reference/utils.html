@@ -1,0 +1,947 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Utils &mdash; asteroid 0.7.1dev documentation</title>
+  
+
+  
+  
+  
+  
+    <link rel="canonical" href="https://github.com/asteroid-team/asteroidpackage_reference/utils.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Asteroid High-Level Contribution Guide" href="../contribution_guide.html" />
+    <link rel="prev" title="DSP Modules" href="dsp.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch">
+       <!-- <img class="call-to-action-img" src="../_static/images/asteroid_logo_dark.png"/> -->
+      </a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <div class="resources-dropdown">
+              <a id="resourcesDropdownButton" data-toggle="resources-dropdown">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/"">
+                  <span class=dropdown-title>Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <!--
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/">
+                  <span class=dropdown-title>About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+                -->
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Start here</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../why_use_asteroid.html">What is Asteroid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p><span class="caption-text">Notebooks and Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Getting started with Asteroid</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb">Introduction and Overview</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/02_Filterbank.ipynb">Understanding the Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb">Our PITLossWrapper explained</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb">Processing large wav files</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j">Community: Numpy vs. Asteroid STFT</a></li>
+</ul>
+<p><span class="caption-text">Asteroid</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/egs_README.html">What is a recipe?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_datasets.html">Datasets and tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training_and_evaluation.html">Training and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/pretrained_models.html">Pretrained models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<p><span class="caption-text">Package reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data.html">PyTorch Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filterbanks.html">Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blocks.html">DNN building blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="losses.html">Losses &amp; Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">Lightning Wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers &amp; Schedulers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dsp.html">DSP Modules</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Utils</a></li>
+</ul>
+<p><span class="caption-text">Community</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guide.html">Asteroid High-Level Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/CONTRIBUTING.html">How to contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Utils</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/package_reference/utils.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="utils">
+<h1>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
+<section id="parser-utils">
+<h2>Parser utils<a class="headerlink" href="#parser-utils" title="Permalink to this headline">¶</a></h2>
+<p>Asteroid has its own argument parser (built on <code class="docutils literal notranslate"><span class="pre">argparse</span></code>) that handles
+dict-like structure, created from a config YAML file.</p>
+<span class="target" id="module-asteroid.utils.parser_utils"></span><dl class="function">
+<dt id="asteroid.utils.parser_utils.prepare_parser_from_dict">
+<code class="sig-prename descclassname">asteroid.utils.parser_utils.</code><code class="sig-name descname">prepare_parser_from_dict</code><span class="sig-paren">(</span><em class="sig-param">dic</em>, <em class="sig-param">parser=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/parser_utils.py#L6-L37"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.parser_utils.prepare_parser_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare an argparser from a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dic</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – Two-level config dictionary with unique bottom-level keys.</p></li>
+<li><p><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.12)"><em>argparse.ArgumentParser</em></a><em>, </em><em>optional</em>) – If a parser already
+exists, add the keys from the dictionary on the top of it.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>argparse.ArgumentParser</em> –     Parser instance with groups corresponding to the first level keys
+and arguments corresponding to the second level keys with default
+values given by the values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.parser_utils.str_int_float">
+<code class="sig-prename descclassname">asteroid.utils.parser_utils.</code><code class="sig-name descname">str_int_float</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/parser_utils.py#L40-L54"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.parser_utils.str_int_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type to convert strings to int, float (in this order) if possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Value to convert.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>int, float, str</em> – Converted value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.parser_utils.str2bool">
+<code class="sig-prename descclassname">asteroid.utils.parser_utils.</code><code class="sig-name descname">str2bool</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/parser_utils.py#L57-L66"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.parser_utils.str2bool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type to convert strings to Boolean (returns input if not boolean)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.parser_utils.str2bool_arg">
+<code class="sig-prename descclassname">asteroid.utils.parser_utils.</code><code class="sig-name descname">str2bool_arg</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/parser_utils.py#L69-L74"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.parser_utils.str2bool_arg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Argparse type to convert strings to Boolean</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.parser_utils.isfloat">
+<code class="sig-prename descclassname">asteroid.utils.parser_utils.</code><code class="sig-name descname">isfloat</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/parser_utils.py#L77-L91"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.parser_utils.isfloat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes whether <cite>value</cite> can be cast to a float.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Value to check.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>bool</em> – Whether <cite>value</cite> can be cast to a float.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.parser_utils.isint">
+<code class="sig-prename descclassname">asteroid.utils.parser_utils.</code><code class="sig-name descname">isint</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/parser_utils.py#L94-L108"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.parser_utils.isint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes whether <cite>value</cite> can be cast to an int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Value to check.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>bool</em> – Whether <cite>value</cite> can be cast to an int.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.parser_utils.parse_args_as_dict">
+<code class="sig-prename descclassname">asteroid.utils.parser_utils.</code><code class="sig-name descname">parse_args_as_dict</code><span class="sig-paren">(</span><em class="sig-param">parser</em>, <em class="sig-param">return_plain_args=False</em>, <em class="sig-param">args=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/parser_utils.py#L111-L146"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.parser_utils.parse_args_as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a dict of dicts out of process <cite>parser.parse_args()</cite></p>
+<p>Top-level keys corresponding to groups and bottom-level keys corresponding
+to arguments. Under <cite>‘main_args’</cite>, the arguments which don’t belong to a
+argparse group (i.e main arguments defined before parsing from a dict) can
+be found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.12)"><em>argparse.ArgumentParser</em></a>) – ArgumentParser instance containing
+groups. Output of <cite>prepare_parser_from_dict</cite>.</p></li>
+<li><p><strong>return_plain_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to return the output or
+<cite>parser.parse_args()</cite>.</p></li>
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – List of arguments as read from the command line.
+Used for unit testing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>dict</em> –     Dictionary of dictionaries containing the arguments. Optionally the
+direct output <cite>parser.parse_args()</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-asteroid.utils.torch_utils">
+<span id="torch-utils"></span><h2>Torch utils<a class="headerlink" href="#module-asteroid.utils.torch_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="asteroid.utils.torch_utils.to_cuda">
+<code class="sig-prename descclassname">asteroid.utils.torch_utils.</code><code class="sig-name descname">to_cuda</code><span class="sig-paren">(</span><em class="sig-param">tensors</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L8-L31"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.torch_utils.to_cuda" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer tensor, dict or list of tensors to GPU.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tensors</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>, list or dict) – May be a single, a
+list or a dictionary of tensors.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – Same as input but transferred to cuda. Goes through lists and dicts
+and transfers the torch.Tensor to cuda. Leaves the rest untouched.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.torch_utils.tensors_to_device">
+<code class="sig-prename descclassname">asteroid.utils.torch_utils.</code><code class="sig-name descname">tensors_to_device</code><span class="sig-paren">(</span><em class="sig-param">tensors</em>, <em class="sig-param">device</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L34-L57"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.torch_utils.tensors_to_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer tensor, dict or list of tensors to device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensors</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – May be a single, a list or a
+dictionary of tensors.</p></li>
+<li><p><strong>(</strong> (<em>device</em>) – class: <cite>torch.device</cite>): the device where to place the tensors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Union [<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>, list, tuple, dict] –     Same as input but transferred to device.
+Goes through lists and dicts and transfers the torch.Tensor to
+device. Leaves the rest untouched.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.torch_utils.get_device">
+<code class="sig-prename descclassname">asteroid.utils.torch_utils.</code><code class="sig-name descname">get_device</code><span class="sig-paren">(</span><em class="sig-param">tensor_or_module</em>, <em class="sig-param">default=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L60-L82"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.torch_utils.get_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the device of a tensor or a module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor_or_module</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.nn.Module</em></a><em>]</em>) – The object to get the device from. Can be a <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>,
+a <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>, or anything else that has a <code class="docutils literal notranslate"><span class="pre">device</span></code> attribute
+or a <code class="docutils literal notranslate"><span class="pre">parameters()</span> <span class="pre">-&gt;</span> <span class="pre">Iterator[torch.Tensor]</span></code> method.</p></li>
+<li><p><strong>default</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensor_attributes.html#torch.device" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.device</em></a><em>]</em><em>]</em>) – If the device can not be
+determined, return this device instead. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (the default),
+raise a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> instead.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>torch.device</em> – The device that <code class="docutils literal notranslate"><span class="pre">tensor_or_module</span></code> is on.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.torch_utils.is_tracing">
+<code class="sig-prename descclassname">asteroid.utils.torch_utils.</code><code class="sig-name descname">is_tracing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L85-L91"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.torch_utils.is_tracing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> in tracing (if a function is called during the tracing of
+code with <code class="docutils literal notranslate"><span class="pre">torch.jit.trace</span></code>) and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.torch_utils.script_if_tracing">
+<code class="sig-prename descclassname">asteroid.utils.torch_utils.</code><code class="sig-name descname">script_if_tracing</code><span class="sig-paren">(</span><em class="sig-param">fn</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L94-L125"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.torch_utils.script_if_tracing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compiles <code class="docutils literal notranslate"><span class="pre">fn</span></code> when it is first called during tracing. <code class="docutils literal notranslate"><span class="pre">torch.jit.script</span></code>
+has a non-negligible start up time when it is first called due to
+lazy-initializations of many compiler builtins. Therefore you should not use
+it in library code. However, you may want to have parts of your library work
+in tracing even if they use control flow. In these cases, you should use
+<code class="docutils literal notranslate"><span class="pre">&#64;torch.jit.script_if_tracing</span></code> to substitute for
+<code class="docutils literal notranslate"><span class="pre">torch.jit.script</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fn</strong> – A function to compile.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If called during tracing, a <code class="xref py py-class docutils literal notranslate"><span class="pre">ScriptFunction</span></code> created by `
+<cite>torch.jit.script`</cite> is returned. Otherwise, the original function <code class="docutils literal notranslate"><span class="pre">fn</span></code> is returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.torch_utils.pad_x_to_y">
+<code class="sig-prename descclassname">asteroid.utils.torch_utils.</code><code class="sig-name descname">pad_x_to_y</code><span class="sig-paren">(</span><em class="sig-param">x: torch.Tensor</em>, <em class="sig-param">y: torch.Tensor</em>, <em class="sig-param">axis: int = -1</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L128-L144"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.torch_utils.pad_x_to_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Right-pad or right-trim first argument to have same size as second argument</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – Tensor to be padded.</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – Tensor to pad <cite>x</cite> to.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Axis to pad on.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>torch.Tensor, <cite>x</cite> padded to match <cite>y</cite>’s shape.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.torch_utils.load_state_dict_in">
+<code class="sig-prename descclassname">asteroid.utils.torch_utils.</code><code class="sig-name descname">load_state_dict_in</code><span class="sig-paren">(</span><em class="sig-param">state_dict</em>, <em class="sig-param">model</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L147-L181"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.torch_utils.load_state_dict_in" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Strictly loads state_dict in model, or the next submodel.</dt><dd><p>Useful to load standalone model after training it with System.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>state_dict</strong> (<em>OrderedDict</em>) – the state_dict to load.</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.nn.Module</em></a>) – the model to load it into</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>torch.nn.Module</em> – model with loaded weights.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Keys in a state_dict look like <code class="docutils literal notranslate"><span class="pre">object1.object2.layer_name.weight.etc</span></code>
+We first try to load the model in the classic way.
+If this fail we removes the first left part of the key to obtain
+<code class="docutils literal notranslate"><span class="pre">object2.layer_name.weight.etc</span></code>.
+Blindly loading with <code class="docutils literal notranslate"><span class="pre">strictly=False</span></code> should be done with some logging
+of the missing keys in the state_dict and the model.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.torch_utils.are_models_equal">
+<code class="sig-prename descclassname">asteroid.utils.torch_utils.</code><code class="sig-name descname">are_models_equal</code><span class="sig-paren">(</span><em class="sig-param">model1</em>, <em class="sig-param">model2</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L184-L197"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.torch_utils.are_models_equal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check for weights equality between models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model1</strong> (<em>nn.Module</em>) – model instance to be compared.</p></li>
+<li><p><strong>model2</strong> (<em>nn.Module</em>) – second model instance to be compared.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>bool</em> – Whether all model weights are equal.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.torch_utils.jitable_shape">
+<code class="sig-prename descclassname">asteroid.utils.torch_utils.</code><code class="sig-name descname">jitable_shape</code><span class="sig-paren">(</span><em class="sig-param">tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L200-L214"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.torch_utils.jitable_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets shape of <code class="docutils literal notranslate"><span class="pre">tensor</span></code> as <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code> type for jit compiler</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Returning <code class="docutils literal notranslate"><span class="pre">tensor.shape</span></code> of <code class="docutils literal notranslate"><span class="pre">tensor.size()</span></code> directly is not torchscript
+compatible as return type would not be supported.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tensor</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – Tensor</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>torch.Tensor</em> – Shape of <code class="docutils literal notranslate"><span class="pre">tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-asteroid.utils.hub_utils">
+<span id="hub-utils"></span><h2>Hub utils<a class="headerlink" href="#module-asteroid.utils.hub_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="asteroid.utils.hub_utils.cached_download">
+<code class="sig-prename descclassname">asteroid.utils.hub_utils.</code><code class="sig-name descname">cached_download</code><span class="sig-paren">(</span><em class="sig-param">filename_or_url</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/hub_utils.py#L34-L88"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.hub_utils.cached_download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download from URL and cache the result in ASTEROID_CACHE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename_or_url</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Name of a model as named on the Zenodo Community
+page (ex: <code class="docutils literal notranslate"><span class="pre">&quot;mpariente/ConvTasNet_WHAM!_sepclean&quot;</span></code>), or model id from
+the Hugging Face model hub (ex: <code class="docutils literal notranslate"><span class="pre">&quot;julien-c/DPRNNTasNet-ks16_WHAM_sepclean&quot;</span></code>),
+or a URL to a model file (ex: <code class="docutils literal notranslate"><span class="pre">&quot;https://zenodo.org/.../model.pth&quot;</span></code>), or a filename
+that exists locally (ex: <code class="docutils literal notranslate"><span class="pre">&quot;local/tmp_model.pth&quot;</span></code>)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>str, normalized path to the downloaded (or not) model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.hub_utils.url_to_filename">
+<code class="sig-prename descclassname">asteroid.utils.hub_utils.</code><code class="sig-name descname">url_to_filename</code><span class="sig-paren">(</span><em class="sig-param">url</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/hub_utils.py#L91-L96"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.hub_utils.url_to_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Consistently convert <code class="docutils literal notranslate"><span class="pre">url</span></code> into a filename.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asteroid.utils.hub_utils.model_list">
+<code class="sig-prename descclassname">asteroid.utils.hub_utils.</code><code class="sig-name descname">model_list</code><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/hub_utils"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.hub_utils.model_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the public list of all the models on huggingface with an ‘asteroid’ tag.</p>
+</dd></dl>
+
+</section>
+<section id="module-asteroid.utils.generic_utils">
+<span id="generic-utils"></span><h2>Generic utils<a class="headerlink" href="#module-asteroid.utils.generic_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="asteroid.utils.generic_utils.has_arg">
+<code class="sig-prename descclassname">asteroid.utils.generic_utils.</code><code class="sig-name descname">has_arg</code><span class="sig-paren">(</span><em class="sig-param">fn</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/generic_utils.py#L6-L24"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.generic_utils.has_arg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if a callable accepts a given keyword argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fn</strong> (<em>callable</em>) – Callable to inspect.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Check if <code class="docutils literal notranslate"><span class="pre">fn</span></code> can be called with <code class="docutils literal notranslate"><span class="pre">name</span></code> as a keyword
+argument.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>bool</em> – whether <code class="docutils literal notranslate"><span class="pre">fn</span></code> accepts a <code class="docutils literal notranslate"><span class="pre">name</span></code> keyword argument.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.generic_utils.flatten_dict">
+<code class="sig-prename descclassname">asteroid.utils.generic_utils.</code><code class="sig-name descname">flatten_dict</code><span class="sig-paren">(</span><em class="sig-param">d</em>, <em class="sig-param">parent_key=''</em>, <em class="sig-param">sep='_'</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/generic_utils.py#L27-L47"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.generic_utils.flatten_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flattens a dictionary into a single-level dictionary while preserving
+parent keys. Taken from
+<a class="reference external" href="https://stackoverflow.com/questions/6027558/flatten-nested-dictionaries-compressing-keys">SO</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<em>MutableMapping</em>) – Dictionary to be flattened.</p></li>
+<li><p><strong>parent_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – String to use as a prefix to all subsequent keys.</p></li>
+<li><p><strong>sep</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – String to use as a separator between two key levels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>dict</em> – Single-level dictionary, flattened.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.generic_utils.average_arrays_in_dic">
+<code class="sig-prename descclassname">asteroid.utils.generic_utils.</code><code class="sig-name descname">average_arrays_in_dic</code><span class="sig-paren">(</span><em class="sig-param">dic</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/generic_utils.py#L50-L65"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.generic_utils.average_arrays_in_dic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take average of numpy arrays in a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dic</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – Input dictionary to take average from</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>dict</em> – New dictionary with array averaged.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.generic_utils.get_wav_random_start_stop">
+<code class="sig-prename descclassname">asteroid.utils.generic_utils.</code><code class="sig-name descname">get_wav_random_start_stop</code><span class="sig-paren">(</span><em class="sig-param">signal_len</em>, <em class="sig-param">desired_len=32000</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/generic_utils.py#L68-L82"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.generic_utils.get_wav_random_start_stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get indexes for a chunk of signal of a given length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – length of the signal to trim.</p></li>
+<li><p><strong>desired_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – the length of [start:stop]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>tuple</em> – random start integer, stop integer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.utils.generic_utils.unet_decoder_args">
+<code class="sig-prename descclassname">asteroid.utils.generic_utils.</code><code class="sig-name descname">unet_decoder_args</code><span class="sig-paren">(</span><em class="sig-param">encoders</em>, <em class="sig-param">*</em>, <em class="sig-param">skip_connections</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/generic_utils.py#L85-L108"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.utils.generic_utils.unet_decoder_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of decoder arguments for upsampling (right) side of a symmetric u-net,
+given the arguments used to construct the encoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoders</strong> (tuple of length <cite>N</cite> of tuples of (in_chan, out_chan, kernel_size, stride, padding)) – List of arguments used to construct the encoders</p></li>
+<li><p><strong>skip_connections</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to include skip connections in the
+calculation of decoder input channels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of length <cite>N</cite> of tuples of (in_chan, out_chan, kernel_size, stride, padding) –     Arguments to be used to construct decoders</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../contribution_guide.html" class="btn btn-neutral float-right" title="Asteroid High-Level Contribution Guide" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="dsp.html" class="btn btn-neutral" title="DSP Modules" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Oncoming.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Utils</a><ul>
+<li><a class="reference internal" href="#parser-utils">Parser utils</a></li>
+<li><a class="reference internal" href="#module-asteroid.utils.torch_utils">Torch utils</a></li>
+<li><a class="reference internal" href="#module-asteroid.utils.hub_utils">Hub utils</a></li>
+<li><a class="reference internal" href="#module-asteroid.utils.generic_utils">Generic utils</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/doctools.js"></script>
+         <script src="../_static/language_data.js"></script>
+         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <!--
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Resources</a>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://mpariente.github.io/asteroid/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+
+        <div class="footer-logo-col">
+          <img class="footer-logo-img" src="../_static/images/dark_asteroid_logo.svg"/>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Asteroid</a></li>
+            <li><a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Features</a></li>
+            <li><a href="">Ecosystem</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Blog</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Resources</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Support</a></li>
+            <li><a href="">Tutorials</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/issues" target="_blank">Github Issues</a></li>
+            <li><a href="" target="_blank">Slack</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="https://twitter.com/" target="_blank" class="twitter"></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </footer> -->
+
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch Lightning"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Features</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Resources</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
