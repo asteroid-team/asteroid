@@ -114,7 +114,7 @@ class LambdaOverlapAdd(torch.nn.Module):
 
             out.append(frame)
 
-        # apply windowing/scaling *after* _reorder_sources has been called.
+        # apply windowing/scaling *after* _reorder_sources has been called, inplace.
         for frame in out:
             if self.use_window:
                 frame *= self.window.to(frame)
