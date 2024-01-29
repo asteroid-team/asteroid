@@ -7,13 +7,6 @@ from .base_models import BaseModel
 
 
 class XUMX(BaseModel):
-    def __init__(self, *args, **kwargs):
-        raise RuntimeError(
-            "XUMX is broken in torch 2.0, use torch<2.0 with asteroid<0.7 to use it until it's fixed."
-        )
-
-
-class BrokenXUMX(BaseModel):
     r"""CrossNet-Open-Unmix (X-UMX) for Music Source Separation introduced in [1].
         There are two notable contributions with no effect on inference:
             a) Multi Domain Losses
@@ -352,8 +345,9 @@ class _STFT(nn.Module):
             normalized=False,
             onesided=True,
             pad_mode="reflect",
-            return_complex=False,
+            return_complex=True,
         )
+        stft_f = torch.view_as_real(stft_f)
 
         # reshape back to channel dimension
         stft_f = stft_f.contiguous().view(nb_samples, nb_channels, self.n_fft // 2 + 1, -1, 2)
@@ -405,6 +399,7 @@ class _ISTFT(nn.Module):
         x_i = spec * torch.sin(ang)
         x = torch.stack([x_r, x_i], dim=-1)
         x = x.view(sources * bsize * channels, fbins, frames, 2)
+        x = torch.view_as_complex(x)
         wav = torch.istft(
             x, n_fft=self.n_fft, hop_length=self.hop_length, window=self.window, center=self.center
         )
