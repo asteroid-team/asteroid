@@ -1,0 +1,1055 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>DSP Modules &mdash; asteroid 0.7.1dev documentation</title>
+  
+
+  
+  
+  
+  
+    <link rel="canonical" href="https://github.com/asteroid-team/asteroidpackage_reference/dsp.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Utils" href="utils.html" />
+    <link rel="prev" title="Optimizers &amp; Schedulers" href="optimizers.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch">
+       <!-- <img class="call-to-action-img" src="../_static/images/asteroid_logo_dark.png"/> -->
+      </a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <div class="resources-dropdown">
+              <a id="resourcesDropdownButton" data-toggle="resources-dropdown">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/"">
+                  <span class=dropdown-title>Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <!--
+                <a class="nav-dropdown-item" href="https://mpariente.github.io/asteroid/">
+                  <span class=dropdown-title>About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+                -->
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Start here</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../why_use_asteroid.html">What is Asteroid?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p><span class="caption-text">Notebooks and Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Getting started with Asteroid</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/01_AsteroidOverview.ipynb">Introduction and Overview</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/02_Filterbank.ipynb">Understanding the Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/03_PITLossWrapper.ipynb">Our PITLossWrapper explained</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://colab.research.google.com/github/asteroid-team/asteroid/blob/master/notebooks/04_ProcessLargeAudioFiles.ipynb">Processing large wav files</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://colab.research.google.com/drive/1BDNQZBJCDcwQhSguf3XBE7ff2KXhWu_j">Community: Numpy vs. Asteroid STFT</a></li>
+</ul>
+<p><span class="caption-text">Asteroid</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/egs_README.html">What is a recipe?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_datasets.html">Datasets and tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training_and_evaluation.html">Training and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/pretrained_models.html">Pretrained models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<p><span class="caption-text">Package reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data.html">PyTorch Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filterbanks.html">Filterbank API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blocks.html">DNN building blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="losses.html">Losses &amp; Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">Lightning Wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers &amp; Schedulers</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">DSP Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+<p><span class="caption-text">Community</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guide.html">Asteroid High-Level Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes/CONTRIBUTING.html">How to contribute</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>DSP Modules</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/package_reference/dsp.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="dsp-modules">
+<h1>DSP Modules<a class="headerlink" href="#dsp-modules" title="Permalink to this headline">¶</a></h1>
+<section id="beamforming">
+<h2><span class="hidden-section">Beamforming</span><a class="headerlink" href="#beamforming" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="asteroid.dsp.beamforming.Beamformer">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.dsp.beamforming.</code><code class="sig-name descname">Beamformer</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L13-L71"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.Beamformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<p>Base class for beamforming modules.</p>
+<dl class="method">
+<dt id="asteroid.dsp.beamforming.Beamformer.apply_beamforming_vector">
+<em class="property">static </em><code class="sig-name descname">apply_beamforming_vector</code><span class="sig-paren">(</span><em class="sig-param">bf_vector: torch.Tensor</em>, <em class="sig-param">mix: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L16-L24"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.Beamformer.apply_beamforming_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the beamforming vector to the mixture. Output (batch, freqs, frames).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bf_vector</strong> – shape (batch, mics, freqs)</p></li>
+<li><p><strong>mix</strong> – shape (batch, mics, freqs, frames).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.dsp.beamforming.Beamformer.get_reference_mic_vects">
+<em class="property">static </em><code class="sig-name descname">get_reference_mic_vects</code><span class="sig-paren">(</span><em class="sig-param">ref_mic</em>, <em class="sig-param">bf_mat: torch.Tensor</em>, <em class="sig-param">target_scm: torch.Tensor = None</em>, <em class="sig-param">noise_scm: torch.Tensor = None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L26-L71"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.Beamformer.get_reference_mic_vects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the reference channel indices over the batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ref_mic</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a><em>]</em><em>]</em>) – The reference channel.
+If torch.Tensor (ndim&gt;1), return it, it is the reference mic vector,
+If torch.LongTensor of size <cite>batch</cite>, select independent reference mic of the batch.
+If int, select the corresponding reference mic,
+If None, the optimal reference mics are computed with <code class="xref py py-func docutils literal notranslate"><span class="pre">get_optimal_reference_mic()</span></code>,
+If None, and either SCM is None, <cite>ref_mic</cite> is set to <cite>0</cite>,</p></li>
+<li><p><strong>bf_mat</strong> – beamforming matrix of shape (batch, freq, mics, mics).</p></li>
+<li><p><strong>target_scm</strong> (<em>torch.ComplexTensor</em>) – (batch, freqs, mics, mics).</p></li>
+<li><p><strong>noise_scm</strong> (<em>torch.ComplexTensor</em>) – (batch, freqs, mics, mics).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>torch.LongTensor of size <code class="docutils literal notranslate"><span class="pre">batch</span></code> to select with the reference channel indices.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid.dsp.beamforming.SDWMWFBeamformer">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.dsp.beamforming.</code><code class="sig-name descname">SDWMWFBeamformer</code><span class="sig-paren">(</span><em class="sig-param">mu=1.0</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L175-L214"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.SDWMWFBeamformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#asteroid.dsp.beamforming.Beamformer" title="asteroid.dsp.beamforming.Beamformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid.dsp.beamforming.Beamformer</span></code></a></p>
+<dl class="method">
+<dt id="asteroid.dsp.beamforming.SDWMWFBeamformer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">mix: torch.Tensor</em>, <em class="sig-param">target_scm: torch.Tensor</em>, <em class="sig-param">noise_scm: torch.Tensor</em>, <em class="sig-param">ref_mic: Union[torch.Tensor</em>, <em class="sig-param">torch.LongTensor</em>, <em class="sig-param">int] = None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L180-L214"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.SDWMWFBeamformer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and apply SDW-MWF beamformer.</p>
+<p><span class="math notranslate nohighlight">\(\mathbf{w} =  \displaystyle (\Sigma_{ss} + \mu \Sigma_{nn})^{-1} \Sigma_{ss}\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mix</strong> (<em>torch.ComplexTensor</em>) – shape (batch, mics, freqs, frames)</p></li>
+<li><p><strong>target_scm</strong> (<em>torch.ComplexTensor</em>) – (batch, mics, mics, freqs)</p></li>
+<li><p><strong>noise_scm</strong> (<em>torch.ComplexTensor</em>) – (batch, mics, mics, freqs)</p></li>
+<li><p><strong>ref_mic</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – reference microphone.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Filtered mixture. torch.ComplexTensor (batch, freqs, frames)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid.dsp.beamforming.GEVBeamformer">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.dsp.beamforming.</code><code class="sig-name descname">GEVBeamformer</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L217-L248"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.GEVBeamformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#asteroid.dsp.beamforming.Beamformer" title="asteroid.dsp.beamforming.Beamformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid.dsp.beamforming.Beamformer</span></code></a></p>
+<dl class="method">
+<dt id="asteroid.dsp.beamforming.GEVBeamformer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">mix: torch.Tensor</em>, <em class="sig-param">target_scm: torch.Tensor</em>, <em class="sig-param">noise_scm: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L218-L235"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.GEVBeamformer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and apply the GEV beamformer.</p>
+<p><span class="math notranslate nohighlight">\(\mathbf{w} =  \displaystyle MaxEig\{ \Sigma_{nn}^{-1}\Sigma_{ss} \}\)</span>, where
+MaxEig extracts the eigenvector corresponding to the maximum eigenvalue
+(using the GEV decomposition).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mix</strong> – shape (batch, mics, freqs, frames)</p></li>
+<li><p><strong>target_scm</strong> – (batch, mics, mics, freqs)</p></li>
+<li><p><strong>noise_scm</strong> – (batch, mics, mics, freqs)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Filtered mixture. torch.ComplexTensor (batch, freqs, frames)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid.dsp.beamforming.RTFMVDRBeamformer">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.dsp.beamforming.</code><code class="sig-name descname">RTFMVDRBeamformer</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L74-L125"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.RTFMVDRBeamformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#asteroid.dsp.beamforming.Beamformer" title="asteroid.dsp.beamforming.Beamformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid.dsp.beamforming.Beamformer</span></code></a></p>
+<dl class="method">
+<dt id="asteroid.dsp.beamforming.RTFMVDRBeamformer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">mix: torch.Tensor</em>, <em class="sig-param">target_scm: torch.Tensor</em>, <em class="sig-param">noise_scm: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L75-L99"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.RTFMVDRBeamformer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and apply MVDR beamformer from the speech and noise SCM matrices.</p>
+<p><span class="math notranslate nohighlight">\(\mathbf{w} =  \displaystyle \frac{\Sigma_{nn}^{-1} \mathbf{a}}{
+\mathbf{a}^H \Sigma_{nn}^{-1} \mathbf{a}}\)</span> where <span class="math notranslate nohighlight">\(\mathbf{a}\)</span> is the
+ATF estimated from the target SCM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mix</strong> (<em>torch.ComplexTensor</em>) – shape (batch, mics, freqs, frames)</p></li>
+<li><p><strong>target_scm</strong> (<em>torch.ComplexTensor</em>) – (batch, mics, mics, freqs)</p></li>
+<li><p><strong>noise_scm</strong> (<em>torch.ComplexTensor</em>) – (batch, mics, mics, freqs)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Filtered mixture. torch.ComplexTensor (batch, freqs, frames)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.dsp.beamforming.RTFMVDRBeamformer.from_rtf_vect">
+<code class="sig-name descname">from_rtf_vect</code><span class="sig-paren">(</span><em class="sig-param">mix: torch.Tensor</em>, <em class="sig-param">rtf_vec: torch.Tensor</em>, <em class="sig-param">noise_scm: torch.Tensor</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L101-L125"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.RTFMVDRBeamformer.from_rtf_vect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and apply MVDR beamformer from the ATF vector and noise SCM matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mix</strong> (<em>torch.ComplexTensor</em>) – shape (batch, mics, freqs, frames)</p></li>
+<li><p><strong>rtf_vec</strong> (<em>torch.ComplexTensor</em>) – (batch, mics, freqs)</p></li>
+<li><p><strong>noise_scm</strong> (<em>torch.ComplexTensor</em>) – (batch, mics, mics, freqs)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Filtered mixture. torch.ComplexTensor (batch, freqs, frames)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid.dsp.beamforming.SoudenMVDRBeamformer">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.dsp.beamforming.</code><code class="sig-name descname">SoudenMVDRBeamformer</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L128-L172"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.SoudenMVDRBeamformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#asteroid.dsp.beamforming.Beamformer" title="asteroid.dsp.beamforming.Beamformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">asteroid.dsp.beamforming.Beamformer</span></code></a></p>
+<dl class="method">
+<dt id="asteroid.dsp.beamforming.SoudenMVDRBeamformer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">mix: torch.Tensor</em>, <em class="sig-param">target_scm: torch.Tensor</em>, <em class="sig-param">noise_scm: torch.Tensor</em>, <em class="sig-param">ref_mic: Union[torch.Tensor</em>, <em class="sig-param">torch.LongTensor</em>, <em class="sig-param">int] = 0</em>, <em class="sig-param">eps=1e-08</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L129-L172"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.SoudenMVDRBeamformer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and apply MVDR beamformer from the speech and noise SCM matrices.
+This class uses Souden’s formulation [1].</p>
+<p><span class="math notranslate nohighlight">\(\mathbf{w} =  \displaystyle \frac{\Sigma_{nn}^{-1} \Sigma_{ss}}{
+Tr\left( \Sigma_{nn}^{-1} \Sigma_{ss} \right) }\mathbf{u}\)</span> where <span class="math notranslate nohighlight">\(\mathbf{a}\)</span>
+is the steering vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mix</strong> (<em>torch.ComplexTensor</em>) – shape (batch, mics, freqs, frames)</p></li>
+<li><p><strong>target_scm</strong> (<em>torch.ComplexTensor</em>) – (batch, mics, mics, freqs)</p></li>
+<li><p><strong>noise_scm</strong> (<em>torch.ComplexTensor</em>) – (batch, mics, mics, freqs)</p></li>
+<li><p><strong>ref_mic</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – reference microphone.</p></li>
+<li><p><strong>eps</strong> – numerical stabilizer.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Filtered mixture. torch.ComplexTensor (batch, freqs, frames)</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>References</dt><dd><p>[1] Souden, M., Benesty, J., &amp; Affes, S. (2009). On optimal frequency-domain multichannel
+linear filtering for noise reduction. IEEE Transactions on audio, speech, and language processing, 18(2), 260-276.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asteroid.dsp.beamforming.SCM">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.dsp.beamforming.</code><code class="sig-name descname">SCM</code><span class="sig-paren">(</span><em class="sig-param">*args: Any</em>, <em class="sig-param">**kwargs: Any</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L7-L10"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.SCM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<dl class="method">
+<dt id="asteroid.dsp.beamforming.SCM.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x: torch.Tensor</em>, <em class="sig-param">mask: torch.Tensor = None</em>, <em class="sig-param">normalize: bool = True</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/beamforming.py#L8-L10"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.beamforming.SCM.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">compute_scm()</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="lambdaoverlapadd">
+<h2><span class="hidden-section">LambdaOverlapAdd</span><a class="headerlink" href="#lambdaoverlapadd" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="asteroid.dsp.LambdaOverlapAdd">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.dsp.</code><code class="sig-name descname">LambdaOverlapAdd</code><span class="sig-paren">(</span><em class="sig-param">nnet</em>, <em class="sig-param">n_src</em>, <em class="sig-param">window_size</em>, <em class="sig-param">hop_size=None</em>, <em class="sig-param">window='hann'</em>, <em class="sig-param">reorder_chunks=True</em>, <em class="sig-param">enable_grad=False</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/overlap_add.py#L6-L157"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.LambdaOverlapAdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<p>Overlap-add with lambda transform on segments (not scriptable).</p>
+<p>Segment input signal, apply lambda function (a neural network for example)
+and combine with OLA.</p>
+<p><cite>LambdaOverlapAdd</cite> can be used with <code class="xref py py-mod docutils literal notranslate"><span class="pre">asteroid.separate</span></code> and the
+<cite>asteroid-infer</cite> CLI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nnet</strong> (<em>callable</em>) – Function to apply to each segment.</p></li>
+<li><p><strong>n_src</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em>) – Number of sources in the output of nnet.
+If None, the number of sources is determined by the network’s output,
+but some correctness checks cannot be performed.</p></li>
+<li><p><strong>window_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Size of segmenting window.</p></li>
+<li><p><strong>hop_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Segmentation hop size.</p></li>
+<li><p><strong>window</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Name of the window (see scipy.signal.get_window) used
+for the synthesis.</p></li>
+<li><p><strong>reorder_chunks</strong> – Whether to reorder each consecutive segment.
+This might be useful when <cite>nnet</cite> is permutation invariant, as
+source assignements might change output channel from one segment
+to the next (in classic speech separation for example).
+Reordering is performed based on the correlation between
+the overlapped part of consecutive segment.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid.dsp.LambdaOverlapAdd.ola_forward">
+<code class="sig-name descname">ola_forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/overlap_add.py#L84-L134"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.LambdaOverlapAdd.ola_forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Heart of the class: segment signal, apply func, combine with OLA.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.dsp.LambdaOverlapAdd.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/overlap_add.py#L136-L148"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.LambdaOverlapAdd.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward module: segment signal, apply func, combine with OLA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – waveform signal of shape (batch, 1, time).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – The output of the lambda OLA.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dualpath-processing">
+<h2><span class="hidden-section">DualPath Processing</span><a class="headerlink" href="#dualpath-processing" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="asteroid.dsp.DualPathProcessing">
+<em class="property">class </em><code class="sig-prename descclassname">asteroid.dsp.</code><code class="sig-name descname">DualPathProcessing</code><span class="sig-paren">(</span><em class="sig-param">chunk_size</em>, <em class="sig-param">hop_size</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/overlap_add.py#L205-L338"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.DualPathProcessing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<p>Perform Dual-Path processing via overlap-add as in DPRNN [1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chunk_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Size of segmenting window.</p></li>
+<li><p><strong>hop_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – segmentation hop size.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>References</dt><dd><p>[1] Yi Luo, Zhuo Chen and Takuya Yoshioka. “Dual-path RNN: efficient
+long sequence modeling for time-domain single-channel speech separation”
+<a class="reference external" href="https://arxiv.org/abs/1910.06379">https://arxiv.org/abs/1910.06379</a></p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="asteroid.dsp.DualPathProcessing.unfold">
+<code class="sig-name descname">unfold</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/overlap_add.py#L225-L251"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.DualPathProcessing.unfold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unfold the feature tensor from $(batch, channels, time)$ to
+$(batch, channels, chunksize, nchunks)$.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – feature tensor of shape $(batch, channels, time)$.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – spliced feature tensor of shape
+$(batch, channels, chunksize, nchunks)$.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.dsp.DualPathProcessing.fold">
+<code class="sig-name descname">fold</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">output_size=None</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/overlap_add.py#L253-L287"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.DualPathProcessing.fold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Folds back the spliced feature tensor.
+Input shape $(batch, channels, chunksize, nchunks)$ to original shape
+$(batch, channels, time)$ using overlap-add.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – spliced feature tensor of shape
+$(batch, channels, chunksize, nchunks)$.</p></li>
+<li><p><strong>output_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – sequence length of original feature tensor.
+If None, the original length cached by the previous call of
+<a class="reference internal" href="#asteroid.dsp.DualPathProcessing.unfold" title="asteroid.dsp.DualPathProcessing.unfold"><code class="xref py py-meth docutils literal notranslate"><span class="pre">unfold()</span></code></a> will be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – feature tensor of shape $(batch, channels, time)$.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><cite>fold</cite> caches the original length of the input.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.dsp.DualPathProcessing.intra_process">
+<em class="property">static </em><code class="sig-name descname">intra_process</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">module</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/overlap_add.py#L289-L313"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.DualPathProcessing.intra_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs intra-chunk processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – spliced feature tensor of shape
+(batch, channels, chunk_size, n_chunks).</p></li>
+<li><p><strong>module</strong> (<a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a>) – module one wish to apply to each chunk
+of the spliced feature tensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a> – processed spliced feature tensor of shape
+$(batch, channels, chunksize, nchunks)$.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the module should have the channel first convention and accept
+a 3D tensor of shape $(batch, channels, time)$.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="asteroid.dsp.DualPathProcessing.inter_process">
+<em class="property">static </em><code class="sig-name descname">inter_process</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">module</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/overlap_add.py#L315-L338"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.DualPathProcessing.inter_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs inter-chunk processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – spliced feature tensor of shape
+$(batch, channels, chunksize, nchunks)$.</p></li>
+<li><p><strong>module</strong> (<a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a>) – module one wish to apply between
+each chunk of the spliced feature tensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>x (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></a>) – processed spliced feature tensor of shape
+$(batch, channels, chunksize, nchunks)$.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the module should have the channel first convention and accept
+a 3D tensor of shape $(batch, channels, time)$.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="mixture-consistency">
+<h2><span class="hidden-section">Mixture Consistency</span><a class="headerlink" href="#mixture-consistency" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="asteroid.dsp.mixture_consistency">
+<code class="sig-prename descclassname">asteroid.dsp.</code><code class="sig-name descname">mixture_consistency</code><span class="sig-paren">(</span><em class="sig-param">mixture: torch.Tensor</em>, <em class="sig-param">est_sources: torch.Tensor</em>, <em class="sig-param">src_weights: Optional[torch.Tensor] = None</em>, <em class="sig-param">dim: int = 1</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/consistency.py#L5-L72"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.mixture_consistency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies mixture consistency to a tensor of estimated sources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mixture</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – Mixture waveform or TF representation.</p></li>
+<li><p><strong>est_sources</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – Estimated sources waveforms or TF representations.</p></li>
+<li><p><strong>src_weights</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – Consistency weight for each source.
+Shape needs to be broadcastable to <cite>est_source</cite>.
+We make sure that the weights sum up to 1 along dim <cite>dim</cite>.
+If <cite>src_weights</cite> is None, compute them based on relative power.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Axis which contains the sources in <cite>est_sources</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Returns</dt><dd><p>torch.Tensor with same shape as <cite>est_sources</cite>, after applying mixture
+consistency.</p>
+</dd>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Works on waveforms</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_sources</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">16000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_est_sources</span> <span class="o">=</span> <span class="n">mixture_consistency</span><span class="p">(</span><span class="n">mix</span><span class="p">,</span> <span class="n">est_sources</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Also works on spectrograms</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">514</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">est_sources</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">514</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_est_sources</span> <span class="o">=</span> <span class="n">mixture_consistency</span><span class="p">(</span><span class="n">mix</span><span class="p">,</span> <span class="n">est_sources</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method can be used only in ‘complete’ separation tasks, otherwise
+the residual error will contain unwanted sources. For example, this
+won’t work with the task <cite>“sep_noisy”</cite> from WHAM.</p>
+</div>
+<dl class="simple">
+<dt>References</dt><dd><p>Scott Wisdom et al. “Differentiable consistency constraints for improved
+deep speech enhancement”, ICASSP 2019.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="vad">
+<h2><span class="hidden-section">VAD</span><a class="headerlink" href="#vad" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="asteroid.dsp.vad.ebased_vad">
+<code class="sig-prename descclassname">asteroid.dsp.vad.</code><code class="sig-name descname">ebased_vad</code><span class="sig-paren">(</span><em class="sig-param">mag_spec</em>, <em class="sig-param">th_db: int = 40</em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/utils/torch_utils.py#L5-L31"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.vad.ebased_vad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute energy-based VAD from a magnitude spectrogram (or equivalent).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mag_spec</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (2.1.0a0+gitbe0b12e ))"><em>torch.Tensor</em></a>) – the spectrogram to perform VAD on.
+Expected shape (batch, <a href="#id1"><span class="problematic" id="id2">*</span></a>, freq, time).
+The VAD mask will be computed independently for all the leading
+dimensions until the last two. Independent of the ordering of the
+last two dimensions.</p></li>
+<li><p><strong>th_db</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The threshold in dB from which a TF-bin is considered
+silent.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.BoolTensor</span></code>, the VAD mask.</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mag_spec</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">16</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch_src_mask</span> <span class="o">=</span> <span class="n">ebased_vad</span><span class="p">(</span><span class="n">mag_spec</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-asteroid.dsp.deltas">
+<span id="delta-features"></span><h2><span class="hidden-section">Delta Features</span><a class="headerlink" href="#module-asteroid.dsp.deltas" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="asteroid.dsp.deltas.compute_delta">
+<code class="sig-prename descclassname">asteroid.dsp.deltas.</code><code class="sig-name descname">compute_delta</code><span class="sig-paren">(</span><em class="sig-param">feats: torch.Tensor</em>, <em class="sig-param">dim: int = -1</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/deltas.py#L4-L27"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.deltas.compute_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute delta coefficients of a tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feats</strong> – Input features to compute deltas with.</p></li>
+<li><p><strong>dim</strong> – feature dimension in the feats tensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>Tensor</em> – Tensor of deltas.</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phase</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">257</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compute instantaneous frequency</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inst_freq</span> <span class="o">=</span> <span class="n">compute_delta</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Or group delay</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">group_delay</span> <span class="o">=</span> <span class="n">compute_delta</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="asteroid.dsp.deltas.concat_deltas">
+<code class="sig-prename descclassname">asteroid.dsp.deltas.</code><code class="sig-name descname">concat_deltas</code><span class="sig-paren">(</span><em class="sig-param">feats: torch.Tensor</em>, <em class="sig-param">order: int = 1</em>, <em class="sig-param">dim: int = -1</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference external" href="https://github.com/asteroid-team/asteroid/blob/master/asteroid/dsp/deltas.py#L30-L53"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#asteroid.dsp.deltas.concat_deltas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenate delta coefficients of a tensor to itself.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feats</strong> – Input features to compute deltas with.</p></li>
+<li><p><strong>order</strong> – Order of the delta e.g with order==2, compute delta of delta
+as well.</p></li>
+<li><p><strong>dim</strong> – feature dimension in the feats tensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>Tensor</em> – Concatenation of the features, the deltas and subsequent deltas.</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phase</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">257</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compute second order instantaneous frequency</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phase_and_inst_freq</span> <span class="o">=</span> <span class="n">concat_deltas</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Or group delay</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phase_and_group_delay</span> <span class="o">=</span> <span class="n">concat_deltas</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="utils.html" class="btn btn-neutral float-right" title="Utils" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="optimizers.html" class="btn btn-neutral" title="Optimizers &amp; Schedulers" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Oncoming.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">DSP Modules</a><ul>
+<li><a class="reference internal" href="#beamforming"><span class="hidden-section">Beamforming</span></a></li>
+<li><a class="reference internal" href="#lambdaoverlapadd"><span class="hidden-section">LambdaOverlapAdd</span></a></li>
+<li><a class="reference internal" href="#dualpath-processing"><span class="hidden-section">DualPath Processing</span></a></li>
+<li><a class="reference internal" href="#mixture-consistency"><span class="hidden-section">Mixture Consistency</span></a></li>
+<li><a class="reference internal" href="#vad"><span class="hidden-section">VAD</span></a></li>
+<li><a class="reference internal" href="#module-asteroid.dsp.deltas"><span class="hidden-section">Delta Features</span></a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/doctools.js"></script>
+         <script src="../_static/language_data.js"></script>
+         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <!--
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://mpariente.github.io/asteroid/">View Resources</a>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://mpariente.github.io/asteroid/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+
+        <div class="footer-logo-col">
+          <img class="footer-logo-img" src="../_static/images/dark_asteroid_logo.svg"/>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Asteroid</a></li>
+            <li><a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Features</a></li>
+            <li><a href="">Ecosystem</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Blog</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Resources</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://mpariente.github.io/asteroid/">Support</a></li>
+            <li><a href="">Tutorials</a></li>
+            <li><a href="https://mpariente.github.io/asteroid/">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/issues" target="_blank">Github Issues</a></li>
+            <li><a href="" target="_blank">Slack</a></li>
+            <li><a href="https://github.com/mpariente/asteroid/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="https://twitter.com/" target="_blank" class="twitter"></a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </footer> -->
+
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://mpariente.github.io/asteroid/" aria-label="PyTorch Lightning"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://colab.research.google.com/github/mpariente/asteroid/blob/master/notebooks/00_GettingStarted.ipynb">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Features</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Blog</a>
+          </li>
+
+          <li>
+            <a href="">Tutorials</a>
+          </li>
+
+          <li class="active">
+            <a href="https://mpariente.github.io/asteroid/">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://mpariente.github.io/asteroid/">Resources</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/mpariente/asteroid">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
