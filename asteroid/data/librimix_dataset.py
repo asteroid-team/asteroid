@@ -89,7 +89,7 @@ class LibriMix(Dataset):
         sources_list = []
         # If there is a seg start point is set randomly
         if self.seg_len is not None:
-            start = random.randint(0, row["length"] - self.seg_len)
+            start = random.randint(0, int(row["length"] - self.seg_len))
             stop = start + self.seg_len
         else:
             start = 0
