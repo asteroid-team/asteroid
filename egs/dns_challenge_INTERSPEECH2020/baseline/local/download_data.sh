@@ -6,7 +6,7 @@ recipe_dir=$PWD
 cd $clone_dir
 
 # Clone repo
-git clone https://github.com/microsoft/DNS-Challenge
+git clone -b interspeech2020/master https://github.com/microsoft/DNS-Challenge
 cd DNS-Challenge
 
 # Run lfs stuff in the repo
