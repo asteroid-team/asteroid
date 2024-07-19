@@ -1,4 +1,4 @@
-### DNS Challenge's dataset
+### INTERSPEECH 2020 DNS Challenge's dataset
 
 The Deep Noise Suppression (DNS) Challenge is a single-channel speech enhancement
 challenge organized by Microsoft, with a focus on real-time applications.
