@@ -268,6 +268,7 @@ class GEVDBeamformer(Beamformer):
     """
 
     def __init__(self, mu: float = 1.0, rank: int = 1):
+        super().__init__()
         self.mu = mu
         self.rank = rank
 
