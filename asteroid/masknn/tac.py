@@ -4,7 +4,7 @@ from . import activations, norms
 
 
 class TAC(nn.Module):
-    """Transform-Average-Concatenate inter-microphone-channel permutation invariant communication block [1].
+    r"""Transform-Average-Concatenate inter-microphone-channel permutation invariant communication block [1].
 
     Args:
         input_dim (int): Number of features of input representation.
