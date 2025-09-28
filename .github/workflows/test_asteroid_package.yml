@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8]  #, 3.7, 3.8]
-        pytorch-version: ["1.8.0", "nightly"]
+        python-version: [3.13]  #, 3.7, 3.8]
+        pytorch-version: ["2.8.0", "nightly"]
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 10
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -34,7 +34,7 @@ jobs:
         python -m pip install --upgrade --user pip --quiet
         python -m pip install numpy Cython --upgrade-strategy only-if-needed --quiet
         if [ $TORCH_INSTALL == "1.8.0" ]; then
-          INSTALL="torch==1.8.0+cpu torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html"
+          INSTALL="torch==2.8.0+cpu torchaudio==2.8.0 -f https://download.pytorch.org/whl/torch_stable.html"
         else
           INSTALL="--pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html"
         fi

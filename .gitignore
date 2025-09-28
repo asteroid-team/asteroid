@@ -1,6 +1,9 @@
 # Project specific
 uploader_info.yml
 egs/**/exp
+lightning_logs/
+final_metrics.json
+*.wav
 # Where we'll save pretrained models git folders.
 pretrained_models
 
@@ -117,3 +120,6 @@ venv.bak/
 /.idea/dictionaries/mparient.xml
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/vcs.xml
+
+# VS Code
+.vscode/

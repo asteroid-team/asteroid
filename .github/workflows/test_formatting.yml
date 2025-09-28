@@ -7,14 +7,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/checkout@v5
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v6
         with:
-          python-version: 3.8
+          python-version: 3.13
 
       - name: Install Black and flake8
-        run: pip install black==22.3.0 flake8
+        run: pip install black==25.9.0 flake8
       - name: Run Black
         run: python -m black --config=pyproject.toml --check asteroid tests egs
 

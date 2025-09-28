@@ -11,17 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v6
         with:
-          python-version: 3.8
+          python-version: 3.13
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
       - run: git pull
-      - run: pip install black==22.3.0 flake8
+      - run: pip install black==25.9.0 flake8
       - run: python -m black --config=pyproject.toml asteroid tests egs
       - name: Commit changes
-        uses: EndBug/add-and-commit@v5
+        uses: EndBug/add-and-commit@v9
         with:
           message: "[Bot] Lint PR"
           add: "*.py"

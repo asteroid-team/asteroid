@@ -34,7 +34,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
-    python_requires=">=3.6",
+    python_requires=">=3.10",
     install_requires=[
         # From requirements/torchhub.txt
         "numpy>=1.16.4",
@@ -47,11 +47,11 @@ setup(
         "PyYAML>=5.0",
         "pandas>=0.23.4",
         "pytorch-lightning>=2.0.0",
-        "torchmetrics<=0.11.4",
+        "torchmetrics==1.8.0",
         "torchaudio>=0.5.0",
         "pb_bss_eval>=0.0.2",
         "torch_stoi>=0.1.2",
-        "torch_optimizer>=0.0.1a12,<0.2.0",
+        "torch_optimizer>=0.0.1a12,<=0.3.0",
         "julius",
     ],
     entry_points={
@@ -67,9 +67,10 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],

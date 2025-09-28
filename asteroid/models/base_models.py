@@ -111,7 +111,7 @@ class BaseModel(torch.nn.Module):
 
         if isinstance(pretrained_model_conf_or_path, str):
             cached_model = cached_download(pretrained_model_conf_or_path)
-            conf = torch.load(cached_model, map_location="cpu")
+            conf = torch.load(cached_model, map_location="cpu", weights_only=False)
         else:
             conf = pretrained_model_conf_or_path
 
