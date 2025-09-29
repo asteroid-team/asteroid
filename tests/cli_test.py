@@ -24,6 +24,7 @@ def test_infer_device(monkeypatch):
     As an approximation we test that the '.to()' method of the model is called
     with the device given by '--device'.
     """
+
     # We can't use a real model to test this because calling .to() with a fake device
     # on a real model will fail.
     class FakeModel:

@@ -2,11 +2,13 @@
 sphinx-rtd-theme==0.4.3
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-programoutput>=0.16
-sphinx>=1.8.3, <3.0
-jinja2>=3.0.0,<3.1.0
-recommonmark  # fails with badges
-nbsphinx
-m2r2
+sphinx==8.*, <9.0
+jinja2>=3.1.0,<3.2.0
+#recommonmark  # fails with badges
+myst-parser==4.*,<5.0
+nbsphinx==0.9.*, <1.0
+lxml[html_clean]
+m2r2==0.3.4
 -e git+https://github.com/asteroid-team/asteroid_sphinx_theme#egg=asteroid_sphinx_theme
 # asteroid_sphinx_theme>=0.0.3
 # pandoc
