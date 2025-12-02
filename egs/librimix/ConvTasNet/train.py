@@ -100,7 +100,7 @@ def main(conf):
         callbacks=callbacks,
         default_root_dir=exp_dir,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
-        strategy="ddp",
+        strategy="ddp_find_unused_parameters_true",
         devices="auto",
         limit_train_batches=1.0,  # Useful for fast experiment
         gradient_clip_val=5.0,
