@@ -1,7 +1,6 @@
 # filterbank config
 filterbank:
   n_filters: 512
-  kernel_size: 16
   stride: 8
 # Network config
 masknet:
@@ -13,6 +12,8 @@ masknet:
   hid_chan: 512
   causal: true
   norm_type: cLN
+  kernel_size: 3
+
 # Training config
 training:
   epochs: 200
@@ -30,9 +31,29 @@ data:
   task: sep_clean
   train_dir: data/wav8k/min/train-360
   valid_dir: data/wav8k/min/dev
+  dataset_type: online_mix
+  source_dir: ~/data/librimix/LibriSpeech/train-clean-360
+  valid_source_dir: ~/data/librimix/LibriSpeech/dev-clean
   sample_rate: 8000
   n_src: 5
   segment: 3
+  min_speakers: 2
+  max_speakers: 5
+  speaker_count_weights: [0.10, 0.15, 0.35, 0.40]
+  num_examples: 20000
+  val_num_examples: 2000
 # Loss config
 loss:
+  mode: active_only_pit
   silence_threshold: 1.0e-5
+  silence_metric: rms_db
+  active_threshold_mode: rms
+  debug_log_components: false
+  active_weight: 1.0
+  active_metric: sisdr
+  active_l1_weight: 10.0
+  active_l2_weight: 0.0
+  active_rms_floor_db: -35.0
+  active_rms_penalty_weight: 2.0
+  silence_weight: 0.2
+  silence_margin_db: -45.0

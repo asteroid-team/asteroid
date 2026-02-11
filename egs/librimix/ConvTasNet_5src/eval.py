@@ -11,10 +11,11 @@ from tqdm import tqdm
 from pprint import pprint
 from pathlib import Path
 from collections import defaultdict
+from scipy.optimize import linear_sum_assignment
 
 from asteroid.metrics import get_metrics
 from asteroid.data import VariableLibriMix
-from asteroid.losses import PITLossWrapper, SilenceRobustPairwiseNegSDR
+from asteroid.losses import PairwiseNegSDR
 from asteroid import ConvTasNet
 from asteroid.models import save_publishable
 from asteroid.utils import tensors_to_device
@@ -43,6 +44,45 @@ parser.add_argument(
 
 COMPUTE_METRICS = ["si_sdr", "sdr", "sir", "sar", "stoi"]
 SILENCE_THRESHOLD = 1e-5  # Energy threshold to classify a target as silent
+PAIRWISE_REORDER_LOSS = PairwiseNegSDR("sisdr")
+
+
+def reorder_active_first(est_sources, sources, silence_threshold):
+    """Reorder estimates to align active target channels first.
+
+    Args:
+        est_sources: [1, n_src, time]
+        sources: [1, n_src, time]
+    Returns:
+        reordered estimates with shape [1, n_src, time]
+    """
+    pairwise = PAIRWISE_REORDER_LOSS(est_sources, sources)[0]  # [n_est, n_tgt]
+    n_src = pairwise.shape[0]
+    tgt_energy = torch.sum(sources[0] ** 2, dim=-1)
+    active_tgt_idx = torch.where(tgt_energy > silence_threshold)[0]
+
+    est_used = set()
+    tgt_to_est = {}
+    if active_tgt_idx.numel() > 0:
+        cost = pairwise[:, active_tgt_idx].detach().cpu().numpy()
+        est_rows, tgt_cols_local = linear_sum_assignment(cost)
+        for est_idx, local_col in zip(est_rows.tolist(), tgt_cols_local.tolist()):
+            tgt_idx = int(active_tgt_idx[local_col].item())
+            tgt_to_est[tgt_idx] = est_idx
+            est_used.add(est_idx)
+
+    remaining_est = [i for i in range(n_src) if i not in est_used]
+    est_energy = torch.sum(est_sources[0] ** 2, dim=-1).detach().cpu().numpy()
+    remaining_est.sort(key=lambda i: est_energy[i])
+
+    silent_tgt_idx = [i for i in range(n_src) if i not in tgt_to_est]
+    for tgt_idx, est_idx in zip(silent_tgt_idx, remaining_est):
+        tgt_to_est[tgt_idx] = est_idx
+
+    reordered = torch.zeros_like(est_sources)
+    for tgt_idx in range(n_src):
+        reordered[0, tgt_idx] = est_sources[0, tgt_to_est[tgt_idx]]
+    return reordered
 
 
 def count_active_sources(sources_np, threshold=SILENCE_THRESHOLD):
@@ -74,12 +114,6 @@ def main(conf):
         return_id=True,
     )
 
-    # Use silence-robust loss for reordering
-    loss_func = PITLossWrapper(
-        SilenceRobustPairwiseNegSDR("sisdr", threshold=silence_threshold),
-        pit_from="pw_mtx",
-    )
-
     eval_save_dir = os.path.join(conf["exp_dir"], conf["out_dir"])
     ex_save_dir = os.path.join(eval_save_dir, "examples/")
     os.makedirs(eval_save_dir, exist_ok=True)
@@ -97,7 +131,9 @@ def main(conf):
         mix, sources, ids = test_set[idx]
         mix, sources = tensors_to_device([mix, sources], device=model_device)
         est_sources = model(mix.unsqueeze(0))
-        loss, reordered_sources = loss_func(est_sources, sources[None], return_est=True)
+        reordered_sources = reorder_active_first(
+            est_sources, sources[None], silence_threshold=silence_threshold
+        )
 
         mix_np = mix.cpu().data.numpy()
         sources_np = sources.cpu().data.numpy()
@@ -203,7 +239,8 @@ def main(conf):
     with open(os.path.join(eval_save_dir, "final_metrics.json"), "w") as f:
         json.dump(final_results, f, indent=0)
 
-    model_dict = torch.load(model_path, map_location="cpu")
+    # PyTorch 2.6+ defaults weights_only=True; use False for trusted checkpoints.
+    model_dict = torch.load(model_path, map_location="cpu", weights_only=False)
     os.makedirs(os.path.join(conf["exp_dir"], "publish_dir"), exist_ok=True)
     save_publishable(
         os.path.join(conf["exp_dir"], "publish_dir"),
