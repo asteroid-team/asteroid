@@ -11,6 +11,7 @@ from .kinect_wsj import KinectWsjMixDataset
 from .fuss_dataset import FUSSDataset
 from .dampvsep_dataset import DAMPVSEPSinglesDataset
 from .vad_dataset import LibriVADDataset
+from .online_mix_dataset import OnlineMixDataset
 
 __all__ = [
     "AVSpeechDataset",
@@ -26,4 +27,5 @@ __all__ = [
     "FUSSDataset",
     "DAMPVSEPSinglesDataset",
     "LibriVADDataset",
+    "OnlineMixDataset",
 ]

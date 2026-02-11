@@ -61,6 +61,7 @@ class System(pl.LightningModule):
         self.val_loader = val_loader
         self.scheduler = scheduler
         self.config = {} if config is None else config
+        self.log_loss_components = bool(self.config.get("loss", {}).get("debug_log_components", False))
         # Save lightning's AttributeDict under self.hparams
         self.save_hyperparameters(self.config_to_hparams(self.config))
 
@@ -99,8 +100,32 @@ class System(pl.LightningModule):
         """
         inputs, targets = batch
         est_targets = self(inputs)
-        loss = self.loss_func(est_targets, targets)
-        return loss
+        if self.log_loss_components:
+            try:
+                loss_output = self.loss_func(est_targets, targets, return_components=True)
+            except TypeError:
+                loss_output = self.loss_func(est_targets, targets)
+        else:
+            loss_output = self.loss_func(est_targets, targets)
+
+        if isinstance(loss_output, tuple):
+            loss, components = loss_output
+        else:
+            loss = loss_output
+            components = {}
+        return loss, components
+
+    def _log_components(self, components, prefix, sync_dist):
+        for name, value in components.items():
+            if not torch.is_tensor(value):
+                value = torch.tensor(value, device=self.device, dtype=torch.float32)
+            self.log(
+                f"{prefix}_{name}",
+                value.detach(),
+                on_epoch=True,
+                prog_bar=False,
+                sync_dist=sync_dist,
+            )
 
     def training_step(self, batch, batch_nb):
         """Pass data through the model and compute the loss.
@@ -115,8 +140,10 @@ class System(pl.LightningModule):
         Returns:
             torch.Tensor, the value of the loss.
         """
-        loss = self.common_step(batch, batch_nb, train=True)
+        loss, components = self.common_step(batch, batch_nb, train=True)
         self.log("loss", loss, logger=True)
+        if components:
+            self._log_components(components, "train_loss", sync_dist=False)
         return loss
 
     def validation_step(self, batch, batch_nb):
@@ -127,8 +154,12 @@ class System(pl.LightningModule):
                 in most cases) but can be something else.
             batch_nb (int): The number of the batch in the epoch.
         """
-        loss = self.common_step(batch, batch_nb, train=False)
-        self.log("val_loss", loss, on_epoch=True, prog_bar=True)
+        loss, components = self.common_step(batch, batch_nb, train=False)
+        # Aggregate validation metric across devices so checkpointing/schedulers
+        # use a consistent global value under DDP.
+        self.log("val_loss", loss, on_epoch=True, prog_bar=True, sync_dist=True)
+        if components:
+            self._log_components(components, "val_loss", sync_dist=True)
 
     def on_validation_epoch_end(self):
         """Log hp_metric to tensorboard for hparams selection."""
