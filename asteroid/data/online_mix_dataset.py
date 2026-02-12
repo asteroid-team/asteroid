@@ -2,6 +2,7 @@ import random
 import glob
 import os
 import warnings
+import hashlib
 import numpy as np
 import soundfile as sf
 import torch
@@ -36,6 +37,8 @@ class OnlineMixDataset(Dataset):
         gain_range_db: tuple = (-5.0, 5.0),
         num_examples: int = 20000,
         seed: int = None,
+        return_metadata: bool = False,
+        hash_audio: bool = False,
     ):
         self.source_dir = os.path.expanduser(source_dir)
         self.n_src = n_src
@@ -47,6 +50,8 @@ class OnlineMixDataset(Dataset):
         self.gain_range_db = gain_range_db
         self.num_examples = num_examples
         self.seed = seed
+        self.return_metadata = return_metadata
+        self.hash_audio = hash_audio
         self.seg_len = int(segment * sample_rate)
 
         # Validate inputs
@@ -109,11 +114,15 @@ class OnlineMixDataset(Dataset):
             selected_speakers = rng.sample(self.speaker_ids, n_current)
 
         sources = []
+        selected_files = []
+        crop_starts = []
+        gains_db = []
         
         # 4. For each speaker, pick utterance, load, process
         for speaker_id in selected_speakers:
             audio_files = self.speakers[speaker_id]
             file_path = rng.choice(audio_files)
+            selected_files.append(file_path)
             
             # Load audio
             info = sf.info(file_path)
@@ -140,11 +149,14 @@ class OnlineMixDataset(Dataset):
             else:
                 padding = self.seg_len - audio_t.shape[0]
                 audio_t = torch.nn.functional.pad(audio_t, (0, padding))
+                start = 0
+            crop_starts.append(int(start))
             
             # 5. Apply random gain
             gain_db = rng.uniform(self.gain_range_db[0], self.gain_range_db[1])
             gain_lin = 10 ** (gain_db / 20.0)
             audio_t = audio_t * gain_lin
+            gains_db.append(float(gain_db))
             
             sources.append(audio_t)
 
@@ -160,12 +172,37 @@ class OnlineMixDataset(Dataset):
         # 7. Normalization
         # Peak normalize mixture to [-1, 1]
         max_amp = torch.max(torch.abs(mixture))
+        scale_factor = 1.0
         if max_amp > 0:
             scale_factor = 1.0 / max_amp
             mixture = mixture * scale_factor
             sources_tensor = sources_tensor * scale_factor
-        
-        return mixture, sources_tensor
+
+        if not self.return_metadata:
+            return mixture, sources_tensor
+
+        rel_files = [os.path.relpath(path, self.source_dir) for path in selected_files]
+        identity_parts = []
+        for speaker_id, rel_path, crop_start in zip(selected_speakers, rel_files, crop_starts):
+            identity_parts.append(f"{speaker_id}:{rel_path}:{crop_start}")
+        metadata = {
+            "sample_idx": int(idx),
+            "seed": int(self.seed) if self.seed is not None else -1,
+            "n_current": int(n_current),
+            "selected_speakers": "|".join(selected_speakers),
+            "selected_files": "|".join(rel_files),
+            "crop_starts": "|".join(str(x) for x in crop_starts),
+            "gains_db": "|".join(f"{x:.6f}" for x in gains_db),
+            "scale_factor": float(scale_factor),
+            "identity_key": "|".join(identity_parts),
+        }
+        if self.hash_audio:
+            mixture_hash = hashlib.sha1(
+                mixture.detach().cpu().numpy().astype(np.float32).tobytes()
+            ).hexdigest()
+            metadata["mixture_hash"] = mixture_hash
+
+        return mixture, sources_tensor, metadata
 
     def get_infos(self):
         return {

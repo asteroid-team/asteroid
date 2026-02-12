@@ -133,11 +133,20 @@ def run_n_speaker_test(model, source_dir, sample_rate, device, n_src=5, speaker_
             src_np = sources[ch].numpy()
             ch_rms = rms_db(est_np)
             active = classify_active(ch_rms)
+            est_zm = est_np - np.mean(est_np)
+            src_zm = src_np - np.mean(src_np)
+            if np.std(est_zm) > 1e-8 and np.std(src_zm) > 1e-8:
+                corr = float(np.corrcoef(est_zm, src_zm)[0, 1])
+            else:
+                corr = float("nan")
             entry = {
                 "channel": ch,
                 "rms_db": ch_rms,
                 "active": active,
                 "expected_active": ch < n_spk,
+                "mean_est": float(np.mean(est_np)),
+                "mean_ref": float(np.mean(src_np)),
+                "corr_zm": corr,
             }
             # SI-SDR only for channels with actual source energy
             if ch < n_spk:
@@ -150,10 +159,12 @@ def run_n_speaker_test(model, source_dir, sample_rate, device, n_src=5, speaker_
         for s in stats:
             marker = "OK" if s["active"] == s["expected_active"] else "MISMATCH"
             si_str = f"{s['si_sdr']:.1f} dB" if s['si_sdr'] is not None else "n/a"
+            corr_str = f"{s['corr_zm']:+.2f}" if not np.isnan(s["corr_zm"]) else "n/a"
             print(
                 f"  ch{s['channel']}: RMS={s['rms_db']:.1f} dB  "
                 f"active={s['active']}  expected={s['expected_active']}  "
-                f"SI-SDR={si_str}  [{marker}]"
+                f"SI-SDR={si_str}  corr(zm)={corr_str}  "
+                f"mean(est/ref)=({s['mean_est']:+.3e}/{s['mean_ref']:+.3e})  [{marker}]"
             )
 
         results[n_spk] = {
@@ -182,7 +193,22 @@ def make_spectrogram(signal_np, sample_rate, n_fft=256, hop_length=64):
     return mag_db
 
 
-def save_visualizations(results, out_dir, sample_rate, n_src=5):
+def align_estimate_for_display(estimate_np, reference_np, eps=1e-8):
+    """Affine-align estimate to reference for display: scale + bias.
+
+    This does not change SI-SDR metrics; it is only for making waveform plots
+    easier to compare when the model output has arbitrary polarity/offset.
+    """
+    est = np.asarray(estimate_np)
+    ref = np.asarray(reference_np)
+    est_zm = est - np.mean(est)
+    ref_zm = ref - np.mean(ref)
+    scale = np.sum(est_zm * ref_zm) / (np.sum(est_zm ** 2) + eps)
+    bias = np.mean(ref) - scale * np.mean(est)
+    return scale * est + bias
+
+
+def save_visualizations(results, out_dir, sample_rate, n_src=5, align_for_display=True):
     """Generate and save PNG figures for each N-speaker test case.
 
     For each N-speaker case, saves:
@@ -200,6 +226,13 @@ def save_visualizations(results, out_dir, sample_rate, n_src=5):
         stats = data["stats"]
         T = mixture.shape[0]
         t_axis = np.arange(T) / sample_rate
+        n_active = sum(1 for s in stats if s["expected_active"])
+
+        # Optional display-only alignment to handle polarity/DC ambiguity.
+        estimates_disp = estimates.copy()
+        if align_for_display:
+            for ch in range(min(n_active, n_src)):
+                estimates_disp[ch] = align_estimate_for_display(estimates[ch], sources[ch])
 
         # --- Save audio files (using reordered estimates) ---
         sf.write(os.path.join(audio_dir, f"{n_spk}spk_mixture.wav"), mixture, sample_rate)
@@ -255,7 +288,11 @@ def save_visualizations(results, out_dir, sample_rate, n_src=5):
 
         # Row 3: Model estimates (stacked, reordered)
         ax_est = axes[2, 0]
-        ax_est.set_title(f"Model Estimates ({n_src} channels, PIT-reordered)")
+        est_title = "Model Estimates"
+        if align_for_display:
+            est_title += " (display-aligned)"
+        est_title += f" ({n_src} channels, PIT-reordered)"
+        ax_est.set_title(est_title)
         for ch in range(n_src):
             offset = ch * 2.0
             s = stats[ch]
@@ -263,20 +300,24 @@ def save_visualizations(results, out_dir, sample_rate, n_src=5):
             match = "OK" if s["active"] == s["expected_active"] else "MISMATCH"
             label = f"est{ch} ({tag}, {match})"
             color = f"C{ch}" if s["active"] else "lightgray"
-            ax_est.plot(t_axis, estimates[ch] + offset, linewidth=0.3, color=color, label=label)
+            ax_est.plot(t_axis, estimates_disp[ch] + offset, linewidth=0.3, color=color, label=label)
         ax_est.set_xlabel("Time (s)")
         ax_est.set_ylabel("Channel (offset)")
         ax_est.legend(fontsize=7, loc="upper right")
         ax_est.set_xlim(0, T / sample_rate)
 
         # Row 3 right: estimate channel 0 spectrogram
-        est_spec = make_spectrogram(estimates[0], sample_rate)
+        est_spec = make_spectrogram(estimates_disp[0], sample_rate)
         axes[2, 1].imshow(
             est_spec, aspect="auto", origin="lower",
             extent=[0, T / sample_rate, 0, sample_rate / 2],
             cmap="magma",
         )
-        axes[2, 1].set_title("Estimate 0 Spectrogram (PIT-reordered)")
+        spec_title = "Estimate 0 Spectrogram"
+        if align_for_display:
+            spec_title += " (display-aligned)"
+        spec_title += " (PIT-reordered)"
+        axes[2, 1].set_title(spec_title)
         axes[2, 1].set_xlabel("Time (s)")
         axes[2, 1].set_ylabel("Frequency (Hz)")
 
@@ -299,7 +340,7 @@ def save_visualizations(results, out_dir, sample_rate, n_src=5):
 
         for src_i in range(n_active):
             gt = sources[src_i]
-            est = estimates[src_i]
+            est = estimates_disp[src_i]
             s = stats[src_i]
             si_str = f"{s['si_sdr']:.1f} dB" if s["si_sdr"] is not None else "n/a"
 
@@ -321,7 +362,10 @@ def save_visualizations(results, out_dir, sample_rate, n_src=5):
 
             # Col 2: Estimate waveform
             axes_ps[src_i, 2].plot(t_axis, est, linewidth=0.3, color=f"C{src_i}")
-            axes_ps[src_i, 2].set_title(f"Est src{src_i}  SI-SDR={si_str}")
+            title = f"Est src{src_i}  SI-SDR={si_str}"
+            if align_for_display:
+                title += "  [display-aligned]"
+            axes_ps[src_i, 2].set_title(title)
             axes_ps[src_i, 2].set_xlim(0, T / sample_rate)
             axes_ps[src_i, 2].set_ylabel("Amplitude")
 
@@ -510,8 +554,8 @@ def main():
     parser.add_argument("--source_dir", type=str,
                         default="/home/mkeller/data/librimix/LibriSpeech/test-clean",
                         help="Directory with speaker sub-directories of clean audio")
-    parser.add_argument("--out_dir", type=str, default="validate_output",
-                        help="Output directory for figures and audio")
+    parser.add_argument("--out_dir", type=str, default=None,
+                        help="Output directory for figures/audio. Default: <model_dir>/validation")
     parser.add_argument("--block_ms", type=float, default=200,
                         help="Block size in ms for streaming test")
     parser.add_argument("--sample_rate", type=int, default=None,
@@ -525,6 +569,15 @@ def main():
         default="full",
         choices=["full", "two_spk_in_5ch"],
         help="Validation profile: full (1..n_src) or focused 2-speaker-in-5ch.",
+    )
+    parser.add_argument(
+        "--align_for_display",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Apply per-source affine alignment (sign/scale/DC) to estimates for "
+            "plots only. Raw exported estimates and SI-SDR metrics remain unchanged."
+        ),
     )
     args = parser.parse_args()
 
@@ -540,6 +593,8 @@ def main():
         n_src = model.masker.n_src  # 2
         sample_rate = 8000
         speaker_range = [n_src]
+        if args.out_dir is None:
+            args.out_dir = "validate_output"
         print(f"  Model type: {type(model).__name__}")
         print(f"  n_src: {n_src}")
         print(f"  Sample rate: {sample_rate}")
@@ -552,6 +607,8 @@ def main():
             model_path = os.path.join(args.exp_dir, "best_model.pth")
             if not os.path.isfile(model_path):
                 parser.error(f"Could not find best_model.pth in {args.exp_dir}")
+        if args.out_dir is None:
+            args.out_dir = os.path.join(os.path.dirname(model_path), "validation")
 
         # --- Resolve sample rate: CLI > conf.yml > default 8000 ---
         sample_rate = args.sample_rate
@@ -591,7 +648,9 @@ def main():
     print("\n" + "=" * 60)
     print("SECTION 2: Visualizations")
     print("=" * 60)
-    save_visualizations(results, args.out_dir, sample_rate, n_src=n_src)
+    save_visualizations(
+        results, args.out_dir, sample_rate, n_src=n_src, align_for_display=args.align_for_display
+    )
     print(f"  Audio saved to {os.path.join(args.out_dir, 'audio')}/")
 
     # Section 3

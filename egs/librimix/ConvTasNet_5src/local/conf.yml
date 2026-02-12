@@ -21,6 +21,11 @@ training:
   num_workers: 4
   half_lr: yes
   early_stop: yes
+  seed: 1337
+  deterministic_debug: false
+  debug_manifest_dir: ""
+  debug_manifest_batches: 0
+  debug_hash_audio: false
 # Optim config
 optim:
   optimizer: adam
@@ -40,6 +45,8 @@ data:
   min_speakers: 2
   max_speakers: 5
   speaker_count_weights: [0.10, 0.15, 0.35, 0.40]
+  train_seed: null
+  val_seed: 42
   num_examples: 20000
   val_num_examples: 2000
 # Loss config

@@ -1,5 +1,7 @@
 import torch
 import pytorch_lightning as pl
+import os
+import json
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from ..utils import flatten_dict
@@ -62,6 +64,12 @@ class System(pl.LightningModule):
         self.scheduler = scheduler
         self.config = {} if config is None else config
         self.log_loss_components = bool(self.config.get("loss", {}).get("debug_log_components", False))
+        training_conf = self.config.get("training", {})
+        self.debug_manifest_batches = int(training_conf.get("debug_manifest_batches", 0) or 0)
+        self.debug_manifest_dir = training_conf.get("debug_manifest_dir", "")
+        self.debug_manifest_enabled = self.debug_manifest_batches > 0 and bool(self.debug_manifest_dir)
+        self._train_identity_keys = set()
+        self._val_identity_keys = set()
         # Save lightning's AttributeDict under self.hparams
         self.save_hyperparameters(self.config_to_hparams(self.config))
 
@@ -98,7 +106,13 @@ class System(pl.LightningModule):
             the argument ``train`` can be used to switch behavior.
             Otherwise, ``training_step`` and ``validation_step`` can be overwriten.
         """
-        inputs, targets = batch
+        metadata = None
+        if isinstance(batch, (tuple, list)) and len(batch) >= 2:
+            inputs, targets = batch[0], batch[1]
+            if len(batch) > 2:
+                metadata = batch[2]
+        else:
+            raise TypeError("Batch must be tuple/list with at least (inputs, targets).")
         est_targets = self(inputs)
         if self.log_loss_components:
             try:
@@ -113,7 +127,105 @@ class System(pl.LightningModule):
         else:
             loss = loss_output
             components = {}
-        return loss, components
+        return loss, components, metadata
+
+    def _is_rank_zero(self):
+        if self.trainer is None:
+            return True
+        return int(getattr(self.trainer, "global_rank", 0)) == 0
+
+    def _prepare_manifest_dir(self):
+        if not self.debug_manifest_enabled or not self._is_rank_zero():
+            return
+        os.makedirs(self.debug_manifest_dir, exist_ok=True)
+
+    def _extract_sample_field(self, value, idx):
+        if torch.is_tensor(value):
+            if value.ndim == 0:
+                return value.item()
+            if value.shape[0] > idx:
+                item = value[idx]
+                return item.item() if item.ndim == 0 else item.tolist()
+            return None
+        if isinstance(value, (list, tuple)):
+            if len(value) > idx:
+                item = value[idx]
+                if torch.is_tensor(item):
+                    return item.item() if item.ndim == 0 else item.tolist()
+                return item
+            return None
+        return value
+
+    def _metadata_records(self, metadata, batch_size):
+        if not isinstance(metadata, dict):
+            return []
+        records = []
+        for idx in range(batch_size):
+            record = {}
+            for key, value in metadata.items():
+                record[key] = self._extract_sample_field(value, idx)
+            records.append(record)
+        return records
+
+    def _write_manifest_records(self, split, batch_nb, metadata, batch_size):
+        if not self.debug_manifest_enabled:
+            return
+        if batch_nb >= self.debug_manifest_batches:
+            return
+        if not self._is_rank_zero():
+            return
+        if self.trainer is not None and self.trainer.sanity_checking:
+            return
+        self._prepare_manifest_dir()
+        records = self._metadata_records(metadata, batch_size)
+        if not records:
+            return
+        out_path = os.path.join(
+            self.debug_manifest_dir,
+            f"{split}_manifest_rank0.jsonl",
+        )
+        with open(out_path, "a", encoding="utf-8") as handle:
+            for record in records:
+                payload = {
+                    "epoch": int(self.current_epoch),
+                    "batch_idx": int(batch_nb),
+                    "global_step": int(self.global_step),
+                    "split": split,
+                    "record": record,
+                }
+                handle.write(json.dumps(payload, sort_keys=True) + "\n")
+
+    def _collect_identity_keys(self, split, metadata, batch_size):
+        records = self._metadata_records(metadata, batch_size)
+        if not records:
+            return
+        keys = []
+        for record in records:
+            key = record.get("identity_key", None)
+            if key:
+                keys.append(str(key))
+        if not keys:
+            return
+        if split == "train":
+            self._train_identity_keys.update(keys)
+        else:
+            self._val_identity_keys.update(keys)
+
+    def _batch_size_from_batch(self, batch):
+        if not isinstance(batch, (tuple, list)) or len(batch) == 0:
+            return 0
+        inputs = batch[0]
+        if torch.is_tensor(inputs):
+            return int(inputs.shape[0])
+        if hasattr(inputs, "__len__"):
+            return int(len(inputs))
+        return 0
+
+    def on_train_epoch_start(self):
+        self._train_identity_keys = set()
+
+    def on_validation_epoch_start(self):
+        self._val_identity_keys = set()
 
     def _log_components(self, components, prefix, sync_dist):
         for name, value in components.items():
@@ -140,10 +252,17 @@ class System(pl.LightningModule):
         Returns:
             torch.Tensor, the value of the loss.
         """
-        loss, components = self.common_step(batch, batch_nb, train=True)
+        loss, components, metadata = self.common_step(batch, batch_nb, train=True)
         self.log("loss", loss, logger=True)
+        batch_size = self._batch_size_from_batch(batch)
+        self._write_manifest_records("train", batch_nb, metadata, batch_size)
+        self._collect_identity_keys("train", metadata, batch_size)
         if components:
-            self._log_components(components, "train_loss", sync_dist=False)
+            self._log_components(
+                components,
+                "train_loss",
+                sync_dist=bool(self.trainer is not None and self.trainer.world_size > 1),
+            )
         return loss
 
     def validation_step(self, batch, batch_nb):
@@ -154,7 +273,10 @@ class System(pl.LightningModule):
                 in most cases) but can be something else.
             batch_nb (int): The number of the batch in the epoch.
         """
-        loss, components = self.common_step(batch, batch_nb, train=False)
+        loss, components, metadata = self.common_step(batch, batch_nb, train=False)
+        batch_size = self._batch_size_from_batch(batch)
+        self._write_manifest_records("val", batch_nb, metadata, batch_size)
+        self._collect_identity_keys("val", metadata, batch_size)
         # Aggregate validation metric across devices so checkpointing/schedulers
         # use a consistent global value under DDP.
         self.log("val_loss", loss, on_epoch=True, prog_bar=True, sync_dist=True)
@@ -163,6 +285,28 @@ class System(pl.LightningModule):
 
     def on_validation_epoch_end(self):
         """Log hp_metric to tensorboard for hparams selection."""
+        if self.trainer is not None and self.trainer.sanity_checking:
+            return
+        if self.debug_manifest_enabled and self._is_rank_zero():
+            overlap = sorted(self._train_identity_keys.intersection(self._val_identity_keys))
+            overlap_report_path = os.path.join(
+                self.debug_manifest_dir,
+                "manifest_overlap_report_rank0.jsonl",
+            )
+            report = {
+                "epoch": int(self.current_epoch),
+                "train_unique": len(self._train_identity_keys),
+                "val_unique": len(self._val_identity_keys),
+                "overlap_count": len(overlap),
+                "overlap_examples": overlap[:10],
+            }
+            with open(overlap_report_path, "a", encoding="utf-8") as handle:
+                handle.write(json.dumps(report, sort_keys=True) + "\n")
+            self.print(
+                "Manifest overlap epoch "
+                f"{self.current_epoch}: overlap_count={report['overlap_count']} "
+                f"(train={report['train_unique']}, val={report['val_unique']})"
+            )
         hp_metric = self.trainer.callback_metrics.get("val_loss", None)
         if hp_metric is not None:
             self.trainer.logger.log_metrics({"hp_metric": hp_metric}, step=self.trainer.global_step)
