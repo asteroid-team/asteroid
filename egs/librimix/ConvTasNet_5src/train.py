@@ -4,6 +4,7 @@ import json
 import ast
 import random
 import math
+import csv
 
 import torch
 import numpy as np
@@ -11,6 +12,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
+from pytorch_lightning.loggers import WandbLogger, CSVLogger
 
 from asteroid.models import ConvTasNet
 from asteroid.data import VariableLibriMix, OnlineMixDataset
@@ -58,6 +60,218 @@ def _estimate_steps_per_epoch(dataset_len, batch_size, num_devices):
     return int(samples_per_rank // batch_size)
 
 
+def _as_bool(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if value is None:
+        return False
+    text = str(value).strip().lower()
+    if text in {"1", "true", "yes", "y", "on"}:
+        return True
+    if text in {"0", "false", "no", "n", "off", ""}:
+        return False
+    raise ValueError(f"Cannot parse boolean value from: {value!r}")
+
+
+def _parse_tags(tags):
+    if tags is None:
+        return []
+    if isinstance(tags, list):
+        return [str(tag).strip() for tag in tags if str(tag).strip()]
+    text = str(tags).strip()
+    if not text:
+        return []
+    if text.startswith("["):
+        parsed = ast.literal_eval(text)
+        return [str(tag).strip() for tag in parsed if str(tag).strip()]
+    return [tag.strip() for tag in text.split(",") if tag.strip()]
+
+
+def _build_wandb_logger(training_conf, conf, exp_dir):
+    use_wandb = _as_bool(training_conf.get("use_wandb", True))
+    if not use_wandb:
+        return True
+
+    try:
+        __import__("wandb")
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "W&B logging is enabled (`training.use_wandb=true`) but `wandb` is not installed. "
+            "Install with `pip install wandb` and authenticate with `wandb login` "
+            "(or set `WANDB_API_KEY`)."
+        ) from exc
+
+    run_name = training_conf.get("wandb_run_name") or os.path.basename(os.path.normpath(exp_dir))
+    run_group = training_conf.get("wandb_group")
+    if not run_group:
+        run_group = os.environ.get("WANDB_GROUP")
+    if not run_group:
+        run_group = os.path.basename(os.path.dirname(os.path.normpath(exp_dir))) or "manual"
+
+    project = training_conf.get("wandb_project", "librimix-convtasnet-5src")
+    entity = training_conf.get("wandb_entity", None)
+    tags = _parse_tags(training_conf.get("wandb_tags", []))
+    job_type = training_conf.get("wandb_job_type", "train")
+
+    try:
+        logger = WandbLogger(
+            project=project,
+            entity=entity,
+            name=run_name,
+            group=run_group,
+            tags=tags,
+            job_type=job_type,
+            save_dir=exp_dir,
+            log_model=False,
+        )
+        # Force backend initialization/auth check now so failures happen before training.
+        _ = logger.experiment
+    except Exception as exc:
+        raise RuntimeError(
+            "W&B logging is enabled but initialization failed. "
+            "Run `wandb login` (or set `WANDB_API_KEY`) and verify project/entity settings."
+        ) from exc
+
+    logger.experiment.config.update(conf, allow_val_change=True)
+    return logger
+
+
+def _build_loggers(training_conf, conf, exp_dir):
+    loggers = []
+    use_wandb = _as_bool(training_conf.get("use_wandb", True))
+    if use_wandb:
+        loggers.append(_build_wandb_logger(training_conf, conf, exp_dir))
+    # Always keep a local CSV logger so metric plotting is available.
+    loggers.append(CSVLogger(save_dir=exp_dir, name="lightning_csv"))
+    if len(loggers) == 1:
+        return loggers[0]
+    return loggers
+
+
+def _read_metric_series(metrics_csv_path):
+    if not os.path.isfile(metrics_csv_path):
+        return {}
+    series = {}
+    with open(metrics_csv_path, "r", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            step_text = row.get("step", "")
+            epoch_text = row.get("epoch", "")
+            step = int(float(step_text)) if step_text not in ("", None) else None
+            epoch = int(float(epoch_text)) if epoch_text not in ("", None) else None
+            for key, value in row.items():
+                if key in ("step", "epoch") or value in ("", None):
+                    continue
+                try:
+                    metric_value = float(value)
+                except ValueError:
+                    continue
+                if key not in series:
+                    series[key] = {"step": [], "epoch": [], "value": []}
+                series[key]["step"].append(step)
+                series[key]["epoch"].append(epoch)
+                series[key]["value"].append(metric_value)
+    return series
+
+
+def _save_metric_plots(training_conf, metrics_csv_path, plot_dir):
+    if not _as_bool(training_conf.get("plot_metrics", True)):
+        return
+    series = _read_metric_series(metrics_csv_path)
+    if not series:
+        print(f"No plottable metrics found in {metrics_csv_path}")
+        return
+    prefixes = training_conf.get("plot_metric_prefixes", ["val_", "test_"])
+    if isinstance(prefixes, str):
+        prefixes = [item.strip() for item in prefixes.split(",") if item.strip()]
+    if not prefixes:
+        prefixes = ["val_", "test_"]
+
+    selected_keys = []
+    for key in sorted(series.keys()):
+        if any(key.startswith(prefix) for prefix in prefixes):
+            selected_keys.append(key)
+    if not selected_keys:
+        print(
+            "No metrics matched configured plotting prefixes "
+            f"{prefixes}; skipping metric plots."
+        )
+        return
+
+    try:
+        import matplotlib.pyplot as plt
+    except Exception as exc:
+        print(f"Skipping metric plotting because matplotlib is unavailable: {exc}")
+        return
+
+    os.makedirs(plot_dir, exist_ok=True)
+
+    for key in selected_keys:
+        values = series[key]["value"]
+        steps = series[key]["step"]
+        epochs = series[key]["epoch"]
+        x_values = steps if all(step is not None for step in steps) else list(range(len(values)))
+        x_label = "Global Step" if all(step is not None for step in steps) else "Index"
+        if all(epoch is not None for epoch in epochs):
+            x_values = epochs
+            x_label = "Epoch"
+
+        fig = plt.figure(figsize=(8, 4.5))
+        plt.plot(x_values, values, marker="o", linewidth=1.8)
+        plt.title(key)
+        plt.xlabel(x_label)
+        plt.ylabel(key)
+        plt.grid(alpha=0.3)
+        plt.tight_layout()
+        out_path = os.path.join(plot_dir, f"{key}.png")
+        fig.savefig(out_path, dpi=150)
+        plt.close(fig)
+
+    # Combined summary figure for quick overview
+    fig = plt.figure(figsize=(10, 5.5))
+    for key in selected_keys:
+        values = series[key]["value"]
+        epochs = series[key]["epoch"]
+        steps = series[key]["step"]
+        x_values = epochs if all(epoch is not None for epoch in epochs) else steps
+        if not all(v is not None for v in x_values):
+            x_values = list(range(len(values)))
+        plt.plot(x_values, values, linewidth=1.4, label=key)
+    plt.title("Validation/Test Metrics Over Time")
+    plt.xlabel("Epoch/Step")
+    plt.ylabel("Metric Value")
+    plt.grid(alpha=0.3)
+    plt.legend(loc="best", fontsize=8)
+    plt.tight_layout()
+    combined_path = os.path.join(plot_dir, "validation_test_metrics_over_time.png")
+    fig.savefig(combined_path, dpi=160)
+    plt.close(fig)
+    print(f"Saved metric plots to {plot_dir}")
+
+
+def _latest_metrics_csv(exp_dir):
+    base_dir = os.path.join(exp_dir, "lightning_csv")
+    if not os.path.isdir(base_dir):
+        return None
+    version_dirs = []
+    for name in os.listdir(base_dir):
+        if not name.startswith("version_"):
+            continue
+        suffix = name.split("_", 1)[-1]
+        if suffix.isdigit():
+            version_dirs.append((int(suffix), os.path.join(base_dir, name)))
+    if not version_dirs:
+        return None
+    version_dirs.sort(key=lambda item: item[0], reverse=True)
+    for _, version_dir in version_dirs:
+        candidate = os.path.join(version_dir, "metrics.csv")
+        if os.path.isfile(candidate):
+            return candidate
+    return None
+
+
 def main(conf):
     training_conf = conf.get("training", {})
     data_conf = conf.get("data", {})
@@ -72,7 +286,7 @@ def main(conf):
     max_speakers = data_conf.get("max_speakers", 5)
     debug_manifest_batches = int(training_conf.get("debug_manifest_batches", 0) or 0)
     debug_manifest_dir = training_conf.get("debug_manifest_dir", "")
-    debug_hash_audio = bool(training_conf.get("debug_hash_audio", False))
+    debug_hash_audio = _as_bool(training_conf.get("debug_hash_audio", False))
     return_metadata = debug_manifest_batches > 0 and bool(debug_manifest_dir)
 
     if speaker_count_weights is not None:
@@ -216,12 +430,20 @@ def main(conf):
     )
     callbacks.append(checkpoint)
     if training_conf["early_stop"]:
-        callbacks.append(EarlyStopping(monitor="val_loss", mode="min", patience=30, verbose=True))
+        callbacks.append(
+            EarlyStopping(
+                monitor=training_conf.get("early_stop_monitor", "val_loss"),
+                mode=training_conf.get("early_stop_mode", "min"),
+                patience=int(training_conf.get("early_stop_patience", 30)),
+                min_delta=float(training_conf.get("early_stop_min_delta", 0.0)),
+                verbose=True,
+            )
+        )
 
     use_gpu = torch.cuda.is_available()
     n_devices = torch.cuda.device_count() if use_gpu else 1
     trainer_strategy = "ddp_find_unused_parameters_true" if n_devices > 1 else "auto"
-    deterministic_debug = bool(training_conf.get("deterministic_debug", False))
+    deterministic_debug = _as_bool(training_conf.get("deterministic_debug", False))
     if deterministic_debug:
         torch.use_deterministic_algorithms(True)
         torch.backends.cudnn.deterministic = True
@@ -238,10 +460,22 @@ def main(conf):
         f"batch_size={training_conf['batch_size']}, devices={(n_devices if use_gpu else 1)}, "
         f"train_steps_per_epoch~{train_steps}, val_steps_per_epoch~{val_steps}"
     )
+    trainer_logger = _build_loggers(training_conf, conf, exp_dir)
+    if isinstance(trainer_logger, WandbLogger) and _as_bool(
+        training_conf.get("wandb_watch_model", False)
+    ):
+        trainer_logger.watch(model, log="all", log_freq=100)
+    elif isinstance(trainer_logger, list):
+        for logger in trainer_logger:
+            if isinstance(logger, WandbLogger) and _as_bool(
+                training_conf.get("wandb_watch_model", False)
+            ):
+                logger.watch(model, log="all", log_freq=100)
 
     trainer = pl.Trainer(
         max_epochs=training_conf["epochs"],
         callbacks=callbacks,
+        logger=trainer_logger,
         default_root_dir=exp_dir,
         accelerator="gpu" if use_gpu else "cpu",
         strategy=trainer_strategy,
@@ -263,6 +497,20 @@ def main(conf):
     to_save = system.model.serialize()
     to_save.update(train_set.get_infos())
     torch.save(to_save, os.path.join(exp_dir, "best_model.pth"))
+    if getattr(trainer, "is_global_zero", True):
+        csv_metrics_path = _latest_metrics_csv(exp_dir)
+        plot_dir = os.path.join(exp_dir, "metric_plots")
+        if csv_metrics_path is None:
+            print("No CSV metrics file found; skipping metric plotting.")
+        else:
+            _save_metric_plots(training_conf, csv_metrics_path, plot_dir)
+
+    if isinstance(trainer_logger, WandbLogger) and getattr(trainer, "is_global_zero", True):
+        trainer_logger.experiment.finish()
+    elif isinstance(trainer_logger, list) and getattr(trainer, "is_global_zero", True):
+        for logger in trainer_logger:
+            if isinstance(logger, WandbLogger):
+                logger.experiment.finish()
 
 
 if __name__ == "__main__":

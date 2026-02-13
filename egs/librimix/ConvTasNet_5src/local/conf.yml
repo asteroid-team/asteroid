@@ -21,11 +21,25 @@ training:
   num_workers: 4
   half_lr: yes
   early_stop: yes
+  early_stop_monitor: val_loss
+  early_stop_mode: min
+  early_stop_patience: 30
+  early_stop_min_delta: 0.0
   seed: 1337
   deterministic_debug: false
   debug_manifest_dir: ""
   debug_manifest_batches: 0
   debug_hash_audio: false
+  plot_metrics: true
+  plot_metric_prefixes: val_,test_
+  use_wandb: true
+  wandb_project: librimix-convtasnet-5src
+  wandb_entity: null
+  wandb_group: null
+  wandb_run_name: null
+  wandb_tags: []
+  wandb_job_type: train
+  wandb_watch_model: false
 # Optim config
 optim:
   optimizer: adam

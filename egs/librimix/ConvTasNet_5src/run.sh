@@ -37,6 +37,18 @@ silence_margin_db=-45.0
 silence_metric=rms_db
 active_threshold_mode=rms
 debug_log_components=false
+early_stop_patience=30
+early_stop_min_delta=0.0
+plot_metrics=true
+plot_metric_prefixes=val_,test_
+use_wandb=true
+wandb_project=librimix-convtasnet-5src
+wandb_entity=
+wandb_group=
+wandb_run_name=
+wandb_tags=
+wandb_job_type=train
+wandb_watch_model=false
 
 eval_use_gpu=1
 
@@ -92,6 +104,18 @@ if [[ $stage -le 2 ]]; then
     --silence_metric $silence_metric \
     --active_threshold_mode $active_threshold_mode \
     --debug_log_components $debug_log_components \
+    --early_stop_patience $early_stop_patience \
+    --early_stop_min_delta $early_stop_min_delta \
+    --plot_metrics $plot_metrics \
+    --plot_metric_prefixes "$plot_metric_prefixes" \
+    --use_wandb $use_wandb \
+    --wandb_project "$wandb_project" \
+    --wandb_job_type "$wandb_job_type" \
+    --wandb_watch_model $wandb_watch_model \
+    ${wandb_entity:+--wandb_entity "$wandb_entity"} \
+    ${wandb_group:+--wandb_group "$wandb_group"} \
+    ${wandb_run_name:+--wandb_run_name "$wandb_run_name"} \
+    ${wandb_tags:+--wandb_tags "$wandb_tags"} \
     ${num_examples:+--num_examples $num_examples} \
     ${val_num_examples:+--val_num_examples $val_num_examples} | tee logs/train_${tag}.log
   cp logs/train_${tag}.log $expdir/train.log
