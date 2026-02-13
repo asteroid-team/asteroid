@@ -19,6 +19,7 @@ import argparse
 import os
 import sys
 import time
+import json
 
 import yaml
 import matplotlib
@@ -71,6 +72,38 @@ def rms_db(x, eps=1e-10):
 def classify_active(channel_rms_db, threshold_db=-40.0):
     """Return True if the channel is considered active."""
     return channel_rms_db > threshold_db
+
+
+def magnitude_spectrogram(signal_np, n_fft=256, hop_length=64):
+    """Compute linear-magnitude STFT spectrogram."""
+    sig_t = torch.from_numpy(signal_np).float()
+    window = torch.hann_window(n_fft)
+    stft = torch.stft(
+        sig_t,
+        n_fft=n_fft,
+        hop_length=hop_length,
+        window=window,
+        return_complex=True,
+    )
+    return torch.abs(stft).numpy()
+
+
+def log_spectral_distance_db(estimate, reference, eps=1e-8, n_fft=256, hop_length=64):
+    """Mean log-spectral distance in dB."""
+    est_mag = magnitude_spectrogram(estimate, n_fft=n_fft, hop_length=hop_length)
+    ref_mag = magnitude_spectrogram(reference, n_fft=n_fft, hop_length=hop_length)
+    est_log = 20.0 * np.log10(est_mag + eps)
+    ref_log = 20.0 * np.log10(ref_mag + eps)
+    return float(np.mean(np.sqrt((est_log - ref_log) ** 2)))
+
+
+def spectral_convergence(estimate, reference, eps=1e-8, n_fft=256, hop_length=64):
+    """Spectral convergence: ||S_ref - S_est||_F / ||S_ref||_F."""
+    est_mag = magnitude_spectrogram(estimate, n_fft=n_fft, hop_length=hop_length)
+    ref_mag = magnitude_spectrogram(reference, n_fft=n_fft, hop_length=hop_length)
+    num = np.linalg.norm(ref_mag - est_mag, ord="fro")
+    den = np.linalg.norm(ref_mag, ord="fro") + eps
+    return float(num / den)
 
 
 # ---------------------------------------------------------------------------
@@ -151,19 +184,33 @@ def run_n_speaker_test(model, source_dir, sample_rate, device, n_src=5, speaker_
             # SI-SDR only for channels with actual source energy
             if ch < n_spk:
                 entry["si_sdr"] = si_sdr(est_np, src_np)
+                entry["log_spectral_distance_db"] = log_spectral_distance_db(est_np, src_np)
+                entry["spectral_convergence"] = spectral_convergence(est_np, src_np)
             else:
                 entry["si_sdr"] = None
+                entry["log_spectral_distance_db"] = None
+                entry["spectral_convergence"] = None
             stats.append(entry)
 
         # Report
         for s in stats:
             marker = "OK" if s["active"] == s["expected_active"] else "MISMATCH"
             si_str = f"{s['si_sdr']:.1f} dB" if s['si_sdr'] is not None else "n/a"
+            lsd_str = (
+                f"{s['log_spectral_distance_db']:.2f} dB"
+                if s["log_spectral_distance_db"] is not None
+                else "n/a"
+            )
+            sc_str = (
+                f"{s['spectral_convergence']:.3f}"
+                if s["spectral_convergence"] is not None
+                else "n/a"
+            )
             corr_str = f"{s['corr_zm']:+.2f}" if not np.isnan(s["corr_zm"]) else "n/a"
             print(
                 f"  ch{s['channel']}: RMS={s['rms_db']:.1f} dB  "
                 f"active={s['active']}  expected={s['expected_active']}  "
-                f"SI-SDR={si_str}  corr(zm)={corr_str}  "
+                f"SI-SDR={si_str}  LSD={lsd_str}  SC={sc_str}  corr(zm)={corr_str}  "
                 f"mean(est/ref)=({s['mean_est']:+.3e}/{s['mean_ref']:+.3e})  [{marker}]"
             )
 
@@ -175,6 +222,57 @@ def run_n_speaker_test(model, source_dir, sample_rate, device, n_src=5, speaker_
             "stats": stats,
         }
     return results
+
+
+def summarize_artifact_metrics(results):
+    """Aggregate artifact-focused metrics from validation results."""
+    summary = {"per_case": {}, "overall": {}}
+    all_sisdr = []
+    all_lsd = []
+    all_sc = []
+    all_corr = []
+
+    for n_spk, data in results.items():
+        active_rows = [row for row in data["stats"] if row["expected_active"]]
+        if not active_rows:
+            continue
+        sisdr_vals = [row["si_sdr"] for row in active_rows if row["si_sdr"] is not None]
+        lsd_vals = [
+            row["log_spectral_distance_db"]
+            for row in active_rows
+            if row["log_spectral_distance_db"] is not None
+        ]
+        sc_vals = [
+            row["spectral_convergence"]
+            for row in active_rows
+            if row["spectral_convergence"] is not None
+        ]
+        corr_vals = [
+            row["corr_zm"]
+            for row in active_rows
+            if row["corr_zm"] is not None and not np.isnan(row["corr_zm"])
+        ]
+
+        all_sisdr.extend(sisdr_vals)
+        all_lsd.extend(lsd_vals)
+        all_sc.extend(sc_vals)
+        all_corr.extend(corr_vals)
+
+        summary["per_case"][str(n_spk)] = {
+            "n_active_channels": len(active_rows),
+            "mean_si_sdr_db": float(np.mean(sisdr_vals)) if sisdr_vals else None,
+            "mean_log_spectral_distance_db": float(np.mean(lsd_vals)) if lsd_vals else None,
+            "mean_spectral_convergence": float(np.mean(sc_vals)) if sc_vals else None,
+            "mean_corr_zm": float(np.mean(corr_vals)) if corr_vals else None,
+        }
+
+    summary["overall"] = {
+        "mean_si_sdr_db": float(np.mean(all_sisdr)) if all_sisdr else None,
+        "mean_log_spectral_distance_db": float(np.mean(all_lsd)) if all_lsd else None,
+        "mean_spectral_convergence": float(np.mean(all_sc)) if all_sc else None,
+        "mean_corr_zm": float(np.mean(all_corr)) if all_corr else None,
+    }
+    return summary
 
 
 # ---------------------------------------------------------------------------

@@ -79,8 +79,16 @@ def _parse_tags(tags):
     if tags is None:
         return []
     if isinstance(tags, list):
-        return [str(tag).strip() for tag in tags if str(tag).strip()]
-    text = str(tags).strip()
+        # `prepare_parser_from_dict` can parse comma-separated CLI strings
+        # as a list of single characters for list-typed config fields.
+        if tags and all(isinstance(tag, str) and len(tag) == 1 for tag in tags):
+            tags = "".join(tags)
+        else:
+            return [str(tag).strip() for tag in tags if str(tag).strip()]
+    if isinstance(tags, str):
+        text = tags.strip()
+    else:
+        text = str(tags).strip()
     if not text:
         return []
     if text.startswith("["):
@@ -134,7 +142,20 @@ def _build_wandb_logger(training_conf, conf, exp_dir):
             "Run `wandb login` (or set `WANDB_API_KEY`) and verify project/entity settings."
         ) from exc
 
-    logger.experiment.config.update(conf, allow_val_change=True)
+    # W&B/Lightning versions differ on how run config is exposed.
+    # Try common update paths, but never crash training on config-sync only.
+    try:
+        run = logger.experiment
+        run_config = getattr(run, "config", None)
+        if hasattr(run_config, "update"):
+            run_config.update(conf, allow_val_change=True)
+        else:
+            import wandb
+
+            if hasattr(wandb, "config") and hasattr(wandb.config, "update"):
+                wandb.config.update(conf, allow_val_change=True)
+    except Exception as exc:
+        print(f"W&B config sync warning: {exc}")
     return logger
 
 
@@ -275,6 +296,10 @@ def _latest_metrics_csv(exp_dir):
 def main(conf):
     training_conf = conf.get("training", {})
     data_conf = conf.get("data", {})
+    # Normalize tags early and store as CSV string so Asteroid hparams tensor
+    # conversion doesn't crash on list[str].
+    normalized_tags = _parse_tags(training_conf.get("wandb_tags", []))
+    training_conf["wandb_tags"] = ",".join(normalized_tags)
     seed = int(training_conf.get("seed", 1337))
     pl.seed_everything(seed, workers=True)
 
