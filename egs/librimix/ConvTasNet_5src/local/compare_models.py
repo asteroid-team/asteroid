@@ -58,6 +58,35 @@ def channel_rms_db(signal, eps=1e-12):
     return float(20 * np.log10(rms + eps))
 
 
+def magnitude_spectrogram(signal_np, n_fft=256, hop_length=64):
+    sig_t = torch.from_numpy(np.asarray(signal_np)).float()
+    window = torch.hann_window(n_fft)
+    stft = torch.stft(
+        sig_t,
+        n_fft=n_fft,
+        hop_length=hop_length,
+        window=window,
+        return_complex=True,
+    )
+    return torch.abs(stft).numpy()
+
+
+def log_spectral_distance_db(estimate, reference, eps=1e-8, n_fft=256, hop_length=64):
+    est_mag = magnitude_spectrogram(estimate, n_fft=n_fft, hop_length=hop_length)
+    ref_mag = magnitude_spectrogram(reference, n_fft=n_fft, hop_length=hop_length)
+    est_log = 20.0 * np.log10(est_mag + eps)
+    ref_log = 20.0 * np.log10(ref_mag + eps)
+    return float(np.mean(np.sqrt((est_log - ref_log) ** 2)))
+
+
+def spectral_convergence(estimate, reference, eps=1e-8, n_fft=256, hop_length=64):
+    est_mag = magnitude_spectrogram(estimate, n_fft=n_fft, hop_length=hop_length)
+    ref_mag = magnitude_spectrogram(reference, n_fft=n_fft, hop_length=hop_length)
+    num = np.linalg.norm(ref_mag - est_mag, ord="fro")
+    den = np.linalg.norm(ref_mag, ord="fro") + eps
+    return float(num / den)
+
+
 def summarize_silent_rms(silent_rms_db):
     if not silent_rms_db:
         return {}
@@ -68,6 +97,19 @@ def summarize_silent_rms(silent_rms_db):
         "p50_silent_rms_db": float(np.percentile(values, 50)),
         "p95_silent_rms_db": float(np.percentile(values, 95)),
         "p99_silent_rms_db": float(np.percentile(values, 99)),
+    }
+
+
+def summarize_spectral_metrics(lsd_values_db, sc_values):
+    if not lsd_values_db or not sc_values:
+        return {}
+    lsd = np.asarray(lsd_values_db, dtype=np.float64)
+    sc = np.asarray(sc_values, dtype=np.float64)
+    return {
+        "mean_log_spectral_distance_db": float(np.mean(lsd)),
+        "p95_log_spectral_distance_db": float(np.percentile(lsd, 95)),
+        "mean_spectral_convergence": float(np.mean(sc)),
+        "p95_spectral_convergence": float(np.percentile(sc, 95)),
     }
 
 
@@ -84,6 +126,8 @@ def benchmark_online_2spk(model, n_src, device, root, num_examples, seed):
     )
     pit2 = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx")
     active_scores = []
+    active_lsd_db = []
+    active_sc = []
     silent_rms_db = []
     predicted_active = []
     expected_active = 2
@@ -97,6 +141,8 @@ def benchmark_online_2spk(model, n_src, device, root, num_examples, seed):
                 ref = src.cpu().numpy()
                 for k in (0, 1):
                     active_scores.append(sisdr(re[k], ref[k]))
+                    active_lsd_db.append(log_spectral_distance_db(re[k], ref[k]))
+                    active_sc.append(spectral_convergence(re[k], ref[k]))
                 for k in (2, 3, 4):
                     silent_rms_db.append(channel_rms_db(re[k]))
                 predicted_active.append(
@@ -111,6 +157,8 @@ def benchmark_online_2spk(model, n_src, device, root, num_examples, seed):
                 ref = src2.cpu().numpy()
                 for k in (0, 1):
                     active_scores.append(sisdr(re[k], ref[k]))
+                    active_lsd_db.append(log_spectral_distance_db(re[k], ref[k]))
+                    active_sc.append(spectral_convergence(re[k], ref[k]))
                 predicted_active.append(
                     int(
                         sum(channel_rms_db(re[k]) > -40 for k in range(2))
@@ -128,6 +176,7 @@ def benchmark_online_2spk(model, n_src, device, root, num_examples, seed):
         "p_active_2_correct": float(np.mean(predicted_arr == expected_active)),
     }
     out.update(summarize_silent_rms(silent_rms_db))
+    out.update(summarize_spectral_metrics(active_lsd_db, active_sc))
     return out
 
 
@@ -200,36 +249,82 @@ def evaluate_online_gate(candidate_metrics, baseline_metrics, args):
         gate["status"] = "skipped_no_silent_metrics"
         gate["reasons"].append("silent RMS metrics missing")
         return gate
+    if (
+        "mean_log_spectral_distance_db" not in candidate_metrics
+        or "p95_log_spectral_distance_db" not in candidate_metrics
+        or "mean_spectral_convergence" not in candidate_metrics
+        or "p95_spectral_convergence" not in candidate_metrics
+    ):
+        gate["status"] = "skipped_no_spectral_metrics"
+        gate["reasons"].append("spectral metrics missing")
+        return gate
 
     delta_active = candidate_metrics["mean_active_sisdr_db"] - baseline_metrics["mean_active_sisdr_db"]
-    cond_active = delta_active >= args.gate_active_gain_db
+    cond_active = delta_active >= args.gate_min_active_sisdr_delta_db
     cond_silent = candidate_metrics["max_silent_rms_db"] <= args.gate_max_silent_rms_db
     mean_active = candidate_metrics["mean_predicted_active_channels"]
     cond_count = args.gate_active_count_min <= mean_active <= args.gate_active_count_max
+    cond_lsd_mean = (
+        candidate_metrics["mean_log_spectral_distance_db"] <= args.gate_max_mean_lsd_db
+    )
+    cond_lsd_p95 = (
+        candidate_metrics["p95_log_spectral_distance_db"] <= args.gate_max_p95_lsd_db
+    )
+    cond_sc_mean = (
+        candidate_metrics["mean_spectral_convergence"] <= args.gate_max_mean_sc
+    )
+    cond_sc_p95 = (
+        candidate_metrics["p95_spectral_convergence"] <= args.gate_max_p95_sc
+    )
+    all_ok = (
+        cond_active
+        and cond_silent
+        and cond_count
+        and cond_lsd_mean
+        and cond_lsd_p95
+        and cond_sc_mean
+        and cond_sc_p95
+    )
 
     gate.update(
         {
-            "status": "pass" if (cond_active and cond_silent and cond_count) else "fail",
+            "status": "pass" if all_ok else "fail",
             "delta_active_sisdr_db": float(delta_active),
             "conditions": {
-                "active_gain_vs_baseline": bool(cond_active),
+                "active_sisdr_non_regression": bool(cond_active),
                 "max_silent_rms": bool(cond_silent),
                 "mean_predicted_active_range": bool(cond_count),
+                "mean_log_spectral_distance_db": bool(cond_lsd_mean),
+                "p95_log_spectral_distance_db": bool(cond_lsd_p95),
+                "mean_spectral_convergence": bool(cond_sc_mean),
+                "p95_spectral_convergence": bool(cond_sc_p95),
             },
             "thresholds": {
-                "min_active_gain_db": args.gate_active_gain_db,
+                "min_active_sisdr_delta_db": args.gate_min_active_sisdr_delta_db,
                 "max_silent_rms_db": args.gate_max_silent_rms_db,
                 "mean_predicted_active_min": args.gate_active_count_min,
                 "mean_predicted_active_max": args.gate_active_count_max,
+                "max_mean_lsd_db": args.gate_max_mean_lsd_db,
+                "max_p95_lsd_db": args.gate_max_p95_lsd_db,
+                "max_mean_sc": args.gate_max_mean_sc,
+                "max_p95_sc": args.gate_max_p95_sc,
             },
         }
     )
     if not cond_active:
-        gate["reasons"].append("active SI-SDR gain below threshold")
+        gate["reasons"].append("active SI-SDR regressed beyond threshold")
     if not cond_silent:
         gate["reasons"].append("silent-channel leakage above threshold")
     if not cond_count:
         gate["reasons"].append("mean predicted active channel count out of range")
+    if not cond_lsd_mean:
+        gate["reasons"].append("mean log spectral distance above threshold")
+    if not cond_lsd_p95:
+        gate["reasons"].append("p95 log spectral distance above threshold")
+    if not cond_sc_mean:
+        gate["reasons"].append("mean spectral convergence above threshold")
+    if not cond_sc_p95:
+        gate["reasons"].append("p95 spectral convergence above threshold")
     return gate
 
 
@@ -247,10 +342,14 @@ def main():
     parser.add_argument("--test_dir", default="data/wav8k/min/test")
     parser.add_argument("--test_per_n", type=int, default=300)
     parser.add_argument("--gate_baseline", type=str, default="opt3")
-    parser.add_argument("--gate_active_gain_db", type=float, default=2.0)
+    parser.add_argument("--gate_min_active_sisdr_delta_db", type=float, default=-0.5)
     parser.add_argument("--gate_max_silent_rms_db", type=float, default=-22.0)
     parser.add_argument("--gate_active_count_min", type=float, default=1.8)
     parser.add_argument("--gate_active_count_max", type=float, default=2.6)
+    parser.add_argument("--gate_max_mean_lsd_db", type=float, default=15.0)
+    parser.add_argument("--gate_max_p95_lsd_db", type=float, default=20.0)
+    parser.add_argument("--gate_max_mean_sc", type=float, default=0.82)
+    parser.add_argument("--gate_max_p95_sc", type=float, default=0.90)
     parser.add_argument("--out", default="compare_models_report.json")
     args = parser.parse_args()
 
