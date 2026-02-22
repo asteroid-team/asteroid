@@ -1,5 +1,6 @@
 import os
 import random
+import shutil
 import soundfile as sf
 import torch
 import yaml
@@ -53,6 +54,61 @@ ASR_MODEL_PATH = (
 )
 
 
+def _find_preferred_csv(metadata_dir: Path, stem: str):
+    exact = metadata_dir / f"{stem}.csv"
+    if exact.is_file():
+        return exact
+    matches = sorted(metadata_dir.glob(f"{stem}*.csv"))
+    return matches[0] if matches else None
+
+
+def resolve_eval_csv_dir(test_dir: str, task: str, exp_dir: str):
+    """Resolve metadata root to a deterministic csv_dir for LibriMix.
+
+    LibriMix chooses files with os.listdir() substring matching (e.g., "clean"),
+    which can accidentally select metrics_* files. This function creates a local
+    directory with only the intended mixture csv (and clean csv for enh_both).
+    """
+    md = Path(test_dir)
+    if not md.is_dir():
+        return test_dir
+
+    # If this already looks like a canonical csv_dir, leave it untouched.
+    has_mixture_csv = any(md.glob("mixture_*.csv"))
+    if not has_mixture_csv:
+        return test_dir
+
+    task_to_stem = {
+        "sep_clean": "mixture_test_mix_clean",
+        "sep_noisy": "mixture_test_mix_both",
+        "enh_single": "mixture_test_mix_single",
+        "enh_both": "mixture_test_mix_both",
+    }
+    preferred_stem = task_to_stem.get(task)
+    if preferred_stem is None:
+        return test_dir
+
+    chosen = _find_preferred_csv(md, preferred_stem)
+    if chosen is None:
+        # Fall back to original directory behavior if test split is unavailable.
+        return test_dir
+
+    resolved_dir = Path(exp_dir) / "_resolved_eval_csv" / task
+    if resolved_dir.exists():
+        shutil.rmtree(resolved_dir)
+    resolved_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(chosen, resolved_dir / chosen.name)
+
+    # enh_both also needs a clean csv in same directory.
+    if task == "enh_both":
+        clean_csv = _find_preferred_csv(md, "mixture_test_mix_clean")
+        if clean_csv is not None:
+            shutil.copy2(clean_csv, resolved_dir / clean_csv.name)
+
+    print(f"[eval] resolved csv_dir: {resolved_dir} (from {test_dir})")
+    return str(resolved_dir)
+
+
 def update_compute_metrics(compute_wer, metric_list):
     if not compute_wer:
         return metric_list
@@ -69,25 +125,25 @@ def update_compute_metrics(compute_wer, metric_list):
 
 def main(conf):
     compute_metrics = update_compute_metrics(conf["compute_wer"], COMPUTE_METRICS)
-    anno_df = pd.read_csv(Path(conf["test_dir"]).parent.parent.parent / "test_annotations.csv")
-    wer_tracker = (
-        MockWERTracker()
-        if not conf["compute_wer"]
-        else WERTracker(ASR_MODEL_PATH, anno_df, use_gpu=conf["use_gpu"])
-    )
+    if conf["compute_wer"]:
+        anno_df = pd.read_csv(Path(conf["test_dir"]).parent.parent.parent / "test_annotations.csv")
+        wer_tracker = WERTracker(ASR_MODEL_PATH, anno_df, use_gpu=conf["use_gpu"])
+    else:
+        wer_tracker = MockWERTracker()
     model_path = os.path.join(conf["exp_dir"], "best_model.pth")
     model = ConvTasNet.from_pretrained(model_path)
     # Handle device placement
     if conf["use_gpu"]:
         model.cuda()
     model_device = next(model.parameters()).device
+    csv_dir = resolve_eval_csv_dir(conf["test_dir"], conf["task"], conf["exp_dir"])
     test_set = LibriMix(
-        csv_dir=conf["test_dir"],
+        csv_dir=csv_dir,
         task=conf["task"],
         sample_rate=conf["sample_rate"],
         n_src=conf["train_conf"]["data"]["n_src"],
         segment=None,
-        return_id=True,
+        return_id=bool(conf["compute_wer"]),
     )  # Uses all segment length
     # Used to reorder sources only
     loss_func = PITLossWrapper(pairwise_neg_sisdr, pit_from="pw_mtx")
@@ -102,7 +158,11 @@ def main(conf):
     torch.no_grad().__enter__()
     for idx in tqdm(range(len(test_set))):
         # Forward the network on the mixture.
-        mix, sources, ids = test_set[idx]
+        if conf["compute_wer"]:
+            mix, sources, ids = test_set[idx]
+        else:
+            mix, sources = test_set[idx]
+            ids = None
         mix, sources = tensors_to_device([mix, sources], device=model_device)
         est_sources = model(mix.unsqueeze(0))
         loss, reordered_sources = loss_func(est_sources, sources[None], return_est=True)

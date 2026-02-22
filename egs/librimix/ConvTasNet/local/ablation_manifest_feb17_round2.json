@@ -1,0 +1,136 @@
+{
+  "study_name": "ablation_feb17_three_src_round2",
+  "project": "convtasnet-three-src-ablation",
+  "defaults": {
+    "sample_rate": 8000,
+    "segment": 1.0,
+    "n_src": 3,
+    "dataset_type": "online_mix",
+    "task": "sep_clean",
+    "min_speakers": 1,
+    "max_speakers": 3,
+    "speaker_count_weights": "0.20,0.30,0.50",
+    "num_examples": 20000,
+    "val_num_examples": 2000,
+    "batch_size": 4,
+    "num_workers": 4,
+    "epochs_stage1": 40,
+    "epochs_stage2": 200,
+    "window_ms": 1000,
+    "hop_ms": 50
+  },
+  "candidates": [
+    {
+      "id": "B00_anchor_a02",
+      "description": "Anchor from stage-1 winner candidate A02",
+      "masknet": {
+        "n_blocks": 8,
+        "n_repeats": 2,
+        "bn_chan": 64,
+        "skip_chan": 64,
+        "hid_chan": 256
+      },
+      "filterbank": {
+        "n_filters": 256
+      }
+    },
+    {
+      "id": "B01_depth6_rep2_256",
+      "description": "Shorter RF, same width",
+      "masknet": {
+        "n_blocks": 6,
+        "n_repeats": 2,
+        "bn_chan": 64,
+        "skip_chan": 64,
+        "hid_chan": 256
+      },
+      "filterbank": {
+        "n_filters": 256
+      }
+    },
+    {
+      "id": "B02_rep1_256",
+      "description": "Cut repeats, keep depth",
+      "masknet": {
+        "n_blocks": 8,
+        "n_repeats": 1,
+        "bn_chan": 64,
+        "skip_chan": 64,
+        "hid_chan": 256
+      },
+      "filterbank": {
+        "n_filters": 256
+      }
+    },
+    {
+      "id": "B03_depth7_rep1_256",
+      "description": "Balanced fast-mid variant",
+      "masknet": {
+        "n_blocks": 7,
+        "n_repeats": 1,
+        "bn_chan": 64,
+        "skip_chan": 64,
+        "hid_chan": 256
+      },
+      "filterbank": {
+        "n_filters": 256
+      }
+    },
+    {
+      "id": "B04_tiny_6x1_256",
+      "description": "Tiny with same channel width",
+      "masknet": {
+        "n_blocks": 6,
+        "n_repeats": 1,
+        "bn_chan": 64,
+        "skip_chan": 64,
+        "hid_chan": 256
+      },
+      "filterbank": {
+        "n_filters": 256
+      }
+    },
+    {
+      "id": "B05_tiny_6x1_192",
+      "description": "Tiny with reduced channels",
+      "masknet": {
+        "n_blocks": 6,
+        "n_repeats": 1,
+        "bn_chan": 48,
+        "skip_chan": 48,
+        "hid_chan": 192
+      },
+      "filterbank": {
+        "n_filters": 192
+      }
+    },
+    {
+      "id": "B06_mid_7x2_256",
+      "description": "Depth-middle, full repeats",
+      "masknet": {
+        "n_blocks": 7,
+        "n_repeats": 2,
+        "bn_chan": 64,
+        "skip_chan": 64,
+        "hid_chan": 256
+      },
+      "filterbank": {
+        "n_filters": 256
+      }
+    },
+    {
+      "id": "B07_fast_5x1_192",
+      "description": "Aggressive fast+small probe",
+      "masknet": {
+        "n_blocks": 5,
+        "n_repeats": 1,
+        "bn_chan": 48,
+        "skip_chan": 48,
+        "hid_chan": 192
+      },
+      "filterbank": {
+        "n_filters": 192
+      }
+    }
+  ]
+}
