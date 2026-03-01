@@ -26,6 +26,10 @@ class ActiveOnlyPITSilencePenalty(_Loss):
         active_l2_weight=0.0,
         active_rms_floor_db=None,
         active_rms_penalty_weight=0.0,
+        active_diversity_weight=0.0,
+        active_activity_bce_weight=0.0,
+        activity_threshold_db=-40.0,
+        activity_temp_db=3.0,
         eps=1e-8,
     ):
         super().__init__()
@@ -40,6 +44,10 @@ class ActiveOnlyPITSilencePenalty(_Loss):
         self.active_l2_weight = active_l2_weight
         self.active_rms_floor_db = active_rms_floor_db
         self.active_rms_penalty_weight = active_rms_penalty_weight
+        self.active_diversity_weight = active_diversity_weight
+        self.active_activity_bce_weight = active_activity_bce_weight
+        self.activity_threshold_db = activity_threshold_db
+        self.activity_temp_db = activity_temp_db
         self.eps = eps
         if self.active_metric not in ("sisdr", "sdsdr"):
             raise ValueError(
@@ -72,6 +80,20 @@ class ActiveOnlyPITSilencePenalty(_Loss):
             return torch.mean(targets**2, dim=-1)
         return torch.sum(targets**2, dim=-1)
 
+    def _channel_rms_db(self, est_targets):
+        est_rms = torch.sqrt(torch.mean(est_targets**2, dim=-1) + self.eps)
+        return 20 * torch.log10(est_rms + self.eps)
+
+    def _active_diversity_penalty(self, est_active):
+        if est_active.ndim != 2 or est_active.size(0) < 2:
+            return est_active.new_tensor(0.0)
+        centered = est_active - est_active.mean(dim=-1, keepdim=True)
+        norms = torch.sqrt(torch.sum(centered**2, dim=-1, keepdim=True) + self.eps)
+        normalized = centered / norms
+        corr = torch.matmul(normalized, normalized.transpose(0, 1))
+        off_diag = corr - torch.eye(corr.size(0), device=corr.device, dtype=corr.dtype)
+        return torch.mean(off_diag**2)
+
     def forward(self, est_targets, targets, return_components=False):
         if targets.size() != est_targets.size() or targets.ndim != 3:
             raise TypeError(
@@ -92,6 +114,8 @@ class ActiveOnlyPITSilencePenalty(_Loss):
         active_l1_losses = []
         active_l2_losses = []
         active_rms_floor_losses = []
+        active_diversity_losses = []
+        active_activity_bce_losses = []
         silent_losses = []
         n_active_targets = []
         for b in range(batch_size):
@@ -99,7 +123,7 @@ class ActiveOnlyPITSilencePenalty(_Loss):
             n_active_targets.append(active_tgt_idx.numel())
             if active_tgt_idx.numel() > 0:
                 # Rectangular assignment: estimates x active targets.
-                cost = pairwise_sisdr[b, :, active_tgt_idx].detach().cpu().numpy()
+                cost = pairwise_active[b, :, active_tgt_idx].detach().cpu().numpy()
                 est_rows, tgt_cols_local = linear_sum_assignment(cost)
                 est_rows_t = torch.as_tensor(est_rows, device=est_targets.device, dtype=torch.long)
                 tgt_cols_t = active_tgt_idx[
@@ -119,19 +143,35 @@ class ActiveOnlyPITSilencePenalty(_Loss):
                     active_rms_penalty = torch.relu(self.active_rms_floor_db - est_rms_db).mean()
                 else:
                     active_rms_penalty = pairwise_sisdr.new_tensor(0.0)
-                active_loss = (
-                    active_pair_loss
-                    + self.active_l1_weight * active_l1
-                    + self.active_l2_weight * active_l2
-                    + self.active_rms_penalty_weight * active_rms_penalty
-                )
+                active_diversity = self._active_diversity_penalty(est_active)
             else:
                 est_rows_t = torch.empty(0, dtype=torch.long, device=est_targets.device)
-                active_loss = pairwise_sisdr.new_tensor(0.0)
                 active_pair_loss = pairwise_sisdr.new_tensor(0.0)
                 active_l1 = pairwise_sisdr.new_tensor(0.0)
                 active_l2 = pairwise_sisdr.new_tensor(0.0)
                 active_rms_penalty = pairwise_sisdr.new_tensor(0.0)
+                active_diversity = pairwise_sisdr.new_tensor(0.0)
+
+            est_rms_db_all = self._channel_rms_db(est_targets[b])
+            activity_logits = (est_rms_db_all - self.activity_threshold_db) / max(
+                self.activity_temp_db, self.eps
+            )
+            activity_probs = torch.sigmoid(activity_logits)
+            activity_target = torch.zeros_like(activity_probs)
+            if est_rows_t.numel() > 0:
+                activity_target[est_rows_t] = 1.0
+            active_activity_bce = torch.nn.functional.binary_cross_entropy(
+                activity_probs, activity_target
+            )
+
+            active_loss = (
+                active_pair_loss
+                + self.active_l1_weight * active_l1
+                + self.active_l2_weight * active_l2
+                + self.active_rms_penalty_weight * active_rms_penalty
+                + self.active_diversity_weight * active_diversity
+                + self.active_activity_bce_weight * active_activity_bce
+            )
 
             if est_rows_t.numel() < n_src:
                 mask = torch.ones(n_src, dtype=torch.bool, device=est_targets.device)
@@ -146,6 +186,8 @@ class ActiveOnlyPITSilencePenalty(_Loss):
             active_l1_losses.append(active_l1)
             active_l2_losses.append(active_l2)
             active_rms_floor_losses.append(active_rms_penalty)
+            active_diversity_losses.append(active_diversity)
+            active_activity_bce_losses.append(active_activity_bce)
             silent_losses.append(silent_loss)
 
         mean_total = torch.stack(losses, dim=0).mean()
@@ -157,6 +199,8 @@ class ActiveOnlyPITSilencePenalty(_Loss):
             "active_l1": torch.stack(active_l1_losses, dim=0).mean(),
             "active_l2": torch.stack(active_l2_losses, dim=0).mean(),
             "active_rms_floor": torch.stack(active_rms_floor_losses, dim=0).mean(),
+            "active_diversity": torch.stack(active_diversity_losses, dim=0).mean(),
+            "active_activity_bce": torch.stack(active_activity_bce_losses, dim=0).mean(),
             "silent_rms_penalty": torch.stack(silent_losses, dim=0).mean(),
             "n_active_targets": torch.tensor(
                 float(sum(n_active_targets)) / max(len(n_active_targets), 1),

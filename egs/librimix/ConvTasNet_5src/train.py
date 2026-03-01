@@ -15,6 +15,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import WandbLogger, CSVLogger
 
 from asteroid.models import ConvTasNet
+from asteroid.models.base_models import BaseModel
 from asteroid.data import VariableLibriMix, OnlineMixDataset
 from asteroid.engine.optimizers import make_optimizer
 from asteroid.engine.system import System
@@ -27,6 +28,11 @@ from asteroid.losses import (
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp_dir", default="exp/tmp", help="Full path to save best validation model")
+parser.add_argument(
+    "--finetune_from",
+    default="",
+    help="Optional path to a serialized Asteroid model (.pth) used to initialize model weights.",
+)
 
 
 def _parse_speaker_count_weights(weights):
@@ -392,9 +398,14 @@ def main(conf):
     )
     conf["masknet"].update({"n_src": data_conf["n_src"]})
 
-    model = ConvTasNet(
-        **conf["filterbank"], **conf["masknet"], sample_rate=data_conf["sample_rate"]
-    )
+    finetune_from = conf.get("main_args", {}).get("finetune_from", "")
+    if finetune_from:
+        model = BaseModel.from_pretrained(finetune_from)
+        print(f"Initialized model weights from finetune checkpoint: {finetune_from}")
+    else:
+        model = ConvTasNet(
+            **conf["filterbank"], **conf["masknet"], sample_rate=data_conf["sample_rate"]
+        )
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     # Define scheduler
     scheduler = None
@@ -431,6 +442,10 @@ def main(conf):
             active_l2_weight=loss_conf.get("active_l2_weight", 0.0),
             active_rms_floor_db=loss_conf.get("active_rms_floor_db", None),
             active_rms_penalty_weight=loss_conf.get("active_rms_penalty_weight", 0.0),
+            active_diversity_weight=loss_conf.get("active_diversity_weight", 0.0),
+            active_activity_bce_weight=loss_conf.get("active_activity_bce_weight", 0.0),
+            activity_threshold_db=loss_conf.get("activity_threshold_db", -40.0),
+            activity_temp_db=loss_conf.get("activity_temp_db", 3.0),
         )
     else:
         raise ValueError(

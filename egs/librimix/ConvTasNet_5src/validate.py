@@ -110,7 +110,15 @@ def spectral_convergence(estimate, reference, eps=1e-8, n_fft=256, hop_length=64
 # Section 1: N-Speaker Separation Test
 # ---------------------------------------------------------------------------
 
-def run_n_speaker_test(model, source_dir, sample_rate, device, n_src=5, speaker_range=None):
+def run_n_speaker_test(
+    model,
+    source_dir,
+    sample_rate,
+    device,
+    n_src=5,
+    speaker_range=None,
+    active_rms_db=-40.0,
+):
     """Run separation on synthetic mixtures with varying speaker counts.
 
     Uses PIT (Permutation Invariant Training) loss to find the optimal
@@ -165,7 +173,7 @@ def run_n_speaker_test(model, source_dir, sample_rate, device, n_src=5, speaker_
             est_np = reordered[ch].numpy()
             src_np = sources[ch].numpy()
             ch_rms = rms_db(est_np)
-            active = classify_active(ch_rms)
+            active = classify_active(ch_rms, threshold_db=active_rms_db)
             est_zm = est_np - np.mean(est_np)
             src_zm = src_np - np.mean(src_np)
             if np.std(est_zm) > 1e-8 and np.std(src_zm) > 1e-8:
@@ -492,12 +500,26 @@ def save_visualizations(results, out_dir, sample_rate, n_src=5, align_for_displa
 # Section 3: Causal Streaming Test
 # ---------------------------------------------------------------------------
 
-def run_streaming_test(model, source_dir, sample_rate, block_ms, device, n_src=5):
+def run_streaming_test(
+    model,
+    source_dir,
+    sample_rate,
+    block_ms,
+    device,
+    n_src=5,
+    stream_window_ms=None,
+    stream_hop_ms=None,
+):
     """Run causality, LambdaOverlapAdd, and latency tests."""
-    block_samples = int(block_ms / 1000.0 * sample_rate)
-    # Make sure block_samples is even (required by LambdaOverlapAdd)
+    window_ms = block_ms if stream_window_ms is None else stream_window_ms
+    hop_ms = (window_ms / 2.0) if stream_hop_ms is None else stream_hop_ms
+    block_samples = int(window_ms / 1000.0 * sample_rate)
+    hop_samples = int(hop_ms / 1000.0 * sample_rate)
+    # Make sure sizes are even (required by LambdaOverlapAdd)
     if block_samples % 2 != 0:
         block_samples += 1
+    if hop_samples % 2 != 0:
+        hop_samples += 1
 
     # Get a 3-second test mixture
     n_mix_spk = min(3, n_src)
@@ -521,7 +543,10 @@ def run_streaming_test(model, source_dir, sample_rate, block_ms, device, n_src=5
     # ------------------------------------------------------------------
     # Test A: Causality verification
     # ------------------------------------------------------------------
-    print(f"\n--- Test A: Causality verification (block={block_ms}ms = {block_samples} samples) ---")
+    print(
+        f"\n--- Test A: Causality verification (window={window_ms}ms = {block_samples} samples,"
+        f" hop={hop_ms}ms = {hop_samples} samples) ---"
+    )
 
     with torch.no_grad():
         mix_full = mixture.unsqueeze(0).to(device)  # (1, total_samples)
@@ -565,13 +590,13 @@ def run_streaming_test(model, source_dir, sample_rate, block_ms, device, n_src=5
     # Test B: LambdaOverlapAdd streaming
     # ------------------------------------------------------------------
     print(f"\n--- Test B: LambdaOverlapAdd streaming ---")
-    print(f"  window_size={block_samples}, hop_size={block_samples // 2}")
+    print(f"  window_size={block_samples}, hop_size={hop_samples}")
 
     ola_model = LambdaOverlapAdd(
         nnet=model,
         n_src=n_src,
         window_size=block_samples,
-        hop_size=block_samples // 2,
+        hop_size=hop_samples,
         window="hann",
         reorder_chunks=True,
     )
@@ -634,14 +659,32 @@ def run_streaming_test(model, source_dir, sample_rate, block_ms, device, n_src=5
 
     avg_ms = np.mean(times)
     std_ms = np.std(times)
-    rt_factor = avg_ms / block_ms
-    print(f"  {block_ms}ms block ({block_samples} samples) takes {avg_ms:.2f} +/- {std_ms:.2f} ms")
-    print(f"  Real-time factor: {rt_factor:.3f}x  ({'faster' if rt_factor < 1 else 'slower'} than real-time)")
+    rt_factor = avg_ms / hop_ms
+    print(
+        f"  Step latency: {avg_ms:.2f} +/- {std_ms:.2f} ms "
+        f"(window={window_ms}ms, hop={hop_ms}ms)"
+    )
+    print(f"  Real-time factor vs hop: {rt_factor:.3f}x  ({'faster' if rt_factor < 1 else 'slower'} than real-time)")
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
+def _resolve_speaker_range_arg(parser, speaker_range_arg, n_src, profile):
+    if speaker_range_arg:
+        try:
+            speaker_range = [int(x.strip()) for x in speaker_range_arg.split(",") if x.strip()]
+        except ValueError:
+            parser.error(
+                f"Invalid --speaker_range value: {speaker_range_arg!r}. Expected comma-separated ints."
+            )
+        bad = [x for x in speaker_range if x < 1 or x > n_src]
+        if bad:
+            parser.error(f"Invalid --speaker_range values {bad}. Valid range is [1..{n_src}].")
+        return speaker_range
+    return [2] if profile == "two_spk_in_5ch" else list(range(1, n_src + 1))
+
 
 def main():
     parser = argparse.ArgumentParser(description="Validation script for 5-speaker ConvTasNet")
@@ -656,6 +699,18 @@ def main():
                         help="Output directory for figures/audio. Default: <model_dir>/validation")
     parser.add_argument("--block_ms", type=float, default=200,
                         help="Block size in ms for streaming test")
+    parser.add_argument(
+        "--stream_window_ms",
+        type=float,
+        default=None,
+        help="Streaming window size in ms (overrides block_ms if set).",
+    )
+    parser.add_argument(
+        "--stream_hop_ms",
+        type=float,
+        default=None,
+        help="Streaming hop size in ms (default is window/2 when omitted).",
+    )
     parser.add_argument("--sample_rate", type=int, default=None,
                         help="Sample rate (Hz); auto-detected from conf.yml if available")
     parser.add_argument("--dryrun", action="store_true",
@@ -677,6 +732,18 @@ def main():
             "plots only. Raw exported estimates and SI-SDR metrics remain unchanged."
         ),
     )
+    parser.add_argument(
+        "--speaker_range",
+        type=str,
+        default=None,
+        help="Comma-separated active speaker counts to test, e.g. 1,2,3.",
+    )
+    parser.add_argument(
+        "--active_rms_db",
+        type=float,
+        default=-40.0,
+        help="RMS threshold (dB) used to classify estimated channels as active.",
+    )
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -690,7 +757,7 @@ def main():
         model = BaseModel.from_pretrained("Cosentino/ConvTasNet_LibriMix_sep_clean")
         n_src = model.masker.n_src  # 2
         sample_rate = 8000
-        speaker_range = [n_src]
+        speaker_range = _resolve_speaker_range_arg(parser, args.speaker_range, n_src, args.profile)
         if args.out_dir is None:
             args.out_dir = "validate_output"
         print(f"  Model type: {type(model).__name__}")
@@ -728,7 +795,7 @@ def main():
         print(f"Loading model from {model_path} ...")
         model = BaseModel.from_pretrained(model_path)
         n_src = int(model.masker.n_src)
-        speaker_range = [2] if args.profile == "two_spk_in_5ch" else list(range(1, n_src + 1))
+        speaker_range = _resolve_speaker_range_arg(parser, args.speaker_range, n_src, args.profile)
         print(f"  Model type: {type(model).__name__}")
         print(f"  Sample rate: {model.sample_rate}")
 
@@ -741,6 +808,7 @@ def main():
     results = run_n_speaker_test(
         model, args.source_dir, sample_rate, device,
         n_src=n_src, speaker_range=speaker_range,
+        active_rms_db=args.active_rms_db,
     )
 
     print("\n" + "=" * 60)
@@ -755,6 +823,8 @@ def main():
     run_streaming_test(
         model, args.source_dir, sample_rate, args.block_ms, device,
         n_src=n_src,
+        stream_window_ms=args.stream_window_ms,
+        stream_hop_ms=args.stream_hop_ms,
     )
 
     print("\n" + "=" * 60)

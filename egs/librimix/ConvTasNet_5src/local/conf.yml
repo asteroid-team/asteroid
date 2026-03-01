@@ -76,5 +76,9 @@ loss:
   active_l2_weight: 0.0
   active_rms_floor_db: -35.0
   active_rms_penalty_weight: 2.0
+  active_diversity_weight: 0.0
+  active_activity_bce_weight: 0.0
+  activity_threshold_db: -40.0
+  activity_temp_db: 3.0
   silence_weight: 0.2
   silence_margin_db: -45.0

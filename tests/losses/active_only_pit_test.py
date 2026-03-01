@@ -28,6 +28,8 @@ def test_active_only_pit_return_components_schema():
         "active_l1",
         "active_l2",
         "active_rms_floor",
+        "active_diversity",
+        "active_activity_bce",
         "silent_rms_penalty",
         "n_active_targets",
     }
@@ -71,3 +73,31 @@ def test_active_threshold_mode_rms_vs_sum_energy():
     )
     _, comp_energy = loss_energy(est, tgt, return_components=True)
     assert comp_energy["n_active_targets"].item() == 1.0
+
+
+def test_active_diversity_penalty_nonzero_for_duplicate_active_channels():
+    tgt = torch.randn(1, 2, 256)
+    est = torch.zeros_like(tgt)
+    est[0, 0] = tgt[0, 0]
+    est[0, 1] = tgt[0, 0]
+
+    loss_func = ActiveOnlyPITSilencePenalty(
+        active_diversity_weight=1.0,
+        threshold=1e-8,
+    )
+    _, comps = loss_func(est, tgt, return_components=True)
+    assert comps["active_diversity"].item() > 0.0
+
+
+def test_active_activity_bce_is_finite_when_enabled():
+    tgt = torch.zeros(1, 3, 256)
+    tgt[0, 0] = torch.randn(256)
+    est = torch.randn(1, 3, 256)
+
+    loss_func = ActiveOnlyPITSilencePenalty(
+        active_activity_bce_weight=0.5,
+        threshold=1e-8,
+    )
+    loss, comps = loss_func(est, tgt, return_components=True)
+    assert torch.isfinite(loss)
+    assert torch.isfinite(comps["active_activity_bce"])
