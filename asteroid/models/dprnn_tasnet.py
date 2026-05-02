@@ -82,7 +82,7 @@ class DPRNNTasNet(BaseEncoderMaskerDecoder):
             sample_rate=sample_rate,
             **fb_kwargs,
         )
-        n_feats = encoder.n_feats_out
+        n_feats = int(encoder.n_feats_out)
         if in_chan is not None:
             assert in_chan == n_feats, (
                 "Number of filterbank output channels"

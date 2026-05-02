@@ -23,7 +23,7 @@ def make_model_and_optimizer(conf):
     and evaluation very simple.
     """
     enc, dec = fb.make_enc_dec("stft", **conf["filterbank"])
-    masker = Chimera(enc.n_feats_out // 2, **conf["masknet"])
+    masker = Chimera(int(enc.n_feats_out) // 2, **conf["masknet"])
     model = Model(enc, masker, dec)
     optimizer = make_optimizer(model.parameters(), **conf["optim"])
     return model, optimizer

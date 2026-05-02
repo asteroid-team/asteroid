@@ -61,8 +61,9 @@ class DeMask(BaseEncoderMaskerDecoder):
             **fb_kwargs,
         )
 
-        n_masker_in = self._get_n_feats_input(input_type, encoder.n_feats_out)
-        n_masker_out = self._get_n_feats_output(output_type, encoder.n_feats_out)
+        n_feats_out = int(encoder.n_feats_out)
+        n_masker_in = self._get_n_feats_input(input_type, n_feats_out)
+        n_masker_out = self._get_n_feats_output(output_type, n_feats_out)
         masker = build_demask_masker(
             n_masker_in,
             n_masker_out,
