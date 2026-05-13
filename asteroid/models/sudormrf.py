@@ -62,7 +62,7 @@ class SuDORMRFNet(BaseEncoderMaskerDecoder):
             output_padding=(kernel_size // 2) - 1,
             **fb_kwargs,
         )
-        n_feats = enc.n_feats_out
+        n_feats = int(enc.n_feats_out)
         enc = _Padder(enc, upsampling_depth=upsampling_depth, kernel_size=kernel_size)
 
         if in_chan is not None:
@@ -136,7 +136,7 @@ class SuDORMRFImprovedNet(BaseEncoderMaskerDecoder):
             output_padding=(kernel_size // 2) - 1,
             **fb_kwargs,
         )
-        n_feats = enc.n_feats_out
+        n_feats = int(enc.n_feats_out)
         enc = _Padder(enc, upsampling_depth=upsampling_depth, kernel_size=kernel_size)
 
         if in_chan is not None:

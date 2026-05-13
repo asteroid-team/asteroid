@@ -73,7 +73,7 @@ class XUMX(BaseModel):
         self.nb_channels = nb_channels
         self.nb_layers = nb_layers
         self.bidirectional = bidirectional
-        self.nb_output_bins = in_chan // 2 + 1
+        self.nb_output_bins = int(in_chan) // 2 + 1
         if max_bin:
             self.max_bin = max_bin
         else:

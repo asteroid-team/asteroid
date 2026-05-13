@@ -676,7 +676,7 @@ class DCCRMaskNet(BaseDCUMaskNet):
         super().__init__(
             encoders=[
                 *(DCUNetComplexEncoderBlock(*args, activation="prelu") for args in encoders),
-                DCCRMaskNetRNN(np.prod(last_encoder_out_shape)),
+                DCCRMaskNetRNN(int(np.prod(last_encoder_out_shape))),
             ],
             decoders=[
                 torch.nn.Identity(),

@@ -28,7 +28,7 @@ def make_model_and_optimizer(conf):
     # Because we concatenate (re, im, mag) as input and compute a complex mask.
     if conf["main_args"]["is_complex"]:
         inp_size = int(stft.n_feats_out * 3 / 2)
-        output_size = stft.n_feats_out
+        output_size = int(stft.n_feats_out)
     else:
         inp_size = output_size = int(stft.n_feats_out / 2)
     # Add these fields to the mask model dict
