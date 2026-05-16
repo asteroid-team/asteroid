@@ -1,0 +1,84 @@
+{
+  "study_name": "ablation_feb18_three_src_round3",
+  "project": "convtasnet-three-src-ablation",
+  "defaults": {
+    "sample_rate": 8000,
+    "segment": 1.0,
+    "n_src": 3,
+    "dataset_type": "online_mix",
+    "task": "sep_clean",
+    "min_speakers": 1,
+    "max_speakers": 3,
+    "speaker_count_weights": "0.20,0.30,0.50",
+    "num_examples": 20000,
+    "val_num_examples": 2000,
+    "batch_size": 4,
+    "num_workers": 4,
+    "epochs_stage1": 40,
+    "epochs_stage2": 200,
+    "window_ms": 1000,
+    "hop_ms": 50
+  },
+  "candidates": [
+    {
+      "id": "C00_anchor_a02",
+      "description": "Anchor: best quality-size from Feb17",
+      "masknet": {"n_blocks": 8, "n_repeats": 2, "bn_chan": 64, "skip_chan": 64, "hid_chan": 256},
+      "filterbank": {"n_filters": 256}
+    },
+    {
+      "id": "C01_anchor_a03",
+      "description": "Anchor: best throughput from Feb17",
+      "masknet": {"n_blocks": 7, "n_repeats": 2, "bn_chan": 96, "skip_chan": 96, "hid_chan": 384},
+      "filterbank": {"n_filters": 384}
+    },
+    {
+      "id": "C02_fast_7x1_256",
+      "description": "Drop repeats to 1 from A02-like width",
+      "masknet": {"n_blocks": 7, "n_repeats": 1, "bn_chan": 64, "skip_chan": 64, "hid_chan": 256},
+      "filterbank": {"n_filters": 256}
+    },
+    {
+      "id": "C03_fast_6x1_256",
+      "description": "More aggressive depth cut, same width as A02",
+      "masknet": {"n_blocks": 6, "n_repeats": 1, "bn_chan": 64, "skip_chan": 64, "hid_chan": 256},
+      "filterbank": {"n_filters": 256}
+    },
+    {
+      "id": "C04_fast_6x1_224",
+      "description": "Channel sweep down from A02-like tiny",
+      "masknet": {"n_blocks": 6, "n_repeats": 1, "bn_chan": 56, "skip_chan": 56, "hid_chan": 224},
+      "filterbank": {"n_filters": 224}
+    },
+    {
+      "id": "C05_fast_6x1_192",
+      "description": "Tiny candidate for max speed/size gains",
+      "masknet": {"n_blocks": 6, "n_repeats": 1, "bn_chan": 48, "skip_chan": 48, "hid_chan": 192},
+      "filterbank": {"n_filters": 192}
+    },
+    {
+      "id": "C06_mid_7x2_256",
+      "description": "A02 width with A03-like depth",
+      "masknet": {"n_blocks": 7, "n_repeats": 2, "bn_chan": 64, "skip_chan": 64, "hid_chan": 256},
+      "filterbank": {"n_filters": 256}
+    },
+    {
+      "id": "C07_mid_8x1_256",
+      "description": "Keep depth, reduce repeats for RF retention",
+      "masknet": {"n_blocks": 8, "n_repeats": 1, "bn_chan": 64, "skip_chan": 64, "hid_chan": 256},
+      "filterbank": {"n_filters": 256}
+    },
+    {
+      "id": "C08_mid_7x1_224",
+      "description": "Balanced smaller mid model",
+      "masknet": {"n_blocks": 7, "n_repeats": 1, "bn_chan": 56, "skip_chan": 56, "hid_chan": 224},
+      "filterbank": {"n_filters": 224}
+    },
+    {
+      "id": "C09_probe_5x1_192",
+      "description": "Hard floor probe for quality-speed frontier",
+      "masknet": {"n_blocks": 5, "n_repeats": 1, "bn_chan": 48, "skip_chan": 48, "hid_chan": 192},
+      "filterbank": {"n_filters": 192}
+    }
+  ]
+}
