@@ -95,7 +95,7 @@ class System(pl.LightningModule):
             ``System``. If the training and validation steps are somehow
             different (except for ``loss.backward()`` and ``optimzer.step()``),
             the argument ``train`` can be used to switch behavior.
-            Otherwise, ``training_step`` and ``validation_step`` can be overwriten.
+            Otherwise, ``training_step`` and ``validation_step`` can be overwritten.
         """
         inputs, targets = batch
         est_targets = self(inputs)
