@@ -41,6 +41,7 @@ setup(
         "scipy>=1.10.1",
         "torch>=2.0.0",
         "asteroid-filterbanks>=0.4.0",
+        "requests",
         "SoundFile>=0.10.2",
         "huggingface_hub>=0.0.2",
         # From requirements/install.txt
