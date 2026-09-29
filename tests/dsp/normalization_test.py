@@ -10,3 +10,12 @@ def test_normalization():
 
     assert np.max(est_normalized) < 1
     assert np.min(est_normalized) >= -1
+
+
+def test_silent_estimate_stays_silent():
+    mix = np.array([0.5, -0.25])
+    est = np.array([[0.0, 0.0], [1.0, -0.5]])
+    normalized = normalize_estimates(est, mix)
+    assert not np.isnan(normalized).any()
+    np.testing.assert_allclose(normalized[0], [0.0, 0.0])
+    np.testing.assert_allclose(normalized[1], [0.5, -0.25])

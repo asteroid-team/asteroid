@@ -10,4 +10,12 @@ def normalize_estimates(est_np, mix_np):
 
     """
     mix_max = np.max(np.abs(mix_np))
-    return np.stack([est * mix_max / np.max(np.abs(est)) for est in est_np])
+
+    def _scale(est):
+        peak = np.max(np.abs(est))
+        # A silent source has a peak of 0. Dividing by that peak returned NaN.
+        if peak == 0:
+            return est
+        return est * mix_max / peak
+
+    return np.stack([_scale(est) for est in est_np])
