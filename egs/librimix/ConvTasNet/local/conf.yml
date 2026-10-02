@@ -11,6 +11,8 @@ masknet:
   bn_chan: 128
   skip_chan: 128
   hid_chan: 512
+  causal: true
+  norm_type: cLN
 # Training config
 training:
   epochs: 200
@@ -18,6 +20,13 @@ training:
   num_workers: 4
   half_lr: yes
   early_stop: yes
+  use_wandb: true
+  wandb_project: convtasnet-vanilla
+  wandb_entity: null
+  wandb_group: null
+  wandb_run_name: null
+  wandb_tags: []
+  wandb_job_type: train
 # Optim config
 optim:
   optimizer: adam
@@ -26,8 +35,20 @@ optim:
 # Data config
 data:
   task: sep_clean
-  train_dir: data/wav8k/min/train-100
-  valid_dir: data/wav8k/min/dev
+  # train_dir: /home/mkeller/data/librimix/Libri2Mix/wav8k/min/train-100
+  # valid_dir: /home/mkeller/data/librimix/Libri2Mix/wav8k/min/dev
+  train_dir: data_splits/train #train-360
+  valid_dir: data_splits/dev #dev
+  dataset_type: librimix  # librimix | online_mix
+  source_dir: ~/data/librimix/LibriSpeech/train-clean-360
+  valid_source_dir: ~/data/librimix/LibriSpeech/dev-clean
   sample_rate: 8000
   n_src: 2
-  segment: 3
+  segment: 1.0
+  min_speakers: 1
+  max_speakers: 2
+  speaker_count_weights: null
+  train_seed: null
+  val_seed: 42
+  num_examples: 20000
+  val_num_examples: 2000

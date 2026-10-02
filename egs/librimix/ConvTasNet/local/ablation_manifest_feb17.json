@@ -1,0 +1,136 @@
+{
+  "study_name": "ablation_feb17_three_src",
+  "project": "convtasnet-three-src-ablation",
+  "defaults": {
+    "sample_rate": 8000,
+    "segment": 1.0,
+    "n_src": 3,
+    "dataset_type": "online_mix",
+    "task": "sep_clean",
+    "min_speakers": 1,
+    "max_speakers": 3,
+    "speaker_count_weights": "0.20,0.30,0.50",
+    "num_examples": 20000,
+    "val_num_examples": 2000,
+    "batch_size": 4,
+    "num_workers": 4,
+    "epochs_stage1": 40,
+    "epochs_stage2": 200,
+    "window_ms": 1000,
+    "hop_ms": 50
+  },
+  "candidates": [
+    {
+      "id": "A00_ref_1srf",
+      "description": "Reference 1s-RF-ish stack",
+      "masknet": {
+        "n_blocks": 8,
+        "n_repeats": 2,
+        "bn_chan": 128,
+        "skip_chan": 128,
+        "hid_chan": 512
+      },
+      "filterbank": {
+        "n_filters": 512
+      }
+    },
+    {
+      "id": "A01_width_m",
+      "description": "Width reduced medium",
+      "masknet": {
+        "n_blocks": 8,
+        "n_repeats": 2,
+        "bn_chan": 96,
+        "skip_chan": 96,
+        "hid_chan": 384
+      },
+      "filterbank": {
+        "n_filters": 384
+      }
+    },
+    {
+      "id": "A02_width_s",
+      "description": "Width reduced small",
+      "masknet": {
+        "n_blocks": 8,
+        "n_repeats": 2,
+        "bn_chan": 64,
+        "skip_chan": 64,
+        "hid_chan": 256
+      },
+      "filterbank": {
+        "n_filters": 256
+      }
+    },
+    {
+      "id": "A03_depth_m",
+      "description": "Depth reduced medium",
+      "masknet": {
+        "n_blocks": 7,
+        "n_repeats": 2,
+        "bn_chan": 96,
+        "skip_chan": 96,
+        "hid_chan": 384
+      },
+      "filterbank": {
+        "n_filters": 384
+      }
+    },
+    {
+      "id": "A04_depth_s",
+      "description": "Depth reduced small",
+      "masknet": {
+        "n_blocks": 6,
+        "n_repeats": 2,
+        "bn_chan": 96,
+        "skip_chan": 96,
+        "hid_chan": 384
+      },
+      "filterbank": {
+        "n_filters": 384
+      }
+    },
+    {
+      "id": "A05_repeat_cut",
+      "description": "Repeat count reduced",
+      "masknet": {
+        "n_blocks": 8,
+        "n_repeats": 1,
+        "bn_chan": 96,
+        "skip_chan": 96,
+        "hid_chan": 384
+      },
+      "filterbank": {
+        "n_filters": 384
+      }
+    },
+    {
+      "id": "A06_small_balanced",
+      "description": "Balanced small model",
+      "masknet": {
+        "n_blocks": 7,
+        "n_repeats": 1,
+        "bn_chan": 64,
+        "skip_chan": 64,
+        "hid_chan": 256
+      },
+      "filterbank": {
+        "n_filters": 256
+      }
+    },
+    {
+      "id": "A07_tiny_probe",
+      "description": "Tiny probe model",
+      "masknet": {
+        "n_blocks": 6,
+        "n_repeats": 1,
+        "bn_chan": 64,
+        "skip_chan": 64,
+        "hid_chan": 256
+      },
+      "filterbank": {
+        "n_filters": 256
+      }
+    }
+  ]
+}

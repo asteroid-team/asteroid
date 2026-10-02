@@ -9,6 +9,8 @@ from .mse import pairwise_mse, singlesrc_mse, multisrc_mse
 from .cluster import deep_clustering_loss
 from .pmsqe import SingleSrcPMSQE
 from .multi_scale_spectral import SingleSrcMultiScaleSpectral
+from .silence_robust import SilenceRobustPairwiseNegSDR
+from .active_only_pit import ActiveOnlyPITSilencePenalty
 
 try:
     from .stoi import NegSTOILoss as SingleSrcNegSTOI
@@ -41,4 +43,6 @@ __all__ = [
     "SingleSrcPMSQE",
     "SingleSrcNegSTOI",
     "SingleSrcMultiScaleSpectral",
+    "SilenceRobustPairwiseNegSDR",
+    "ActiveOnlyPITSilencePenalty",
 ]
