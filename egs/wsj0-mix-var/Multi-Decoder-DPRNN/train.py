@@ -106,9 +106,8 @@ def main(conf):
         devices="auto",
         limit_train_batches=1.0,  # Useful for fast experiment
         gradient_clip_val=200,
-        resume_from_checkpoint=conf["main_args"]["resume_from"],
     )
-    trainer.fit(system)
+    trainer.fit(system, ckpt_path=conf["main_args"]["resume_from"])
 
     best_k = {k: v.item() for k, v in checkpoint.best_k_models.items()}
     with open(os.path.join(exp_dir, "best_k_models.json"), "w") as f:
