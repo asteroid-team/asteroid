@@ -30,6 +30,8 @@ class LibriMix(Dataset):
         sample_rate (int) : The sample rate of the sources and mixtures.
         n_src (int) : The number of sources in the mixture.
         segment (int, optional) : The desired sources and mixtures length in s.
+            Shorter utterances are skipped together with their corresponding
+            clean mixtures for ``'enh_both'``.
 
     References
         [1] "LibriMix: An Open-Source Dataset for Generalizable Speech Separation",
@@ -69,6 +71,9 @@ class LibriMix(Dataset):
             self.seg_len = int(self.segment * self.sample_rate)
             # Ignore the file shorter than the desired_length
             self.df = self.df[self.df["length"] >= self.seg_len]
+            if task == "enh_both":
+                # Keep clean targets aligned with the retained noisy mixtures.
+                self.df_clean = self.df_clean.loc[self.df.index]
             print(
                 f"Drop {max_len - len(self.df)} utterances from {max_len} "
                 f"(shorter than {segment} seconds)"
