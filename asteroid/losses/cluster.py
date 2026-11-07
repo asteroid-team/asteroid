@@ -8,7 +8,8 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
         embedding (torch.Tensor): Estimated embeddings.
             Expected shape  :math:`(batch, frequency * frame, embedding\_dim)`.
         tgt_index (torch.Tensor): Dominating source index in each TF bin.
-            Expected shape: :math:`(batch, frequency, frame)`.
+            Expected shape: :math:`(batch, frequency, frame)`. Source indices
+            do not need to all occur in the batch.
         binary_mask (torch.Tensor): VAD in TF plane. Bool or Float.
             See asteroid.dsp.vad.ebased_vad.
 
@@ -33,7 +34,8 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
         is of shape :math:`(batch, freq * frames, emb)`, the underlying view should be
         :math:`(batch, freq, frames, emb)` and not :math:`(batch, frames, freq, emb)`.
     """
-    spk_cnt = len(tgt_index.unique())
+    source_ids, inverse_index = torch.unique(tgt_index, return_inverse=True)
+    spk_cnt = source_ids.numel()
 
     batch, bins, frames = tgt_index.shape
     if binary_mask is None:
@@ -46,7 +48,7 @@ def deep_clustering_loss(embedding, tgt_index, binary_mask=None):
 
     # Fill in one-hot vector for each TF bin
     tgt_embedding = torch.zeros(batch, bins * frames, spk_cnt, device=tgt_index.device)
-    tgt_embedding.scatter_(2, tgt_index.view(batch, bins * frames, 1), 1)
+    tgt_embedding.scatter_(2, inverse_index.reshape(batch, bins * frames, 1), 1)
 
     # Compute VAD-weighted DC loss
     tgt_embedding = tgt_embedding * binary_mask
