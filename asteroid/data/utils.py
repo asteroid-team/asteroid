@@ -6,6 +6,7 @@ def online_mixing_collate(batch):
     """Mix target sources to create new mixtures.
     Output of the default collate function is expected to return two objects:
     inputs and targets.
+    Silent shuffled sources remain silent.
     """
     # Inputs (batch, time) / targets (batch, n_src, time)
     inputs, targets = default_collate(batch)
@@ -15,7 +16,9 @@ def online_mixing_collate(batch):
     new_src = []
     for i in range(targets.shape[1]):
         new_s = targets[torch.randperm(batch), i, :]
-        new_s = new_s * torch.sqrt(energies[:, i] / (new_s**2).sum(-1, keepdims=True))
+        new_energy = (new_s**2).sum(-1, keepdims=True)
+        new_energy = new_energy.masked_fill(new_energy == 0, 1)
+        new_s = new_s * torch.sqrt(energies[:, i] / new_energy)
         new_src.append(new_s)
 
     targets = torch.stack(new_src, dim=1)
