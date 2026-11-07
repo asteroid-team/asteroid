@@ -36,7 +36,8 @@ class FUSSDataset(Dataset):
         self.fg_names = [f"fg{i}" for i in range(self.max_n_fg)]
         names = ["mix", "bg"] + self.fg_names
         # Lines with less labels will have nan, replace with empty string
-        self.mix_df = pd.read_csv(file_list_path, sep="\t", names=names)
+        # All columns contain paths, including entirely missing foreground columns.
+        self.mix_df = pd.read_csv(file_list_path, sep="\t", names=names, dtype=str)
         # Number of foregrounds (fg) vary from 0 to 3
         # This can easily be used to remove mixtures with less than x fg
         # remove_less_than = 1
