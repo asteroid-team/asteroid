@@ -121,7 +121,7 @@ class WhamRDataset(data.Dataset):
 
         print(
             "Drop {} utts({:.2f} h) from {} (shorter than {} samples)".format(
-                drop_utt, drop_len / sample_rate / 36000, orig_len, self.seg_len
+                drop_utt, drop_len / sample_rate / 3600, orig_len, self.seg_len
             )
         )
         self.mix = mix_infos
