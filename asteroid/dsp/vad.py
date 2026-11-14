@@ -11,7 +11,7 @@ def ebased_vad(mag_spec, th_db: int = 40):
             Expected shape (batch, *, freq, time).
             The VAD mask will be computed independently for all the leading
             dimensions until the last two. Independent of the ordering of the
-            last two dimensions.
+            last two dimensions, including noncontiguous spectrograms.
         th_db (int): The threshold in dB from which a TF-bin is considered
             silent.
 
@@ -27,5 +27,5 @@ def ebased_vad(mag_spec, th_db: int = 40):
     log_mag = 20 * torch.log10(mag_spec)
     # Compute VAD for each utterance in a batch independently.
     to_view = list(mag_spec.shape[:-2]) + [1, -1]
-    max_log_mag = torch.max(log_mag.view(to_view), -1, keepdim=True)[0]
+    max_log_mag = torch.max(log_mag.reshape(to_view), -1, keepdim=True)[0]
     return log_mag > (max_log_mag - th_db)
